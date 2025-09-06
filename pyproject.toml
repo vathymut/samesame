@@ -1,0 +1,70 @@
+[project]
+name = "samesame"
+version = "0.1.0"
+description = "Classifier two-sample tests and noninferiority tests."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = ["numpy >= 1.21", "scipy >= 1.15", "scikit-learn"]
+authors = [{ name = "Vathy M. Kamulete", email = "vathymut@gmail.com" }]
+maintainers = [{ name = "Vathy M. Kamulete", email = "vathymut@gmail.com" }]
+license = { file = "LICENSE.txt" }
+keywords = [
+  "drift detection",
+  "data monitoring",
+  "dataset shift",
+  "data validation",
+  "model validation",
+  "noninferiority tests",
+  "statistical tests",
+]
+classifiers = [
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Typing :: Typed",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
+  "Operating System :: OS Independent",
+]
+
+[build-system]
+requires = ["uv_build>=0.8.11,<0.9.0"]
+build-backend = "uv_build"
+
+
+[project.optional-dependencies]
+dev = ["samesame[docs,test]"]
+test = ["uv", "pytest", "pytest-cov", "ruff"]
+docs = ["mkdocs-material", "mkdocstrings-python", "numpydoc", "jupyter"]
+
+[tool.pytest.ini_options]
+addopts = "--cov samesame --cov-report term-missing --verbose --doctest-modules --doctest-continue-on-failure"
+testpaths = ["tests"]
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.numpydoc_validation]
+checks = [
+  "all",  # report on all checks, except the below
+  "EX01",
+  "SA01",
+  "ES01",
+]
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+extend-select = [
+  "UP", # pyupgrade
+  "I",  # sort imports
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
