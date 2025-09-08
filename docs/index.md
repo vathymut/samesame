@@ -1,20 +1,16 @@
 <!-- markdownlint-disable MD041 -->
 <!-- markdownlint-disable MD033 -->
-<!-- Add to badges above once on PyPI
-    [![ReadTheDocs](https://readthedocs.org/projects/samesame/badge/?version=latest)](https://samesame.readthedocs.io/en/stable/)
-    [![PyPI-Server](https://img.shields.io/pypi/v/samesame.svg)](https://pypi.org/project/samesame/)
-    [![Monthly Downloads](https://pepy.tech/badge/samesame/month)](https://pepy.tech/project/samesame)
--->
 
 # samesame
 
 <!-- badges: start -->
 [![Python](https://img.shields.io/badge/python-3.12+-blue.svg)](https://pypi.org/project/samesame/)
-[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/samesame)](https://pypi.org/project/samesame/)
+[![Static Badge](https://img.shields.io/badge/docs-link-blue)](https://vathymut.github.io/samesame/)
 [![License: LGPLv3](https://img.shields.io/badge/License-LGPL--3.0-green.svg)](https://opensource.org/license/lgpl-3-0)
 [![arXiv](https://img.shields.io/badge/arXiv-2107.02990-b31b1b.svg)](https://arxiv.org/abs/2107.02990) 
-
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 <!-- badges: end -->
 
 > Same, same but different ...
@@ -30,7 +26,7 @@ These were either missing or implemented with some tradeoffs
 
 What is `samesame` good for? It is for data (model) validation, performance
 monitoring, drift detection (dataset shift), statistical process control, and
-on and on. 
+so on and so forth. 
 
 Want more? 
 [Here you go](https://vathymut.github.io/dsos/articles/motivation.html).
@@ -75,7 +71,7 @@ attributes, when available, can be accessed as follows.
 
 ## Examples
 
-To get started, please see the documentation and examples.
+To get started, please see the examples in the [docs](https://vathymut.github.io/samesame/).
 
 ## Dependencies
 
