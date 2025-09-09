@@ -1,3 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://vathymut.github.io/samesame/</loc>
+         <lastmod>2025-09-09</lastmod>
+    </url>
+    <url>
+         <loc>https://vathymut.github.io/samesame/api/bayes/</loc>
+         <lastmod>2025-09-09</lastmod>
+    </url>
+    <url>
+         <loc>https://vathymut.github.io/samesame/api/ctst/</loc>
+         <lastmod>2025-09-09</lastmod>
+    </url>
+    <url>
+         <loc>https://vathymut.github.io/samesame/api/nit/</loc>
+         <lastmod>2025-09-09</lastmod>
+    </url>
+    <url>
+         <loc>https://vathymut.github.io/samesame/examples/distribution-shifts/</loc>
+         <lastmod>2025-09-09</lastmod>
+    </url>
+    <url>
+         <loc>https://vathymut.github.io/samesame/examples/noninferiority/</loc>
+         <lastmod>2025-09-09</lastmod>
+    </url>
 </urlset>
