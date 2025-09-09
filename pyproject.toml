@@ -1,6 +1,6 @@
 [project]
 name = "samesame"
-version = "0.1.0"
+version = "0.1.1"
 description = "Classifier two-sample tests and noninferiority tests."
 readme = "README.md"
 requires-python = ">=3.12"
