@@ -1,5 +1,8 @@
 site_name: samesame
+repo_url: https://github.com/vathymut/samesame
+site_url: https://vathymut.github.io/samesame/
 site_description: Samesame - Classifier Two-sample Tests
+site_author: Vathy M. Kamulete
 
 nav:
   - Home: index.md
