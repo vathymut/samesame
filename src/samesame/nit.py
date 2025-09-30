@@ -99,7 +99,7 @@ class WeightedAUC(CTST):
         n_jobs: int = 1,
         batch: int | None = None,
     ):
-        """Initialize WeightedAUC with fixed metric and alternative."""
+        """Initialize WeightedAUC."""
         super().__init__(
             actual=actual,
             predicted=predicted,

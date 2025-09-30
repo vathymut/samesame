@@ -68,17 +68,40 @@ class CTST:
     Rejecting the null implies that scoring is not random and that the
     classifier is able to distinguish between the two samples.
 
+    Attributes
+    ----------
+    actual : NDArray
+        Binary indicator for sample membership.
+    predicted : NDArray
+        Estimated (predicted) scores for corresponding samples in `actual`.
+    metric : Callable
+        A callable that conforms to scikit-learn metric API. This function
+        must take two positional arguments e.g. `y_true` and `y_pred`.
+    n_resamples : int, optional
+        Number of resampling iterations, by default 9999.
+    rng : np.random.Generator, optional
+        Random number generator, by default np.random.default_rng().
+    n_jobs : int, optional
+        Number of parallel jobs, by default 1.
+    batch : int or None, optional
+        Batch size for parallel processing, by default None.
+    alternative : {'less', 'greater', 'two-sided'}, optional
+        Defines the alternative hypothesis. Default is 'two-sided'.
+
+    Notes
+    -----
+    The null distribution is based on permutations.
+    See `scipy.stats.permutation_test` for more details.
+
     Examples
     --------
     >>> import numpy as np
-    >>> from sklearn.metrics import balanced_accuracy_score, matthews_corrcoef, roc_auc_score
+    >>> from sklearn.metrics import matthews_corrcoef, roc_auc_score
     >>> from samesame.ctst import CTST
     >>> actual = np.array([0, 1, 1, 0])
     >>> scores = np.array([0.2, 0.8, 0.6, 0.4])
-    >>> ctst_acc = CTST(actual, scores, metric=balanced_accuracy_score)
     >>> ctst_mcc = CTST(actual, scores, metric=matthews_corrcoef)
     >>> ctst_auc = CTST(actual, scores, metric=roc_auc_score)
-    >>> print(ctst_acc.pvalue) # doctest: +SKIP
     >>> print(ctst_mcc.pvalue) # doctest: +SKIP
     >>> print(ctst_auc.pvalue) # doctest: +SKIP
     >>> ctst_ = CTST.from_samples(scores, scores, metric=roc_auc_score)
