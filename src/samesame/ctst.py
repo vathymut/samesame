@@ -120,6 +120,7 @@ class CTST:
         return permutation_test(
             data=(self.actual, self.predicted),
             statistic=statistic,
+            permutation_type="pairings",
             n_resamples=self.n_resamples,
             alternative=self.alternative,
             random_state=self.rng,
