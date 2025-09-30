@@ -40,8 +40,9 @@ test = ["uv", "pytest", "pytest-cov", "ruff"]
 docs = ["mkdocs-material", "mkdocstrings-python", "numpydoc", "jupyter"]
 
 [tool.pytest.ini_options]
-addopts = "--cov samesame --cov-report term-missing --verbose --doctest-modules --doctest-continue-on-failure"
+addopts = "--cov samesame --cov-report term-missing --verbose --doctest-modules --doctest-continue-on-failure -m \"not slow\""
 testpaths = ["tests"]
+markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
 
 [tool.setuptools]
 package-dir = { "" = "src" }

@@ -21,7 +21,7 @@ from samesame.ctst import CTST
 from samesame.nit import WeightedAUC
 
 
-@pytest.mark.skip(reason="Time consuming test")
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "statistical_test",
     [
@@ -55,7 +55,7 @@ def binarize(predictions):
     }
 
 
-@pytest.mark.skip(reason="Time consuming test")
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "statistical_test",
     [
