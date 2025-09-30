@@ -20,7 +20,7 @@ def test_input_shape_and_length(
         WeightedAUC(**unequal_length_predictions)
 
 
-def test_bayes_attributes(decent_predictions, n_resamples=60):
+def test_bayesian_attributes(decent_predictions, n_resamples=60):
     ctst = WeightedAUC(**decent_predictions, n_resamples=n_resamples)
     for attr in ["posterior", "bayes_factor"]:
         assert hasattr(ctst, attr)

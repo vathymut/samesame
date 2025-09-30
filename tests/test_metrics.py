@@ -41,7 +41,6 @@ def test_reproducibility(binary_scores, n_resamples=100):
         metric=wauc,
         n_resamples=n_resamples,
         rng=np.random.default_rng(42),
-        n_jobs=1,
     )
     result2 = bayesian_posterior(
         actual,
@@ -49,28 +48,5 @@ def test_reproducibility(binary_scores, n_resamples=100):
         metric=wauc,
         n_resamples=n_resamples,
         rng=np.random.default_rng(42),
-        n_jobs=1,
     )
     np.testing.assert_almost_equal(result1, result2)
-
-
-def test_parallel(binary_scores, n_resamples=100):
-    actual = binary_scores["actual"]
-    predicted = binary_scores["predicted"]
-    result_single = bayesian_posterior(
-        actual,
-        predicted,
-        metric=wauc,
-        n_resamples=n_resamples,
-        rng=np.random.default_rng(42),
-        n_jobs=1,
-    )
-    result_parallel = bayesian_posterior(
-        actual,
-        predicted,
-        metric=wauc,
-        n_resamples=n_resamples,
-        rng=np.random.default_rng(42),
-        n_jobs=2,
-    )
-    assert ranksums(result_single, result_parallel).pvalue > 0.05

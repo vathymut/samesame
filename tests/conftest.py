@@ -108,6 +108,7 @@ def binary_scores(size=int(4e4)) -> dict[str, np.ndarray]:
 @pytest.fixture
 def perfect_predictions():
     labels = np.array([1 for _ in range(100)] + [0 for _ in range(200)])
+    labels = labels.astype(int)
     return {"actual": labels, "predicted": labels.copy()}
 
 
@@ -117,7 +118,7 @@ def decent_predictions():
     preds2 = np.random.normal(0.25, 0.2, size=200)
     preds = np.concatenate((preds1, preds2))
     labels = np.array([1 for _ in range(100)] + [0 for _ in range(200)])
-    return {"actual": labels, "predicted": preds}
+    return {"actual": labels.astype(int), "predicted": preds}
 
 
 @pytest.fixture
@@ -126,7 +127,7 @@ def somehow_undecided_predictions():
     preds2 = np.random.normal(0.4, 0.2, size=200)
     preds = np.concatenate((preds1, preds2))
     labels = np.array([1 for _ in range(100)] + [0 for _ in range(200)])
-    return {"actual": labels, "predicted": preds}
+    return {"actual": labels.astype(int), "predicted": preds}
 
 
 @pytest.fixture
@@ -135,7 +136,7 @@ def undecided_predictions():
     preds2 = np.random.normal(0.45, 0.2, size=200)
     preds = np.concatenate((preds1, preds2))
     labels = np.array([1 for _ in range(100)] + [0 for _ in range(200)])
-    return {"actual": labels, "predicted": preds}
+    return {"actual": labels.astype(int), "predicted": preds}
 
 
 @pytest.fixture
@@ -144,21 +145,21 @@ def very_undecided_predictions():
     preds2 = np.random.normal(0.49, 0.2, size=200)
     preds = np.concatenate((preds1, preds2))
     labels = np.array([1 for _ in range(100)] + [0 for _ in range(200)])
-    return {"actual": labels, "predicted": preds}
+    return {"actual": labels.astype(int), "predicted": preds}
 
 
 @pytest.fixture
 def unequal_length_predictions():
     preds = np.array([1.0] * 20)
     labels = np.array([1.0] * 10 + [0.0] * 11)
-    return {"actual": labels, "predicted": preds}
+    return {"actual": labels.astype(int), "predicted": preds}
 
 
 @pytest.fixture
 def wrong_shape_predictions():
     preds = np.random.normal([1, 3], [0.5, 1.5], size=(500, 2))
     labels = np.array([1.0] * 500 + [0.0] * 500)
-    return {"actual": labels, "predicted": preds}
+    return {"actual": labels.astype(int), "predicted": preds}
 
 
 # %%
