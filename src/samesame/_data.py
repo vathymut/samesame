@@ -15,7 +15,7 @@ from numpy.typing import NDArray
 def assign_labels(samples: Sequence[NDArray]) -> NDArray:
     assert len(samples) > 1, f"{len(samples)=} must be greater than 1."
     labels = [np.repeat(i, np.array(s).shape[0]) for i, s in enumerate(samples)]
-    return np.concatenate(labels, axis=None)
+    return np.concatenate(labels, axis=None).astype(int)
 
 
 def group_by(data: NDArray, groups: NDArray):

@@ -132,8 +132,6 @@ class WeightedAUC(CTST):
             self.metric,
             self.n_resamples,
             self.rng,
-            self.n_jobs,
-            self.batch,
         )
 
     @cached_property
