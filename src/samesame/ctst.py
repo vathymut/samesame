@@ -44,11 +44,11 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from functools import cached_property
 from inspect import signature
-from operator import methodcaller
 from typing import Literal
 
 import numpy as np
 from numpy.typing import NDArray
+from scipy.stats import permutation_test
 from sklearn.utils import (
     check_consistent_length,
     column_or_1d,
@@ -56,8 +56,6 @@ from sklearn.utils import (
 from sklearn.utils.multiclass import type_of_target
 
 from samesame._data import assign_labels, concat_samples
-from samesame._permute import permutation_null
-from samesame._stats import EmpiricalPvalue
 from samesame._utils import check_metric_function
 
 
@@ -95,7 +93,7 @@ class CTST:
     rng: np.random.Generator = np.random.default_rng()
     n_jobs: int = 1
     batch: int | None = None
-    alternative: Literal["less", "greater", "two_sided"] = "two_sided"
+    alternative: Literal["less", "greater", "two-sided"] = "two-sided"
 
     def __post_init__(self):
         """Validate inputs."""
@@ -115,6 +113,19 @@ class CTST:
         )
 
     @cached_property
+    def _result(self):
+        def statistic(*args):
+            return self.metric(args[0], args[1])
+
+        return permutation_test(
+            data=(self.actual, self.predicted),
+            statistic=statistic,
+            n_resamples=self.n_resamples,
+            alternative=self.alternative,
+            random_state=self.rng,
+        )
+
+    @cached_property
     def statistic(self) -> float:
         """
         Compute the observed test statistic.
@@ -128,7 +139,7 @@ class CTST:
         -----
         The result is cached to avoid (expensive) recomputation.
         """
-        return self.metric(self.actual, self.predicted)
+        return self._result.statistic
 
     @cached_property
     def null(self) -> NDArray:
@@ -140,14 +151,7 @@ class CTST:
         The result is cached to avoid (expensive) recomputation since the
         null distribution requires permutations.
         """
-        return permutation_null(
-            data=(self.actual, self.predicted),
-            statistic=self.metric,
-            n_resamples=self.n_resamples,
-            rng=self.rng,
-            n_jobs=self.n_jobs,
-            batch=self.batch,
-        ).astype(float)
+        return self._result.null_distribution
 
     @cached_property
     def pvalue(self):
@@ -158,9 +162,7 @@ class CTST:
         -----
         The result is cached to avoid (expensive) recomputation.
         """
-        test_ = EmpiricalPvalue(self.statistic, self.null)
-        pvalue_ = methodcaller(self.alternative)(test_)
-        return pvalue_
+        return self._result.pvalue
 
     @classmethod
     def from_samples(

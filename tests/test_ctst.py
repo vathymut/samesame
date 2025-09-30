@@ -32,7 +32,7 @@ def binarize(predictions):
         matthews_corrcoef,
     ],
 )
-def test_freq_attributes(metric, decent_predictions, n_resamples=60):
+def test_frequentist_attributes(metric, decent_predictions, n_resamples=60):
     inputs = binarize(decent_predictions)
     ctst = CTST(
         actual=inputs["actual"],
