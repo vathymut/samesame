@@ -14,8 +14,6 @@ from collections.abc import Callable
 import numpy as np
 from numpy.typing import NDArray
 
-from samesame._parallel import Resampler, _simulate_in_parallel
-
 
 def _rudirichlet(
     n_rows: int,
@@ -41,7 +39,7 @@ def _bayesian_bootstrap(
     return np.apply_along_axis(fn, 0, weights)
 
 
-def _bayesian_posterior(
+def bayesian_posterior(
     actual: NDArray[np.int_],
     predicted: NDArray,
     metric: Callable,
@@ -57,35 +55,4 @@ def _bayesian_posterior(
         n_rows=n_rows,
         n_resamples=n_resamples,
         rng=rng,
-    )
-
-
-def bayesian_posterior(
-    actual: NDArray,
-    predicted: NDArray,
-    metric: Callable,
-    n_resamples: int = 9999,
-    rng: np.random.Generator = np.random.default_rng(),
-    n_jobs: int = 1,
-    batch: int | None = None,
-):
-    resampler = Resampler(
-        n_resamples=n_resamples,
-        rng=rng,
-        n_jobs=n_jobs,
-        batch=batch,
-    )
-
-    def _simulate_fn(rng=rng, n_resamples=n_resamples):
-        return _bayesian_posterior(
-            actual=actual,
-            predicted=predicted,
-            metric=metric,
-            n_resamples=n_resamples,
-            rng=rng,
-        )
-
-    return _simulate_in_parallel(
-        resampler=resampler,
-        simulate_fn=_simulate_fn,
     )
