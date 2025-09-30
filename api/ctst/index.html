@@ -848,16 +848,123 @@ Rejecting the null implies that scoring is not random and that the
 classifier is able to distinguish between the two samples.</p>
 
 
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="samesame.ctst.CTST.actual">actual</span></code></td>
+            <td>
+                  <code><span title="numpy.typing.NDArray">NDArray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Binary indicator for sample membership.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="samesame.ctst.CTST.predicted">predicted</span></code></td>
+            <td>
+                  <code><span title="numpy.typing.NDArray">NDArray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Estimated (predicted) scores for corresponding samples in <code>actual</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="samesame.ctst.CTST.metric">metric</span></code></td>
+            <td>
+                  <code><span title="collections.abc.Callable">Callable</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A callable that conforms to scikit-learn metric API. This function
+must take two positional arguments e.g. <code>y_true</code> and <code>y_pred</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="samesame.ctst.CTST.n_resamples">n_resamples</span></code></td>
+            <td>
+                  <code>(<span title="int">int</span>, <span title="optional">optional</span>)</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of resampling iterations, by default 9999.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="samesame.ctst.CTST.rng">rng</span></code></td>
+            <td>
+                  <code>(<span title="numpy.random.Generator">Generator</span>, <span title="optional">optional</span>)</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Random number generator, by default np.random.default_rng().</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="samesame.ctst.CTST.n_jobs">n_jobs</span></code></td>
+            <td>
+                  <code>(<span title="int">int</span>, <span title="optional">optional</span>)</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of parallel jobs, by default 1.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="samesame.ctst.CTST.batch">batch</span></code></td>
+            <td>
+                  <code>(<span title="int">int</span> or None, <span title="optional">optional</span>)</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Batch size for parallel processing, by default None.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="samesame.ctst.CTST.alternative">alternative</span></code></td>
+            <td>
+                  <code>({&#39;less&#39;, &#39;greater&#39;, &#39;two-sided&#39;}, <span title="optional">optional</span>)</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Defines the alternative hypothesis. Default is 'two-sided'.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The null distribution is based on permutations.
+See <code>scipy.stats.permutation_test</code> for more details.</p>
+</details>
+
 <p><span class="doc-section-title">Examples:</span></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">balanced_accuracy_score</span><span class="p">,</span> <span class="n">matthews_corrcoef</span><span class="p">,</span> <span class="n">roc_auc_score</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">matthews_corrcoef</span><span class="p">,</span> <span class="n">roc_auc_score</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">samesame.ctst</span><span class="w"> </span><span class="kn">import</span> <span class="n">CTST</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">actual</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ctst_acc</span> <span class="o">=</span> <span class="n">CTST</span><span class="p">(</span><span class="n">actual</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="n">balanced_accuracy_score</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ctst_mcc</span> <span class="o">=</span> <span class="n">CTST</span><span class="p">(</span><span class="n">actual</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="n">matthews_corrcoef</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ctst_auc</span> <span class="o">=</span> <span class="n">CTST</span><span class="p">(</span><span class="n">actual</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="n">roc_auc_score</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">ctst_acc</span><span class="o">.</span><span class="n">pvalue</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">ctst_mcc</span><span class="o">.</span><span class="n">pvalue</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">ctst_auc</span><span class="o">.</span><span class="n">pvalue</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ctst_</span> <span class="o">=</span> <span class="n">CTST</span><span class="o">.</span><span class="n">from_samples</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="n">roc_auc_score</span><span class="p">)</span>
@@ -874,7 +981,9 @@ classifier is able to distinguish between the two samples.</p>
 
               <details class="quote">
                 <summary>Source code in <code>src/samesame/ctst.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 64</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 62</span>
+<span class="normal"> 63</span>
+<span class="normal"> 64</span>
 <span class="normal"> 65</span>
 <span class="normal"> 66</span>
 <span class="normal"> 67</span>
@@ -1015,7 +1124,33 @@ classifier is able to distinguish between the two samples.</p>
 <span class="normal">202</span>
 <span class="normal">203</span>
 <span class="normal">204</span>
-<span class="normal">205</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">CTST</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Classifier two-sample test (CTST) using a binary classification metric.</span>
@@ -1024,17 +1159,40 @@ classifier is able to distinguish between the two samples.</p>
 <span class="sd">    Rejecting the null implies that scoring is not random and that the</span>
 <span class="sd">    classifier is able to distinguish between the two samples.</span>
 
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    actual : NDArray</span>
+<span class="sd">        Binary indicator for sample membership.</span>
+<span class="sd">    predicted : NDArray</span>
+<span class="sd">        Estimated (predicted) scores for corresponding samples in `actual`.</span>
+<span class="sd">    metric : Callable</span>
+<span class="sd">        A callable that conforms to scikit-learn metric API. This function</span>
+<span class="sd">        must take two positional arguments e.g. `y_true` and `y_pred`.</span>
+<span class="sd">    n_resamples : int, optional</span>
+<span class="sd">        Number of resampling iterations, by default 9999.</span>
+<span class="sd">    rng : np.random.Generator, optional</span>
+<span class="sd">        Random number generator, by default np.random.default_rng().</span>
+<span class="sd">    n_jobs : int, optional</span>
+<span class="sd">        Number of parallel jobs, by default 1.</span>
+<span class="sd">    batch : int or None, optional</span>
+<span class="sd">        Batch size for parallel processing, by default None.</span>
+<span class="sd">    alternative : {&#39;less&#39;, &#39;greater&#39;, &#39;two-sided&#39;}, optional</span>
+<span class="sd">        Defines the alternative hypothesis. Default is &#39;two-sided&#39;.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The null distribution is based on permutations.</span>
+<span class="sd">    See `scipy.stats.permutation_test` for more details.</span>
+
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import numpy as np</span>
-<span class="sd">    &gt;&gt;&gt; from sklearn.metrics import balanced_accuracy_score, matthews_corrcoef, roc_auc_score</span>
+<span class="sd">    &gt;&gt;&gt; from sklearn.metrics import matthews_corrcoef, roc_auc_score</span>
 <span class="sd">    &gt;&gt;&gt; from samesame.ctst import CTST</span>
 <span class="sd">    &gt;&gt;&gt; actual = np.array([0, 1, 1, 0])</span>
 <span class="sd">    &gt;&gt;&gt; scores = np.array([0.2, 0.8, 0.6, 0.4])</span>
-<span class="sd">    &gt;&gt;&gt; ctst_acc = CTST(actual, scores, metric=balanced_accuracy_score)</span>
 <span class="sd">    &gt;&gt;&gt; ctst_mcc = CTST(actual, scores, metric=matthews_corrcoef)</span>
 <span class="sd">    &gt;&gt;&gt; ctst_auc = CTST(actual, scores, metric=roc_auc_score)</span>
-<span class="sd">    &gt;&gt;&gt; print(ctst_acc.pvalue) # doctest: +SKIP</span>
 <span class="sd">    &gt;&gt;&gt; print(ctst_mcc.pvalue) # doctest: +SKIP</span>
 <span class="sd">    &gt;&gt;&gt; print(ctst_auc.pvalue) # doctest: +SKIP</span>
 <span class="sd">    &gt;&gt;&gt; ctst_ = CTST.from_samples(scores, scores, metric=roc_auc_score)</span>
@@ -1049,7 +1207,7 @@ classifier is able to distinguish between the two samples.</p>
     <span class="n">rng</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">()</span>
     <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">batch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">alternative</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;less&quot;</span><span class="p">,</span> <span class="s2">&quot;greater&quot;</span><span class="p">,</span> <span class="s2">&quot;two_sided&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;two_sided&quot;</span>
+    <span class="n">alternative</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;less&quot;</span><span class="p">,</span> <span class="s2">&quot;greater&quot;</span><span class="p">,</span> <span class="s2">&quot;two-sided&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;two-sided&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate inputs.&quot;&quot;&quot;</span>
@@ -1069,6 +1227,20 @@ classifier is able to distinguish between the two samples.</p>
         <span class="p">)</span>
 
     <span class="nd">@cached_property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">statistic</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">permutation_test</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actual</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">predicted</span><span class="p">),</span>
+            <span class="n">statistic</span><span class="o">=</span><span class="n">statistic</span><span class="p">,</span>
+            <span class="n">permutation_type</span><span class="o">=</span><span class="s2">&quot;pairings&quot;</span><span class="p">,</span>
+            <span class="n">n_resamples</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_resamples</span><span class="p">,</span>
+            <span class="n">alternative</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">alternative</span><span class="p">,</span>
+            <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@cached_property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">statistic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the observed test statistic.</span>
@@ -1082,7 +1254,7 @@ classifier is able to distinguish between the two samples.</p>
 <span class="sd">        -----</span>
 <span class="sd">        The result is cached to avoid (expensive) recomputation.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actual</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">predicted</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="o">.</span><span class="n">statistic</span>
 
     <span class="nd">@cached_property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">null</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
@@ -1094,14 +1266,7 @@ classifier is able to distinguish between the two samples.</p>
 <span class="sd">        The result is cached to avoid (expensive) recomputation since the</span>
 <span class="sd">        null distribution requires permutations.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">permutation_null</span><span class="p">(</span>
-            <span class="n">data</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actual</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">predicted</span><span class="p">),</span>
-            <span class="n">statistic</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="p">,</span>
-            <span class="n">n_resamples</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_resamples</span><span class="p">,</span>
-            <span class="n">rng</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="p">,</span>
-            <span class="n">n_jobs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span><span class="p">,</span>
-            <span class="n">batch</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="p">,</span>
-        <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="o">.</span><span class="n">null_distribution</span>
 
     <span class="nd">@cached_property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">pvalue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1112,9 +1277,7 @@ classifier is able to distinguish between the two samples.</p>
 <span class="sd">        -----</span>
 <span class="sd">        The result is cached to avoid (expensive) recomputation.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">test_</span> <span class="o">=</span> <span class="n">EmpiricalPvalue</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">statistic</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">null</span><span class="p">)</span>
-        <span class="n">pvalue_</span> <span class="o">=</span> <span class="n">methodcaller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alternative</span><span class="p">)(</span><span class="n">test_</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">pvalue_</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_result</span><span class="o">.</span><span class="n">pvalue</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_samples</span><span class="p">(</span>
@@ -1297,22 +1460,22 @@ null distribution requires permutations.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/samesame/ctst.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span>
-<span class="normal">103</span>
-<span class="normal">104</span>
-<span class="normal">105</span>
-<span class="normal">106</span>
-<span class="normal">107</span>
-<span class="normal">108</span>
-<span class="normal">109</span>
-<span class="normal">110</span>
-<span class="normal">111</span>
-<span class="normal">112</span>
-<span class="normal">113</span>
-<span class="normal">114</span>
-<span class="normal">115</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate inputs.&quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">actual</span> <span class="o">=</span> <span class="n">column_or_1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actual</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">predicted</span> <span class="o">=</span> <span class="n">column_or_1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">predicted</span><span class="p">)</span>
@@ -1429,33 +1592,7 @@ null distribution requires permutations.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/samesame/ctst.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">165</span>
-<span class="normal">166</span>
-<span class="normal">167</span>
-<span class="normal">168</span>
-<span class="normal">169</span>
-<span class="normal">170</span>
-<span class="normal">171</span>
-<span class="normal">172</span>
-<span class="normal">173</span>
-<span class="normal">174</span>
-<span class="normal">175</span>
-<span class="normal">176</span>
-<span class="normal">177</span>
-<span class="normal">178</span>
-<span class="normal">179</span>
-<span class="normal">180</span>
-<span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span>
-<span class="normal">184</span>
-<span class="normal">185</span>
-<span class="normal">186</span>
-<span class="normal">187</span>
-<span class="normal">188</span>
-<span class="normal">189</span>
-<span class="normal">190</span>
-<span class="normal">191</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">191</span>
 <span class="normal">192</span>
 <span class="normal">193</span>
 <span class="normal">194</span>
@@ -1469,7 +1606,33 @@ null distribution requires permutations.</p>
 <span class="normal">202</span>
 <span class="normal">203</span>
 <span class="normal">204</span>
-<span class="normal">205</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_samples</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span>
     <span class="n">first_sample</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>

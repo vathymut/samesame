@@ -1108,9 +1108,7 @@ outcomes.</p>
 <span class="normal">183</span>
 <span class="normal">184</span>
 <span class="normal">185</span>
-<span class="normal">186</span>
-<span class="normal">187</span>
-<span class="normal">188</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="normal">186</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">WeightedAUC</span><span class="p">(</span><span class="n">CTST</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Two-sample test for no adverse shift using the weighted AUC (WAUC).</span>
@@ -1191,7 +1189,7 @@ outcomes.</p>
         <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">batch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize WeightedAUC with fixed metric and alternative.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize WeightedAUC.&quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">actual</span><span class="o">=</span><span class="n">actual</span><span class="p">,</span>
             <span class="n">predicted</span><span class="o">=</span><span class="n">predicted</span><span class="p">,</span>
@@ -1224,8 +1222,6 @@ outcomes.</p>
             <span class="bp">self</span><span class="o">.</span><span class="n">metric</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">n_resamples</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">n_jobs</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="nd">@cached_property</span>
@@ -1385,7 +1381,7 @@ posterior distribution uses the Bayesian bootstrap.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Initialize WeightedAUC with fixed metric and alternative.</p>
+        <p>Initialize WeightedAUC.</p>
 
 
             <details class="quote">
@@ -1418,7 +1414,7 @@ posterior distribution uses the Bayesian bootstrap.</p>
     <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="n">batch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize WeightedAUC with fixed metric and alternative.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize WeightedAUC.&quot;&quot;&quot;</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
         <span class="n">actual</span><span class="o">=</span><span class="n">actual</span><span class="p">,</span>
         <span class="n">predicted</span><span class="o">=</span><span class="n">predicted</span><span class="p">,</span>
@@ -1530,7 +1526,9 @@ posterior distribution uses the Bayesian bootstrap.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/samesame/nit.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">152</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
 <span class="normal">153</span>
 <span class="normal">154</span>
 <span class="normal">155</span>
@@ -1564,9 +1562,7 @@ posterior distribution uses the Bayesian bootstrap.</p>
 <span class="normal">183</span>
 <span class="normal">184</span>
 <span class="normal">185</span>
-<span class="normal">186</span>
-<span class="normal">187</span>
-<span class="normal">188</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">186</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_samples</span><span class="p">(</span>
     <span class="bp">cls</span><span class="p">,</span>
     <span class="n">first_sample</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
