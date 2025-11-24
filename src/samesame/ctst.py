@@ -198,7 +198,7 @@ class CTST:
         rng: np.random.Generator = np.random.default_rng(),
         n_jobs: int = 1,
         batch: int | None = None,
-        alternative: Literal["less", "greater", "two_sided"] = "two_sided",
+        alternative: Literal["less", "greater", "two-sided"] = "two-sided",
     ):
         """
         Create a CTST instance from two samples.
