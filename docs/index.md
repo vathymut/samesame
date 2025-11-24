@@ -25,14 +25,13 @@ These were either missing or implemented with some tradeoffs
 ## Motivation
 
 What is `samesame` good for? It is for data (model) validation, performance
-monitoring, drift detection (dataset shift), statistical process control, and
-so on and so forth. 
+monitoring, drift detection (dataset shift), statistical process control, 
+[covariate balance](https://kosukeimai.github.io/MatchIt/articles/assessing-balance.html) 
+and so on and so forth. 
 
-Want more? 
-[Here you go](https://vathymut.github.io/dsos/articles/motivation.html).
-This motivating example comes from the related R package 
-[`dsos`](https://github.com/vathymut/dsos).
-
+As an example, this
+[motivating example](https://vathymut.github.io/dsos/articles/motivation.html) 
+comes from the related R package [`dsos`](https://github.com/vathymut/dsos).
 
 ## Installation
 
@@ -41,6 +40,44 @@ To install, run the following command:
 ```bash
 python -m pip install samesame
 ```
+
+## Quick Start
+
+Simulate outlier scores to test for no adverse shift when the null (no
+shift) holds. 
+
+```python
+from samesame.ctst import CTST
+from samesame.nit import DSOS
+from sklearn.metrics import roc_auc_score
+import numpy as np
+
+n_size = 600
+rng = np.random.default_rng(123_456)
+os_train = rng.normal(size=n_size)
+os_test = rng.normal(size=n_size)
+null_ctst = CTST.from_samples(os_train, os_test, metric=roc_auc_score)
+null_dsos = DSOS.from_samples(os_train, os_test)
+```
+
+In this example, we reject the null of equal distribution (i.e. `CTST`)
+
+```python
+print(f"{null_ctst.pvalue=:.4f}")
+# null_ctst.pvalue=0.0358
+```
+
+However, we fail to reject the null of no adverse shift (i.e. `DSOS`), meaning 
+that the test sample (`os_test`) does not seem to contain disproportionally
+more outliers than the training sample (`os_train`).
+
+```python
+print(f"{null_dsos.pvalue=:.4f}")
+# null_dsos.pvalue=0.9500
+```
+
+This is the type of false alarms that `samesame` can highlight by comparing
+tests of equal distribution to noninferiority tests.
 
 ## Usage
 
