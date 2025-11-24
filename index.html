@@ -372,6 +372,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quick Start
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#usage" class="md-nav__link">
     <span class="md-ellipsis">
       Usage
@@ -694,6 +703,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quick Start
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#usage" class="md-nav__link">
     <span class="md-ellipsis">
       Usage
@@ -787,16 +805,43 @@ extension, a noninferiority test (NIT). </p>
 <code>samesame</code> fills in the gaps :)</p>
 <h2 id="motivation">Motivation<a class="headerlink" href="#motivation" title="Permanent link">&para;</a></h2>
 <p>What is <code>samesame</code> good for? It is for data (model) validation, performance
-monitoring, drift detection (dataset shift), statistical process control, and
-so on and so forth. </p>
-<p>Want more? 
-<a href="https://vathymut.github.io/dsos/articles/motivation.html">Here you go</a>.
-This motivating example comes from the related R package 
-<a href="https://github.com/vathymut/dsos"><code>dsos</code></a>.</p>
+monitoring, drift detection (dataset shift), statistical process control, 
+<a href="https://kosukeimai.github.io/MatchIt/articles/assessing-balance.html">covariate balance</a> 
+and so on and so forth. </p>
+<p>As an example, this
+<a href="https://vathymut.github.io/dsos/articles/motivation.html">motivating example</a> 
+comes from the related R package <a href="https://github.com/vathymut/dsos"><code>dsos</code></a>.</p>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
 <p>To install, run the following command:</p>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>samesame
 </code></pre></div>
+<h2 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
+<p>Simulate outlier scores to test for no adverse shift when the null (no
+shift) holds. </p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">samesame.ctst</span><span class="w"> </span><span class="kn">import</span> <span class="n">CTST</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">samesame.nit</span><span class="w"> </span><span class="kn">import</span> <span class="n">DSOS</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">roc_auc_score</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="n">n_size</span> <span class="o">=</span> <span class="mi">600</span>
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">123_456</span><span class="p">)</span>
+<span class="n">os_train</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">n_size</span><span class="p">)</span>
+<span class="n">os_test</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">n_size</span><span class="p">)</span>
+<span class="n">null_ctst</span> <span class="o">=</span> <span class="n">CTST</span><span class="o">.</span><span class="n">from_samples</span><span class="p">(</span><span class="n">os_train</span><span class="p">,</span> <span class="n">os_test</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="n">roc_auc_score</span><span class="p">)</span>
+<span class="n">null_dsos</span> <span class="o">=</span> <span class="n">DSOS</span><span class="o">.</span><span class="n">from_samples</span><span class="p">(</span><span class="n">os_train</span><span class="p">,</span> <span class="n">os_test</span><span class="p">)</span>
+</code></pre></div>
+<p>In this example, we reject the null of equal distribution (i.e. <code>CTST</code>)</p>
+<div class="highlight"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">null_ctst</span><span class="o">.</span><span class="n">pvalue</span><span class="si">=:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="c1"># null_ctst.pvalue=0.0358</span>
+</code></pre></div>
+<p>However, we fail to reject the null of no adverse shift (i.e. <code>DSOS</code>), meaning 
+that the test sample (<code>os_test</code>) does not seem to contain disproportionally
+more outliers than the training sample (<code>os_train</code>).</p>
+<div class="highlight"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">null_dsos</span><span class="o">.</span><span class="n">pvalue</span><span class="si">=:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="c1"># null_dsos.pvalue=0.9500</span>
+</code></pre></div>
+<p>This is the type of false alarms that <code>samesame</code> can highlight by comparing
+tests of equal distribution to noninferiority tests.</p>
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
 <h3 id="functionality">Functionality<a class="headerlink" href="#functionality" title="Permanent link">&para;</a></h3>
 <p>Below, you will find an overview of common modules in <code>samesame</code>. </p>
