@@ -4,7 +4,10 @@ Sometimes the pertinent question is, are we worse off? And when that is so,
 statistical tests of equal distribution and of mean difference are not the
 best tools for the job (see [here](https://vathymut.org/posts/2023-01-03-are-you-ok/)).
 
-Noninferiority tests can help but these tests come with their own challenges. Typically, we need to define a pre-specified margin, the minimum meaningful difference needed to sound the alarm. This can be difficult, and controversial, to set in advance even for [domain experts](https://doi.org/10.1111/bcp.13280).
+Noninferiority tests can help but these tests come with their own challenges. 
+Typically, we need to specify a margin, the minimum meaningful difference needed 
+to sound the alarm. This can be difficult, and controversial, to set in advance 
+even for [domain experts](https://doi.org/10.1111/bcp.13280).
 
 ## D-SOS
 
@@ -15,13 +18,13 @@ margin. It tests the null of no adverse shift based on outlier scores i.e.
 it checks whether the new sample is not substantively worse than the old
 sample, and not if the two are equal as tests of equal distributions do. This
 two-sample comparison assumes that we have both a training set, the reference 
-distribution of outlier scores, and a test set.
+distribution of outlier scores (the old sample), and a test set (the new sample).
 
 ## Prologue
 
 An example best illustrates how to use the method. The 
 [case study](https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf),
-reproduced below, is from a clinical trial.
+reproduced below, is that of a clinical trial.
 
 > You are a consulting statistician at a pharmaceutical company, charged with
 > designing a study of your company’s new arthritis drug, SASGoBowlFor’Em
@@ -47,10 +50,10 @@ reproduced below, is from a clinical trial.
 >> result—that is, a power of 0.85—at a 0.05 significance level.
 
 
-While quite a bit of this context is helpful and needed to run Schuirmann’s
-classic method of two one-sided tests, this is not required for D-SOS. The
-latter assumes no parametric form for the data (normality), and does not require
-a pre-specified margin (2 units decrease in relief score).
+While quite a bit of this context is helpful and required to run the classic
+two one-sided tests for noninferiority tests, this is not so for D-SOS. D-SOS makes
+no parametric data assumption (normality), and does not require a pre-specified 
+margin (2 units decrease in relief score).
 
 ## Data
 
