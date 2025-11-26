@@ -81,7 +81,13 @@ Run the following:
 mkdocs gh-deploy
 ```
 
-### Building Python package
+### Updating Package Version
+
+```bash
+python -m uv version --bumpd
+```
+
+### Building Python Package
 
 ```bash
 python -m uv build
