@@ -80,3 +80,15 @@ Run the following:
 ```bash
 mkdocs gh-deploy
 ```
+
+### Building Python package
+
+```bash
+python -m uv build
+```
+
+### Publishing to PyPI
+
+```bash
+python -m uv publish
+```
