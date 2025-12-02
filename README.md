@@ -8,30 +8,32 @@
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/samesame)](https://pypi.org/project/samesame/)
 [![Static Badge](https://img.shields.io/badge/docs-link-blue)](https://vathymut.github.io/samesame/)
 [![License: LGPLv3](https://img.shields.io/badge/License-LGPL--3.0-green.svg)](https://opensource.org/license/lgpl-3-0)
-[![UAI 2022](https://img.shields.io/badge/paper-UAI%202022-yellow)](https://arxiv.org/abs/2107.02990) 
+[![UAI 2022](https://img.shields.io/badge/paper-UAI%202022-yellow)](https://arxiv.org/abs/2107.02990)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 <!-- badges: end -->
 
 > Same, same but different ...
 
-`samesame` implements classifier two-sample tests (CTSTs) and as a bonus 
-extension, a noninferiority test (NIT). 
+`samesame` implements classifier two-sample tests (CTSTs) and as a bonus extension, a noninferiority
+test (NIT). These tests are either missing or implemented with significant tradeoffs (looking at you, sample-splitting) in existing libraries.
 
-These were either missing or implemented with some tradeoffs 
-(looking at you, sample-splitting) in existing libraries. And so, 
-`samesame` fills in the gaps :)
+`samesame` is versatile, extensible, lightweight, powerful, and agnostic to your inference strategy
+so long as it is valid (e.g. cross-fitting, sample splitting, etc.).
 
 ## Motivation
 
-What is `samesame` good for? It is for data (model) validation, performance
-monitoring, drift detection (dataset shift), statistical process control, 
-[covariate balance](https://kosukeimai.github.io/MatchIt/articles/assessing-balance.html) 
-and so on and so forth. 
+`samesame` is for those who need statistical tests for:
 
-As an example, this
-[motivating example](https://vathymut.github.io/dsos/articles/motivation.html) 
-comes from the related R package [`dsos`](https://github.com/vathymut/dsos).
+- **Data validation** - Verify that data distributions meet expectations
+- **Model performance monitoring** - Detect performance degradation over time
+- **Drift detection** - Identify dataset shifts between training and production
+- **Statistical process control** - Monitor system behavior and quality
+- [Covariate balance](https://kosukeimai.github.io/MatchIt/articles/assessing-balance.html) - Assess balance in observational studies
+
+---
+
+A [motivating example](https://vathymut.github.io/dsos/articles/motivation.html) is available from the related R package [`dsos`](https://github.com/vathymut/dsos), which provides some of the same functionality.
 
 ## Installation
 
@@ -43,8 +45,9 @@ python -m pip install samesame
 
 ## Quick Start
 
-Simulate outlier scores to test for no adverse shift when the null (no
-shift) holds. 
+This example demonstrates the key distinction between tests of equal distribution and noninferiority tests—a critical difference for avoiding false alarms in production systems.
+
+Simulate outlier scores to test for no adverse shift:
 
 ```python
 from samesame.ctst import CTST
@@ -60,30 +63,27 @@ null_ctst = CTST.from_samples(os_train, os_test, metric=roc_auc_score)
 null_dsos = DSOS.from_samples(os_train, os_test)
 ```
 
-In this example, we reject the null of equal distribution (i.e. `CTST`)
+**Test of equal distribution (CTST):** Rejects the null of equal distributions
 
 ```python
 print(f"{null_ctst.pvalue=:.4f}")
 # null_ctst.pvalue=0.0358
 ```
 
-However, we fail to reject the null of no adverse shift (i.e. `DSOS`), meaning 
-that the test sample (`os_test`) does not seem to contain disproportionally
-more outliers than the training sample (`os_train`).
+**Noninferiority test (DSOS):** Fails to reject the null of no adverse shift
 
 ```python
 print(f"{null_dsos.pvalue=:.4f}")
 # null_dsos.pvalue=0.9500
 ```
 
-This is the type of false alarms that `samesame` can highlight by comparing
-tests of equal distribution to noninferiority tests.
+**Key insight:** While the test sample (`os_test`) has a statistically different distribution from the training sample (`os_train`), it does not contain disproportionally more outliers. This distinction is exactly what `samesame` highlights—many practitioners conflate "different distribution" with "problematic shift," but `samesame` helps you distinguish between the two.
 
 ## Usage
 
 ### Functionality
 
-Below, you will find an overview of common modules in `samesame`. 
+Below, you will find an overview of common modules in `samesame`.
 
 | Function                                  | Module           |
 |-------------------------------------------|------------------|
@@ -91,12 +91,11 @@ Below, you will find an overview of common modules in `samesame`.
 | Classifier two-sample tests (CTSTs)       | `samesame.ctst`  |
 | Noninferiority tests (NITs)               | `samesame.nit`   |
 
-
 ### Attributes
 
 When the method is a statistical test, `samesame` saves (stores) the results of
 some potentially computationally intensive results in attributes. These
-attributes, when available, can be accessed as follows. 
+attributes, when available, can be accessed as follows.
 
 | Attribute      | Description                                   |
 |----------------|-----------------------------------------------|
@@ -112,11 +111,7 @@ To get started, please see the examples in the [docs](https://vathymut.github.io
 
 ## Dependencies
 
-`samesame` has few dependencies beyond the standard library. It will 
-probably work with some older Python versions. It is, in short, a lightweight
-dependency for most machine learning projects.`samesame` is built on top of,
-and is compatible with, [scikit-learn][scikit-learn] and [numpy][numpy].
+`samesame` has minimal dependencies beyond the Python standard library, making it a lightweight addition to most machine learning projects. It is built on top of, and fully compatible with, [scikit-learn][scikit-learn] and [numpy][numpy].
 
 [numpy]: https://numpy.org/
-[PyPI]: https://pypi.org/project/samesame
 [scikit-learn]: https://scikit-learn.org/stable
