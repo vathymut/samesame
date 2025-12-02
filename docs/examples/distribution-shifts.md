@@ -145,7 +145,7 @@ Again, we reject the null hypothesis of equal distribution. The `RandomForestCla
 
 ## Interpreting Results
 
-**Important distinction:** A significant CTST indicates the distributions are *different*, but not necessarily that the difference is *problematic*. In production settings (e.g., model monitoring, data validation), you may want to use a [noninferiority test](../noninferiority.md) instead to determine if the shift is substantive enough to warrant action.
+**Important distinction:** A significant CTST indicates the distributions are *different*, but not necessarily that the difference is *problematic*. In production settings (e.g., model monitoring, data validation), you may want to use a noninferiority test instead to determine if the shift is substantive enough to warrant action.
 
 This example demonstrates the modularity of CTSTs:
 

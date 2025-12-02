@@ -41,7 +41,7 @@ The following clinical-trial style example illustrates the difference between
 classic noninferiority approaches and D-SOS. The motivating study (from SAS's
 case study) compares a new, cheaper drug "Bowl" to the standard "Armanaleg."
 
-The [original study]((https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf)) uses parametric assumptions and a pre-specified margin. For
+The [original study](https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf) uses parametric assumptions and a pre-specified margin. For
 D-SOS we only need outlier/discomfort scores that reflect worse outcomes as
 higher values.
 
