@@ -426,6 +426,30 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-ctsts-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      How CTSTs Work
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#data" class="md-nav__link">
     <span class="md-ellipsis">
       Data
@@ -437,7 +461,7 @@
         <li class="md-nav__item">
   <a href="#cross-fitted-predictions" class="md-nav__link">
     <span class="md-ellipsis">
-      Cross-fitted predictions
+      Cross-fitted Predictions
     </span>
   </a>
   
@@ -446,7 +470,7 @@
         <li class="md-nav__item">
   <a href="#classifier-two-sample-tests-ctsts" class="md-nav__link">
     <span class="md-ellipsis">
-      Classifier two-sample tests (CTSTs)
+      Classifier Two-Sample Tests (CTSTs)
     </span>
   </a>
   
@@ -455,7 +479,16 @@
         <li class="md-nav__item">
   <a href="#out-of-bag-predictions" class="md-nav__link">
     <span class="md-ellipsis">
-      Out-of-bag predictions
+      Out-of-Bag Predictions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interpreting-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interpreting Results
     </span>
   </a>
   
@@ -465,15 +498,6 @@
   <a href="#explanations" class="md-nav__link">
     <span class="md-ellipsis">
       Explanations
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#conclusion" class="md-nav__link">
-    <span class="md-ellipsis">
-      Conclusion
     </span>
   </a>
   
@@ -666,6 +690,30 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-ctsts-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      How CTSTs Work
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#data" class="md-nav__link">
     <span class="md-ellipsis">
       Data
@@ -677,7 +725,7 @@
         <li class="md-nav__item">
   <a href="#cross-fitted-predictions" class="md-nav__link">
     <span class="md-ellipsis">
-      Cross-fitted predictions
+      Cross-fitted Predictions
     </span>
   </a>
   
@@ -686,7 +734,7 @@
         <li class="md-nav__item">
   <a href="#classifier-two-sample-tests-ctsts" class="md-nav__link">
     <span class="md-ellipsis">
-      Classifier two-sample tests (CTSTs)
+      Classifier Two-Sample Tests (CTSTs)
     </span>
   </a>
   
@@ -695,7 +743,16 @@
         <li class="md-nav__item">
   <a href="#out-of-bag-predictions" class="md-nav__link">
     <span class="md-ellipsis">
-      Out-of-bag predictions
+      Out-of-Bag Predictions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interpreting-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interpreting Results
     </span>
   </a>
   
@@ -705,15 +762,6 @@
   <a href="#explanations" class="md-nav__link">
     <span class="md-ellipsis">
       Explanations
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#conclusion" class="md-nav__link">
-    <span class="md-ellipsis">
-      Conclusion
     </span>
   </a>
   
@@ -738,23 +786,23 @@
   
 
 
-<h1 id="test-for-distribution-shifts">Test for distribution shifts<a class="headerlink" href="#test-for-distribution-shifts" title="Permanent link">&para;</a></h1>
-<p>Given two datasets <code>sample_P</code> and <code>sample_Q</code> from distributions <span class="arithmatex">\(P\)</span> and 
-<span class="arithmatex">\(Q\)</span>, the goal is to estimate a <span class="arithmatex">\(p\)</span>-value for the null hypothesis of equal
-distribution <span class="arithmatex">\(P=Q\)</span>. <code>samesame</code> implements classifier two-sample tests (CTSTs)
-for this use case. But why, you ask? I wax lyrical about CTSTs
-<a href="https://vathymut.org/posts/2022-01-22-in-gentle-praise-of-modern-tests/">here</a>. 
-The tl;dr is they are powerful, modular (flexible) and easy to explain, the 
-elusive trifecta.</p>
-<p>CTSTs assign your samples to different classes (you give them labels). <code>sample_P</code> 
-is the positive class, and <code>sample_Q</code>, the negative one or vice versa. Then, you 
-fit your favorite classifier to see if it can reliably predict the labels. If it 
-can, it means the two samples are probably different. If it cannot, the two 
-are more likely similar enough.</p>
+<h1 id="test-for-distribution-shifts">Test for Distribution Shifts<a class="headerlink" href="#test-for-distribution-shifts" title="Permanent link">&para;</a></h1>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>Given two datasets <code>sample_P</code> and <code>sample_Q</code> from distributions <span class="arithmatex">\(P\)</span> and <span class="arithmatex">\(Q\)</span>, the goal is to estimate a <span class="arithmatex">\(p\)</span>-value for the null hypothesis of equal distribution, <span class="arithmatex">\(P=Q\)</span>. <code>samesame</code> implements classifier two-sample tests (CTSTs) for this use case.</p>
+<p><strong>Why CTSTs?</strong> They are powerful, modular (flexible), and easy to explain—the elusive trifecta. For a deeper dive, see this <a href="https://vathymut.org/posts/2022-01-22-in-gentle-praise-of-modern-tests/">discussion</a>.</p>
+<h3 id="how-ctsts-work">How CTSTs Work<a class="headerlink" href="#how-ctsts-work" title="Permanent link">&para;</a></h3>
+<p>CTSTs leverage machine learning classifiers to test for distribution differences as follows:</p>
+<ol>
+<li><strong>Label samples</strong> - Assign class labels to indicate sample membership (<code>sample_P</code> = positive class, <code>sample_Q</code> = negative class)</li>
+<li><strong>Train classifier</strong> - Fit a classifier to predict sample labels based on features</li>
+<li><strong>Evaluate performance</strong> - If the classifier achieves high accuracy, the samples are likely different; if accuracy is near random chance, they are likely similar</li>
+</ol>
+<p>This approach is versatile: you can use any classifier and any binary classification metric (AUC, balanced accuracy, etc.) without making strong distributional assumptions.</p>
 <h2 id="data">Data<a class="headerlink" href="#data" title="Permanent link">&para;</a></h2>
-<p>Let's see it in action. First, generate some data.</p>
-<p><div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_classification</span>
-<span class="c1"># Create a small dataset</span>
+<p>To demonstrate CTSTs in action, let's create a synthetic dataset with two distinguishable distributions:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_classification</span>
+
+<span class="c1"># Create a small dataset with clear class separation</span>
 <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">make_classification</span><span class="p">(</span>
     <span class="n">n_samples</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
     <span class="n">n_features</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
@@ -762,39 +810,45 @@ are more likely similar enough.</p>
     <span class="n">random_state</span><span class="o">=</span><span class="mi">123_456</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
-The two samples, <code>sample_P</code> and <code>sample_Q</code>, are concatenated into a single
-dataset, <code>X</code>. The binary labels, <code>y</code>, indicate sample membership, which examples
-belong to which sample.</p>
-<h2 id="cross-fitted-predictions">Cross-fitted predictions<a class="headerlink" href="#cross-fitted-predictions" title="Permanent link">&para;</a></h2>
-<p>Let's run the tests using cross-fitting. Cross-fitting estimates the
-performance of a model on unseen data by using out-of-sample predictions.</p>
+<p>The two samples are concatenated into a single feature matrix <code>X</code> with shape <code>(100, 4)</code>. The binary labels <code>y</code> indicate sample membership—which observations belong to <code>sample_P</code> (positive class, <code>y=1</code>) and which belong to <code>sample_Q</code> (negative class, <code>y=0</code>).</p>
+<h2 id="cross-fitted-predictions">Cross-fitted Predictions<a class="headerlink" href="#cross-fitted-predictions" title="Permanent link">&para;</a></h2>
+<p>Cross-fitting estimates classifier performance on unseen data using out-of-sample predictions. This approach is more efficient than sample splitting, which typically uses 50% of data for training and 50% for testing—resulting in a loss of statistical power. Cross-fitting and out-of-bag methods use more data for inference while preserving statistical validity.</p>
+<hr />
+<p>For more alternatives to sample splitting, see this <a href="https://www.cell.com/patterns/fulltext/S2666-3899(22)00237-9">paper</a>.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">HistGradientBoostingClassifier</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">cross_val_predict</span>
-<span class="c1"># Get cross-fitted predictions</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">binarize</span>
+
+<span class="c1"># Get cross-fitted probability predictions (out-of-sample)</span>
 <span class="n">y_gb</span> <span class="o">=</span> <span class="n">cross_val_predict</span><span class="p">(</span>
     <span class="n">estimator</span><span class="o">=</span><span class="n">HistGradientBoostingClassifier</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">123_456</span><span class="p">),</span>
     <span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span>
     <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>
     <span class="n">cv</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
     <span class="n">method</span><span class="o">=</span><span class="s1">&#39;predict_proba&#39;</span><span class="p">,</span>
-<span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># Get probabilities for the positive class</span>
-<span class="c1"># Binarize predictions to be compatible with some metrics</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">binarize</span>
+<span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># Extract probabilities for the positive class</span>
+
+<span class="c1"># Binarize predictions for metrics that require binary labels</span>
 <span class="n">y_gb_binary</span> <span class="o">=</span> <span class="n">binarize</span><span class="p">(</span><span class="n">y_gb</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
 </code></pre></div>
-<h2 id="classifier-two-sample-tests-ctsts">Classifier two-sample tests (CTSTs)<a class="headerlink" href="#classifier-two-sample-tests-ctsts" title="Permanent link">&para;</a></h2>
-<p>We can turn binary performance metrics into statistical tests like so:</p>
+<h2 id="classifier-two-sample-tests-ctsts">Classifier Two-Sample Tests (CTSTs)<a class="headerlink" href="#classifier-two-sample-tests-ctsts" title="Permanent link">&para;</a></h2>
+<p>Now we run CTSTs using three different classification metrics.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">samesame.ctst</span><span class="w"> </span><span class="kn">import</span> <span class="n">CTST</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">balanced_accuracy_score</span><span class="p">,</span> <span class="n">matthews_corrcoef</span><span class="p">,</span> <span class="n">roc_auc_score</span>
 
+<span class="c1"># Define metrics to evaluate</span>
 <span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span><span class="n">balanced_accuracy_score</span><span class="p">,</span> <span class="n">matthews_corrcoef</span><span class="p">,</span> <span class="n">roc_auc_score</span><span class="p">]</span>
+
+<span class="c1"># Run CTST for each metric</span>
 <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">metrics</span><span class="p">:</span>
+    <span class="c1"># Use binary predictions for metrics that require them; probabilities for AUC</span>
     <span class="n">predicted</span> <span class="o">=</span> <span class="n">y_gb_binary</span> <span class="k">if</span> <span class="n">metric</span> <span class="o">!=</span> <span class="n">roc_auc_score</span> <span class="k">else</span> <span class="n">y_gb</span>
     <span class="n">ctst</span> <span class="o">=</span> <span class="n">CTST</span><span class="p">(</span><span class="n">actual</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">predicted</span><span class="o">=</span><span class="n">predicted</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">metric</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2"> statistic: </span><span class="si">{</span><span class="n">ctst</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2"> p-value: </span><span class="si">{</span><span class="n">ctst</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
+<p><strong>Output:</strong></p>
 <div class="highlight"><pre><span></span><code>balanced_accuracy_score
      statistic: 0.86
      p-value: 0.00
@@ -805,24 +859,27 @@ roc_auc_score
      statistic: 0.93
      p-value: 0.00
 </code></pre></div>
-<p>In all 3 cases, we reject the null hypothesis of equal distribution <span class="arithmatex">\(P=Q\)</span>.
-The classifier, <code>HistGradientBoostingClassifier</code>, was able to distinguish
-between the two samples.</p>
-<h2 id="out-of-bag-predictions">Out-of-bag predictions<a class="headerlink" href="#out-of-bag-predictions" title="Permanent link">&para;</a></h2>
-<p>Instead of cross-fitting, we can also use out-of-bag predictions. Both
-cross-fitted and out-of-bag predictions
-<a href="https://www.cell.com/patterns/fulltext/S2666-3899(22)00237-9">don't lose (too many) samples to estimation</a> whereas sample splitting typically uses half the data for 
-estimation and half for inference, which incurs a loss of statistical power.</p>
+<p>In all three cases, we <strong>reject the null hypothesis of equal distribution</strong> (<span class="arithmatex">\(P=Q\)</span>) at conventional significance levels. The <code>HistGradientBoostingClassifier</code> performed well across all metrics, providing strong evidence that <code>sample_P</code> and <code>sample_Q</code> come from different distributions.</p>
+<h2 id="out-of-bag-predictions">Out-of-Bag Predictions<a class="headerlink" href="#out-of-bag-predictions" title="Permanent link">&para;</a></h2>
+<p>An alternative to cross-fitting is using out-of-bag (OOB) predictions from ensemble methods like <code>RandomForestClassifier</code>. Both cross-fitted and OOB predictions
+mitigate the downsides of sample splitting.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestClassifier</span>
+
+<span class="c1"># Train random forest with out-of-bag score enabled</span>
 <span class="n">rf</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span>
     <span class="n">n_estimators</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
     <span class="n">random_state</span><span class="o">=</span><span class="mi">123_456</span><span class="p">,</span>
     <span class="n">oob_score</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="c1"># Get out-of-bag predictions</span>
+
+<span class="c1"># Get out-of-bag decision function scores (probabilities)</span>
 <span class="n">y_rf</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">oob_decision_function_</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+
+<span class="c1"># Binarize for metrics requiring binary predictions</span>
 <span class="n">y_rf_binary</span> <span class="o">=</span> <span class="n">binarize</span><span class="p">(</span><span class="n">y_rf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+<span class="c1"># Run CTST for each metric</span>
 <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">metrics</span><span class="p">:</span>
     <span class="n">predicted</span> <span class="o">=</span> <span class="n">y_rf_binary</span> <span class="k">if</span> <span class="n">metric</span> <span class="o">!=</span> <span class="n">roc_auc_score</span> <span class="k">else</span> <span class="n">y_rf</span>
     <span class="n">ctst</span> <span class="o">=</span> <span class="n">CTST</span><span class="p">(</span><span class="n">actual</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">predicted</span><span class="o">=</span><span class="n">predicted</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">)</span>
@@ -830,9 +887,7 @@ estimation and half for inference, which incurs a loss of statistical power.</p>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2"> statistic: </span><span class="si">{</span><span class="n">ctst</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2"> p-value: </span><span class="si">{</span><span class="n">ctst</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
-<p>As before, we reject the null hypothesis of equal distribution <span class="arithmatex">\(P=Q\)</span>.
-The classifier, <code>RandomForestClassifier</code>, was able to tell apart the
-two samples.</p>
+<p><strong>Output:</strong></p>
 <div class="highlight"><pre><span></span><code>balanced_accuracy_score
      statistic: 0.88
      p-value: 0.00
@@ -843,19 +898,30 @@ roc_auc_score
      statistic: 0.94
      p-value: 0.00
 </code></pre></div>
+<p>Again, we reject the null hypothesis of equal distribution. The <code>RandomForestClassifier</code> performed on par with the gradient boosting model, providing evidence of distribution shift. Both classifiers agree that the samples are distinguishable.</p>
+<h2 id="interpreting-results">Interpreting Results<a class="headerlink" href="#interpreting-results" title="Permanent link">&para;</a></h2>
+<p><strong>Important distinction:</strong> A significant CTST indicates the distributions are <em>different</em>, but not necessarily that the difference is <em>problematic</em>. In production settings (e.g., model monitoring, data validation), you may want to use a noninferiority test instead to determine if the shift is substantive enough to warrant action.</p>
+<p>This example demonstrates the modularity of CTSTs:</p>
+<ul>
+<li><strong>Classifiers:</strong> Any classifier works (here we used gradient boosting and random forests)</li>
+<li><strong>Metrics:</strong> Any classification metric can be used (balanced accuracy, AUC, Matthews correlation coefficient, etc.)</li>
+<li><strong>Inference methods:</strong> Both cross-fitting and out-of-bag predictions avoid the sample-splitting penalty</li>
+</ul>
+<p>This flexibility makes CTSTs useful for diverse applications without compromising statistical power for valid inference.</p>
 <h2 id="explanations">Explanations<a class="headerlink" href="#explanations" title="Permanent link">&para;</a></h2>
-<p>To explain these results, we can use
-<a href="https://en.wikipedia.org/wiki/Explainable_artificial_intelligence">explainable methods</a>
-on the fitted classifiers above e.g. <code>rf</code>. These help answer questions
-such as which features contribute the most to distribution shift (feature
-importance).</p>
-<h2 id="conclusion">Conclusion<a class="headerlink" href="#conclusion" title="Permanent link">&para;</a></h2>
-<p>And voilà! You have successfully run classifier two-sample tests
-(CTSTs). Note the flexibility (modularity) of the approach. You can use both 
-cross-fitted and out-of-bag predictions, instead of sample splitting, for
-inference. You can use any classifier (e.g., <code>HistGradientBoostingClassifier</code>, 
-<code>RandomForestClassifier</code>, etc.), and any binary classification metric
-(e.g., <code>AUC</code>, <code>balanced accuracy</code>, <code>Matthews correlation coefficient</code>, etc.).</p>
+<p>To understand <em>why</em> the two samples are different, you can apply explainable methods to the fitted classifiers. For example, feature importance from <code>RandomForestClassifier</code> or model-agnostic techniques like SHAP can reveal which features contribute most to the distribution shift.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Example: Feature importance from random forest</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="n">importances</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">feature_importances_</span>
+<span class="n">feature_names</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;Feature </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+<span class="n">importance_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+    <span class="p">{</span><span class="s1">&#39;Feature&#39;</span><span class="p">:</span> <span class="n">feature_names</span><span class="p">,</span> <span class="s1">&#39;Importance&#39;</span><span class="p">:</span> <span class="n">importances</span><span class="p">}</span>
+<span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s1">&#39;Importance&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">importance_df</span><span class="p">)</span>
+</code></pre></div>
+<p>This helps answer, <em>which features are driving the distribution shift?</em> This information is valuable for understanding root causes and deciding on remedial
+actions.</p>
 
 
 
