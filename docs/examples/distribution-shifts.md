@@ -2,9 +2,9 @@
 
 ## Overview
 
-Given two datasets `sample_P` and `sample_Q` from distributions $P$ and $Q$, the goal is to estimate a $p$-value for the null hypothesis of equal distribution: $P=Q$. `samesame` implements classifier two-sample tests (CTSTs) for this use case.
+Given two datasets `sample_P` and `sample_Q` from distributions $P$ and $Q$, the goal is to estimate a $p$-value for the null hypothesis of equal distribution, $P=Q$. `samesame` implements classifier two-sample tests (CTSTs) for this use case.
 
-**Why CTSTs?** They are powerful, modular (flexible), and easy to explain—the elusive trifecta. For a deeper dive, see this [detailed discussion](https://vathymut.org/posts/2022-01-22-in-gentle-praise-of-modern-tests/).
+**Why CTSTs?** They are powerful, modular (flexible), and easy to explain—the elusive trifecta. For a deeper dive, see this [discussion](https://vathymut.org/posts/2022-01-22-in-gentle-praise-of-modern-tests/).
 
 ### How CTSTs Work
 
@@ -15,11 +15,6 @@ CTSTs leverage machine learning classifiers to test for distribution differences
 3. **Evaluate performance** - If the classifier achieves high accuracy, the samples are likely different; if accuracy is near random chance, they are likely similar
 
 This approach is versatile: you can use any classifier and any binary classification metric (AUC, balanced accuracy, etc.) without making strong distributional assumptions.
-
-### When to Use CTSTs vs NITs
-
-- **Use CTSTs** when you want to test if two distributions are equal and accept that they may be different
-- **Use [noninferiority tests](../noninferiority.md) (NITs)** when you want to ensure the new sample is not *substantively worse* (not merely different)
 
 ## Data
 
@@ -37,14 +32,14 @@ X, y = make_classification(
 )
 ```
 
-**Data structure:** The two samples are concatenated into a single feature matrix `X` with shape `(100, 4)`. The binary labels `y` indicate sample membership—which observations belong to `sample_P` (positive class, `y=1`) and which belong to `sample_Q` (negative class, `y=0`).
+The two samples are concatenated into a single feature matrix `X` with shape `(100, 4)`. The binary labels `y` indicate sample membership—which observations belong to `sample_P` (positive class, `y=1`) and which belong to `sample_Q` (negative class, `y=0`).
 
 ## Cross-fitted Predictions
 
 Cross-fitting estimates classifier performance on unseen data using out-of-sample predictions. This approach is more efficient than sample splitting, which typically uses 50% of data for training and 50% for testing—resulting in a loss of statistical power. Cross-fitting and out-of-bag methods use more data for inference while preserving statistical validity.
 
 ---
-For more on the tradeoffs of sample splitting, see this [research paper](https://www.cell.com/patterns/fulltext/S2666-3899(22)00237-9).
+For more alternatives to sample splitting, see this [paper](https://www.cell.com/patterns/fulltext/S2666-3899(22)00237-9).
 
 ```python
 from sklearn.ensemble import HistGradientBoostingClassifier
@@ -103,7 +98,8 @@ In all three cases, we **reject the null hypothesis of equal distribution** ($P=
 
 ## Out-of-Bag Predictions
 
-An alternative to cross-fitting is using out-of-bag (OOB) predictions from ensemble methods like `RandomForestClassifier`. Both cross-fitting and OOB predictions avoid the sample-splitting tradeoff of losing statistical power.
+An alternative to cross-fitting is using out-of-bag (OOB) predictions from ensemble methods like `RandomForestClassifier`. Both cross-fitted and OOB predictions
+mitigate the downsides of sample splitting.
 
 ```python
 from sklearn.ensemble import RandomForestClassifier
@@ -145,7 +141,7 @@ roc_auc_score
      p-value: 0.00
 ```
 
-Again, we reject the null hypothesis of equal distribution. The `RandomForestClassifier` performed even slightly better than the gradient boosting model, providing additional evidence of distribution shift. Both classifiers agree that the samples are distinguishable.
+Again, we reject the null hypothesis of equal distribution. The `RandomForestClassifier` performed on par with the gradient boosting model, providing evidence of distribution shift. Both classifiers agree that the samples are distinguishable.
 
 ## Interpreting Results
 
@@ -172,15 +168,8 @@ feature_names = [f"Feature {i}" for i in range(X.shape[1])]
 importance_df = pd.DataFrame(
     {'Feature': feature_names, 'Importance': importances}
 ).sort_values('Importance', ascending=False)
-
 print(importance_df)
 ```
 
-This helps answer: *Which features are driving the distribution shift?* This information is valuable for understanding root causes and deciding on remedial
+This helps answer, *which features are driving the distribution shift?* This information is valuable for understanding root causes and deciding on remedial
 actions.
-
-## Next Steps
-
-- Explore the noninferiority example to learn how to test for substantive adverse shifts
-- Check the API documentation for additional CTST parameters and options
-- Apply CTSTs to your own data validation and monitoring pipelines
