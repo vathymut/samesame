@@ -5,9 +5,8 @@
 
 <!-- badges: start -->
 [![Python](https://img.shields.io/badge/python-3.12+-blue.svg)](https://pypi.org/project/samesame/)
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/samesame)](https://pypi.org/project/samesame/)
+[![Downloads](https://static.pepy.tech/badge/samesame)](https://pepy.tech/project/pysmatch)
 [![Static Badge](https://img.shields.io/badge/docs-link-blue)](https://vathymut.github.io/samesame/)
-[![License: LGPLv3](https://img.shields.io/badge/License-LGPL--3.0-green.svg)](https://opensource.org/license/lgpl-3-0)
 [![UAI 2022](https://img.shields.io/badge/paper-UAI%202022-yellow)](https://arxiv.org/abs/2107.02990)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
