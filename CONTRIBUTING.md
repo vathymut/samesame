@@ -1,11 +1,10 @@
-## Contributing
+# Contributing
 
-This closely follows 
+This closely follows
 [Docling's guidelines](https://github.com/docling-project/docling/blob/main/CONTRIBUTING.md).
 
 We welcome external contributions. If you have an itch, please feel
 free to scratch it.
-
 
 ## Developing
 
@@ -23,6 +22,8 @@ You can use the `uv sync` to create a project virtual environment (if it does no
 the project's dependencies with the environment.
 
 ```bash
+git clone https://github.com/vathymut/samesame
+cd samesame
 uv sync --all-extras
 ```
 
@@ -51,7 +52,6 @@ uv add [OPTIONS] <PACKAGES|--requirements <REQUIREMENTS>>
 We use the following tools to enforce code style:
 
 - [Ruff](https://docs.astral.sh/ruff/), as linter and code formatter
-
 
 ## Tests
 
@@ -84,7 +84,7 @@ mkdocs gh-deploy
 ### Updating Package Version
 
 ```bash
-python -m uv version --bumpd
+python -m uv version --bump
 ```
 
 ### Building Python Package
@@ -95,6 +95,19 @@ python -m uv build
 
 ### Publishing to PyPI
 
+Following [these instructions](https://github.com/astral-sh/uv/issues/10878#issuecomment-3473401901),
+we first log in securely as follows:
+
 ```bash
-python -m uv publish
+$ python -m uv auth login upload.pypi.org                      
+username: __token__
+password: 
+```
+
+The latter assumes that the requisite credentials have been generated and
+potentially, saved in a config file (e.g. see `.pypirc` file). Only then, we
+publish the new version of the package using:
+
+```bash
+python -m uv publish --username __token__
 ```
