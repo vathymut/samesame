@@ -9,6 +9,7 @@ nav:
   - Examples:
     - Distribution shifts: examples/distribution-shifts.md
     - Noninferiority tests: examples/noninferiority.md
+    - Credit example: examples/credit-example.md
   - API:
       - bayes: api/bayes.md
       - ctst: api/ctst.md
