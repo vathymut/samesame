@@ -191,41 +191,25 @@ In this example, we observe:
 
 ## Key Insights
 
-1. **Dataset Shift vs. Performance Degradation**:
-   - **CTST** tests if the *feature distributions* differ between domains. A significant result means covariate shift has occurred.
-   - **DSOS** tests if the *model's predictions* have shifted toward worse outcomes. A significant result means the model's behavior has degraded.
-   - Together, they tell complementary stories: CTST detects the problem exists, DSOS confirms it affects your model.
+**Dataset Shift vs. Performance Degradation.** The CTST and DSOS tests answer complementary questions. CTST tests whether the *feature distributions* differ between domains—a significant result indicates covariate shift has occurred. DSOS tests whether the *model's predictions* have shifted toward worse outcomes—a significant result means the model's behavior has degraded. Together, they paint a complete picture: CTST detects whether a problem exists, while DSOS confirms whether it affects your deployed model.
 
-2. **Four Possible Scenarios**:
-   - CTST non-sig, DSOS non-sig: Domains are similar, model performs consistently. ✓ Safe
-   - CTST sig, DSOS non-sig: Domains differ but model generalizes well. ✓ Monitor
-   - CTST sig, DSOS sig: Domain shift degrades model performance. ✗ Retrain
-   - CTST non-sig, DSOS sig: Subtle shift affecting predictions despite similar features. ✗ Investigate
+**Four Possible Scenarios.** In production, four combinations are possible and each suggests a different action:
 
-3. **Feature-Level Understanding**: Feature importance reveals *which* features drive the shift, enabling targeted interventions (e.g., recalibration, retraining, or domain adaptation on key features).
+1. **CTST non-sig, DSOS non-sig**: Domains are similar and the model performs consistently. ✓ Safe to operate.
+2. **CTST sig, DSOS non-sig**: Domains differ but the model generalizes well across both. ✓ Monitor closely but no immediate action needed.
+3. **CTST sig, DSOS sig**: Domain shift has degraded model performance. ✗ Retrain or recalibrate.
+4. **CTST non-sig, DSOS sig**: A subtle shift is affecting predictions despite similar feature distributions. ✗ Investigate underlying causes.
+
+**Feature-Level Understanding.** Feature importance identifies *which* specific features drive the shift, enabling targeted interventions. Rather than retraining the entire model, you can focus on recalibration, collecting more data for important features, or implementing domain adaptation techniques on key predictors.
 
 ## Practical Recommendations
 
-1. **Implement Monitoring**: Regularly compute CTST and DSOS on production data batches to detect domain shift and performance degradation early.
+**1. Implement Regular Monitoring.** Compute CTST and DSOS on production data batches periodically—monthly or quarterly depending on your deployment frequency and business risk tolerance. Automated pipelines work best: compute statistics continuously and log results for easy review. This early detection enables proactive intervention before performance degrades significantly.
 
-2. **Set Action Thresholds**: Define decision rules and automate responses:
-   - **p < 0.01**: Trigger alerts and schedule urgent review
-   - **p < 0.05**: Log flag and prepare retraining pipeline
-   - **p > 0.10**: Continue normal operation
+**2. Set Clear Action Thresholds.** Define decision rules based on p-values and automate responses. For example: if p < 0.01, trigger alerts and schedule urgent review; if 0.01 ≤ p < 0.05, log the flag and prepare retraining pipelines for review; if p > 0.10, continue normal operation. Document these thresholds and the rationale behind them so all stakeholders understand when and why action is taken.
 
-3. **Investigate Root Causes**: When tests are significant:
-   - Compute feature importance to identify which features shifted most
-   - Analyze data summaries (distributions, percentiles) for each top feature
-   - Determine if shift is natural drift or a data quality issue
+**3. Investigate Root Causes When Tests Are Significant.** Don't just react to test results—understand what's driving them. Compute feature importance from your domain-distinguishing model to identify which features shifted most. Then analyze the actual data: examine distributions, percentiles, and summary statistics for each important feature. Determine whether the shift represents natural business drift (e.g., seasonal patterns, changing customer base) or a data quality issue that needs correction.
 
-4. **Choose Appropriate Metrics**: You don't need true labels to monitor performance. Good proxies include:
-   - Predicted probabilities (as in this example)
-   - Model confidence scores
-   - Feature distributions
-   - Derived metrics (e.g., average predicted default rate)
+**4. Choose Metrics That Don't Require Labels.** A major advantage of CTST and DSOS is that they work without true labels in production. Good proxies for monitoring include predicted probabilities (as in this example), model confidence scores, feature distributions, and derived metrics like average predicted default rate. This makes continuous monitoring feasible even when ground truth takes weeks or months to collect.
 
-5. **Plan Remediation**: Based on shift severity and business impact, decide whether to:
-   - Monitor closely but take no action (domains naturally drift)
-   - Recalibrate the existing model
-   - Retrain on more recent data
-   - Implement domain adaptation techniques
+**5. Plan Remediation Based on Severity and Impact.** Once you've identified a significant shift, your response depends on business context. For natural drift over time, simply monitor closely without intervention. For meaningful shifts, consider recalibrating the model to adjust for distribution changes. For substantial shifts affecting business outcomes, retrain on more recent data. In complex scenarios, explore domain adaptation techniques that learn to bridge the gap between training and deployment distributions.
