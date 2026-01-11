@@ -28,7 +28,6 @@ so long as it is valid (e.g. cross-fitting, sample splitting, etc.).
 - **Model performance monitoring** - Detect performance degradation over time
 - **Drift detection** - Identify dataset shifts between training and production
 - **Statistical process control** - Monitor system behavior and quality
-- [Covariate balance](https://kosukeimai.github.io/MatchIt/articles/assessing-balance.html) - Assess balance in observational studies
 
 ---
 
