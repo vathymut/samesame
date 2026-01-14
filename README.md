@@ -88,6 +88,7 @@ Below, you will find an overview of common modules in `samesame`.
 | Bayesian inference                        | `samesame.bayes` |
 | Classifier two-sample tests (CTSTs)       | `samesame.ctst`  |
 | Noninferiority tests (NITs)               | `samesame.nit`   |
+| Out-of-distribution (OOD) detection       | `samesame.ood`   |
 
 ### Attributes
 
