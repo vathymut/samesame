@@ -1,54 +1,24 @@
-# Noninferiority Test
+# Noninferiority Test (D-SOS)
 
-Noninferiority tests (NITs) ask whether a new sample (or treatment)
-is *not meaningfully worse* than a reference. `samesame` implements D-SOS
-(Dataset Shift with Outlier Scores), a robust, nonparametric noninferiority
-test that operates on outlier scores and does not require a pre-specified
-margin.
+Noninferiority asks: *is the new sample not meaningfully worse than the reference?* `samesame` implements D-SOS (Dataset Shift with Outlier Scores), a nonparametric test on outlier scores with a one-sided alternative.
 
-## When to use this
+## When to use
 
-- **Use CTSTs** when the question is, "are the
- two distributions different?" — i.e., you want to detect any distributional
- difference.
-- **Use NITs** when the question is, "is the new
- sample *not substantially worse* than the reference?" — i.e., you care about
- adverse shifts rather than any difference.
+- **CTST (distribution difference)**: detect any distributional change
+- **D-SOS (adverse shift check)**: detect whether the new sample is worse (more high outlier scores)
 
-The two approaches address different scientific questions; they are
-complementary rather than interchangeable.
+Use D-SOS when you care about *harmful* shifts rather than any difference.
 
-## D-SOS at a glance
+## How D-SOS works
 
-[D-SOS](https://proceedings.mlr.press/v180/kamulete22a.html)
-transforms the problem of noninferiority testing (NITs) into a CTST by treating
-outlier scores as the classifier's predicted values, using a weighted AUC metric,
-and testing a one-sided alternative. The key advantages are:
+- Treat outlier scores as classifier outputs
+- Use a weighted AUC with a one-sided alternative (more high scores = worse)
+- No parametric assumptions or preset margin needed
 
-- Nonparametric: no normality assumption required.
-- No pre-specified margin needed: the method is robust to how "meaningful"
- differences are defined in practice.
-- Works with any sensible outlier scoring method (isolation forest, deep
- models, domain-specific scores, etc.).
+## Example: clinical trial
 
-The test focuses on whether the test sample contains *disproportionately
-more* high outlier scores than the reference, which aligns with the goal of
-detecting adverse shifts.
-
-## Prologue
-
-The following clinical-trial style example illustrates the difference between
-classic noninferiority approaches and D-SOS. The motivating study (from SAS's
-case study) compares a new, cheaper drug "Bowl" to the standard "Armanaleg."
-
-The [original study](https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf) uses parametric assumptions and a pre-specified margin. For
-D-SOS we only need outlier/discomfort scores that reflect worse outcomes as
-higher values.
-
-### Data
-
-We convert reported relief scores so that higher numbers indicate *worse*
-outcomes, producing outlier/discomfort scores suitable for D-SOS.
+The [original example](https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf) compares two treatments for relief from leg discomfort. We repurpose the relief scores as outlier scores to test noninferiority of the Bowl treatment versus the Armanaleg (reference).
+We flip relief into discomfort scores so that higher means worse (outlier) and test if the new treatment is not worse than the reference.
 
 ```python
 import numpy as np
@@ -68,9 +38,7 @@ bowl = np.array(discomfort[28:])
 
 ## Analysis
 
-Below we run D-SOS using `DSOS.from_samples`, treating `armanaleg` as the
-reference (control) and `bowl` as the new treatment. We report the frequentist
-p-value and an optional Bayesian conversion of the Bayes factor.
+Run D-SOS treating `armanaleg` as control and `bowl` as the new treatment.
 
 ```python
 from samesame.bayes import as_pvalue
@@ -94,17 +62,13 @@ We fail to reject the null of *no adverse shift* — the new
 treatment (Bowl) is not shown to be meaningfully worse than the reference
 under the D-SOS criterion.
 
-This is consistent with the original analysis from classical two-sided or
-one-sided parametric noninferiority tests, which concludes:
+## Interpreting results
 
-> This suggests, as you’d hoped, that the efficacy of Bowl is not appreciably
-> worse than that of Armanaleg
+- Small p-value → evidence of adverse shift (new sample has more extreme outliers)
+- Large p-value → insufficient evidence of being worse (noninferior)
 
-## Practical Recommendations
+## Practical tips
 
-- Choose an outlier score that captures the phenomenon you care about (e.g.,
- clinical outcomes, high reconstruction error, extreme probability
- values, etc.).
-- Consider reporting both distributional and noninferiority results when
- monitoring production systems: a distributional difference (e.g. CTST) does not
- always imply a practically meaningful or adverse change (e.g. DSOS).
+- Pick outlier scores aligned to “worse outcomes” (e.g., high error, high risk, discomfort)
+- Pair with CTST: CTST says “different”, D-SOS says “meaningfully worse?”
+- Use when labels are scarce: outlier scores can be model-based or proxy metrics
