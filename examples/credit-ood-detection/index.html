@@ -12,13 +12,9 @@
         <meta name="author" content="Vathy M. Kamulete">
       
       
-        <link rel="canonical" href="https://vathymut.github.io/samesame/examples/credit-example/">
+        <link rel="canonical" href="https://vathymut.github.io/samesame/examples/credit-ood-detection/">
       
       
-        <link rel="prev" href="../noninferiority/">
-      
-      
-        <link rel="next" href="../../api/bayes/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -26,7 +22,7 @@
     
     
       
-        <title>Credit example - samesame</title>
+        <title>Credit (HELOC) Dataset: Out-of-Distribution Detection - samesame</title>
       
     
     
@@ -78,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#credit-heloc-dataset" class="md-skip">
+        <a href="#credit-heloc-dataset-out-of-distribution-detection" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Credit example
+              Credit (HELOC) Dataset: Out-of-Distribution Detection
             
           </span>
         </div>
@@ -210,12 +206,10 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
+      <li class="md-tabs__item">
         <a href="../distribution-shifts/" class="md-tabs__link">
           
   
@@ -325,31 +319,28 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
             
   
   
@@ -362,7 +353,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             Examples
@@ -419,32 +410,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Credit example
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../credit-example/" class="md-nav__link">
         
   
   
@@ -455,104 +424,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#when-to-use-this" class="md-nav__link">
-    <span class="md-ellipsis">
-      When to use this
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#setup" class="md-nav__link">
-    <span class="md-ellipsis">
-      Setup
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#data-loading" class="md-nav__link">
-    <span class="md-ellipsis">
-      Data Loading
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#dataset-shift-ctst" class="md-nav__link">
-    <span class="md-ellipsis">
-      Dataset Shift (CTST)
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Dataset Shift (CTST)">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#feature-importance" class="md-nav__link">
-    <span class="md-ellipsis">
-      Feature Importance
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#performance-degradation-dsos" class="md-nav__link">
-    <span class="md-ellipsis">
-      Performance Degradation (DSOS)
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#interpreting-results" class="md-nav__link">
-    <span class="md-ellipsis">
-      Interpreting Results
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#practical-recommendations" class="md-nav__link">
-    <span class="md-ellipsis">
-      Practical Recommendations
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -763,19 +634,28 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#dataset-shift-ctst" class="md-nav__link">
+  <a href="#out-of-distribution-detection" class="md-nav__link">
     <span class="md-ellipsis">
-      Dataset Shift (CTST)
+      Out-of-Distribution Detection
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Dataset Shift (CTST)">
+    <nav class="md-nav" aria-label="Out-of-Distribution Detection">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#feature-importance" class="md-nav__link">
+  <a href="#training-model" class="md-nav__link">
     <span class="md-ellipsis">
-      Feature Importance
+      Training Model
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#testing-using-dsos" class="md-nav__link">
+    <span class="md-ellipsis">
+      Testing Using DSOS
     </span>
   </a>
   
@@ -787,18 +667,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#performance-degradation-dsos" class="md-nav__link">
+  <a href="#key-insights" class="md-nav__link">
     <span class="md-ellipsis">
-      Performance Degradation (DSOS)
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#interpreting-results" class="md-nav__link">
-    <span class="md-ellipsis">
-      Interpreting Results
+      Key Insights
     </span>
   </a>
   
@@ -808,6 +679,15 @@
   <a href="#practical-recommendations" class="md-nav__link">
     <span class="md-ellipsis">
       Practical Recommendations
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Summary
     </span>
   </a>
   
@@ -832,36 +712,42 @@
   
 
 
-<h1 id="credit-heloc-dataset">Credit (HELOC) Dataset<a class="headerlink" href="#credit-heloc-dataset" title="Permanent link">&para;</a></h1>
-<p>This example demonstrates testing for <strong>dataset shift</strong> (covariate shift) and <strong>performance degradation</strong> (outcome shift) using the HELOC dataset from <a href="https://tableshift.org/datasets.html#heloc">TableShift</a>. We apply both CTST and DSOS to a credit risk scenario.</p>
+<h1 id="credit-heloc-dataset-out-of-distribution-detection">Credit (HELOC) Dataset: Out-of-Distribution Detection<a class="headerlink" href="#credit-heloc-dataset-out-of-distribution-detection" title="Permanent link">&para;</a></h1>
+<p>This example is a continuation of the <a href="../credit-example/">Credit Example</a>. We reuse the same HELOC dataset and domain split, but replace outcome shift detection with out-of-distribution (OOD) detection to assess whether deployed samples
+diverge from in-sample data - the training distribution.</p>
 <h2 id="when-to-use-this">When to use this<a class="headerlink" href="#when-to-use-this" title="Permanent link">&para;</a></h2>
-<ul>
-<li><strong>Dataset shift (CTST)</strong>: Detect when feature distributions differ between training and deployment</li>
-<li><strong>Performance degradation (DSOS)</strong>: Detect when predictions shift toward worse outcomes</li>
-</ul>
-<p>See <a href="../distribution-shifts/">Distribution Shifts</a> for CTST basics and <a href="../noninferiority/">Noninferiority</a> for DSOS fundamentals.</p>
+<p><strong>Out-of-distribution detection</strong>: You've trained a model on one population and deployed it on a different population. You need to assess whether the
+out-of-sample data resembles the training samples (in-distribution) or is
+different enough to warrant concern (out-of-distribution),
+<strong>without requiring ground truth labels</strong>.</p>
+<p>OOD detection methods leverage a measure of model confidence to flag unusual
+inputs. Density-based OOD detection relies on estimating input densities (often challenging in high dimensions), or some proxy thereof. When you have already
+trained a predictive model and want to monitor its performance on new data,
+rather than train an auxiliary model to score unusual inputs, repurposing the existing model's predictions into confidence scores is a practical approach.
+The latter is the focus of this example.</p>
 <h2 id="setup">Setup<a class="headerlink" href="#setup" title="Permanent link">&para;</a></h2>
-<p>The HELOC dataset (FICO Explainable AI Challenge) contains credit bureau features. We split it by <code>ExternalRiskEstimate</code> to simulate training on one population and deploying to another:</p>
+<p>The HELOC dataset is split into two populations based on <code>ExternalRiskEstimate</code>:</p>
 <ul>
-<li><strong>Training set</strong> (<code>ExternalRiskEstimate &gt; 63</code>): 7,683 low-risk customers</li>
-<li><strong>Test set</strong> (<code>ExternalRiskEstimate ≤ 63</code>): 2,188 high-risk customers</li>
+<li><strong>Training set</strong> (<code>ExternalRiskEstimate &gt; 63</code>): 7,683 samples, low-risk customers</li>
+<li><strong>Test set</strong> (<code>ExternalRiskEstimate ≤ 63</code>): 2,188 samples, high-risk customers</li>
 </ul>
-<p>This split creates a domain shift scenario typical in production credit modeling.</p>
+<p>See <a href="../credit-example/">Credit Example</a> for full context and dataset loading details. We reuse the same data split here to focus on OOD detection.</p>
 <h2 id="data-loading">Data Loading<a class="headerlink" href="#data-loading" title="Permanent link">&para;</a></h2>
+<p>To follow along, load the data as shown in <a href="../credit-example/">Credit Example</a>:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">fetch_openml</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestClassifier</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">roc_auc_score</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">samesame.ctst</span><span class="w"> </span><span class="kn">import</span> <span class="n">CTST</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">samesame.ood</span><span class="w"> </span><span class="kn">import</span> <span class="n">logit_gap</span><span class="p">,</span> <span class="n">max_logit</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">samesame.nit</span><span class="w"> </span><span class="kn">import</span> <span class="n">DSOS</span>
 
-<span class="c1"># Fetch HELOC dataset</span>
+<span class="c1"># Fetch HELOC dataset and split by ExternalRiskEstimate &gt; 63</span>
 <span class="n">fico</span> <span class="o">=</span> <span class="n">fetch_openml</span><span class="p">(</span><span class="n">data_id</span><span class="o">=</span><span class="mi">45554</span><span class="p">,</span> <span class="n">as_frame</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">fico</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">fico</span><span class="o">.</span><span class="n">target</span>
 
-<span class="c1"># Find ExternalRiskEstimate column and split data</span>
 <span class="n">re_obj</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;external.*risk.*estimate&quot;</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">)</span>
 <span class="n">col_split</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">X</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">re_obj</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">c</span><span class="p">)),</span> <span class="kc">None</span><span class="p">)</span>
 <span class="n">mask_high</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">col_split</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">63</span>
@@ -870,108 +756,111 @@
 <span class="n">y_train</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">mask_high</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">X_test</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="o">~</span><span class="n">mask_high</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">y_test</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="o">~</span><span class="n">mask_high</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+<p><strong>Result:</strong> We have 7,683 training samples and 2,188 test samples, representing two distinct populations with different risk profiles.</p>
+<h2 id="out-of-distribution-detection">Out-of-Distribution Detection<a class="headerlink" href="#out-of-distribution-detection" title="Permanent link">&para;</a></h2>
+<p><strong>Question</strong>: How can we detect whether the test samples are unusual,
+compared to the training samples, without relying on labels? That is, looking
+at the inputs alone, without access to ground truth (default status) in the
+test samples.</p>
+<p><strong>Method</strong>: We train a credit risk model on the training set and use the
+predicted probabilities to infer the model's confidence in each sample. These
+confidence scores serve as out-of-distribution (OOD) scores. Low confidence
+indicates the model finds the sample unusual (out-of-distribution), while high
+confidence indicates familiarity (in-distribution). Two methods are compared:</p>
+<ul>
+<li><strong>LogitGap</strong>: Measures the average gap between the top logit and remaining logits—a strong indicator of model confidence in domain membership.</li>
+<li><strong>MaxLogit</strong>: Baseline using only the maximum logit—simpler but with limited discriminative power.</li>
+</ul>
+<h3 id="training-model">Training Model<a class="headerlink" href="#training-model" title="Permanent link">&para;</a></h3>
+<p>First, we train a binary classification model on the training domain to predict
+loan default.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Train a credit risk model on the training domain to predict loan default</span>
+<span class="c1"># Convert labels from categorical (Good/Bad) to numeric (0/1)</span>
+<span class="n">bad_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Good&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;Bad&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+<span class="n">bad_train</span> <span class="o">=</span> <span class="n">y_train</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">bad_mapping</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+<span class="n">bad_test</span> <span class="o">=</span> <span class="n">y_test</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">bad_mapping</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Training domain default rate: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">bad_train</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Test domain default rate: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">bad_test</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Training set: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Test set: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples&quot;</span><span class="p">)</span>
-</code></pre></div>
-<p><strong>Output:</strong></p>
-<div class="highlight"><pre><span></span><code># Training set: 7683 samples (low external risk)
-# Test set: 2188 samples (high external risk)
-</code></pre></div>
-<h2 id="dataset-shift-ctst">Dataset Shift (CTST)<a class="headerlink" href="#dataset-shift-ctst" title="Permanent link">&para;</a></h2>
-<p><strong>Question</strong>: Are the feature distributions different?</p>
-<p><strong>Method</strong>: Train a classifier to distinguish training from test samples. High performance indicates distributional differences. We use OOB predictions for valid inference.</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Create domain labels and concatenate data</span>
-<span class="n">split</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">))</span>
-<span class="n">X_concat</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">],</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="c1"># Train RandomForest with OOB predictions</span>
-<span class="n">rf_domain</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span>
-    <span class="n">n_estimators</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
-    <span class="n">oob_score</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">random_state</span><span class="o">=</span><span class="mi">12345</span><span class="p">,</span>
-    <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="n">rf_domain</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_concat</span><span class="p">,</span> <span class="n">split</span><span class="p">)</span>
-<span class="n">oob_scores</span> <span class="o">=</span> <span class="n">rf_domain</span><span class="o">.</span><span class="n">oob_decision_function_</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
-
-<span class="c1"># Run CTST</span>
-<span class="n">ctst</span> <span class="o">=</span> <span class="n">CTST</span><span class="p">(</span><span class="n">actual</span><span class="o">=</span><span class="n">split</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">predicted</span><span class="o">=</span><span class="n">oob_scores</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="n">roc_auc_score</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dataset Shift Detection (CTST)&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Statistic: </span><span class="si">{</span><span class="n">ctst</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  p-value: </span><span class="si">{</span><span class="n">ctst</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</code></pre></div>
-<p><strong>Output:</strong></p>
-<div class="highlight"><pre><span></span><code># Dataset Shift Detection (CTST)
-#   Statistic: 1.0000
-#   p-value: 0.0002
-</code></pre></div>
-<p><strong>Result</strong>: p-value = 0.0002 (highly significant). The classifier easily distinguishes training from test samples, confirming substantial covariate shift between the two populations.</p>
-<h3 id="feature-importance">Feature Importance<a class="headerlink" href="#feature-importance" title="Permanent link">&para;</a></h3>
-<p>To understand <em>which features</em> drive the shift, we can examine feature importance:</p>
-<div class="highlight"><pre><span></span><code><span class="n">importances</span> <span class="o">=</span> <span class="n">rf_domain</span><span class="o">.</span><span class="n">feature_importances_</span>
-<span class="n">feature_names</span> <span class="o">=</span> <span class="n">X_concat</span><span class="o">.</span><span class="n">columns</span>
-<span class="n">feat_imp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">importances</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">feature_names</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Top 5 features distinguishing the datasets:&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">feat_imp</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
-</code></pre></div>
-<p><strong>Output:</strong></p>
-<div class="highlight"><pre><span></span><code>Top 5 features distinguishing the domains:
-ExternalRiskEstimate          0.642400
-MSinceMostRecentDelq          0.069394
-MaxDelq2PublicRecLast12M      0.064526
-NetFractionRevolvingBurden    0.050656
-PercentTradesNeverDelq        0.042478
-dtype: float64
-</code></pre></div>
-<p>These importances show which features differ most between the two populations. <code>ExternalRiskEstimate</code> dominates because it was the splitting criterion. However, other features like <code>MSinceMostRecentDelq</code> and <code>MaxDelq2PublicRecLast12M</code> also show some discriminatory power, beyond the splitting variable. Feature importance enables targeted interventions and informs further investigation and analysis.</p>
-<h2 id="performance-degradation-dsos">Performance Degradation (DSOS)<a class="headerlink" href="#performance-degradation-dsos" title="Permanent link">&para;</a></h2>
-<p><strong>Question</strong>: Have predictions shifted toward worse outcomes?</p>
-<p><strong>Method</strong>: Train a credit risk model and compare predicted default probabilities between training and test sets. DSOS tests for adverse shifts in the prediction distribution.</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Train credit risk model</span>
-<span class="n">loan_status</span> <span class="o">=</span> <span class="n">y_train</span><span class="o">.</span><span class="n">map</span><span class="p">({</span><span class="s1">&#39;Good&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;Bad&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span><span class="o">.</span><span class="n">values</span>
+<span class="c1"># Train RandomForest to predict probability of default</span>
 <span class="n">rf_bad</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span>
     <span class="n">n_estimators</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
     <span class="n">oob_score</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">random_state</span><span class="o">=</span><span class="mi">12345</span><span class="p">,</span>
     <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="n">rf_bad</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">loan_status</span><span class="p">)</span>
+<span class="n">rf_bad</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">bad_train</span><span class="p">)</span>
+</code></pre></div>
+<p>We predict probabilities, convert these to logits and compute OOD scores from
+these.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">logit</span>
 
-<span class="c1"># Get predicted default probabilities</span>
-<span class="n">bad_train</span> <span class="o">=</span> <span class="n">rf_bad</span><span class="o">.</span><span class="n">oob_decision_function_</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-<span class="n">bad_test</span> <span class="o">=</span> <span class="n">rf_bad</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_test</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+<span class="c1"># Extract predicted logits</span>
+<span class="c1"># - Training domain: Use OOB predictions (unbiased, non-resubstitution)</span>
+<span class="c1"># - Deployment domain: Use standard predictions on held-out data</span>
+<span class="c1"># This represents the unnormalized scores for class 0 and class 1</span>
+<span class="n">logits_train</span> <span class="o">=</span> <span class="n">logit</span><span class="p">(</span><span class="n">rf_bad</span><span class="o">.</span><span class="n">oob_decision_function_</span><span class="p">)</span>
+<span class="n">logits_test</span> <span class="o">=</span> <span class="n">logit</span><span class="p">(</span><span class="n">rf_bad</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_test</span><span class="p">))</span>
 
-<span class="c1"># Run DSOS test</span>
-<span class="n">dsos</span> <span class="o">=</span> <span class="n">DSOS</span><span class="o">.</span><span class="n">from_samples</span><span class="p">(</span><span class="n">bad_train</span><span class="p">,</span> <span class="n">bad_test</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Performance Degradation (DSOS)&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Statistic: </span><span class="si">{</span><span class="n">dsos</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  p-value: </span><span class="si">{</span><span class="n">dsos</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="c1"># Compute OOD scores using LogitGap (superior method)</span>
+<span class="n">ood_train_gap</span> <span class="o">=</span> <span class="n">logit_gap</span><span class="p">(</span><span class="n">logits_train</span><span class="p">)</span>
+<span class="n">ood_test_gap</span> <span class="o">=</span> <span class="n">logit_gap</span><span class="p">(</span><span class="n">logits_test</span><span class="p">)</span>
+
+<span class="c1"># Compute OOD scores using MaxLogit (baseline for comparison)</span>
+<span class="n">ood_train_max</span> <span class="o">=</span> <span class="n">max_logit</span><span class="p">(</span><span class="n">logits_train</span><span class="p">)</span>
+<span class="n">ood_test_max</span> <span class="o">=</span> <span class="n">max_logit</span><span class="p">(</span><span class="n">logits_test</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="testing-using-dsos">Testing Using DSOS<a class="headerlink" href="#testing-using-dsos" title="Permanent link">&para;</a></h3>
+<p>Now we use the OOD scores as outlier scores in the DSOS (Dataset-Shift-with-Outlier-Scores) test. This tests whether the distribution of OOD scores has shifted between training and deployment domains.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Apply DSOS test using OOD scores (LogitGap) as outlier scores</span>
+<span class="c1"># The test detects whether the tail of the OOD score distribution has shifted</span>
+<span class="c1"># Low OOD scores in deployment indicate the model sees unfamiliar samples</span>
+<span class="n">dsos_ood</span> <span class="o">=</span> <span class="n">DSOS</span><span class="o">.</span><span class="n">from_samples</span><span class="p">(</span><span class="o">-</span><span class="n">ood_train_gap</span><span class="p">,</span> <span class="o">-</span><span class="n">ood_test_gap</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">OOD Shift Detection (DSOS on LogitGap scores)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Statistic: </span><span class="si">{</span><span class="n">dsos_ood</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  p-value: </span><span class="si">{</span><span class="n">dsos_ood</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p><strong>Output:</strong></p>
-<div class="highlight"><pre><span></span><code># Performance Degradation (DSOS)
-#   Statistic: 0.2483
-#   p-value: 0.0001
+<div class="highlight"><pre><span></span><code># OOD Shift Detection (DSOS on LogitGap scores)
+#   Statistic: ...
+#   p-value: &lt; ...
 </code></pre></div>
-<p><strong>Result</strong>: p-value = 0.0001 (highly significant). The model predicts substantially higher default risk for test samples. DSOS detects this adverse shift by focusing on the distribution tail—whether extreme high-risk predictions are more common—without requiring true labels.</p>
-<h2 id="interpreting-results">Interpreting Results<a class="headerlink" href="#interpreting-results" title="Permanent link">&para;</a></h2>
-<p><strong>CTST vs. DSOS</strong>: These tests answer complementary questions:</p>
 <ul>
-<li><strong>CTST</strong>: Do feature distributions differ? (covariate shift)</li>
-<li><strong>DSOS</strong>: Have predictions shifted adversely? (outcome shift)</li>
+<li><strong>What this means</strong>: ...</li>
 </ul>
-<p><strong>Action guidance</strong>:</p>
+<h2 id="key-insights">Key Insights<a class="headerlink" href="#key-insights" title="Permanent link">&para;</a></h2>
+<p><strong>OOD Shift Detection via DSOS.</strong> While traditional shift detection focuses on feature distributions, DSOS on OOD scores focuses on <em>model confidence</em>. A significant DSOS result indicates the model's perceived familiarity with samples has changed—a leading indicator that performance may degrade. This is particularly useful because:</p>
 <ul>
-<li>Both significant → Covariate shift causing performance issues. Retrain or recalibrate.</li>
-<li>Only DSOS significant → Label/concept shift without feature changes. Investigate root causes.</li>
-<li>Only CTST significant → Distribution changed but model still generalizes. Monitor closely.</li>
-<li>Neither significant → Safe to operate.</li>
+<li><strong>No labels required</strong>: OOD scores depend only on the trained model, not on ground truth</li>
+<li><strong>Early warning</strong>: Model confidence shifts often precede actual performance degradation</li>
+<li><strong>Interpretable</strong>: Low OOD scores directly indicate model uncertainty about domain membership</li>
+</ul>
+<p><strong>When to Act.</strong> A significant DSOS result on OOD scores (p &lt; 0.05) suggests:</p>
+<ul>
+<li>The deployment population is substantially different from training</li>
+<li>The model is encountering unfamiliar patterns</li>
+<li>Monitoring should increase, and retraining should be considered if performance metrics confirm degradation</li>
 </ul>
 <h2 id="practical-recommendations">Practical Recommendations<a class="headerlink" href="#practical-recommendations" title="Permanent link">&para;</a></h2>
-<p><strong>1. Monitor Regularly.</strong> Run CTST and DSOS on production batches (weekly/monthly). Automate alerting based on p-value thresholds (e.g., p &lt; 0.01 triggers review).</p>
-<p><strong>2. Investigate Drivers.</strong> Use feature importance to identify which features drive shifts. Distinguish natural drift from data quality issues.</p>
-<p><strong>3. No Labels Needed.</strong> Both tests work without ground truth in deployment, enabling continuous monitoring when labels are delayed.</p>
-<p><strong>4. Respond Appropriately.</strong> Natural drift → monitor. Meaningful shift → recalibrate. Substantial shift → retrain.</p>
+<p><strong>1. Monitor OOD Score Distributions Continuously.</strong> Compute OOD scores on new production batches and track their distribution over time. Apply the DSOS test to detect significant shifts in model confidence.</p>
+<p><strong>2. Set Baseline OOD Thresholds.</strong> Establish percentile thresholds from your training domain to flag unusual samples.</p>
+<p><strong>3. Combine with Other Monitoring Approaches.</strong> Use OOD-based DSOS alongside other monitoring strategies:</p>
+<ul>
+<li>Actual performance metrics (if labels eventually arrive)</li>
+<li>Feature distribution shifts</li>
+<li>Prediction distribution changes</li>
+</ul>
+<h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
+<p>This tutorial demonstrates how to use LogitGap OOD scores as outlier scores in the DSOS test to detect whether deployed samples are out-of-distribution relative to training. Key takeaways:</p>
+<ul>
+<li><strong>OOD Scores</strong>: Quantify model confidence in domain membership using LogitGap (superior to MaxLogit baseline)</li>
+<li><strong>DSOS Test</strong>: Detects significant shifts in the distribution of OOD scores between training and deployment</li>
+<li><strong>Label-Free Monitoring</strong>: This approach requires only the trained model and new data—no ground truth labels needed</li>
+<li><strong>Actionable Signals</strong>: Significant DSOS results (p &lt; 0.05) indicate model uncertainty about the deployment population, warranting increased monitoring or retraining consideration.</li>
+</ul>
+<p>This methodology provides an early-warning system for out-of-distribution detection, enabling proactive intervention before performance degrades in production.</p>
 
 
 

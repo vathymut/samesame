@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#noninferiority-test" class="md-skip">
+        <a href="#noninferiority-test-d-sos" class="md-skip">
           Skip to content
         </a>
       
@@ -449,44 +449,29 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#when-to-use-this" class="md-nav__link">
+  <a href="#when-to-use" class="md-nav__link">
     <span class="md-ellipsis">
-      When to use this
+      When to use
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#d-sos-at-a-glance" class="md-nav__link">
+  <a href="#how-d-sos-works" class="md-nav__link">
     <span class="md-ellipsis">
-      D-SOS at a glance
+      How D-SOS works
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#prologue" class="md-nav__link">
+  <a href="#example-clinical-trial" class="md-nav__link">
     <span class="md-ellipsis">
-      Prologue
+      Example: clinical trial
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Prologue">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#data" class="md-nav__link">
-    <span class="md-ellipsis">
-      Data
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -500,9 +485,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#practical-recommendations" class="md-nav__link">
+  <a href="#interpreting-results" class="md-nav__link">
     <span class="md-ellipsis">
-      Practical Recommendations
+      Interpreting results
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      Practical tips
     </span>
   </a>
   
@@ -661,6 +655,29 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/ood/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    ood
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -695,44 +712,29 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#when-to-use-this" class="md-nav__link">
+  <a href="#when-to-use" class="md-nav__link">
     <span class="md-ellipsis">
-      When to use this
+      When to use
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#d-sos-at-a-glance" class="md-nav__link">
+  <a href="#how-d-sos-works" class="md-nav__link">
     <span class="md-ellipsis">
-      D-SOS at a glance
+      How D-SOS works
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#prologue" class="md-nav__link">
+  <a href="#example-clinical-trial" class="md-nav__link">
     <span class="md-ellipsis">
-      Prologue
+      Example: clinical trial
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Prologue">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#data" class="md-nav__link">
-    <span class="md-ellipsis">
-      Data
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -746,9 +748,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#practical-recommendations" class="md-nav__link">
+  <a href="#interpreting-results" class="md-nav__link">
     <span class="md-ellipsis">
-      Practical Recommendations
+      Interpreting results
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      Practical tips
     </span>
   </a>
   
@@ -773,48 +784,23 @@
   
 
 
-<h1 id="noninferiority-test">Noninferiority Test<a class="headerlink" href="#noninferiority-test" title="Permanent link">&para;</a></h1>
-<p>Noninferiority tests (NITs) ask whether a new sample (or treatment)
-is <em>not meaningfully worse</em> than a reference. <code>samesame</code> implements D-SOS
-(Dataset Shift with Outlier Scores), a robust, nonparametric noninferiority
-test that operates on outlier scores and does not require a pre-specified
-margin.</p>
-<h2 id="when-to-use-this">When to use this<a class="headerlink" href="#when-to-use-this" title="Permanent link">&para;</a></h2>
+<h1 id="noninferiority-test-d-sos">Noninferiority Test (D-SOS)<a class="headerlink" href="#noninferiority-test-d-sos" title="Permanent link">&para;</a></h1>
+<p>Noninferiority asks: <em>is the new sample not meaningfully worse than the reference?</em> <code>samesame</code> implements D-SOS (Dataset Shift with Outlier Scores), a nonparametric test on outlier scores with a one-sided alternative.</p>
+<h2 id="when-to-use">When to use<a class="headerlink" href="#when-to-use" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Use CTSTs</strong> when the question is, "are the
- two distributions different?" — i.e., you want to detect any distributional
- difference.</li>
-<li><strong>Use NITs</strong> when the question is, "is the new
- sample <em>not substantially worse</em> than the reference?" — i.e., you care about
- adverse shifts rather than any difference.</li>
+<li><strong>CTST (distribution difference)</strong>: detect any distributional change</li>
+<li><strong>D-SOS (adverse shift check)</strong>: detect whether the new sample is worse (more high outlier scores)</li>
 </ul>
-<p>The two approaches address different scientific questions; they are
-complementary rather than interchangeable.</p>
-<h2 id="d-sos-at-a-glance">D-SOS at a glance<a class="headerlink" href="#d-sos-at-a-glance" title="Permanent link">&para;</a></h2>
-<p><a href="https://proceedings.mlr.press/v180/kamulete22a.html">D-SOS</a>
-transforms the problem of noninferiority testing (NITs) into a CTST by treating
-outlier scores as the classifier's predicted values, using a weighted AUC metric,
-and testing a one-sided alternative. The key advantages are:</p>
+<p>Use D-SOS when you care about <em>harmful</em> shifts rather than any difference.</p>
+<h2 id="how-d-sos-works">How D-SOS works<a class="headerlink" href="#how-d-sos-works" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Nonparametric: no normality assumption required.</li>
-<li>No pre-specified margin needed: the method is robust to how "meaningful"
- differences are defined in practice.</li>
-<li>Works with any sensible outlier scoring method (isolation forest, deep
- models, domain-specific scores, etc.).</li>
+<li>Treat outlier scores as classifier outputs</li>
+<li>Use a weighted AUC with a one-sided alternative (more high scores = worse)</li>
+<li>No parametric assumptions or preset margin needed</li>
 </ul>
-<p>The test focuses on whether the test sample contains <em>disproportionately
-more</em> high outlier scores than the reference, which aligns with the goal of
-detecting adverse shifts.</p>
-<h2 id="prologue">Prologue<a class="headerlink" href="#prologue" title="Permanent link">&para;</a></h2>
-<p>The following clinical-trial style example illustrates the difference between
-classic noninferiority approaches and D-SOS. The motivating study (from SAS's
-case study) compares a new, cheaper drug "Bowl" to the standard "Armanaleg."</p>
-<p>The <a href="https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf">original study</a> uses parametric assumptions and a pre-specified margin. For
-D-SOS we only need outlier/discomfort scores that reflect worse outcomes as
-higher values.</p>
-<h3 id="data">Data<a class="headerlink" href="#data" title="Permanent link">&para;</a></h3>
-<p>We convert reported relief scores so that higher numbers indicate <em>worse</em>
-outcomes, producing outlier/discomfort scores suitable for D-SOS.</p>
+<h2 id="example-clinical-trial">Example: clinical trial<a class="headerlink" href="#example-clinical-trial" title="Permanent link">&para;</a></h2>
+<p>The <a href="https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf">original example</a> compares two treatments for relief from leg discomfort. We repurpose the relief scores as outlier scores to test noninferiority of the Bowl treatment versus the Armanaleg (reference).
+We flip relief into discomfort scores so that higher means worse (outlier) and test if the new treatment is not worse than the reference.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="n">datalines</span> <span class="o">=</span> <span class="p">(</span>
@@ -830,9 +816,7 @@ outcomes, producing outlier/discomfort scores suitable for D-SOS.</p>
 <span class="n">bowl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">discomfort</span><span class="p">[</span><span class="mi">28</span><span class="p">:])</span>
 </code></pre></div>
 <h2 id="analysis">Analysis<a class="headerlink" href="#analysis" title="Permanent link">&para;</a></h2>
-<p>Below we run D-SOS using <code>DSOS.from_samples</code>, treating <code>armanaleg</code> as the
-reference (control) and <code>bowl</code> as the new treatment. We report the frequentist
-p-value and an optional Bayesian conversion of the Bayes factor.</p>
+<p>Run D-SOS treating <code>armanaleg</code> as control and <code>bowl</code> as the new treatment.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">samesame.bayes</span><span class="w"> </span><span class="kn">import</span> <span class="n">as_pvalue</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">samesame.nit</span><span class="w"> </span><span class="kn">import</span> <span class="n">DSOS</span>
 
@@ -849,20 +833,16 @@ Bayesian p-value: 0.1159
 <p>We fail to reject the null of <em>no adverse shift</em> — the new
 treatment (Bowl) is not shown to be meaningfully worse than the reference
 under the D-SOS criterion.</p>
-<p>This is consistent with the original analysis from classical two-sided or
-one-sided parametric noninferiority tests, which concludes:</p>
-<blockquote>
-<p>This suggests, as you’d hoped, that the efficacy of Bowl is not appreciably
-worse than that of Armanaleg</p>
-</blockquote>
-<h2 id="practical-recommendations">Practical Recommendations<a class="headerlink" href="#practical-recommendations" title="Permanent link">&para;</a></h2>
+<h2 id="interpreting-results">Interpreting results<a class="headerlink" href="#interpreting-results" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Choose an outlier score that captures the phenomenon you care about (e.g.,
- clinical outcomes, high reconstruction error, extreme probability
- values, etc.).</li>
-<li>Consider reporting both distributional and noninferiority results when
- monitoring production systems: a distributional difference (e.g. CTST) does not
- always imply a practically meaningful or adverse change (e.g. DSOS).</li>
+<li>Small p-value → evidence of adverse shift (new sample has more extreme outliers)</li>
+<li>Large p-value → insufficient evidence of being worse (noninferior)</li>
+</ul>
+<h2 id="practical-tips">Practical tips<a class="headerlink" href="#practical-tips" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Pick outlier scores aligned to “worse outcomes” (e.g., high error, high risk, discomfort)</li>
+<li>Pair with CTST: CTST says “different”, D-SOS says “meaningfully worse?”</li>
+<li>Use when labels are scarce: outlier scores can be model-based or proxy metrics</li>
 </ul>
 
 
