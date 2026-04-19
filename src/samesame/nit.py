@@ -168,6 +168,7 @@ class WeightedAUC(CTST):
         n_resamples: int = 9999,
         rng: np.random.Generator | None = None,
         batch: int | None = None,
+        sample_weight: NDArray | None = None,
     ):
         """
         Create a WeightedAUC instance from two samples.
@@ -187,6 +188,8 @@ class WeightedAUC(CTST):
             Random number generator. If None, a new default generator is used.
         batch : int or None, optional
             Batch size passed to the permutation engine.
+        sample_weight : NDArray or None, optional
+            Optional sample weights aligned with the combined samples.
 
         Returns
         -------
@@ -207,6 +210,7 @@ class WeightedAUC(CTST):
             n_resamples=n_resamples,
             rng=rng,
             batch=batch,
+            sample_weight=sample_weight,
         )
 
 

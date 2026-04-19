@@ -67,3 +67,39 @@ def test_wauc_weighted_posterior(decent_predictions, n_resamples=200):
     )
     # Posteriors must differ when weights are asymmetric
     assert not np.array_equal(base.posterior, weighted.posterior)
+    # Bayes factors should remain finite under weighted posterior sampling
+    assert np.isfinite(base.bayes_factor)
+    assert np.isfinite(weighted.bayes_factor)
+
+
+def test_wauc_from_samples_accepts_sample_weight(decent_predictions, n_resamples=60):
+    pred = decent_predictions["predicted"]
+    actual = decent_predictions["actual"]
+    first_sample = pred[actual == 0]
+    second_sample = pred[actual == 1]
+
+    from samesame._data import build_two_sample_dataset
+
+    actual_c, predicted_c = build_two_sample_dataset(first_sample, second_sample)
+    sample_weight = np.linspace(1.0, 2.0, len(actual_c))
+
+    direct = WeightedAUC(
+        actual=actual_c,
+        predicted=predicted_c,
+        n_resamples=n_resamples,
+        rng=np.random.default_rng(11),
+        sample_weight=sample_weight,
+    )
+    from_samples = WeightedAUC.from_samples(
+        first_sample=first_sample,
+        second_sample=second_sample,
+        n_resamples=n_resamples,
+        rng=np.random.default_rng(11),
+        sample_weight=sample_weight,
+    )
+
+    assert direct.statistic == from_samples.statistic
+    np.testing.assert_array_equal(direct.null, from_samples.null)
+    assert direct.pvalue == from_samples.pvalue
+    np.testing.assert_array_equal(direct.posterior, from_samples.posterior)
+    assert direct.bayes_factor == from_samples.bayes_factor
