@@ -5,7 +5,6 @@
 # LICENSE file in the root directory of this source tree.
 #
 import numpy as np
-from scipy.stats import ranksums
 
 from samesame._bayesboot import bayesian_posterior
 from samesame.metrics import wauc

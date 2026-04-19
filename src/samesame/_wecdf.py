@@ -63,7 +63,7 @@ class StepFunction:
         self.n = self.x.shape[0]
 
     def __call__(self, time):
-        tind = np.searchsorted(self.x, time, self.side) - 1 # type: ignore
+        tind = np.searchsorted(self.x, time, self.side) - 1  # type: ignore
         return self.y[tind]
 
 

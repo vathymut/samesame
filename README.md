@@ -79,6 +79,7 @@ statistical differences that do not signal a real problem. Without DSOS, you mig
 | `samesame.ctst`    | Classifier two-sample tests — did the distribution change? |
 | `samesame.nit`     | Noninferiority tests — is the change actually harmful?    |
 | `samesame.bayes`   | Bayesian inference — convert p-values to Bayes factors    |
+| `samesame.metrics` | Weighted ROC utilities (for example, WAUC)                |
 | `samesame.ood`     | Out-of-distribution scoring — flag unusual inputs         |
 
 ## Test result attributes
@@ -92,6 +93,16 @@ Every test result object exposes these attributes (where applicable):
 | `.pvalue`       | The p-value                                      |
 | `.posterior`    | The Bayesian posterior distribution (DSOS only)  |
 | `.bayes_factor` | The Bayes factor (DSOS only)                     |
+
+## API quick reference
+
+- **CTST**: Use `CTST.from_samples(a, b, metric=...)` for the common unweighted path, or
+	`CTST(actual=..., predicted=..., metric=..., sample_weight=..., alternative=..., n_resamples=...)`
+	when you need explicit control over weighting, hypothesis direction, or resampling depth.
+- **DSOS / WeightedAUC**: `DSOS` is an alias of `WeightedAUC`.
+	If you need `sample_weight`, construct `WeightedAUC(...)` directly.
+- **OOD utilities**: `samesame.ood` includes both `logit_gap` (recommended default) and
+	`max_logit` (simple baseline).
 
 ## Examples
 

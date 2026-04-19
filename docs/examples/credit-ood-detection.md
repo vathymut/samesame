@@ -79,7 +79,7 @@ from sklearn.datasets import fetch_openml
 from sklearn.ensemble import RandomForestClassifier
 
 from samesame.nit import DSOS
-from samesame.ood import logit_gap
+from samesame.ood import logit_gap, max_logit
 
 # Load the HELOC dataset
 fico = fetch_openml(data_id=45554, as_frame=True)
@@ -141,6 +141,12 @@ ood_test = logit_gap(logits_test)
 
 print(f"Training mean LogitGap:   {ood_train.mean():.3f}")
 print(f"Deployment mean LogitGap: {ood_test.mean():.3f}")
+
+# Optional baseline: MaxLogit (uses only the top logit)
+max_train = max_logit(logits_train)
+max_test = max_logit(logits_test)
+print(f"Training mean MaxLogit:   {max_train.mean():.3f}")
+print(f"Deployment mean MaxLogit: {max_test.mean():.3f}")
 ```
 
 ### How to read these scores

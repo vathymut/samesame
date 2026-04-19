@@ -52,9 +52,9 @@ def test_as_pvalue_scalar():
     bayes_factor = 1.0
     expected_pvalue = 0.5
     result = as_pvalue(bayes_factor)
-    assert np.isclose(
-        result, expected_pvalue
-    ), f"Expected {expected_pvalue}, got {result}"
+    assert np.isclose(result, expected_pvalue), (
+        f"Expected {expected_pvalue}, got {result}"
+    )
 
 
 def test_as_pvalue_array():
@@ -62,30 +62,30 @@ def test_as_pvalue_array():
     bayes_factors = np.array([19.0, 9.0, 1.0])
     expected_pvalues = np.array([0.05, 0.1, 0.5])
     result = as_pvalue(bayes_factors)
-    assert np.allclose(
-        result, expected_pvalues
-    ), f"Expected {expected_pvalues}, got {result}"
+    assert np.allclose(result, expected_pvalues), (
+        f"Expected {expected_pvalues}, got {result}"
+    )
 
 
 def test_as_pvalue_edge_cases():
     """Test as_pvalue with edge case Bayes factors."""
     bayes_factors = np.array([1e-10, 1e10])
     result = as_pvalue(bayes_factors)
-    assert np.isfinite(
-        result
-    ).all(), "P-values should be finite for valid Bayes factors"
-    assert (np.array(result) > 0).all() and (
-        np.array(result) < 1
-    ).all(), "P-values should be in the range (0, 1)"
+    assert np.isfinite(result).all(), (
+        "P-values should be finite for valid Bayes factors"
+    )
+    assert (np.array(result) > 0).all() and (np.array(result) < 1).all(), (
+        "P-values should be in the range (0, 1)"
+    )
 
 
 def test_as_pvalue_large_array():
     """Test as_pvalue with a large array of Bayes factors."""
     bayes_factors = np.logspace(-2, 2, 1000)
     result = as_pvalue(bayes_factors)
-    assert (np.array(result) > 0).all() and (
-        np.array(result) < 1
-    ).all(), "All p-values should be in the range (0, 1)"
+    assert (np.array(result) > 0).all() and (np.array(result) < 1).all(), (
+        "All p-values should be in the range (0, 1)"
+    )
 
 
 def test_as_pvalue_invalid_bf():
@@ -113,16 +113,16 @@ def test_bayes_factor_edge_cases():
     posterior = np.array([0.0, 0.0, 0.0, 0.0])
     threshold = 0.5
     result = bayes_factor(posterior, threshold)
-    assert (
-        result == 0.0
-    ), "Bayes factor should be 0 when no samples exceed the threshold"
+    assert result == 0.0, (
+        "Bayes factor should be 0 when no samples exceed the threshold"
+    )
 
     posterior = np.array([1.0, 1.0, 1.0, 1.0])
     with pytest.warns(RuntimeWarning, match="divide by zero"):
         result = bayes_factor(posterior, threshold)
-        assert np.isinf(
-            result
-        ), "Bayes factor should be infinite when all samples exceed the threshold"
+        assert np.isinf(result), (
+            "Bayes factor should be infinite when all samples exceed the threshold"
+        )
 
 
 def test_bayes_factor_large_array():
@@ -149,6 +149,6 @@ def test_as_bf_clipped_pvalues():
     """Test as_bf with p-values near the boundaries."""
     pvalues = np.array([1e-12, 1 - 1e-12])
     result = as_bf(pvalues)
-    assert np.isfinite(
-        result
-    ).all(), "Bayes factor should be finite for clipped p-values"
+    assert np.isfinite(result).all(), (
+        "Bayes factor should be finite for clipped p-values"
+    )

@@ -106,6 +106,14 @@ Bayesian    p-value: 0.1159
 Here, p = 0.1215 is large. We cannot conclude that Bowl is meaningfully worse than Armanaleg —
 the new treatment passes the noninferiority check.
 
+## DSOS and WeightedAUC
+
+`DSOS` is an alias for `WeightedAUC` in the API.
+
+- Use `DSOS.from_samples(reference_scores, new_scores)` for the standard unweighted path.
+- If you need `sample_weight`, construct `WeightedAUC(...)` directly with
+  `actual`, `predicted`, and `sample_weight`.
+
 ### Frequentist vs. Bayesian p-value
 
 DSOS provides two ways to summarise the evidence:

@@ -127,6 +127,30 @@ print(f"  p-value:         {ctst_oob.pvalue:.4f}")
 Both approaches give the same conclusion here. Use OOB when you already have a Random Forest;
 use cross-fitting for any other classifier.
 
+## Common CTST options
+
+Use `CTST.from_samples(...)` when you only have two score vectors and do not need per-row weights.
+When you need more control, build `CTST(...)` directly:
+
+```python
+weights = np.ones_like(y_hat)
+
+ctst_weighted = CTST(
+    actual=y,
+    predicted=y_hat,
+    metric=roc_auc_score,
+    sample_weight=weights,
+    alternative="greater",  # one-sided alternative
+    n_resamples=4999,         # trade precision vs. runtime
+)
+```
+
+Practical defaults:
+
+- `alternative="two-sided"` is the default and best for generic shift detection
+- `n_resamples=9999` is the default and gives stable p-values in most settings
+- `sample_weight` is optional; pass it only when some observations should count more than others
+
 ## Tips
 
 - **AUC vs. balanced accuracy:** Use AUC when your classifier outputs probabilities. Use balanced
