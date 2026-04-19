@@ -55,7 +55,7 @@ from sklearn.utils import (
 )
 from sklearn.utils.multiclass import type_of_target
 
-from samesame._data import assign_labels, concat_samples
+from samesame._data import build_two_sample_dataset
 from samesame._utils import check_metric_function, validate_and_normalise_weights
 
 
@@ -64,11 +64,11 @@ class CTST:
     """
     Classifier two-sample test (CTST) using a binary classification metric.
 
-    This test compares scores (predictions) from two independent samples.
-    Rejecting the null implies that scoring is not random and that the
-    classifier is able to distinguish between the two samples.
+    This test compares out-of-sample scores from two independent samples.
+    Small p-values indicate that the score-label association is unlikely under
+    random pairing, suggesting separability between the samples.
 
-    Attributes
+    Parameters
     ----------
     actual : NDArray
         Binary indicator for sample membership.
@@ -93,10 +93,22 @@ class CTST:
         Weights are fixed across all permutations: they reflect covariate
         importance, not label assignment.
 
+    Raises
+    ------
+    ValueError
+        If input arrays have incompatible lengths, if ``actual`` is not
+        binary, if ``predicted`` has unsupported target type, if
+        ``n_jobs != 1``, if ``batch`` is invalid, or if sample weights fail
+        validation.
+    TypeError
+        If ``metric`` does not expose a compatible scikit-learn metric
+        signature with keyword-only ``sample_weight``.
+
     Notes
     -----
-    The null distribution is based on permutations.
-    See `scipy.stats.permutation_test` for more details.
+    The permutation null distribution is generated with
+    :func:`scipy.stats.permutation_test` using ``permutation_type='pairings'``.
+    This keeps score values fixed and randomizes pairings with labels.
 
     Examples
     --------
@@ -118,7 +130,7 @@ class CTST:
     predicted: NDArray = field(repr=False)
     metric: Callable
     n_resamples: int = 9999
-    rng: np.random.Generator = np.random.default_rng()
+    rng: np.random.Generator = field(default_factory=np.random.default_rng)
     n_jobs: int = 1
     batch: int | None = None
     alternative: Literal["less", "greater", "two-sided"] = "two-sided"
@@ -129,17 +141,28 @@ class CTST:
         self.actual = column_or_1d(self.actual)
         self.predicted = column_or_1d(self.predicted)
         check_consistent_length(self.actual, self.predicted)
-        assert type_of_target(self.actual, "actual") == "binary"
+        if type_of_target(self.actual, "actual") != "binary":
+            raise ValueError(
+                "Expected 'actual' to be a binary target (e.g. 0/1 labels)."
+            )
         type_predicted = type_of_target(self.predicted, "predicted")
-        assert type_predicted in (
-            "binary",
-            "continuous",
-            "multiclass",
-        ), f"Expected 'predicted' to be binary or continuous, got {type_predicted}."
-        assert check_metric_function(self.metric), (
-            f"'metric' expects a callable that conforms to scikit-learn metric. "
-            f"{signature(self.metric)=} does not."
-        )
+        if type_predicted not in ("binary", "continuous", "multiclass"):
+            raise ValueError(
+                "Expected 'predicted' to be one of binary, continuous, or "
+                f"multiclass, got {type_predicted}."
+            )
+        if not check_metric_function(self.metric):
+            raise TypeError(
+                "'metric' expects a callable that conforms to scikit-learn "
+                f"metric API; got {signature(self.metric)!s}."
+            )
+        if self.n_jobs != 1:
+            raise ValueError(
+                "n_jobs is not supported by scipy.stats.permutation_test in this "
+                "implementation; use n_jobs=1."
+            )
+        if self.batch is not None and self.batch < 1:
+            raise ValueError("batch must be a positive integer or None.")
         self.sample_weight = validate_and_normalise_weights(
             self.sample_weight, len(self.actual)
         )
@@ -156,19 +179,20 @@ class CTST:
             statistic=statistic,
             permutation_type="pairings",
             n_resamples=self.n_resamples,
+            batch=self.batch,
             alternative=self.alternative,
-            random_state=self.rng,
+            rng=self.rng,
         )
 
     @cached_property
     def statistic(self) -> float:
         """
-        Compute the observed test statistic.
+        Observed value of the chosen classification metric.
 
         Returns
         -------
         float
-            The test statistic.
+            Observed metric value computed on ``(actual, predicted)``.
 
         Notes
         -----
@@ -179,7 +203,12 @@ class CTST:
     @cached_property
     def null(self) -> NDArray:
         """
-        Compute the null distribution of the test statistic.
+        Permutation null distribution of the test statistic.
+
+        Returns
+        -------
+        NDArray
+            Metric values under random label-score pairings.
 
         Notes
         -----
@@ -189,9 +218,14 @@ class CTST:
         return self._result.null_distribution
 
     @cached_property
-    def pvalue(self):
+    def pvalue(self) -> float:
         """
-        Compute the p-value using permutations.
+        Permutation p-value associated with the observed statistic.
+
+        Returns
+        -------
+        float
+            P-value under the selected ``alternative`` hypothesis.
 
         Notes
         -----
@@ -206,7 +240,7 @@ class CTST:
         second_sample: NDArray,
         metric: Callable,
         n_resamples: int = 9999,
-        rng: np.random.Generator = np.random.default_rng(),
+        rng: np.random.Generator | None = None,
         n_jobs: int = 1,
         batch: int | None = None,
         alternative: Literal["less", "greater", "two-sided"] = "two-sided",
@@ -214,22 +248,41 @@ class CTST:
         """
         Create a CTST instance from two samples.
 
+        This constructor is convenient when score arrays are provided by
+        sample rather than as a combined vector with binary labels.
+
         Parameters
         ----------
         first_sample : NDArray
             First sample of scores. These can be binary or continuous.
         second_sample : NDArray
             Second sample of scores. These can be binary or continuous.
+        metric : Callable
+            Classification metric accepting ``(y_true, y_pred, *, sample_weight)``.
+        n_resamples : int, optional
+            Number of permutation draws.
+        rng : np.random.Generator or None, optional
+            Random number generator. If None, a new default generator is used.
+        n_jobs : int, optional
+            Number of jobs. Must be 1 in this implementation.
+        batch : int or None, optional
+            Batch size passed to :func:`scipy.stats.permutation_test`.
+        alternative : {'less', 'greater', 'two-sided'}, optional
+            Alternative hypothesis for p-value computation.
 
         Returns
         -------
         CTST
             An instance of the CTST class.
+
+        Raises
+        ------
+        ValueError
+            If sample target types differ or downstream CTST validation fails.
         """
-        assert type_of_target(first_sample) == type_of_target(second_sample)
-        samples = (first_sample, second_sample)
-        actual = assign_labels(samples)
-        predicted = concat_samples(samples)
+        if rng is None:
+            rng = np.random.default_rng()
+        actual, predicted = build_two_sample_dataset(first_sample, second_sample)
         return cls(
             actual,
             predicted,

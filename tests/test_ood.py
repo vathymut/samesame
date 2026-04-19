@@ -95,6 +95,18 @@ class TestMaxLogit:
         with pytest.raises(ValueError, match="at least 2 classes"):
             max_logit(np.empty((2, 0), dtype=np.float32))
 
+    @pytest.mark.parametrize(
+        "invalid_input",
+        [
+            np.array([[1.0, np.nan], [2.0, 3.0]]),
+            np.array([[1.0, np.inf], [2.0, 3.0]]),
+        ],
+    )
+    def test_non_finite_values_error(self, invalid_input: np.ndarray) -> None:
+        """Test error for NaN or infinite logits."""
+        with pytest.raises(ValueError, match="NaN or infinite"):
+            max_logit(invalid_input)
+
 
 class TestLogitGap:
     """Tests for the LogitGap scoring function."""
@@ -162,6 +174,18 @@ class TestLogitGap:
         """Test error for single class."""
         with pytest.raises(ValueError, match="at least 2 classes"):
             logit_gap(np.array([[5.0], [3.0]]))
+
+    @pytest.mark.parametrize(
+        "invalid_input",
+        [
+            np.array([[1.0, np.nan], [2.0, 3.0]]),
+            np.array([[1.0, np.inf], [2.0, 3.0]]),
+        ],
+    )
+    def test_non_finite_values_error(self, invalid_input: np.ndarray) -> None:
+        """Test error for NaN or infinite logits."""
+        with pytest.raises(ValueError, match="NaN or infinite"):
+            logit_gap(invalid_input)
 
     def test_empty_batch(self) -> None:
         """Test with empty batch."""

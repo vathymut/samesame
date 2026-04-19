@@ -5,13 +5,11 @@
 # LICENSE file in the root directory of this source tree.
 #
 
-"""
-Functions for working with p-values and Bayes factors.
+"""Reference functions for one-sided p-values and Bayes factors.
 
-This module provides functions for converting between p-values and Bayes
-factors, as well as calculating Bayes factors from posterior
-distributions. These are useful for hypothesis testing and interpreting
-statistical evidence.
+The functions in this module provide numerically stable conversions between
+one-sided p-values and Bayes factors for directional hypotheses, and direct
+Bayes factor estimation from posterior draws.
 """
 
 from __future__ import annotations
@@ -31,8 +29,9 @@ def as_bf(
     """
     Convert a one-sided p-value to a Bayes factor.
 
-    This Bayes factor quantifies evidence in favour of a directional effect
-    over the null hypothesis of no such effect.
+    This is useful when a directional p-value is available and evidence is
+    needed on a Bayes-factor scale. Smaller p-values map to larger Bayes
+    factors in favour of a directional effect.
 
     Parameters
     ----------
@@ -46,17 +45,19 @@ def as_bf(
         The corresponding Bayes factor(s). The return type matches the
         input type.
 
+    Raises
+    ------
+    ValueError
+        If any p-value is not strictly within the open interval (0, 1).
+
     See Also
     --------
     as_pvalue : Convert a Bayes factor to a p-value.
 
     Notes
     -----
-    The Bayes factor is derived from the one-sided p-value using a
-    Bayesian interpretation, which quantifies evidence in favor of a
-    directional effect over the null hypothesis of no such effect.
-
-    See [1]_ for theoretical details and implications.
+    The mapping is based on the one-sided p-value interpretation in [1]_.
+    Inputs are clipped near 0 and 1 for numerical stability.
 
     References
     ----------
@@ -71,6 +72,8 @@ def as_bf(
     >>> from samesame.bayes import as_bf
     >>> as_bf(0.5)
     np.float64(1.0)
+    >>> np.round(as_bf(0.05), 1)
+    np.float64(19.0)
     >>> as_bf(np.array([0.05, 0.1, 0.5])) # doctest: +NORMALIZE_WHITESPACE
     array([19., 9., 1.])
     """
@@ -86,8 +89,8 @@ def as_pvalue(
     """
     Convert a Bayes factor of a directional effect to a one-sided p-value.
 
-    The Bayes factor quantifies evidence in favour of a directional effect
-    over the null hypothesis of no such effect.
+    This is useful when evidence is summarized as a Bayes factor but
+    reporting requires one-sided p-values under the directional null.
 
     Parameters
     ----------
@@ -100,15 +103,19 @@ def as_pvalue(
     float | NDArray
         The corresponding p-value(s). The return type matches the input type.
 
+    Raises
+    ------
+    ValueError
+        If any Bayes factor is not strictly positive.
+
     See Also
     --------
-    as_pvalue : Convert a Bayes factor to a p-value.
+    as_bf : Convert a one-sided p-value to a Bayes factor.
 
     Notes
     -----
-    The equivalence between the Bayes factor in favor of a directional effect
-    and the one-sided p-value for the null of no such effect is discussed in
-    [1]_.
+    This is the inverse mapping of :func:`as_bf` under the same directional
+    interpretation [1]_. Inputs are clipped to improve numerical stability.
 
     References
     ----------
@@ -123,6 +130,8 @@ def as_pvalue(
     >>> from samesame.bayes import as_pvalue
     >>> as_pvalue(1)
     np.float64(0.5)
+    >>> np.round(as_pvalue(19), 2)
+    np.float64(0.05)
     >>> as_pvalue(np.array([19.0, 9.0, 1.0])) # doctest: +NORMALIZE_WHITESPACE
     array([0.05, 0.1 , 0.5 ])
     """
@@ -139,11 +148,10 @@ def bayes_factor(
     adjustment: Literal[0, 1] = 0,
 ) -> float:
     """
-    Compute the Bayes factor for a test of direction given a threshold.
+    Compute a directional Bayes factor from posterior samples.
 
-    The Bayes factor quantifies the evidence in favor of the hypothesis that
-    the posterior distribution exceeds the given threshold compared to the
-    hypothesis that it does not.
+    The Bayes factor compares posterior support for values above a threshold
+    against support for values at or below that threshold.
 
     Parameters
     ----------
@@ -157,7 +165,8 @@ def bayes_factor(
     Returns
     -------
     float
-        The computed Bayes factor.
+        Bayes factor in favour of the posterior mass being above
+        ``threshold``.
 
     See Also
     --------
@@ -167,20 +176,9 @@ def bayes_factor(
 
     Notes
     -----
-    The Bayes factor is a measure of evidence which compares the likelihood of
-    the data under two competing hypotheses. In this function, the numerator
-    represents the proportion of posterior samples exceeding the threshold,
-    while the denominator represents the proportion of samples not exceeding
-    the threshold. If all samples exceed the threshold, the Bayes factor is
-    set to infinity, indicating overwhelming evidence in favor of the
-    hypothesis.
-
-    The adjustment parameter allows for slight modifications to the Bayes
-    factor calculation, which can be useful in specific contexts such as
-    sensitivity analyses.
-
-    See [1]_ for further theoretical details and practical implications of
-    this approach.
+    If all posterior draws exceed ``threshold``, the denominator is zero and
+    the returned Bayes factor can become infinite. ``adjustment`` can be used
+    to regularize this edge case in finite samples.
 
     References
     ----------
@@ -196,6 +194,8 @@ def bayes_factor(
     >>> posterior_samples = np.array([0.2, 0.5, 0.8, 0.9])
     >>> bayes_factor(posterior_samples, threshold=0.5)
     np.float64(1.0)
+    >>> np.isinf(bayes_factor(posterior_samples, threshold=0.0))
+    np.True_
     """
     return _bayes_factor(posterior, threshold, adjustment)
 

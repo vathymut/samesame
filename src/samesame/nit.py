@@ -9,10 +9,9 @@ from functools import cached_property
 
 import numpy as np
 from numpy.typing import NDArray
-from sklearn.utils.multiclass import type_of_target
 
 from samesame._bayesboot import bayesian_posterior
-from samesame._data import assign_labels, concat_samples
+from samesame._data import build_two_sample_dataset
 from samesame._stats import _bayes_factor
 from samesame.ctst import CTST
 from samesame.metrics import wauc
@@ -23,14 +22,13 @@ class WeightedAUC(CTST):
     """
     Two-sample test for no adverse shift using the weighted AUC (WAUC).
 
-    This test compares scores from two independent samples. We reject the
-    null hypothesis of no adverse shift for unusually high values of the WAUC
-    i.e. when the second sample is relatively worse than the first one. This
-    is a robust nonparametric noninferiority test (NIT) with no pre-specified
-    margin. It can be used, amongst other things, to detect dataset shift with
-    outlier scores, hence the DSOS acronym.
+    This test compares scores from two independent samples. Small p-values and
+    large Bayes factors indicate evidence of adverse shift, where the second
+    sample tends to receive worse (higher) outlier scores than the first.
+    This is a robust nonparametric noninferiority test (NIT) with no
+    pre-specified margin, also referred to as DSOS.
 
-    Attributes
+    Parameters
     ----------
     actual : NDArray
         Binary indicator for sample membership.
@@ -49,6 +47,11 @@ class WeightedAUC(CTST):
         When provided, weights are normalised to sum to n_samples internally.
         Weights are fixed across all permutations and combined multiplicatively
         with Bayesian bootstrap Dirichlet draws for the posterior computation.
+
+    Raises
+    ------
+    ValueError
+        If input validation inherited from :class:`samesame.ctst.CTST` fails.
 
     See Also
     --------
@@ -100,12 +103,14 @@ class WeightedAUC(CTST):
         actual: NDArray,
         predicted: NDArray,
         n_resamples: int = 9999,
-        rng: np.random.Generator = np.random.default_rng(),
+        rng: np.random.Generator | None = None,
         n_jobs: int = 1,
         batch: int | None = None,
         sample_weight: NDArray | None = None,
     ):
         """Initialize WeightedAUC."""
+        if rng is None:
+            rng = np.random.default_rng()
         super().__init__(
             actual=actual,
             predicted=predicted,
@@ -121,12 +126,12 @@ class WeightedAUC(CTST):
     @cached_property
     def posterior(self) -> NDArray:
         """
-        Compute the posterior distribution of the WAUC.
+        Bayesian-bootstrap posterior distribution of WAUC.
 
         Returns
         -------
         NDArray
-            The posterior distribution of the WAUC.
+            Posterior WAUC draws with length ``n_resamples``.
 
         Notes
         -----
@@ -143,17 +148,21 @@ class WeightedAUC(CTST):
         )
 
     @cached_property
-    def bayes_factor(self):
+    def bayes_factor(self) -> float:
         """
-        Compute the Bayes factor using the Bayesian bootstrap.
+        Bayes factor for adverse shift from posterior and permutation threshold.
+
+        Returns
+        -------
+        float
+            Bayes factor in favour of adverse shift.
 
         Notes
         -----
+        The threshold is the mean of the permutation null distribution.
         The result is cached to avoid (expensive) recomputation.
         """
-        bayes_threshold = float(np.mean(self.null))
-        bf_ = _bayes_factor(self.posterior, bayes_threshold)
-        return bf_
+        return _bayes_factor(self.posterior, float(np.mean(self.null)))
 
     @classmethod
     def from_samples(
@@ -161,12 +170,15 @@ class WeightedAUC(CTST):
         first_sample: NDArray,
         second_sample: NDArray,
         n_resamples: int = 9999,
-        rng: np.random.Generator = np.random.default_rng(),
+        rng: np.random.Generator | None = None,
         n_jobs: int = 1,
         batch: int | None = None,
     ):
         """
         Create a WeightedAUC instance from two samples.
+
+        This constructor is convenient when score arrays are provided by
+        sample rather than as a combined vector with binary labels.
 
         Parameters
         ----------
@@ -174,23 +186,35 @@ class WeightedAUC(CTST):
             First sample of scores. These can be binary or continuous.
         second_sample : NDArray
             Second sample of scores. These can be binary or continuous.
+        n_resamples : int, optional
+            Number of permutation and posterior resamples.
+        rng : np.random.Generator or None, optional
+            Random number generator. If None, a new default generator is used.
+        n_jobs : int, optional
+            Number of jobs. Must be 1 in this implementation.
+        batch : int or None, optional
+            Batch size passed to the permutation engine.
 
         Returns
         -------
         WeightedAUC
             An instance of the WeightedAUC class.
+
+        Raises
+        ------
+        ValueError
+            If sample target types differ or downstream validation fails.
         """
-        assert type_of_target(first_sample) == type_of_target(second_sample)
-        samples = (first_sample, second_sample)
-        actual = assign_labels(samples)
-        predicted = concat_samples(samples)
+        if rng is None:
+            rng = np.random.default_rng()
+        actual, predicted = build_two_sample_dataset(first_sample, second_sample)
         return cls(
-            actual,
-            predicted,
-            n_resamples,
-            rng,
-            n_jobs,
-            batch,
+            actual=actual,
+            predicted=predicted,
+            n_resamples=n_resamples,
+            rng=rng,
+            n_jobs=n_jobs,
+            batch=batch,
         )
 
 

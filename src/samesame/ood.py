@@ -5,11 +5,10 @@
 # LICENSE file in the root directory of this source tree.
 #
 
-"""Functions for Out-of-Distribution (OOD) detection.
+"""Reference OOD scoring functions based on classifier logits.
 
-These post-hoc OOD detection methods are for pre-trained supervised models,
-which leverage the information from the entire logit space to enhance
-in-distribution (ID) and out-of-distribution (OOD) separability.
+These post-hoc methods are intended for pre-trained classifiers and return
+scores that can be used to rank inputs by in-distribution confidence.
 
 References
 ----------
@@ -24,14 +23,33 @@ import numpy as np
 from numpy.typing import NDArray
 
 
+def _validate_logits(logits: NDArray) -> NDArray:
+    logits = np.asarray(logits, dtype=np.float32)
+
+    if logits.ndim != 2:
+        raise ValueError(
+            f"logits must be 2D array of shape (n_samples, n_classes), "
+            f"got shape {logits.shape}"
+        )
+
+    _, n_classes = logits.shape
+    if n_classes < 2:
+        raise ValueError(f"logits must have at least 2 classes, got {n_classes}")
+
+    if not np.isfinite(logits).all():
+        raise ValueError("logits contain NaN or infinite values")
+
+    return logits
+
+
 def logit_gap(logits: NDArray) -> NDArray:
     """LogitGap OOD detection score.
 
-    Computes the average gap between the maximum logit and remaining logits
-    for each sample. This method leverages the observation that
-    in-distribution (ID) samples tend to have higher maximum logits with
-    lower non-maximum logits, while out-of-distribution (OOD) samples
-    exhibit flatter logit distributions.
+    Compute the average gap between the largest logit and the remaining logits
+    for each sample.
+
+    Intuitively, in-distribution samples tend to have a dominant class logit,
+    while out-of-distribution samples often have flatter logit profiles.
 
     The scoring function is defined as:
 
@@ -56,30 +74,21 @@ def logit_gap(logits: NDArray) -> NDArray:
         Array of shape (n_samples,) containing OOD scores. Higher scores
         indicate higher likelihood of being in-distribution.
 
+    Raises
+    ------
+    ValueError
+        If ``logits`` is not a finite 2D array with at least two classes.
+
     See Also
     --------
     max_logit : Simple baseline using only the maximum logit value.
 
     Notes
     -----
-    The LogitGap method is motivated by the observation that ID samples
-    exhibit more pronounced logit distributions (higher maximum logit with
-    lower non-maximum logits), while OOD samples show flatter distributions
-    (smaller gaps between logits).
-
-    The implementation computes the average gap efficiently by calculating
-    the difference between the maximum logit and the mean of all other
-    logits: max_logit - mean(other_logits). This is mathematically
-    equivalent to the definition in Equation (4).
-
-    This method requires no additional training or calibration and can be
-    applied as a post-hoc scoring function to any pre-trained classification
-    model. It demonstrates superior performance compared to MaxLogit baseline
-    across various benchmark datasets.
-
-    The function expects raw logits (pre-softmax values) rather than
-    probabilities. Using logits directly preserves more information about
-    the model's confidence distribution.
+    The implementation uses
+    :math:`\max_k z_k - \frac{1}{K-1}\sum_{j \ne k^*} z_j`, where
+    :math:`k^*` is the index of the maximum logit. This is equivalent to the
+    formulation in [1]_.
 
     References
     ----------
@@ -91,47 +100,25 @@ def logit_gap(logits: NDArray) -> NDArray:
     Examples
     --------
     >>> logits = np.array([[5.0, 1.0, 0.5], [2.0, 2.1, 1.9]])
+    >>> np.round(logit_gap(logits), 2)
+    array([4.25, 0.15], dtype=float32)
+    >>> logits = np.array([[5.0, 1.0, 0.5], [2.0, 2.1, 1.9]])
     >>> scores = logit_gap(logits)  # doctest: +SKIP
     >>> print(scores)
     [4.25 0.15]
     """
-    logits = np.asarray(logits, dtype=np.float32)
-
-    if logits.ndim != 2:
-        raise ValueError(
-            f"logits must be 2D array of shape (n_samples, n_classes), "
-            f"got shape {logits.shape}"
-        )
-
-    _, n_classes = logits.shape
-
-    if n_classes < 2:
-        raise ValueError(f"logits must have at least 2 classes, got {n_classes}")
-
-    if not np.isfinite(logits).all():
-        raise ValueError("logits contain NaN or infinite values")
-
-    # Sort logits in descending order for each sample
+    logits = _validate_logits(logits)
     sorted_logits = np.sort(logits, axis=1)[:, ::-1]
-
-    # Get maximum logit (z_1')
-    max_logit_val = sorted_logits[:, 0]
-
-    # Compute average gap: (1/(K-1)) * sum(z_1' - z_j') for j=2 to K
-    # This is equivalent to: z_1' - mean(z_2' to z_K')
-    avg_other_logits = np.mean(sorted_logits[:, 1:], axis=1)
-
-    scores = max_logit_val - avg_other_logits
-
-    return scores
+    return sorted_logits[:, 0] - np.mean(sorted_logits[:, 1:], axis=1)
 
 
 def max_logit(logits: NDArray) -> NDArray:
     """MaxLogit OOD detection score (baseline method).
 
-    Computes the maximum logit value for each sample. This is a simple
-    baseline that uses only the most confident prediction, disregarding
-    information from other classes.
+    Compute the maximum logit for each sample.
+
+    This is a simple baseline that uses only the top class logit and ignores
+    the rest of the logit vector.
 
     The scoring function is defined as:
 
@@ -155,30 +142,19 @@ def max_logit(logits: NDArray) -> NDArray:
         Higher scores indicate higher confidence, but with limited
         discriminative power for OOD detection compared to LogitGap.
 
+    Raises
+    ------
+    ValueError
+        If ``logits`` is not a finite 2D array with at least two classes.
+
     See Also
     --------
     logit_gap : Improved OOD detection using logit gap.
 
     Notes
     -----
-    MaxLogit is included as a baseline for comparison. The paper
-    demonstrates that LogitGap achieves significantly better OOD detection
-    performance by leveraging information from all logits rather than just
-    the maximum.
-
-    This method has several limitations:
-    - It only uses information from the top predicted class
-    - It ignores the distribution of non-maximum logits
-    - It provides limited discriminative power between ID and OOD samples
-
-    MaxLogit is conceptually similar to Maximum Softmax Probability (MSP)
-    but operates directly on logits rather than probabilities. Both methods
-    are widely used baselines in OOD detection literature.
-
-    Despite its simplicity, MaxLogit serves as a reasonable baseline and
-    requires no additional computation beyond extracting the maximum value
-    from the logit vector. It can be useful for computational efficiency
-    when more sophisticated methods are not necessary.
+    MaxLogit is primarily a baseline comparator for richer logit-distribution
+    methods such as :func:`logit_gap` [1].
 
     References
     ----------
@@ -190,27 +166,12 @@ def max_logit(logits: NDArray) -> NDArray:
     Examples
     --------
     >>> logits = np.array([[5.0, 1.0, 0.5], [2.0, 2.1, 1.9]])
+    >>> max_logit(logits)
+    array([5. , 2.1], dtype=float32)
+    >>> logits = np.array([[5.0, 1.0, 0.5], [2.0, 2.1, 1.9]])
     >>> scores = max_logit(logits)  # doctest: +SKIP
     >>> print(scores)
     [5.0 2.1]
     """
-    logits = np.asarray(logits, dtype=np.float32)
-
-    if logits.ndim != 2:
-        raise ValueError(
-            f"logits must be 2D array of shape (n_samples, n_classes), "
-            f"got shape {logits.shape}"
-        )
-
-    _, n_classes = logits.shape
-
-    if n_classes < 2:
-        raise ValueError(f"logits must have at least 2 classes, got {n_classes}")
-
-    if not np.isfinite(logits).all():
-        raise ValueError("logits contain NaN or infinite values")
-
-    # Simply return the maximum logit for each sample
-    scores = np.max(logits, axis=1)
-
-    return scores
+    logits = _validate_logits(logits)
+    return np.max(logits, axis=1)

@@ -4,7 +4,7 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 #
-"""Compute the weighted area under the ROC."""
+"""Reference metric functions used by two-sample tests."""
 
 from __future__ import annotations
 
@@ -26,11 +26,9 @@ def wauc(
     """
     Compute the weighted area under the ROC curve (WAUC).
 
-    Calculates the WAUC by weighting the true positive rate (TPR) at each
-    false positive rate (FPR) threshold, optionally using sample weights.
-    The weights are computed as the squared empirical weighted cumulative
-    distribution function (EW-CDF) of the predicted scores for the negative
-    class.
+    WAUC is an ROC-type summary that upweights operating regions according to
+    the score distribution in the negative class. It is designed for settings
+    where adverse high-score tails are particularly important.
 
     Parameters
     ----------
@@ -46,13 +44,18 @@ def wauc(
     float
         The weighted area under the ROC curve.
 
+    Raises
+    ------
+    ValueError
+        Propagated from the underlying metric components when inputs are
+        inconsistent (for example, incompatible lengths).
+
     Notes
     -----
-    The function uses the `roc_curve` from scikit-learn to compute FPR, TPR,
-    and thresholds. The empirical weighted CDF is computed for the negative
-    class predictions using `ECDFDiscrete`. The WAUC is calculated using the
-    trapezoidal rule, weighting the TPR by the squared EW-CDF at each
-    threshold [1].
+    Let :math:`F_0` denote the empirical (weighted) CDF of negative-class
+    scores. This implementation uses :math:`F_0(t)^2` as threshold-dependent
+    weights and computes the integral by the trapezoidal rule over ROC points
+    returned by :func:`sklearn.metrics.roc_curve` [1].
 
     References
     ----------
@@ -68,6 +71,11 @@ def wauc(
     >>> actual = np.array([0, 1, 0, 1])
     >>> predicted = np.array([0.1, 0.4, 0.35, 0.8])
     >>> wauc(actual, predicted)
+    np.float64(0.625)
+    >>> np.round(
+    ...     wauc(actual, predicted, sample_weight=np.array([1.0, 2.0, 1.0, 2.0])),
+    ...     3,
+    ... )
     np.float64(0.625)
     """
     fpr, tpr, thresholds = roc_curve(

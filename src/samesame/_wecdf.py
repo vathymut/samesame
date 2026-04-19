@@ -99,10 +99,15 @@ class ECDFDiscrete(StepFunction):
             x, freq_weights = np.unique(x, return_counts=True)
         else:
             x = np.asarray(x)
-        assert len(freq_weights) == len(x)
+        if len(freq_weights) != len(x):
+            raise ValueError(
+                "freq_weights and x must have the same length, "
+                f"got {len(freq_weights)} and {len(x)}."
+            )
         w = np.asarray(freq_weights)
         sw = np.sum(w)
-        assert sw > 0
+        if sw <= 0:
+            raise ValueError("sum of freq_weights must be strictly positive.")
         ax = x.argsort()
         x = x[ax]
         y = np.cumsum(w[ax])

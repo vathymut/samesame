@@ -15,7 +15,7 @@ from numpy.typing import NDArray
 @dataclass
 class EmpiricalPvalue:
     """
-    Computes p-value from empirical null distribtuion.
+    Computes p-value from empirical null distribution.
 
     Attributes
     ----------

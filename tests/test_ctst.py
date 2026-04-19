@@ -71,7 +71,7 @@ def test_from_samples(decent_predictions, n_resamples=60):
 
 
 def test_sample_mismatch():
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError, match="same target type"):
         CTST.from_samples(
             first_sample=np.array([0, 1, 1]),
             second_sample=np.array([0.1, 0.2, 0.3]),
@@ -83,7 +83,7 @@ def test_wrong_metric(decent_predictions, n_resamples=60):
     def dummy_metric(a, b, c, d):  # wrong signature
         return 0
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(TypeError, match="conforms to scikit-learn"):
         CTST(
             actual=decent_predictions["actual"],
             predicted=decent_predictions["predicted"],
@@ -199,3 +199,13 @@ def test_ctst_weighted_permutation_fixed(decent_predictions, n_resamples=200):
     )
     # Weighted statistic must differ (weights change the metric value)
     assert base.statistic != weighted.statistic
+
+
+def test_ctst_rejects_unsupported_n_jobs(decent_predictions):
+    with pytest.raises(ValueError, match="n_jobs"):
+        CTST(
+            actual=decent_predictions["actual"],
+            predicted=decent_predictions["predicted"],
+            metric=roc_auc_score,
+            n_jobs=2,
+        )
