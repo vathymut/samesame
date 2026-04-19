@@ -1,0 +1,1245 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Samesame - Classifier Two-sample Tests">
+      
+      
+        <meta name="author" content="Vathy M. Kamulete">
+      
+      
+        <link rel="canonical" href="https://vathymut.github.io/samesame/prd-sample-weights/">
+      
+      
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.18">
+    
+    
+      
+        <title>PRD: Sample Weights for Context-Aware Statistical Tests - samesame</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.7e37652d.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#prd-sample-weights-for-context-aware-statistical-tests" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="samesame" class="md-header__button md-logo" aria-label="samesame" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M249.9 66.8c10.4-14.3 7.2-34.3-7.1-44.7s-34.3-7.2-44.7 7.1l-106 145.7-37.5-37.5c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l64 64c6.6 6.6 15.8 10 25.1 9.3s17.9-5.5 23.4-13.1l128-176zm128 136c10.4-14.3 7.2-34.3-7.1-44.7s-34.3-7.2-44.7 7.1l-170 233.7-69.5-69.5c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l96 96c6.6 6.6 15.8 10 25.1 9.3s17.9-5.5 23.4-13.1l192-264z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            samesame
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              PRD: Sample Weights for Context-Aware Statistical Tests
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/vathymut/samesame" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../examples/distribution-shifts/" class="md-tabs__link">
+          
+  
+  
+  Examples
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../api/bayes/" class="md-tabs__link">
+          
+  
+  
+  API
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="samesame" class="md-nav__button md-logo" aria-label="samesame" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M249.9 66.8c10.4-14.3 7.2-34.3-7.1-44.7s-34.3-7.2-44.7 7.1l-106 145.7-37.5-37.5c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l64 64c6.6 6.6 15.8 10 25.1 9.3s17.9-5.5 23.4-13.1l128-176zm128 136c10.4-14.3 7.2-34.3-7.1-44.7s-34.3-7.2-44.7 7.1l-170 233.7-69.5-69.5c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l96 96c6.6 6.6 15.8 10 25.1 9.3s17.9-5.5 23.4-13.1l192-264z"/></svg>
+
+    </a>
+    samesame
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/vathymut/samesame" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Examples
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Examples
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/distribution-shifts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Distribution shifts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/noninferiority/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Noninferiority tests
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/credit-example/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Credit example
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/credit-ood-detection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Credit OOD detection
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    API
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            API
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/bayes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    bayes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/ctst/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    ctst
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/metrics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    metrics
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/nit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    nit
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/ood/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    ood
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-executive-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Executive Summary
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Executive Summary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problem-statement" class="md-nav__link">
+    <span class="md-ellipsis">
+      Problem Statement
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proposed-solution" class="md-nav__link">
+    <span class="md-ellipsis">
+      Proposed Solution
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#success-criteria" class="md-nav__link">
+    <span class="md-ellipsis">
+      Success Criteria
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-user-experience-functionality" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. User Experience &amp; Functionality
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. User Experience &amp; Functionality">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#user-personas" class="md-nav__link">
+    <span class="md-ellipsis">
+      User Personas
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#weighting-scenarios" class="md-nav__link">
+    <span class="md-ellipsis">
+      Weighting Scenarios
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user-stories" class="md-nav__link">
+    <span class="md-ellipsis">
+      User Stories
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Non-Goals
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-technical-specifications" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Technical Specifications
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Technical Specifications">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#architecture-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Architecture Overview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#component-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Component Changes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Component Changes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#samesamectstpy-ctst-dataclass" class="md-nav__link">
+    <span class="md-ellipsis">
+      samesame/ctst.py — CTST dataclass
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#samesamenitpy-weightedauc-dataclass" class="md-nav__link">
+    <span class="md-ellipsis">
+      samesame/nit.py — WeightedAUC dataclass
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#samesame_bayesbootpy-bayesian_posterior" class="md-nav__link">
+    <span class="md-ellipsis">
+      samesame/_bayesboot.py — bayesian_posterior
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#samesame_utilspy-new-validation-helper" class="md-nav__link">
+    <span class="md-ellipsis">
+      samesame/_utils.py — new validation helper
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integration-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      Integration Points
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#weight-propagation-in-permutation-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      Weight Propagation in Permutation Test
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#security-privacy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Security &amp; Privacy
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-risks-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Risks &amp; Roadmap
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Risks &amp; Roadmap">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phased-rollout" class="md-nav__link">
+    <span class="md-ellipsis">
+      Phased Rollout
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#technical-risks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Technical Risks
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="prd-sample-weights-for-context-aware-statistical-tests">PRD: Sample Weights for Context-Aware Statistical Tests<a class="headerlink" href="#prd-sample-weights-for-context-aware-statistical-tests" title="Permanent link">&para;</a></h1>
+<p><strong>Status</strong>: Draft<br />
+<strong>Author</strong>: TBD<br />
+<strong>Date</strong>: 2026-04-19</p>
+<hr />
+<h2 id="1-executive-summary">1. Executive Summary<a class="headerlink" href="#1-executive-summary" title="Permanent link">&para;</a></h2>
+<h3 id="problem-statement">Problem Statement<a class="headerlink" href="#problem-statement" title="Permanent link">&para;</a></h3>
+<p>The statistical tests in <code>samesame</code> treat every sample with equal weight, making them blind to the structure of covariate shift between train and test distributions. When deployment data differs systematically from training data, equal-weight tests can be under-powered in relevant regions and over-powered in irrelevant ones — producing misleading conclusions about model degradation.</p>
+<h3 id="proposed-solution">Proposed Solution<a class="headerlink" href="#proposed-solution" title="Permanent link">&para;</a></h3>
+<p>Add an optional <code>sample_weight</code> parameter to the existing test classes (<code>CTST</code>, <code>WeightedAUC</code>, and all downstream tests) so that practitioners can supply externally-computed density-ratio weights. The full test pipeline — test statistics, permutation null distributions, Bayesian posteriors, p-values, and Bayes factors — must honour these weights, making every test context-aware with zero breaking changes to the current API.</p>
+<h3 id="success-criteria">Success Criteria<a class="headerlink" href="#success-criteria" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Backwards-compatibility</strong>: When <code>sample_weight=None</code> (default), all tests produce results numerically identical to the current unweighted implementation.</li>
+<li><strong>Full-pipeline coverage</strong>: <code>sample_weight</code> flows through permutation statistics, Bayesian bootstrap posteriors, and all derived quantities (p-values, Bayes factors, CIs) without silent dropping.</li>
+<li><strong>All three weighting scenarios supported</strong>: Scenario 1 (∝ Pr_test), Scenario 2 (∝ Pr_train), Scenario 3 (∝ Pr_test / Pr_train) are all expressible by passing the appropriate pre-computed weight array.</li>
+<li><strong>Zero new required user dependencies</strong>: density ratio estimation is the caller's responsibility; the package ships no new mandatory dependencies.</li>
+<li><strong>100% test coverage on new weight-handling code paths.</strong></li>
+</ol>
+<hr />
+<h2 id="2-user-experience-functionality">2. User Experience &amp; Functionality<a class="headerlink" href="#2-user-experience-functionality" title="Permanent link">&para;</a></h2>
+<h3 id="user-personas">User Personas<a class="headerlink" href="#user-personas" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Persona</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ML Practitioner</strong></td>
+<td>Monitors a deployed model for data/covariate drift; wants test results that reflect the actual deployment distribution, not the historical training distribution.</td>
+</tr>
+<tr>
+<td><strong>Data Scientist</strong></td>
+<td>Runs controlled experiments (A/B tests, non-inferiority tests) where a known shift exists and equal-weight tests would be confounded.</td>
+</tr>
+<tr>
+<td><strong>Applied Researcher</strong></td>
+<td>Studies domain adaptation; needs the package to support arbitrary density-ratio reweighting schemes as a building block for more complex analyses.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="weighting-scenarios">Weighting Scenarios<a class="headerlink" href="#weighting-scenarios" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Weight ∝</th>
+<th>Interpretation</th>
+<th>Example Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><span class="arithmatex">\(\Pr_{\text{test}}(x)\)</span></td>
+<td>Focus on OOD / deployment-distribution samples</td>
+<td>Evaluate model where new data lives</td>
+</tr>
+<tr>
+<td>2</td>
+<td><span class="arithmatex">\(\Pr_{\text{train}}(x)\)</span></td>
+<td>Focus on in-distribution samples</td>
+<td>Guard against drift by anchoring to training support</td>
+</tr>
+<tr>
+<td>3 <em>(primary)</em></td>
+<td><span class="arithmatex">\(\Pr_{\text{test}}(x) / \Pr_{\text{train}}(x)\)</span></td>
+<td>Focus on common support (covariate balance)</td>
+<td>Fair comparison where both distributions overlap; density ratio ≈ 1</td>
+</tr>
+</tbody>
+</table>
+<h3 id="user-stories">User Stories<a class="headerlink" href="#user-stories" title="Permanent link">&para;</a></h3>
+<p><strong>Story 1 — Covariate-balance test (Scenario 3, primary)</strong><br />
+<em>As an ML practitioner, I want to pass covariate-balance weights (∝ density ratio) to the adverse-shift test so that the test focuses on the overlapping support region and avoids false alarms caused by distributional extrapolation.</em></p>
+<p>Acceptance Criteria:
+- <code>WeightedAUC(actual, predicted, sample_weight=w).pvalue</code> returns a float when <code>w</code> sums to <code>len(w)</code>.
+- When <code>w = np.ones(n)</code>, result matches <code>WeightedAUC(actual, predicted).pvalue</code> to within floating-point tolerance.
+- Invalid weights (negative values, wrong length, all-zero) raise <code>ValueError</code> with a descriptive message.</p>
+<p><strong>Story 2 — OOD-focused test (Scenario 1)</strong><br />
+<em>As a data scientist, I want to upweight test-distribution samples so that the test is sensitive to degradation where new data actually lives.</em></p>
+<p>Acceptance Criteria:
+- Supplying weights ∝ Pr_test shifts power towards regions of high test-distribution density.
+- The <code>CTST</code> base class propagates weights into the permutation statistic correctly.</p>
+<p><strong>Story 3 — In-distribution-focused test (Scenario 2)</strong><br />
+<em>As a researcher, I want to upweight training-distribution samples so that I can isolate whether degradation is driven by the model's behaviour on familiar inputs.</em></p>
+<p>Acceptance Criteria:
+- Supplying weights ∝ Pr_train is expressible without any API change; it is simply a different array passed to <code>sample_weight</code>.</p>
+<p><strong>Story 4 — Bayesian path</strong><br />
+<em>As an ML practitioner, I want the Bayesian posterior (WAUC) and derived Bayes factor to also respect sample weights so that my Bayesian and frequentist analyses are consistent.</em></p>
+<p>Acceptance Criteria:
+- <code>WeightedAUC(..., sample_weight=w).posterior</code> returns a posterior array reflecting <code>w</code>.
+- <code>WeightedAUC(..., sample_weight=w).bayes_factor</code> is derived from the weighted posterior.</p>
+<h3 id="non-goals">Non-Goals<a class="headerlink" href="#non-goals" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Density ratio estimation</strong>: the package will NOT estimate <span class="arithmatex">\(\hat{r}(x)\)</span> or <span class="arithmatex">\(\Pr_{\text{test}}\)</span>. Weight computation is entirely the caller's responsibility.</li>
+<li><strong>New public estimator classes</strong> (e.g. <code>DensityRatioEstimator</code>): out of scope for this release.</li>
+<li><strong>Normalisation strategy selection</strong>: weights are normalised internally to sum to <code>n_samples</code>; no alternative normalisation schemes are exposed.</li>
+<li><strong>Weighted versions of <code>ood.py</code> functions</strong> (<code>logit_gap</code>, <code>max_logit</code>): these are score-extraction utilities, not tests, and are out of scope.</li>
+<li><strong>Streaming or online weight updates</strong>: batch use only.</li>
+</ul>
+<hr />
+<h2 id="3-technical-specifications">3. Technical Specifications<a class="headerlink" href="#3-technical-specifications" title="Permanent link">&para;</a></h2>
+<h3 id="architecture-overview">Architecture Overview<a class="headerlink" href="#architecture-overview" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>Caller supplies sample_weight (NDArray | None)
+        │
+        ▼
+┌─────────────────────────────────────────────┐
+│  CTST.__post_init__                         │
+│  • validate_sample_weight(w, n)             │
+│  • normalise: w = w / w.sum() * n           │
+└─────────────┬───────────────────────────────┘
+              │
+     ┌────────┴────────┐
+     ▼                 ▼
+permutation_test    bayesian_posterior
+(frequentist)       (Bayesian)
+     │                 │
+     │  statistic fn   │  Dirichlet weights
+     │  receives w     │  combined with w:
+     │  per-permutation│  w_combined = w * w_dirichlet
+     ▼                 ▼
+metric(actual,     metric(actual,
+ predicted,         predicted,
+ sample_weight=w)   sample_weight=w_combined)
+     │                 │
+     ▼                 ▼
+EmpiricalPvalue    posterior array
+     │                 │
+     └────────┬────────┘
+              ▼
+       pvalue / bayes_factor / CI
+</code></pre></div>
+<h3 id="component-changes">Component Changes<a class="headerlink" href="#component-changes" title="Permanent link">&para;</a></h3>
+<h4 id="samesamectstpy-ctst-dataclass"><code>samesame/ctst.py</code> — <code>CTST</code> dataclass<a class="headerlink" href="#samesamectstpy-ctst-dataclass" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Add field: <code>sample_weight: NDArray | None = None</code></li>
+<li>Add <code>__post_init__</code> step: call <code>_validate_and_normalise_weights(self.sample_weight, len(self.actual))</code></li>
+<li>Propagate <code>sample_weight</code> into the <code>statistic</code> closure passed to <code>scipy.stats.permutation_test</code>.<br />
+<strong>Critical</strong>: weights must be indexed by the original sample position, not permuted with labels. The permutation shuffles <code>actual</code> labels; <code>sample_weight[i]</code> always corresponds to observation <code>i</code>.</li>
+</ul>
+<h4 id="samesamenitpy-weightedauc-dataclass"><code>samesame/nit.py</code> — <code>WeightedAUC</code> dataclass<a class="headerlink" href="#samesamenitpy-weightedauc-dataclass" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Inherits <code>sample_weight</code> from <code>CTST</code> with no additional fields needed.</li>
+<li><code>bayesian_posterior</code> call in the <code>posterior</code> cached property must pass <code>sample_weight</code> as the base weight, combined with the Bayesian bootstrap Dirichlet weights:<br />
+<code>w_combined = sample_weight * dirichlet_weight</code> (element-wise), then re-normalised.</li>
+</ul>
+<h4 id="samesame_bayesbootpy-bayesian_posterior"><code>samesame/_bayesboot.py</code> — <code>bayesian_posterior</code><a class="headerlink" href="#samesame_bayesbootpy-bayesian_posterior" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Add parameter: <code>base_weight: NDArray | None = None</code></li>
+<li>When provided, multiply Dirichlet weights element-wise with <code>base_weight</code> before passing to <code>metric</code>:<br />
+<code>w = base_weight * dirichlet_w; w = w / w.sum() * n</code></li>
+</ul>
+<h4 id="samesame_utilspy-new-validation-helper"><code>samesame/_utils.py</code> — new validation helper<a class="headerlink" href="#samesame_utilspy-new-validation-helper" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">validate_and_normalise_weights</span><span class="p">(</span>
+    <span class="n">sample_weight</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate and normalise sample weights to sum to n.&quot;&quot;&quot;</span>
+</code></pre></div>
+<p>Raises <code>ValueError</code> if:
+- <code>len(sample_weight) != n</code>
+- Any weight is negative
+- All weights are zero</p>
+<p>Returns <code>None</code> if input is <code>None</code> (pass-through, meaning equal weights).</p>
+<h3 id="integration-points">Integration Points<a class="headerlink" href="#integration-points" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Change</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CTST</code></td>
+<td>Add <code>sample_weight</code> field + validation</td>
+<td><code>default=None</code> preserves backwards-compat</td>
+</tr>
+<tr>
+<td><code>WeightedAUC</code></td>
+<td>Inherited; propagate to <code>bayesian_posterior</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>_bayesboot.bayesian_posterior</code></td>
+<td>Add <code>base_weight</code> param</td>
+<td>Combined with Dirichlet draw</td>
+</tr>
+<tr>
+<td><code>_utils</code></td>
+<td>Add <code>validate_and_normalise_weights</code></td>
+<td>Reused by all test classes</td>
+</tr>
+<tr>
+<td><code>metrics.wauc</code></td>
+<td>Already supports <code>sample_weight</code></td>
+<td>No change needed</td>
+</tr>
+<tr>
+<td><code>scipy.stats.permutation_test</code></td>
+<td>Statistic closure captures <code>w</code> from outer scope</td>
+<td>Labels permuted; weights are fixed</td>
+</tr>
+</tbody>
+</table>
+<h3 id="weight-propagation-in-permutation-test">Weight Propagation in Permutation Test<a class="headerlink" href="#weight-propagation-in-permutation-test" title="Permanent link">&para;</a></h3>
+<p><code>scipy.stats.permutation_test</code> calls <code>statistic(x, y)</code> where <code>x</code> and <code>y</code> are permuted slices of the pooled data. The statistic closure must reconstruct <code>sample_weight</code> per group from the original weight array using the same pooling logic as <code>concat_samples</code> / <code>assign_labels</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Conceptual sketch — not final implementation</span>
+<span class="n">n_a</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">group_a_scores</span><span class="p">)</span>
+<span class="n">w_a</span> <span class="o">=</span> <span class="n">sample_weight</span><span class="p">[:</span><span class="n">n_a</span><span class="p">]</span>   <span class="c1"># weights for group A stay with group A&#39;s positions</span>
+<span class="n">w_b</span> <span class="o">=</span> <span class="n">sample_weight</span><span class="p">[</span><span class="n">n_a</span><span class="p">:]</span>   <span class="c1"># weights for group B</span>
+<span class="n">pooled_w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">w_a</span><span class="p">,</span> <span class="n">w_b</span><span class="p">])</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">statistic</span><span class="p">(</span><span class="n">a_perm</span><span class="p">,</span> <span class="n">b_perm</span><span class="p">):</span>
+    <span class="n">actual_perm</span> <span class="o">=</span> <span class="n">assign_labels</span><span class="p">([</span><span class="n">a_perm</span><span class="p">,</span> <span class="n">b_perm</span><span class="p">])</span>
+    <span class="n">predicted_perm</span> <span class="o">=</span> <span class="n">concat_samples</span><span class="p">([</span><span class="n">a_perm</span><span class="p">,</span> <span class="n">b_perm</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">metric</span><span class="p">(</span><span class="n">actual_perm</span><span class="p">,</span> <span class="n">predicted_perm</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="n">pooled_w</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="security-privacy">Security &amp; Privacy<a class="headerlink" href="#security-privacy" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>sample_weight</code> values are numerical arrays used only in internal arithmetic; no logging, serialisation, or external transmission.</li>
+<li>Input validation (<code>validate_and_normalise_weights</code>) prevents NaN/inf weights from silently corrupting results.</li>
+</ul>
+<hr />
+<h2 id="4-risks-roadmap">4. Risks &amp; Roadmap<a class="headerlink" href="#4-risks-roadmap" title="Permanent link">&para;</a></h2>
+<h3 id="phased-rollout">Phased Rollout<a class="headerlink" href="#phased-rollout" title="Permanent link">&para;</a></h3>
+<p><strong>MVP (this release)</strong>
+- <code>sample_weight=None</code> kwarg on <code>CTST</code> and <code>WeightedAUC</code>
+- Full-pipeline propagation: permutation test + Bayesian bootstrap
+- <code>validate_and_normalise_weights</code> utility
+- Backwards-compatibility regression tests: equal weights → identical results to current implementation
+- Documentation: update docstrings for <code>CTST</code>, <code>WeightedAUC</code>, <code>_bayesboot.bayesian_posterior</code></p>
+<p><strong>v1.1</strong>
+- Example notebook/docs page demonstrating all three weighting scenarios on the credit dataset
+- Add <code>sample_weight</code> to <code>CTST.from_samples</code> convenience constructor</p>
+<p><strong>v2.0</strong>
+- Consider shipping an optional <code>density_ratio</code> extras group with a convenience helper (classifier-based density ratio estimator) behind an import guard — keeps core dependency-free</p>
+<h3 id="technical-risks">Technical Risks<a class="headerlink" href="#technical-risks" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Likelihood</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Permutation test label/weight misalignment</td>
+<td>Medium</td>
+<td>High — silently wrong p-values</td>
+<td>Pin a regression test that checks weight assignment under permutation with a crafted asymmetric weight array</td>
+</tr>
+<tr>
+<td>Dirichlet × user-weight interaction produces near-zero combined weights</td>
+<td>Medium</td>
+<td>Medium — numerical instability in <code>wauc</code></td>
+<td>Clip combined weights at <code>eps</code> before normalisation; add test with extreme weight vectors</td>
+</tr>
+<tr>
+<td>Downstream callers pass un-normalised weights and misinterpret results</td>
+<td>High</td>
+<td>Low — results are valid but scaled differently</td>
+<td>Internal normalisation to <code>sum = n</code>; document convention clearly</td>
+</tr>
+<tr>
+<td><code>scipy.stats.permutation_test</code> API change breaks the closure pattern</td>
+<td>Low</td>
+<td>High</td>
+<td>Pin <code>scipy &gt;= 1.8</code> (current constraint) and add an integration test against the full permutation path</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.92b07e13.min.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
