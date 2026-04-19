@@ -28,7 +28,7 @@ Two questions arise:
    — i.e., whether outcomes have shifted adversely.
 
 We will answer both questions using CTST (for question 1) and DSOS (for question 2).
-If you want to monitor **model familiarity** instead of **predicted risk**, continue to
+If you want to monitor **model uncertainty** instead of **predicted risk**, continue to
 [Credit OOD detection](credit-ood-detection.md) after this tutorial.
 
 ---
