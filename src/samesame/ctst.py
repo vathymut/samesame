@@ -49,14 +49,14 @@ from typing import Literal
 import numpy as np
 from numpy.typing import NDArray
 from scipy.stats import permutation_test
-from sklearn.utils import (
-    check_consistent_length,
-    column_or_1d,
-)
 from sklearn.utils.multiclass import type_of_target
 
 from samesame._data import build_two_sample_dataset
-from samesame._utils import check_metric_function, validate_and_normalise_weights
+from samesame._utils import (
+    check_metric_function,
+    validate_and_normalise_weights,
+    validate_binary_actual_with_predicted,
+)
 
 
 @dataclass
@@ -137,13 +137,9 @@ class CTST:
 
     def __post_init__(self):
         """Validate inputs."""
-        self.actual = column_or_1d(self.actual)
-        self.predicted = column_or_1d(self.predicted)
-        check_consistent_length(self.actual, self.predicted)
-        if type_of_target(self.actual, "actual") != "binary":
-            raise ValueError(
-                "Expected 'actual' to be a binary target (e.g. 0/1 labels)."
-            )
+        self.actual, self.predicted = validate_binary_actual_with_predicted(
+            self.actual, self.predicted
+        )
         type_predicted = type_of_target(self.predicted, "predicted")
         if type_predicted not in ("binary", "continuous", "multiclass"):
             raise ValueError(

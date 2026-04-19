@@ -12,6 +12,8 @@ from typing import Any, Protocol, TypeVar, runtime_checkable
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
+from sklearn.utils import check_consistent_length, column_or_1d
+from sklearn.utils.multiclass import type_of_target
 
 Output = TypeVar("Output", bound=float | ArrayLike | NDArray | Any, covariant=True)
 Input = TypeVar("Input", bound=float | ArrayLike | NDArray | Any, contravariant=True)
@@ -73,6 +75,37 @@ class SupportsScorer(SupportsFitting, Protocol[Input, Output]):
 SupportsEstimator = (
     SupportsClassifier | SupportsRegressor | SupportsScorer | SupportsImputer
 )
+
+
+def validate_binary_actual_with_predicted(
+    actual: NDArray,
+    predicted: NDArray,
+) -> tuple[NDArray, NDArray]:
+    """Validate binary actual labels against a 1D predicted-like array.
+
+    Parameters
+    ----------
+    actual : NDArray
+        Binary labels (e.g., 0/1).
+    predicted : NDArray
+        A 1D array aligned with ``actual``.
+
+    Returns
+    -------
+    tuple[NDArray, NDArray]
+        Validated and 1D-coerced ``(actual, predicted)`` arrays.
+
+    Raises
+    ------
+    ValueError
+        If arrays are not length-consistent or if ``actual`` is not binary.
+    """
+    actual = column_or_1d(actual)
+    predicted = column_or_1d(predicted)
+    check_consistent_length(actual, predicted)
+    if type_of_target(actual, "actual") != "binary":
+        raise ValueError("Expected 'actual' to be a binary target (e.g. 0/1 labels).")
+    return actual, predicted
 
 
 # %%

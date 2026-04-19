@@ -11,6 +11,8 @@ from __future__ import annotations
 import numpy as np
 from numpy.typing import NDArray
 
+from samesame._utils import validate_binary_actual_with_predicted
+
 
 def _density_ratio(
     predicted: NDArray,
@@ -30,14 +32,40 @@ def _density_ratio(
     -------
     NDArray[np.float64]
         Per-sample density ratio r(x) = (p / (1 - p)) * prior_ratio.
+
+    Raises
+    ------
+    ValueError
+        If ``predicted`` contains values outside ``(0, 1)``.
+    ValueError
+        If ``prior_ratio`` is not finite and strictly positive.
     """
-    p = np.asarray(predicted, dtype=np.float64)
-    if np.any(p <= 0.0) or np.any(p >= 1.0):
+    probs = np.asarray(predicted, dtype=np.float64)
+    if np.any(probs <= 0.0) or np.any(probs >= 1.0):
         raise ValueError(
             "predicted must be membership probabilities in the open interval "
             "(0, 1); got values outside this range."
         )
-    return (p / (1.0 - p)) * prior_ratio
+    if not np.isfinite(prior_ratio) or prior_ratio <= 0.0:
+        raise ValueError("prior_ratio must be finite and > 0.")
+    return (probs / (1.0 - probs)) * prior_ratio
+
+
+def _resolve_prior_ratio(
+    actual: NDArray[np.int_],
+    prior_ratio: float | None,
+) -> float:
+    """Resolve and validate prior ratio n_tr / n_te for binary labels."""
+    if prior_ratio is not None:
+        if not np.isfinite(prior_ratio) or prior_ratio <= 0.0:
+            raise ValueError("prior_ratio must be finite and > 0.")
+        return prior_ratio
+
+    n_tr = int(np.sum(actual == 0))
+    n_te = int(np.sum(actual == 1))
+    if n_tr == 0 or n_te == 0:
+        raise ValueError("actual must contain both 0 and 1 labels.")
+    return n_tr / n_te
 
 
 def aiw(
@@ -87,6 +115,9 @@ def aiw(
         If any element of ``predicted`` is :math:`\\le 0` or :math:`\\ge 1`.
     ValueError
         If ``lam`` is outside :math:`[0, 1]`.
+    ValueError
+        If ``actual``/``predicted`` lengths mismatch, ``actual`` is not
+        binary, inferred groups are missing, or ``prior_ratio`` is invalid.
 
     Notes
     -----
@@ -121,14 +152,12 @@ def aiw(
     >>> np.round(aiw(actual, predicted, lam=0.0), 4)
     array([1., 1., 1., 1.])
     """
+    actual, predicted = validate_binary_actual_with_predicted(actual, predicted)
     if lam < 0.0 or lam > 1.0:
         raise ValueError("lam must be in [0, 1].")
-    if prior_ratio is None:
-        n_tr = int(np.sum(actual == 0))
-        n_te = int(np.sum(actual == 1))
-        prior_ratio = n_tr / n_te
-    r = _density_ratio(predicted, prior_ratio=prior_ratio)
-    return np.power(r, lam)
+    ratio = _resolve_prior_ratio(actual, prior_ratio)
+    density_ratio = _density_ratio(predicted, prior_ratio=ratio)
+    return np.power(density_ratio, lam)
 
 
 def riw(
@@ -178,6 +207,9 @@ def riw(
         If any element of ``predicted`` is :math:`\\le 0` or :math:`\\ge 1`.
     ValueError
         If ``lam`` is outside :math:`[0, 1]`.
+    ValueError
+        If ``actual``/``predicted`` lengths mismatch, ``actual`` is not
+        binary, inferred groups are missing, or ``prior_ratio`` is invalid.
 
     Notes
     -----
@@ -219,14 +251,12 @@ def riw(
     >>> np.round(riw(actual, predicted, lam=1.0), 4)
     array([1., 1., 1., 1.])
     """
+    actual, predicted = validate_binary_actual_with_predicted(actual, predicted)
     if lam < 0.0 or lam > 1.0:
         raise ValueError("lam must be in [0, 1].")
-    if prior_ratio is None:
-        n_tr = int(np.sum(actual == 0))
-        n_te = int(np.sum(actual == 1))
-        prior_ratio = n_tr / n_te
-    r = _density_ratio(predicted, prior_ratio=prior_ratio)
-    return r / ((1.0 - lam) + lam * r)
+    ratio = _resolve_prior_ratio(actual, prior_ratio)
+    density_ratio = _density_ratio(predicted, prior_ratio=ratio)
+    return density_ratio / ((1.0 - lam) + lam * density_ratio)
 
 
 __all__ = ["aiw", "riw"]

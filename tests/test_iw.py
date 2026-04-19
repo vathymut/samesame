@@ -126,6 +126,32 @@ def test_prior_ratio_override():
     assert not np.allclose(result_auto, result_override)
 
 
+def test_length_mismatch_raises():
+    actual = np.array([0, 0, 1])
+    predicted = np.array([0.2, 0.4, 0.6, 0.8])
+    with pytest.raises(ValueError, match="inconsistent numbers of samples"):
+        aiw(actual, predicted)
+    with pytest.raises(ValueError, match="inconsistent numbers of samples"):
+        riw(actual, predicted)
+
+
+def test_missing_group_raises():
+    actual = np.array([0, 0, 0, 0])
+    predicted = np.array([0.2, 0.3, 0.4, 0.5])
+    with pytest.raises(ValueError, match="both 0 and 1"):
+        aiw(actual, predicted)
+    with pytest.raises(ValueError, match="both 0 and 1"):
+        riw(actual, predicted)
+
+
+@pytest.mark.parametrize("bad_prior", [0.0, -1.0, np.inf, np.nan])
+def test_invalid_prior_ratio_raises(membership_probs, bad_prior):
+    with pytest.raises(ValueError, match="prior_ratio"):
+        aiw(**membership_probs, prior_ratio=bad_prior)
+    with pytest.raises(ValueError, match="prior_ratio"):
+        riw(**membership_probs, prior_ratio=bad_prior)
+
+
 # ---------------------------------------------------------------------------
 # Output shape and dtype
 # ---------------------------------------------------------------------------
