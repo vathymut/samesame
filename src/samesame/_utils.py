@@ -84,19 +84,20 @@ def check_metric_function(func):
     >>> check_metric_function(metric)
     True
 
+    >>> def flexible_metric(a, b, **kwargs): return 1.0
+    >>> check_metric_function(flexible_metric)
+    True
+
     >>> def bad_metric(a, b): return 1.0
     >>> check_metric_function(bad_metric)
     False
     """
     sig = inspect.signature(func)
-    params = list(sig.parameters.values())
-    # Two positional (or positional-or-keyword) arguments
-    pos = [p for p in params if p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD)]
-    # Keyword-only argument named 'sample_weight'
-    sample_weight_exists = any(
-        p for p in params if p.kind == p.KEYWORD_ONLY and p.name == "sample_weight"
-    )
-    return len(pos) == 2 and sample_weight_exists
+    try:
+        sig.bind(object(), object(), sample_weight=None)
+    except TypeError:
+        return False
+    return True
 
 
 def validate_and_normalise_weights(

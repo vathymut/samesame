@@ -76,13 +76,13 @@ class CTST:
         Estimated (predicted) scores for corresponding samples in `actual`.
     metric : Callable
         A callable that conforms to scikit-learn metric API. This function
-        must take two positional arguments e.g. `y_true` and `y_pred`.
+        must accept two positional arguments e.g. `y_true` and `y_pred`.
+        Weighted usage requires support for a `sample_weight` keyword or
+        generic keyword arguments.
     n_resamples : int, optional
         Number of resampling iterations, by default 9999.
     rng : np.random.Generator, optional
         Random number generator, by default np.random.default_rng().
-    n_jobs : int, optional
-        Number of parallel jobs, by default 1.
     batch : int or None, optional
         Batch size for parallel processing, by default None.
     alternative : {'less', 'greater', 'two-sided'}, optional
@@ -97,12 +97,12 @@ class CTST:
     ------
     ValueError
         If input arrays have incompatible lengths, if ``actual`` is not
-        binary, if ``predicted`` has unsupported target type, if
-        ``n_jobs != 1``, if ``batch`` is invalid, or if sample weights fail
+        binary, if ``predicted`` has unsupported target type, if ``batch`` is
+        invalid, or if sample weights fail
         validation.
     TypeError
         If ``metric`` does not expose a compatible scikit-learn metric
-        signature with keyword-only ``sample_weight``.
+        signature for ``(y_true, y_pred, *, sample_weight=...)``.
 
     Notes
     -----
@@ -131,7 +131,6 @@ class CTST:
     metric: Callable
     n_resamples: int = 9999
     rng: np.random.Generator = field(default_factory=np.random.default_rng)
-    n_jobs: int = 1
     batch: int | None = None
     alternative: Literal["less", "greater", "two-sided"] = "two-sided"
     sample_weight: NDArray | None = field(default=None, repr=False)
@@ -154,12 +153,8 @@ class CTST:
         if not check_metric_function(self.metric):
             raise TypeError(
                 "'metric' expects a callable that conforms to scikit-learn "
-                f"metric API; got {signature(self.metric)!s}."
-            )
-        if self.n_jobs != 1:
-            raise ValueError(
-                "n_jobs is not supported by scipy.stats.permutation_test in this "
-                "implementation; use n_jobs=1."
+                "metric API and accepts ``sample_weight`` as a keyword "
+                f"argument; got {signature(self.metric)!s}."
             )
         if self.batch is not None and self.batch < 1:
             raise ValueError("batch must be a positive integer or None.")
@@ -172,6 +167,8 @@ class CTST:
         _w = self.sample_weight
 
         def statistic(*args):
+            if _w is None:
+                return self.metric(args[0], args[1])
             return self.metric(args[0], args[1], sample_weight=_w)
 
         return permutation_test(
@@ -241,9 +238,9 @@ class CTST:
         metric: Callable,
         n_resamples: int = 9999,
         rng: np.random.Generator | None = None,
-        n_jobs: int = 1,
         batch: int | None = None,
         alternative: Literal["less", "greater", "two-sided"] = "two-sided",
+        sample_weight: NDArray | None = None,
     ):
         """
         Create a CTST instance from two samples.
@@ -263,12 +260,12 @@ class CTST:
             Number of permutation draws.
         rng : np.random.Generator or None, optional
             Random number generator. If None, a new default generator is used.
-        n_jobs : int, optional
-            Number of jobs. Must be 1 in this implementation.
         batch : int or None, optional
             Batch size passed to :func:`scipy.stats.permutation_test`.
         alternative : {'less', 'greater', 'two-sided'}, optional
             Alternative hypothesis for p-value computation.
+        sample_weight : NDArray or None, optional
+            Optional sample weights aligned with the combined samples.
 
         Returns
         -------
@@ -289,9 +286,9 @@ class CTST:
             metric,
             n_resamples,
             rng,
-            n_jobs,
             batch,
             alternative,
+            sample_weight,
         )
 
 

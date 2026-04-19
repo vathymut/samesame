@@ -38,8 +38,6 @@ class WeightedAUC(CTST):
         Number of resampling iterations, by default 9999.
     rng : np.random.Generator, optional
         Random number generator, by default np.random.default_rng().
-    n_jobs : int, optional
-        Number of parallel jobs, by default 1.
     batch : int or None, optional
         Batch size for parallel processing, by default None.
     sample_weight : NDArray or None, optional
@@ -104,7 +102,6 @@ class WeightedAUC(CTST):
         predicted: NDArray,
         n_resamples: int = 9999,
         rng: np.random.Generator | None = None,
-        n_jobs: int = 1,
         batch: int | None = None,
         sample_weight: NDArray | None = None,
     ):
@@ -117,7 +114,6 @@ class WeightedAUC(CTST):
             metric=wauc,
             n_resamples=n_resamples,
             rng=rng,
-            n_jobs=n_jobs,
             batch=batch,
             alternative="greater",
             sample_weight=sample_weight,
@@ -171,7 +167,6 @@ class WeightedAUC(CTST):
         second_sample: NDArray,
         n_resamples: int = 9999,
         rng: np.random.Generator | None = None,
-        n_jobs: int = 1,
         batch: int | None = None,
     ):
         """
@@ -190,8 +185,6 @@ class WeightedAUC(CTST):
             Number of permutation and posterior resamples.
         rng : np.random.Generator or None, optional
             Random number generator. If None, a new default generator is used.
-        n_jobs : int, optional
-            Number of jobs. Must be 1 in this implementation.
         batch : int or None, optional
             Batch size passed to the permutation engine.
 
@@ -213,7 +206,6 @@ class WeightedAUC(CTST):
             predicted=predicted,
             n_resamples=n_resamples,
             rng=rng,
-            n_jobs=n_jobs,
             batch=batch,
         )
 

@@ -12,7 +12,7 @@ from sklearn.metrics import (
     roc_auc_score,
 )
 
-from samesame._data import group_by
+from samesame._data import build_two_sample_dataset, group_by
 from samesame.ctst import CTST
 from samesame.nit import WeightedAUC
 
@@ -92,6 +92,20 @@ def test_wrong_metric(decent_predictions, n_resamples=60):
         )
 
 
+def test_metric_with_kwargs_is_accepted(decent_predictions, n_resamples=60):
+    def metric(y_true, y_score, **kwargs):
+        return roc_auc_score(y_true, y_score, **kwargs)
+
+    ctst = CTST(
+        actual=decent_predictions["actual"],
+        predicted=decent_predictions["predicted"],
+        metric=metric,
+        n_resamples=n_resamples,
+    )
+
+    assert isinstance(ctst.statistic, float)
+
+
 # ---------------------------------------------------------------------------
 # Backwards-compatibility: sample_weight=None must reproduce unweighted results
 # (TASK-001 / TEST-001)
@@ -119,6 +133,35 @@ def test_ctst_none_weight_equals_no_weight(decent_predictions, n_resamples=60):
     assert base.statistic == weighted.statistic
     np.testing.assert_array_equal(base.null, weighted.null)
     assert base.pvalue == weighted.pvalue
+
+
+def test_from_samples_accepts_sample_weight(decent_predictions, n_resamples=60):
+    samples = group_by(
+        data=decent_predictions["predicted"],
+        groups=decent_predictions["actual"],
+    )
+    actual, predicted = build_two_sample_dataset(samples[0], samples[1])
+    sample_weight = np.linspace(1.0, 2.0, len(actual))
+    direct = CTST(
+        actual=actual,
+        predicted=predicted,
+        metric=roc_auc_score,
+        n_resamples=n_resamples,
+        rng=np.random.default_rng(123),
+        sample_weight=sample_weight,
+    )
+    from_samples = CTST.from_samples(
+        first_sample=samples[0],
+        second_sample=samples[1],
+        metric=roc_auc_score,
+        n_resamples=n_resamples,
+        rng=np.random.default_rng(123),
+        sample_weight=sample_weight,
+    )
+
+    assert direct.statistic == from_samples.statistic
+    np.testing.assert_array_equal(direct.null, from_samples.null)
+    assert direct.pvalue == from_samples.pvalue
 
 
 # ---------------------------------------------------------------------------
@@ -199,13 +242,3 @@ def test_ctst_weighted_permutation_fixed(decent_predictions, n_resamples=200):
     )
     # Weighted statistic must differ (weights change the metric value)
     assert base.statistic != weighted.statistic
-
-
-def test_ctst_rejects_unsupported_n_jobs(decent_predictions):
-    with pytest.raises(ValueError, match="n_jobs"):
-        CTST(
-            actual=decent_predictions["actual"],
-            predicted=decent_predictions["predicted"],
-            metric=roc_auc_score,
-            n_jobs=2,
-        )
