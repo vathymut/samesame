@@ -272,3 +272,10 @@ class TestNumericalStability:
             scores_float64 = func(logits_float64)
             assert scores_int.dtype == np.float32
             assert scores_float64.dtype == np.float32
+
+    def test_large_finite_float64_logits_do_not_overflow(self) -> None:
+        """Large finite float64 logits should remain valid and finite."""
+        logits = np.array([[1e39, 1.0, 0.0]], dtype=np.float64)
+        for func in [max_logit, logit_gap]:
+            scores = func(logits)
+            assert np.all(np.isfinite(scores))

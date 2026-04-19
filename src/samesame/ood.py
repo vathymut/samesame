@@ -24,7 +24,7 @@ from numpy.typing import NDArray
 
 
 def _validate_logits(logits: NDArray) -> NDArray:
-    logits = np.asarray(logits, dtype=np.float32)
+    logits = np.asarray(logits)
 
     if logits.ndim != 2:
         raise ValueError(
@@ -39,7 +39,15 @@ def _validate_logits(logits: NDArray) -> NDArray:
     if not np.isfinite(logits).all():
         raise ValueError("logits contain NaN or infinite values")
 
-    return logits
+    # Prefer float32 for compactness, but keep wider dtype when float32 would
+    # overflow otherwise finite inputs (e.g., very large float64 logits).
+    if np.issubdtype(logits.dtype, np.floating):
+        max_abs = np.max(np.abs(logits), initial=0.0)
+        if max_abs <= np.finfo(np.float32).max:
+            return logits.astype(np.float32, copy=False)
+        return logits.astype(np.float64, copy=False)
+
+    return logits.astype(np.float32, copy=False)
 
 
 def logit_gap(logits: NDArray) -> NDArray:
@@ -108,8 +116,10 @@ def logit_gap(logits: NDArray) -> NDArray:
     [4.25 0.15]
     """
     logits = _validate_logits(logits)
-    sorted_logits = np.sort(logits, axis=1)[:, ::-1]
-    return sorted_logits[:, 0] - np.mean(sorted_logits[:, 1:], axis=1)
+    n_classes = logits.shape[1]
+    max_logits = np.max(logits, axis=1)
+    mean_rest = (np.sum(logits, axis=1) - max_logits) / (n_classes - 1)
+    return max_logits - mean_rest
 
 
 def max_logit(logits: NDArray) -> NDArray:
