@@ -8,11 +8,13 @@
 from . import (
     bayes,
     ctst,
+    iw,
     nit,
 )
 
 __all__ = [
     "bayes",
     "ctst",
+    "iw",
     "nit",
 ]

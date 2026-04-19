@@ -80,6 +80,7 @@ statistical differences that do not signal a real problem. Without DSOS, you mig
 | `samesame.nit`     | Noninferiority tests — is the change actually harmful?    |
 | `samesame.bayes`   | Bayesian inference — convert p-values to Bayes factors    |
 | `samesame.metrics` | Weighted ROC utilities (for example, WAUC)                |
+| `samesame.iw`      | Importance weighting — covariate-shift sample weights (AIWERM, RIWERM) |
 | `samesame.ood`     | Out-of-distribution scoring — flag unusual inputs         |
 
 ## Test result attributes
@@ -103,6 +104,9 @@ Every test result object exposes these attributes (where applicable):
 	If you need `sample_weight`, construct `WeightedAUC(...)` directly.
 - **OOD utilities**: `samesame.ood` includes both `logit_gap` (recommended default) and
 	`max_logit` (simple baseline).
+- **Importance weights**: `samesame.iw.aiw(actual, predicted, *, lam=1.0)` and
+	`samesame.iw.riw(actual, predicted, *, lam=0.5)` return per-sample weight vectors
+	suitable for passing as `sample_weight` to `wauc` or `CTST`.
 
 ## Examples
 

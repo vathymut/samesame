@@ -189,3 +189,15 @@ def fixtures_for_importances():
     predictor = RandomForestRegressor(random_state=42).fit(X, y)
     imputer = SimpleImputer(strategy="mean").fit(X)
     return X, predictor, imputer
+
+
+@pytest.fixture
+def membership_probs():
+    """Balanced two-group fixture for testing iw module.
+
+    actual=[0, 0, 1, 1] gives n_tr=2, n_te=2 -> prior_ratio=1.0.
+    Density ratios: r = [1/3, 2/3, 3/2, 3].
+    """
+    actual = np.array([0, 0, 1, 1], dtype=int)
+    predicted = np.array([0.25, 0.4, 0.6, 0.75])
+    return {"actual": actual, "predicted": predicted}
