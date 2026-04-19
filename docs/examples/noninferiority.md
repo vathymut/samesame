@@ -1,74 +1,129 @@
-# Noninferiority Test (D-SOS)
+# How to Test for Harmful Shift (Noninferiority)
 
-Noninferiority asks: *is the new sample not meaningfully worse than the reference?* `samesame` implements D-SOS (Dataset Shift with Outlier Scores), a nonparametric test on outlier scores with a one-sided alternative.
+**Goal:** Determine whether a new dataset is *meaningfully worse* than a reference dataset,
+not just different.
 
-## When to use
+## The problem with asking "are these the same?"
 
-- **CTST (distribution difference)**: detect any distributional change
-- **D-SOS (adverse shift check)**: detect whether the new sample is worse (more high outlier scores)
+Imagine you deploy a machine learning model in January and again in February.
+You run a distribution test (CTST) and get a small p-value — the February data is statistically
+different from January. Should you be worried?
 
-Use D-SOS when you care about *harmful* shifts rather than any difference.
+Not necessarily. Any two real-world datasets will differ slightly due to random variation.
+CTST is sensitive enough to pick up even tiny, inconsequential differences.
 
-## How D-SOS works
+What you usually *actually* want to know is: **"Is February's data worse in a way that could
+hurt my model?"** That is the question DSOS answers.
 
-- Treat outlier scores as classifier outputs
-- Use a weighted AUC with a one-sided alternative (more high scores = worse)
-- No parametric assumptions or preset margin needed
+## CTST vs. DSOS at a glance
 
-## Example: clinical trial
+| Test  | Question it answers                          | When to use it                              |
+|-------|----------------------------------------------|---------------------------------------------|
+| CTST  | Are the two distributions different?         | Any time you want to detect *any* change     |
+| DSOS  | Is the new data *worse* than the reference?  | When you care about *harmful* shifts only   |
 
-The [original example](https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf) compares two treatments for relief from leg discomfort. We repurpose the relief scores as outlier scores to test noninferiority of the Bowl treatment versus the Armanaleg (reference).
-We flip relief into discomfort scores so that higher means worse (outlier) and test if the new treatment is not worse than the reference.
+Use both together: CTST to detect change, DSOS to judge severity.
+
+## What are "outlier scores"?
+
+DSOS works by comparing **outlier scores** — a number assigned to each sample that represents
+how unusual or risky it is. Higher scores mean "worse". Examples:
+
+- A model's predicted probability of failure or default
+- A reconstruction error from an anomaly detection model
+- A measure of patient discomfort or risk
+
+DSOS asks: does the new dataset have disproportionately more high-scoring (worse) samples?
+
+## How DSOS works (in plain terms)
+
+1. Combine both datasets and label them (reference = 0, new = 1)
+2. Compute a weighted AUC that gives extra importance to the highest-scoring samples
+3. Use a one-sided permutation test to ask: are the worst samples concentrated in the new dataset?
+
+No parametric assumptions are required, and you do not need to specify a margin in advance.
+
+## Example: comparing two treatments
+
+This example is based on a [SAS case study](https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf)
+comparing two treatments for relief from leg discomfort: *Armanaleg* (the established reference)
+and *Bowl* (the new treatment). The scores below measure discomfort — higher means more discomfort,
+which is worse.
+
+We want to know: **is the Bowl treatment meaningfully worse than Armanaleg?**
+
+### Step 1 — Load the data
+
+Relief scores are converted to discomfort scores by flipping them, so that higher always means worse:
 
 ```python
 import numpy as np
 
 datalines = (
-  "9 14 13 8 10 5 11 9 12 10 9 11 8 11 "
-  "4 8 11 16 12 10 9 10 13 12 11 13 9 4 "
-  "7 14 8 4 10 11 7 7 13 8 8 13 10 9 "
-  "12 9 11 10 12 7 8 5 10 7 13 12 13 11 "
-  "7 12 10 11 10 8 6 9 11 8 5 11 10 8"
+    "9 14 13 8 10 5 11 9 12 10 9 11 8 11 "
+    "4 8 11 16 12 10 9 10 13 12 11 13 9 4 "
+    "7 14 8 4 10 11 7 7 13 8 8 13 10 9 "
+    "12 9 11 10 12 7 8 5 10 7 13 12 13 11 "
+    "7 12 10 11 10 8 6 9 11 8 5 11 10 8"
 ).split()
+
 relief = [float(s) for s in datalines]
-discomfort = [max(relief) - s for s in relief]
-armanaleg = np.array(discomfort[:28])
-bowl = np.array(discomfort[28:])
+discomfort = [max(relief) - s for s in relief]  # flip: higher = more discomfort = worse
+
+armanaleg = np.array(discomfort[:28])   # reference treatment
+bowl = np.array(discomfort[28:])        # new treatment
 ```
 
-## Analysis
+### Step 2 — Run the DSOS test
 
-Run D-SOS treating `armanaleg` as control and `bowl` as the new treatment.
+Pass the reference sample first, then the new sample. DSOS tests whether `bowl`
+contains disproportionately more high-discomfort (worse) cases than `armanaleg`:
 
 ```python
-from samesame.bayes import as_pvalue
 from samesame.nit import DSOS
+from samesame.bayes import as_pvalue
 
 dsos = DSOS.from_samples(armanaleg, bowl)
-frequentist = dsos.pvalue
-bayesian = as_pvalue(dsos.bayes_factor)
-print(f"Frequentist p-value: {frequentist:.4f}")
-print(f"Bayesian p-value: {bayesian:.4f}")
+
+print(f"Frequentist p-value: {dsos.pvalue:.4f}")
+print(f"Bayesian    p-value: {as_pvalue(dsos.bayes_factor):.4f}")
 ```
 
-Typical output (reproduced from the example):
+**Output:**
 
 ```text
 Frequentist p-value: 0.1215
-Bayesian p-value: 0.1159
+Bayesian    p-value: 0.1159
 ```
 
-We fail to reject the null of *no adverse shift* — the new
-treatment (Bowl) is not shown to be meaningfully worse than the reference
-under the D-SOS criterion.
+## Reading the results
 
-## Interpreting results
+| p-value         | What it means                                                         |
+|-----------------|-----------------------------------------------------------------------|
+| Small (< 0.05)  | Evidence that the new data is adversely worse than the reference      |
+| Large (≥ 0.05)  | Insufficient evidence that the new data is worse (noninferior result) |
 
-- Small p-value → evidence of adverse shift (new sample has more extreme outliers)
-- Large p-value → insufficient evidence of being worse (noninferior)
+Here, p = 0.1215 is large. We cannot conclude that Bowl is meaningfully worse than Armanaleg —
+the new treatment passes the noninferiority check.
 
-## Practical tips
+### Frequentist vs. Bayesian p-value
 
-- Pick outlier scores aligned to “worse outcomes” (e.g., high error, high risk, discomfort)
-- Pair with CTST: CTST says “different”, D-SOS says “meaningfully worse?”
-- Use when labels are scarce: outlier scores can be model-based or proxy metrics
+DSOS provides two ways to summarise the evidence:
+
+- **Frequentist p-value** (`dsos.pvalue`): the standard approach, based on permutations
+- **Bayesian p-value** (`as_pvalue(dsos.bayes_factor)`): derived from the Bayes factor,
+  which quantifies how much evidence there is *in favour of* an adverse shift
+
+Both tell the same story here. The Bayesian option is useful when you want to make
+probability statements about the hypothesis, or when you are running sequential tests
+over time.
+
+## Tips
+
+- **Score direction matters:** Make sure high scores mean "worse". If your scores are
+  confidence values (higher = better), negate them before passing to DSOS.
+- **No labels needed:** Outlier scores can come from your existing model's predictions —
+  you do not need ground truth labels. This is especially useful in production monitoring.
+- **Pair with CTST:** Run CTST first to detect *any* change, then run DSOS to decide
+  whether the change is harmful. See the [Credit example](credit-example.md) for a full
+  demonstration of both tests together.

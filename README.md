@@ -14,28 +14,27 @@
 
 > Same, same but different ...
 
-`samesame` implements classifier two-sample tests (CTSTs) and as a bonus extension, a noninferiority
-test (NIT). These tests are either missing or implemented with significant tradeoffs (looking at you, sample-splitting) in existing libraries.
+`samesame` helps you answer a question every data scientist faces after deploying a model:
+**"Has my data changed in a way that could hurt my model?"**
 
-`samesame` is versatile, extensible, lightweight, powerful, and agnostic to your inference strategy
-so long as it is valid (e.g. cross-fitting, sample splitting, etc.).
+It provides two complementary statistical tests:
 
-## Motivation
+- **CTST** — detects whether two datasets come from different distributions ("something changed")
+- **DSOS** — detects whether that change is actually harmful ("things got worse")
 
-`samesame` is for those who need statistical tests for:
+This distinction matters. Not every distributional difference is a problem.
+`samesame` helps you tell the two apart so you can avoid unnecessary alerts and focus on real issues.
 
-- **Data validation** - Verify that data distributions meet expectations
-- **Model performance monitoring** - Detect performance degradation over time
-- **Drift detection** - Identify dataset shifts between training and production
-- **Statistical process control** - Monitor system behavior and quality
+## Who is this for?
 
----
+`samesame` is useful whenever you need to compare two datasets statistically, for example:
 
-A [motivating example](https://vathymut.github.io/dsos/articles/motivation.html) is available from the related R package [`dsos`](https://github.com/vathymut/dsos), which provides some of the same functionality.
+- **Model monitoring** — Is my production data starting to look different from my training data?
+- **Data validation** — Does this new data batch match the distribution I expect?
+- **Drift detection** — Has the input distribution shifted between last month and this month?
+- **A/B testing** — Are the two groups I'm comparing actually comparable?
 
 ## Installation
-
-To install, run the following command:
 
 ```bash
 python -m pip install samesame
@@ -43,74 +42,69 @@ python -m pip install samesame
 
 ## Quick Start
 
-This example demonstrates the key distinction between tests of equal distribution and noninferiority tests—a critical difference for avoiding false alarms in production systems.
+The example below shows why having *two* tests matters.
 
-Simulate outlier scores to test for no adverse shift:
+Imagine you have outlier scores from a training set and a test set — higher score means more unusual.
+You want to know: (a) are the distributions different? and (b) is the test set actually *worse*?
 
 ```python
+import numpy as np
+from sklearn.metrics import roc_auc_score
 from samesame.ctst import CTST
 from samesame.nit import DSOS
-from sklearn.metrics import roc_auc_score
-import numpy as np
 
-n_size = 600
 rng = np.random.default_rng(123_456)
-os_train = rng.normal(size=n_size)
-os_test = rng.normal(size=n_size)
-null_ctst = CTST.from_samples(os_train, os_test, metric=roc_auc_score)
-null_dsos = DSOS.from_samples(os_train, os_test)
+os_train = rng.normal(size=600)  # outlier scores from training
+os_test  = rng.normal(size=600)  # outlier scores from deployment
+
+# Question 1: Are the distributions different?
+ctst = CTST.from_samples(os_train, os_test, metric=roc_auc_score)
+print(f"CTST p-value: {ctst.pvalue:.4f}")
+# CTST p-value: 0.0358  → distributions differ (small p-value)
+
+# Question 2: Is the test set actually worse (more outliers)?
+dsos = DSOS.from_samples(os_train, os_test)
+print(f"DSOS p-value: {dsos.pvalue:.4f}")
+# DSOS p-value: 0.9500  → no adverse shift detected (large p-value)
 ```
 
-**Test of equal distribution (CTST):** Rejects the null of equal distributions
+**What this means:** CTST flags a difference (the distributions are not identical), but DSOS says
+the test set is *not* disproportionately worse. This is a common real-world situation — minor
+statistical differences that do not signal a real problem. Without DSOS, you might raise a false alarm.
 
-```python
-print(f"{null_ctst.pvalue=:.4f}")
-# null_ctst.pvalue=0.0358
-```
+## Modules
 
-**Noninferiority test (DSOS):** Fails to reject the null of no adverse shift
+| Module             | What it does                                              |
+|--------------------|-----------------------------------------------------------|
+| `samesame.ctst`    | Classifier two-sample tests — did the distribution change? |
+| `samesame.nit`     | Noninferiority tests — is the change actually harmful?    |
+| `samesame.bayes`   | Bayesian inference — convert p-values to Bayes factors    |
+| `samesame.ood`     | Out-of-distribution scoring — flag unusual inputs         |
 
-```python
-print(f"{null_dsos.pvalue=:.4f}")
-# null_dsos.pvalue=0.9500
-```
+## Test result attributes
 
-**Key insight:** While the test sample (`os_test`) has a statistically different distribution from the training sample (`os_train`), it does not contain disproportionally more outliers. This distinction is exactly what `samesame` highlights—many practitioners conflate "different distribution" with "problematic shift," but `samesame` helps you distinguish between the two.
+Every test result object exposes these attributes (where applicable):
 
-## Usage
-
-### Functionality
-
-Below, you will find an overview of common modules in `samesame`.
-
-| Function                                  | Module           |
-|-------------------------------------------|------------------|
-| Bayesian inference                        | `samesame.bayes` |
-| Classifier two-sample tests (CTSTs)       | `samesame.ctst`  |
-| Noninferiority tests (NITs)               | `samesame.nit`   |
-| Out-of-distribution (OOD) detection       | `samesame.ood`   |
-
-### Attributes
-
-When the method is a statistical test, `samesame` saves (stores) the results of
-some potentially computationally intensive results in attributes. These
-attributes, when available, can be accessed as follows.
-
-| Attribute      | Description                                   |
-|----------------|-----------------------------------------------|
-| `.statistic`   | The test statistic for the hypothesis.        |
-| `.null`        | The null distribution for the hypothesis.     |
-| `.pvalue`      | The p-value for the hypothesis.               |
-| `.posterior`   | The posterior distribution for the hypothesis.|
-| `.bayes_factor`| The bayes factor for the hypothesis.          |
+| Attribute       | Description                                      |
+|-----------------|--------------------------------------------------|
+| `.statistic`    | The observed test statistic                      |
+| `.null`         | The null distribution (from permutations)        |
+| `.pvalue`       | The p-value                                      |
+| `.posterior`    | The Bayesian posterior distribution (DSOS only)  |
+| `.bayes_factor` | The Bayes factor (DSOS only)                     |
 
 ## Examples
 
-To get started, please see the examples in the [docs](https://vathymut.github.io/samesame/).
+Step-by-step worked examples are available in the [documentation](https://vathymut.github.io/samesame/):
+
+- [Detecting distribution shifts](https://vathymut.github.io/samesame/examples/distribution-shifts/)
+- [Noninferiority testing](https://vathymut.github.io/samesame/examples/noninferiority/)
+- [Credit risk: shift and degradation](https://vathymut.github.io/samesame/examples/credit-example/)
 
 ## Dependencies
 
-`samesame` has minimal dependencies beyond the Python standard library, making it a lightweight addition to most machine learning projects. It is built on top of, and fully compatible with, [scikit-learn][scikit-learn] and [numpy][numpy].
+`samesame` has minimal dependencies. It is built on top of, and fully compatible with,
+[scikit-learn][scikit-learn] and [numpy][numpy].
 
 [numpy]: https://numpy.org/
 [scikit-learn]: https://scikit-learn.org/stable

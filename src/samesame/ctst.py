@@ -7,9 +7,9 @@
 """
 Classifier two-sample tests (CTST) from binary classification metrics.
 
-The classifier two-sample test broadly consists of three steps: (1)
-training a classifier, (2) scoring the two samples and (3) turning a test
-statistic into a p-value from these scores. This test statistic can be the
+The classifier two-sample test broadly consists of three steps: (1) training a 
+(binary) classifier, (2) predicting out-of-sample and (3) turning a test
+statistic into a p-value from these predictions. This test statistic can be the
 performance metric of a binary classifier such as the (weighted) area under
 the receiver operating characteristic curve, the Matthews correlation
 coefficient, and the (balanced) accuracy. This module tackles step (3).
