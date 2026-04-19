@@ -14,6 +14,7 @@ nav:
   - API:
       - bayes: api/bayes.md
       - ctst: api/ctst.md
+      - metrics: api/metrics.md
       - nit: api/nit.md
       - ood: api/ood.md
 plugins:

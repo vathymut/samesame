@@ -100,6 +100,7 @@ Step-by-step worked examples are available in the [documentation](https://vathym
 - [Detecting distribution shifts](https://vathymut.github.io/samesame/examples/distribution-shifts/)
 - [Noninferiority testing](https://vathymut.github.io/samesame/examples/noninferiority/)
 - [Credit risk: shift and degradation](https://vathymut.github.io/samesame/examples/credit-example/)
+- [Credit OOD detection](https://vathymut.github.io/samesame/examples/credit-ood-detection/)
 
 ## Dependencies
 

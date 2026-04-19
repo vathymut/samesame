@@ -10,6 +10,7 @@ from __future__ import annotations
 import inspect
 from typing import Any, Protocol, TypeVar, runtime_checkable
 
+import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 Output = TypeVar("Output", bound=float | ArrayLike | NDArray | Any, covariant=True)
@@ -96,3 +97,44 @@ def check_metric_function(func):
         p for p in params if p.kind == p.KEYWORD_ONLY and p.name == "sample_weight"
     )
     return len(pos) == 2 and sample_weight_exists
+
+
+def validate_and_normalise_weights(
+    sample_weight: NDArray | None,
+    n: int,
+) -> NDArray | None:
+    """Validate and normalise sample weights to sum to n.
+
+    Parameters
+    ----------
+    sample_weight : NDArray or None
+        Sample weights to validate. If None, returns None (equal weights).
+    n : int
+        Expected length of the weight array.
+
+    Returns
+    -------
+    NDArray or None
+        Normalised weights summing to n, or None if input is None.
+
+    Raises
+    ------
+    ValueError
+        If weights have wrong length, contain negative values, are all zero,
+        or contain non-finite values (NaN or inf).
+    """
+    if sample_weight is None:
+        return None
+    w = np.asarray(sample_weight, dtype=float)
+    if len(w) != n:
+        raise ValueError(f"sample_weight has wrong length: expected {n}, got {len(w)}.")
+    if not np.all(np.isfinite(w)):
+        raise ValueError(
+            "sample_weight must contain only finite values (no NaN or inf)."
+        )
+    if np.any(w < 0):
+        raise ValueError("sample_weight must not contain negative values.")
+    total = w.sum()
+    if total == 0:
+        raise ValueError("sample_weight must not be all zero.")
+    return w / total * n

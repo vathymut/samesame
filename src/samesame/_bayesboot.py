@@ -45,11 +45,42 @@ def bayesian_posterior(
     metric: Callable,
     n_resamples: int = 9999,
     rng: np.random.Generator = np.random.default_rng(),
+    base_weight: NDArray | None = None,
 ):
-    def fn(sample_weight):
-        return metric(actual, predicted, sample_weight=sample_weight)
+    """Compute the Bayesian bootstrap posterior of a metric.
 
+    Parameters
+    ----------
+    actual : NDArray[np.int_]
+        Binary labels.
+    predicted : NDArray
+        Predicted scores.
+    metric : Callable
+        Metric conforming to scikit-learn API (accepts sample_weight kwarg).
+    n_resamples : int, optional
+        Number of bootstrap resamples, by default 9999.
+    rng : np.random.Generator, optional
+        Random number generator, by default np.random.default_rng().
+    base_weight : NDArray or None, optional
+        Fixed user-supplied weights (e.g. density-ratio weights). When
+        provided, each Dirichlet draw is multiplied element-wise by
+        base_weight and renormalised before being passed to metric.
+        When None, Dirichlet draws are used directly (current behaviour).
+    """
     n_rows = len(actual)
+
+    if base_weight is None:
+
+        def fn(sample_weight):
+            return metric(actual, predicted, sample_weight=sample_weight)
+    else:
+        _bw = np.asarray(base_weight, dtype=float)
+
+        def fn(sample_weight):
+            w = _bw * sample_weight
+            w = w / w.sum() * n_rows
+            return metric(actual, predicted, sample_weight=w)
+
     return _bayesian_bootstrap(
         fn=fn,
         n_rows=n_rows,

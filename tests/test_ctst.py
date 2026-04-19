@@ -90,3 +90,112 @@ def test_wrong_metric(decent_predictions, n_resamples=60):
             metric=dummy_metric,  # type: ignore
             n_resamples=n_resamples,
         )
+
+
+# ---------------------------------------------------------------------------
+# Backwards-compatibility: sample_weight=None must reproduce unweighted results
+# (TASK-001 / TEST-001)
+# ---------------------------------------------------------------------------
+
+
+def test_ctst_none_weight_equals_no_weight(decent_predictions, n_resamples=60):
+    rng = np.random.default_rng(42)
+    rng2 = np.random.default_rng(42)
+    base = CTST(
+        actual=decent_predictions["actual"],
+        predicted=decent_predictions["predicted"],
+        metric=roc_auc_score,
+        n_resamples=n_resamples,
+        rng=rng,
+    )
+    weighted = CTST(
+        actual=decent_predictions["actual"],
+        predicted=decent_predictions["predicted"],
+        metric=roc_auc_score,
+        n_resamples=n_resamples,
+        rng=rng2,
+        sample_weight=None,
+    )
+    assert base.statistic == weighted.statistic
+    np.testing.assert_array_equal(base.null, weighted.null)
+    assert base.pvalue == weighted.pvalue
+
+
+# ---------------------------------------------------------------------------
+# validate_and_normalise_weights unit tests (TASK-004 / TEST-003 to TEST-008)
+# ---------------------------------------------------------------------------
+
+
+def test_validate_rejects_negative():
+    from samesame._utils import validate_and_normalise_weights
+
+    with pytest.raises(ValueError, match="negative"):
+        validate_and_normalise_weights(np.array([-1.0, 1.0, 1.0]), 3)
+
+
+def test_validate_rejects_wrong_length():
+    from samesame._utils import validate_and_normalise_weights
+
+    with pytest.raises(ValueError, match="length"):
+        validate_and_normalise_weights(np.array([1.0, 1.0]), 3)
+
+
+def test_validate_rejects_all_zero():
+    from samesame._utils import validate_and_normalise_weights
+
+    with pytest.raises(ValueError, match="zero"):
+        validate_and_normalise_weights(np.array([0.0, 0.0, 0.0]), 3)
+
+
+def test_validate_rejects_nan():
+    from samesame._utils import validate_and_normalise_weights
+
+    with pytest.raises(ValueError, match="finite"):
+        validate_and_normalise_weights(np.array([1.0, np.nan, 1.0]), 3)
+
+
+def test_validate_normalises_to_n():
+    from samesame._utils import validate_and_normalise_weights
+
+    w = np.array([2.0, 4.0, 6.0])
+    result = validate_and_normalise_weights(w, 3)
+    assert result is not None
+    np.testing.assert_almost_equal(result.sum(), 3.0)
+
+
+def test_validate_none_passthrough():
+    from samesame._utils import validate_and_normalise_weights
+
+    assert validate_and_normalise_weights(None, 5) is None
+
+
+# ---------------------------------------------------------------------------
+# Weighted permutation: asymmetric weights must change the pvalue (TASK-008 /
+# TEST-009)
+# ---------------------------------------------------------------------------
+
+
+def test_ctst_weighted_permutation_fixed(decent_predictions, n_resamples=200):
+    n = len(decent_predictions["actual"])
+    rng_base = np.random.default_rng(0)
+    rng_w = np.random.default_rng(0)
+    # Upweight the first half strongly
+    w = np.ones(n)
+    w[: n // 2] = 10.0
+    base = CTST(
+        actual=decent_predictions["actual"],
+        predicted=decent_predictions["predicted"],
+        metric=roc_auc_score,
+        n_resamples=n_resamples,
+        rng=rng_base,
+    )
+    weighted = CTST(
+        actual=decent_predictions["actual"],
+        predicted=decent_predictions["predicted"],
+        metric=roc_auc_score,
+        n_resamples=n_resamples,
+        rng=rng_w,
+        sample_weight=w,
+    )
+    # Weighted statistic must differ (weights change the metric value)
+    assert base.statistic != weighted.statistic

@@ -44,6 +44,11 @@ class WeightedAUC(CTST):
         Number of parallel jobs, by default 1.
     batch : int or None, optional
         Batch size for parallel processing, by default None.
+    sample_weight : NDArray or None, optional
+        Sample weights for each observation, by default None (equal weights).
+        When provided, weights are normalised to sum to n_samples internally.
+        Weights are fixed across all permutations and combined multiplicatively
+        with Bayesian bootstrap Dirichlet draws for the posterior computation.
 
     See Also
     --------
@@ -98,6 +103,7 @@ class WeightedAUC(CTST):
         rng: np.random.Generator = np.random.default_rng(),
         n_jobs: int = 1,
         batch: int | None = None,
+        sample_weight: NDArray | None = None,
     ):
         """Initialize WeightedAUC."""
         super().__init__(
@@ -109,6 +115,7 @@ class WeightedAUC(CTST):
             n_jobs=n_jobs,
             batch=batch,
             alternative="greater",
+            sample_weight=sample_weight,
         )
 
     @cached_property
@@ -132,6 +139,7 @@ class WeightedAUC(CTST):
             self.metric,
             self.n_resamples,
             self.rng,
+            base_weight=self.sample_weight,
         )
 
     @cached_property

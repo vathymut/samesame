@@ -20,7 +20,7 @@ In those cases, you need a different score. This tutorial shows how to use an
 - How OOD scores differ from predicted default probabilities
 - Why **LogitGap** is a better default choice than **MaxLogit**
 - How to visualize OOD scores for training and deployment data
-- How to use DSOS to test whether deployment samples look less familiar to the model
+- How to use DSOS to test whether deployment predictions are lower confidence than training predictions
 
 ## Two kinds of scores
 
@@ -29,16 +29,19 @@ The key distinction is:
 | Score type | What it measures | When to use it |
 |------------|------------------|----------------|
 | **Predicted default probability** | How likely the model thinks default is | Use when higher predictions already mean worse business outcomes |
-| **OOD score** | How familiar the sample looks to the model | Use when the model output is not itself a meaningful risk score |
+| **OOD score** | How confident the model is in its prediction | Use when the model output is not itself a meaningful risk score |
 
 In this credit example, default probability and OOD score are both available, but they answer
 different questions:
 
 - **Default probability:** "Does this customer look risky?"
-- **OOD score:** "Does this customer look familiar to the model?"
+- **OOD score:** "How confident is the model in this prediction?"
 
-These are related, but not the same. A sample can be unfamiliar without necessarily having the
-highest predicted default probability.
+These are related, but not the same. A sample can receive a high-confidence prediction without
+necessarily having the highest predicted default probability.
+
+In this tutorial, LogitGap is used to compare confidence behavior between training and test
+predictions, not to directly measure business harm.
 
 That difference matters in practice. An OOD score can move in a reassuring direction because the
 model is becoming **more confident**, while the business outcome moves in a harmful direction because
@@ -50,7 +53,7 @@ So OOD scores should not be read as a direct measure of business safety.
 We use **LogitGap** as the OOD score in this tutorial.
 
 - **LogitGap** looks at the gap between the model's strongest class score and the remaining class scores.
-- A **large** gap means the model is confident and the sample looks familiar.
+- A **large** gap means the model is confident in its class decision.
 - A **small** gap means the model is uncertain and the sample may be out-of-distribution.
 
 You may also see **MaxLogit** in the literature. It uses only the single largest logit. That is a
@@ -99,7 +102,7 @@ print(f"Deployment set: {len(X_test)} samples")
 
 We first train the same credit risk model used in the previous tutorial. The model predicts the
 probability of default, but here we are going to reuse its internal scores to measure
-**familiarity**, not just risk.
+**confidence patterns**, not just risk.
 
 ```python
 # Train a default-prediction model on the training population
@@ -142,11 +145,12 @@ print(f"Deployment mean LogitGap: {ood_test.mean():.3f}")
 
 ### How to read these scores
 
-- **Higher LogitGap**: the model is more confident, so the sample looks more like the training data
-- **Lower LogitGap**: the model is less confident, so the sample looks less familiar
+- **Higher LogitGap**: the model has a larger margin between classes, so it is more confident in its prediction
+- **Lower LogitGap**: the model has a smaller margin between classes, so it is less confident in its prediction
 
-If the deployment distribution shifts downward relative to the training distribution, that is a sign
-the model is seeing more unusual customers.
+This score is primarily about confidence (class separation), not direct business harm.
+If the deployment distribution shifts downward relative to training, it indicates lower-confidence
+predictions in deployment.
 
 For the HELOC split used here, the observed values are:
 
@@ -179,7 +183,7 @@ plt.show()
 What to look for:
 
 - If the **deployment** histogram sits noticeably **left** of the training histogram, deployment
-    samples look less familiar to the model.
+    predictions are made with lower confidence.
 - If the two histograms largely overlap, there is less evidence of an OOD shift.
 
 For this HELOC split, the deployment histogram should shift **right**, not left, because the
@@ -189,8 +193,8 @@ observed LogitGap values are higher in deployment than in training.
 
 Now we turn the score shift into a formal hypothesis test.
 
-DSOS expects **higher** scores to mean "worse". But higher LogitGap means **more familiar**, which
-is the opposite of what we want. So we negate the scores before passing them into DSOS.
+DSOS expects **higher** scores to mean "worse". But higher LogitGap means **higher confidence**,
+which is the opposite of what we want. So we negate the scores before passing them into DSOS.
 
 ```python
 dsos_ood = DSOS.from_samples(-ood_train, -ood_test)
@@ -210,11 +214,11 @@ OOD shift test using DSOS on LogitGap
 
 ### How to interpret the result
 
-- **Small p-value**: strong evidence that deployment contains more low-familiarity samples than training
+- **Small p-value**: strong evidence that deployment contains more low-confidence predictions than training
 - **Large p-value**: not enough evidence to claim an OOD shift
 
 Here the p-value is `1.0000`, so there is **no evidence** that deployment contains more
-low-familiarity samples than training. In fact, the LogitGap scores move in the opposite direction:
+low-confidence predictions than training. In fact, the LogitGap scores move in the opposite direction:
 the deployment customers look *more* confidently classified by this model.
 
 This contrast with the [Credit Example](credit-example.md) is the main lesson:
@@ -223,11 +227,11 @@ This contrast with the [Credit Example](credit-example.md) is the main lesson:
 - **LogitGap** also increased, so the model does **not** look less confident on deployment data.
 
 Those two findings are not contradictory. They answer different questions. A customer can look
-high-risk to the model while still looking familiar to the model.
+high-risk to the model while still being predicted with high confidence.
 
 This is also the main warning for production monitoring: a confidence-style OOD score can be
 misleading if you treat it as a business-risk score. The model can become **more confident** while
-its predictions become **more harmful**. Use OOD scores to monitor familiarity, not to replace a
+its predictions become **more harmful**. Use OOD scores to monitor confidence patterns, not to replace a
 business outcome metric when such a metric is available.
 
 ## When should you use this instead of default probability?
@@ -238,16 +242,16 @@ as it does in the [Credit Example](credit-example.md).
 Use an **OOD score** when:
 
 - the model output is not itself a risk score
-- you want to detect unfamiliar inputs, not just high-risk predictions
+- you want to detect lower-confidence or unusual inputs, not just high-risk predictions
 - you need a generic monitoring signal that works across many classification tasks
 
 In practice, the two approaches complement each other:
 
 - **Default probability** tells you whether the model predicts bad outcomes
-- **OOD score** tells you whether the model is operating on unfamiliar data
+- **OOD score** tells you how confidence behavior changes across populations
 
 This HELOC example shows why it is worth monitoring both. Here, default probability detects a clear
-adverse shift, while LogitGap does not detect a familiarity problem. If you had watched only the OOD
+adverse shift, while LogitGap does not detect a confidence drop. If you had watched only the OOD
 score, you could have missed a harmful business change.
 
 ## Key takeaway
@@ -257,8 +261,8 @@ This tutorial uses **LogitGap** as a practical OOD score for novice users.
 - It is easy to compute from model outputs
 - It is more informative than MaxLogit in most cases
 - It works even when the model prediction itself is not an interpretable "worse outcome" score
-- Combined with DSOS, it gives you a principled way to test whether deployment data looks less familiar than training data
+- Combined with DSOS, it gives you a principled way to test whether deployment confidence degrades relative to training
 
-In this specific credit example, LogitGap does **not** flag deployment as less familiar. That is a
-useful result, not a failure: it shows that familiarity and business risk are different concepts and
+In this specific credit example, LogitGap does **not** flag deployment as lower confidence. That is a
+useful result, not a failure: it shows that confidence and business risk are different concepts and
 should be monitored separately. When a business-risk score exists, do not let an OOD score override it.

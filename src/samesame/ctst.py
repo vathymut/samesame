@@ -7,7 +7,7 @@
 """
 Classifier two-sample tests (CTST) from binary classification metrics.
 
-The classifier two-sample test broadly consists of three steps: (1) training a 
+The classifier two-sample test broadly consists of three steps: (1) training a
 (binary) classifier, (2) predicting out-of-sample and (3) turning a test
 statistic into a p-value from these predictions. This test statistic can be the
 performance metric of a binary classifier such as the (weighted) area under
@@ -56,7 +56,7 @@ from sklearn.utils import (
 from sklearn.utils.multiclass import type_of_target
 
 from samesame._data import assign_labels, concat_samples
-from samesame._utils import check_metric_function
+from samesame._utils import check_metric_function, validate_and_normalise_weights
 
 
 @dataclass
@@ -87,6 +87,11 @@ class CTST:
         Batch size for parallel processing, by default None.
     alternative : {'less', 'greater', 'two-sided'}, optional
         Defines the alternative hypothesis. Default is 'two-sided'.
+    sample_weight : NDArray or None, optional
+        Sample weights for each observation, by default None (equal weights).
+        When provided, weights are normalised to sum to n_samples internally.
+        Weights are fixed across all permutations: they reflect covariate
+        importance, not label assignment.
 
     Notes
     -----
@@ -117,6 +122,7 @@ class CTST:
     n_jobs: int = 1
     batch: int | None = None
     alternative: Literal["less", "greater", "two-sided"] = "two-sided"
+    sample_weight: NDArray | None = field(default=None, repr=False)
 
     def __post_init__(self):
         """Validate inputs."""
@@ -134,11 +140,16 @@ class CTST:
             f"'metric' expects a callable that conforms to scikit-learn metric. "
             f"{signature(self.metric)=} does not."
         )
+        self.sample_weight = validate_and_normalise_weights(
+            self.sample_weight, len(self.actual)
+        )
 
     @cached_property
     def _result(self):
+        _w = self.sample_weight
+
         def statistic(*args):
-            return self.metric(args[0], args[1])
+            return self.metric(args[0], args[1], sample_weight=_w)
 
         return permutation_test(
             data=(self.actual, self.predicted),
