@@ -12,16 +12,16 @@
         <meta name="author" content="Vathy M. Kamulete">
       
       
-        <link rel="canonical" href="https://vathymut.github.io/samesame/examples/noninferiority/">
+        <link rel="canonical" href="https://vathymut.github.io/samesame/examples/tutorials/check-shift-harm/">
       
       
-        <link rel="prev" href="../distribution-shifts/">
+        <link rel="prev" href="../detect-distribution-shift/">
       
       
-        <link rel="next" href="../credit-example/">
+        <link rel="next" href="../../credit/monitor-credit-risk/">
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.18">
     
     
@@ -30,10 +30,10 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.7e37652d.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.7e37652d.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -52,9 +52,9 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -94,7 +94,7 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="samesame" class="md-header__button md-logo" aria-label="samesame" data-md-component="logo">
+    <a href="../../.." title="samesame" class="md-header__button md-logo" aria-label="samesame" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M249.9 66.8c10.4-14.3 7.2-34.3-7.1-44.7s-34.3-7.2-44.7 7.1l-106 145.7-37.5-37.5c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l64 64c6.6 6.6 15.8 10 25.1 9.3s17.9-5.5 23.4-13.1l128-176zm128 136c10.4-14.3 7.2-34.3-7.1-44.7s-34.3-7.2-44.7 7.1l-170 233.7-69.5-69.5c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l96 96c6.6 6.6 15.8 10 25.1 9.3s17.9-5.5 23.4-13.1l192-264z"/></svg>
@@ -193,7 +193,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../.." class="md-tabs__link">
+      <a href="../../.." class="md-tabs__link">
         
   
   
@@ -216,7 +216,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="../distribution-shifts/" class="md-tabs__link">
+        <a href="../detect-distribution-shift/" class="md-tabs__link">
           
   
   
@@ -236,7 +236,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../credit-example/" class="md-tabs__link">
+        <a href="../../credit/monitor-credit-risk/" class="md-tabs__link">
           
   
   
@@ -256,7 +256,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../api/testing/" class="md-tabs__link">
+        <a href="../../../api/testing/" class="md-tabs__link">
           
   
   
@@ -296,7 +296,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="samesame" class="md-nav__button md-logo" aria-label="samesame" data-md-component="logo">
+    <a href="../../.." title="samesame" class="md-nav__button md-logo" aria-label="samesame" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M249.9 66.8c10.4-14.3 7.2-34.3-7.1-44.7s-34.3-7.2-44.7 7.1l-106 145.7-37.5-37.5c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l64 64c6.6 6.6 15.8 10 25.1 9.3s17.9-5.5 23.4-13.1l128-176zm128 136c10.4-14.3 7.2-34.3-7.1-44.7s-34.3-7.2-44.7 7.1l-170 233.7-69.5-69.5c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l96 96c6.6 6.6 15.8 10 25.1 9.3s17.9-5.5 23.4-13.1l192-264z"/></svg>
@@ -326,7 +326,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         
   
   
@@ -396,7 +396,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../distribution-shifts/" class="md-nav__link">
+      <a href="../detect-distribution-shift/" class="md-nav__link">
         
   
   
@@ -632,7 +632,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../credit-example/" class="md-nav__link">
+      <a href="../../credit/monitor-credit-risk/" class="md-nav__link">
         
   
   
@@ -655,7 +655,30 @@
   
   
     <li class="md-nav__item">
-      <a href="../credit-ood-detection/" class="md-nav__link">
+      <a href="../../credit/monitor-prediction-errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Monitor prediction errors
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../credit/monitor-confidence-ood/" class="md-nav__link">
         
   
   
@@ -730,7 +753,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/testing/" class="md-nav__link">
+      <a href="../../../api/testing/" class="md-nav__link">
         
   
   
@@ -753,7 +776,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/advanced/" class="md-nav__link">
+      <a href="../../../api/advanced/" class="md-nav__link">
         
   
   
@@ -776,7 +799,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/bayes_factors/" class="md-nav__link">
+      <a href="../../../api/bayes_factors/" class="md-nav__link">
         
   
   
@@ -799,7 +822,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/importance_weights/" class="md-nav__link">
+      <a href="../../../api/importance_weights/" class="md-nav__link">
         
   
   
@@ -822,7 +845,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/logit_scores/" class="md-nav__link">
+      <a href="../../../api/logit_scores/" class="md-nav__link">
         
   
   
@@ -987,14 +1010,16 @@
 
 
 <h1 id="tutorial-check-whether-a-shift-is-harmful">Tutorial: Check whether a shift is harmful<a class="headerlink" href="#tutorial-check-whether-a-shift-is-harmful" title="Permanent link">&para;</a></h1>
-<p><strong>What you'll learn:</strong></p>
+<p>This tutorial is a guided first run of <code>test_adverse_shift(...)</code>.
+You will start from a score where larger values mean better outcomes, set direction correctly,
+and interpret whether the candidate sample is meaningfully worse.</p>
+<p><strong>By the end, you will be able to:</strong></p>
 <ul>
 <li>The difference between detecting any shift and detecting a <em>harmful</em> shift</li>
 <li>How to use <code>test_adverse_shift(...)</code> and tell it which direction means worse</li>
 <li>How to read the p-value and decide whether the shift matters</li>
 </ul>
-<p><strong>Goal:</strong> Determine whether a new dataset is <em>meaningfully worse</em> than a reference dataset,
-not just different.</p>
+<p>In practice, this test complements <code>test_shift(...)</code>: first detect change, then assess harm.</p>
 <h2 id="why-difference-alone-is-not-enough">Why difference alone is not enough<a class="headerlink" href="#why-difference-alone-is-not-enough" title="Permanent link">&para;</a></h2>
 <p>Imagine you deploy a machine learning model in January and again in February.
 You run <code>test_shift(...)</code> and get a small p-value — the February data is statistically
@@ -1039,34 +1064,28 @@ Larger values must correspond to "worse". Examples:</p>
 <h2 id="how-the-test-works">How the test works<a class="headerlink" href="#how-the-test-works" title="Permanent link">&para;</a></h2>
 <ol>
 <li>Pool both datasets and mark which samples belong to each group.</li>
-<li>Check whether the largest values are concentrated in the new dataset.</li>
-<li>Shuffle the group labels many times to build a baseline. If the real concentration
-  is unusually high relative to those shuffled baselines, the test flags it as significant
-  (small p-value).</li>
+<li>Compute how concentrated the largest values are in the new dataset.</li>
+<li>Assess statistical significance via a <strong>permutation test</strong>: how often does random reassignment of group labels produce a concentration as extreme as the one observed? A small p-value means the observed concentration is unlikely under the null.</li>
 </ol>
-<p>You do not need to assume a particular distributional form, and you do not need to set a threshold in advance.</p>
+<p>No distributional assumption is required, and no threshold needs to be specified in advance.</p>
 <h2 id="example-comparing-two-treatments">Example: comparing two treatments<a class="headerlink" href="#example-comparing-two-treatments" title="Permanent link">&para;</a></h2>
 <p>This example compares two treatments for relief from leg discomfort: <em>Armanaleg</em> (the established
 reference) and <em>Bowl</em> (the new treatment). The scores measure discomfort — higher means more
 discomfort, which is worse.</p>
 <p>We want to know: <strong>is the Bowl treatment meaningfully worse than Armanaleg?</strong></p>
 <h3 id="step-1-load-the-data">Step 1 — Load the data<a class="headerlink" href="#step-1-load-the-data" title="Permanent link">&para;</a></h3>
-<p>Relief scores are converted to discomfort scores by flipping them, so that higher always means worse:</p>
+<p>Relief scores are converted to discomfort scores internally, via <code>direction="higher-is-better"</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="n">datalines</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="s2">&quot;9 14 13 8 10 5 11 9 12 10 9 11 8 11 &quot;</span>
-    <span class="s2">&quot;4 8 11 16 12 10 9 10 13 12 11 13 9 4 &quot;</span>
-    <span class="s2">&quot;7 14 8 4 10 11 7 7 13 8 8 13 10 9 &quot;</span>
-    <span class="s2">&quot;12 9 11 10 12 7 8 5 10 7 13 12 13 11 &quot;</span>
-    <span class="s2">&quot;7 12 10 11 10 8 6 9 11 8 5 11 10 8&quot;</span>
-<span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
-
-<span class="n">relief</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">datalines</span><span class="p">]</span>
-<span class="n">discomfort</span> <span class="o">=</span> <span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="n">relief</span><span class="p">)</span> <span class="o">-</span> <span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">relief</span><span class="p">]</span>  <span class="c1"># flip: higher = more discomfort = worse</span>
-
-<span class="n">armanaleg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">discomfort</span><span class="p">[:</span><span class="mi">28</span><span class="p">])</span>   <span class="c1"># reference treatment</span>
-<span class="n">bowl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">discomfort</span><span class="p">[</span><span class="mi">28</span><span class="p">:])</span>        <span class="c1"># new treatment</span>
+<span class="n">relief</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+     <span class="mi">9</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span>  <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span>  <span class="mi">5</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span>  <span class="mi">9</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span>  <span class="mi">9</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span>  <span class="mi">8</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span>
+     <span class="mi">4</span><span class="p">,</span>  <span class="mi">8</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span>  <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span>  <span class="mi">9</span><span class="p">,</span>  <span class="mi">4</span><span class="p">,</span>
+     <span class="mi">7</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span>  <span class="mi">8</span><span class="p">,</span>  <span class="mi">4</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span>  <span class="mi">7</span><span class="p">,</span>  <span class="mi">7</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span>  <span class="mi">8</span><span class="p">,</span>  <span class="mi">8</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span>  <span class="mi">9</span><span class="p">,</span>
+    <span class="mi">12</span><span class="p">,</span>  <span class="mi">9</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span>  <span class="mi">7</span><span class="p">,</span>  <span class="mi">8</span><span class="p">,</span>  <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span>  <span class="mi">7</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span>
+     <span class="mi">7</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span>  <span class="mi">8</span><span class="p">,</span>  <span class="mi">6</span><span class="p">,</span>  <span class="mi">9</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span>  <span class="mi">8</span><span class="p">,</span>  <span class="mi">5</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span>  <span class="mi">8</span><span class="p">,</span>
+<span class="p">])</span>
+<span class="n">armanaleg</span>  <span class="o">=</span> <span class="n">relief</span><span class="p">[:</span><span class="mi">28</span><span class="p">]</span>  <span class="c1"># reference treatment</span>
+<span class="n">bowl</span>       <span class="o">=</span> <span class="n">relief</span><span class="p">[</span><span class="mi">28</span><span class="p">:]</span>  <span class="c1"># new treatment</span>
 </code></pre></div>
 <h3 id="step-2-run-the-adverse-shift-test">Step 2 — Run the adverse-shift test<a class="headerlink" href="#step-2-run-the-adverse-shift-test" title="Permanent link">&para;</a></h3>
 <p>Pass the reference sample first, then the new sample. <code>test_adverse_shift(...)</code> tests whether <code>bowl</code>
@@ -1076,7 +1095,7 @@ contains disproportionately more high-discomfort (worse) cases than <code>armana
 <span class="n">harm</span> <span class="o">=</span> <span class="n">test_adverse_shift</span><span class="p">(</span>
   <span class="n">reference</span><span class="o">=</span><span class="n">armanaleg</span><span class="p">,</span>
   <span class="n">candidate</span><span class="o">=</span><span class="n">bowl</span><span class="p">,</span>
-  <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;higher-is-worse&quot;</span><span class="p">,</span>
+  <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;higher-is-better&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Adverse-shift p-value: </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1109,14 +1128,14 @@ contains disproportionately more high-discomfort (worse) cases than <code>armana
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="kn">import</span> <span class="n">advanced</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">samesame.bayes_factors</span><span class="w"> </span><span class="kn">import</span> <span class="n">as_pvalue</span>
 
-<span class="n">detail</span> <span class="o">=</span> <span class="n">advanced</span><span class="o">.</span><span class="n">test_adverse_shift</span><span class="p">(</span>
+<span class="n">bayes_harm</span> <span class="o">=</span> <span class="n">advanced</span><span class="o">.</span><span class="n">test_adverse_shift</span><span class="p">(</span>
     <span class="n">reference</span><span class="o">=</span><span class="n">armanaleg</span><span class="p">,</span>
     <span class="n">candidate</span><span class="o">=</span><span class="n">bowl</span><span class="p">,</span>
-    <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;higher-is-worse&quot;</span><span class="p">,</span>
+    <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;higher-is-better&quot;</span><span class="p">,</span>
     <span class="n">bayesian</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Bayesian p-value: </span><span class="si">{</span><span class="n">as_pvalue</span><span class="p">(</span><span class="n">detail</span><span class="o">.</span><span class="n">bayes_factor</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Bayesian p-value: </span><span class="si">{</span><span class="n">as_pvalue</span><span class="p">(</span><span class="n">bayes_harm</span><span class="o">.</span><span class="n">bayes_factor</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>In this example, the Bayesian summary leads to the same practical conclusion as the ordinary
 p-value: there is no clear evidence that the new treatment is worse.</p>
@@ -1129,7 +1148,7 @@ when you need posterior draws or Bayes factors.</p>
 <li><strong>No labels needed:</strong> These scores can come from your existing model's predictions —
   you do not need ground truth labels. This is especially useful in production monitoring.</li>
 <li><strong>Pair with shift testing:</strong> Run <code>test_shift(...)</code> first to detect <em>any</em> change, then run <code>test_adverse_shift(...)</code> to decide
-  whether the change is harmful. See the <a href="../credit-example/">credit risk how-to</a> for a full
+  whether the change is harmful. See the <a href="/examples/credit/monitor-credit-risk.md">credit risk how-to</a> for a full
   demonstration of both tests together.</li>
 </ul>
 
@@ -1186,10 +1205,10 @@ when you need posterior draws or Bayes factors.</p>
     
     
       
-      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand"], "search": "../../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.92b07e13.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.92b07e13.min.js"></script>
       
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       

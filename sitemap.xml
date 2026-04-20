@@ -25,19 +25,23 @@
          <lastmod>2026-04-20</lastmod>
     </url>
     <url>
-         <loc>https://vathymut.github.io/samesame/examples/credit-example/</loc>
+         <loc>https://vathymut.github.io/samesame/examples/credit/monitor-confidence-ood/</loc>
          <lastmod>2026-04-20</lastmod>
     </url>
     <url>
-         <loc>https://vathymut.github.io/samesame/examples/credit-ood-detection/</loc>
+         <loc>https://vathymut.github.io/samesame/examples/credit/monitor-credit-risk/</loc>
          <lastmod>2026-04-20</lastmod>
     </url>
     <url>
-         <loc>https://vathymut.github.io/samesame/examples/distribution-shifts/</loc>
+         <loc>https://vathymut.github.io/samesame/examples/credit/monitor-prediction-errors/</loc>
          <lastmod>2026-04-20</lastmod>
     </url>
     <url>
-         <loc>https://vathymut.github.io/samesame/examples/noninferiority/</loc>
+         <loc>https://vathymut.github.io/samesame/examples/tutorials/check-shift-harm/</loc>
+         <lastmod>2026-04-20</lastmod>
+    </url>
+    <url>
+         <loc>https://vathymut.github.io/samesame/examples/tutorials/detect-distribution-shift/</loc>
          <lastmod>2026-04-20</lastmod>
     </url>
 </urlset>

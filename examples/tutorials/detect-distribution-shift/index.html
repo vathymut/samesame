@@ -12,16 +12,16 @@
         <meta name="author" content="Vathy M. Kamulete">
       
       
-        <link rel="canonical" href="https://vathymut.github.io/samesame/examples/distribution-shifts/">
+        <link rel="canonical" href="https://vathymut.github.io/samesame/examples/tutorials/detect-distribution-shift/">
       
       
-        <link rel="prev" href="../..">
+        <link rel="prev" href="../../..">
       
       
-        <link rel="next" href="../noninferiority/">
+        <link rel="next" href="../check-shift-harm/">
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.18">
     
     
@@ -30,10 +30,10 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.7e37652d.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.7e37652d.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -52,9 +52,9 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -94,7 +94,7 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="samesame" class="md-header__button md-logo" aria-label="samesame" data-md-component="logo">
+    <a href="../../.." title="samesame" class="md-header__button md-logo" aria-label="samesame" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M249.9 66.8c10.4-14.3 7.2-34.3-7.1-44.7s-34.3-7.2-44.7 7.1l-106 145.7-37.5-37.5c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l64 64c6.6 6.6 15.8 10 25.1 9.3s17.9-5.5 23.4-13.1l128-176zm128 136c10.4-14.3 7.2-34.3-7.1-44.7s-34.3-7.2-44.7 7.1l-170 233.7-69.5-69.5c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l96 96c6.6 6.6 15.8 10 25.1 9.3s17.9-5.5 23.4-13.1l192-264z"/></svg>
@@ -193,7 +193,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../.." class="md-tabs__link">
+      <a href="../../.." class="md-tabs__link">
         
   
   
@@ -236,7 +236,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../credit-example/" class="md-tabs__link">
+        <a href="../../credit/monitor-credit-risk/" class="md-tabs__link">
           
   
   
@@ -256,7 +256,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../api/testing/" class="md-tabs__link">
+        <a href="../../../api/testing/" class="md-tabs__link">
           
   
   
@@ -296,7 +296,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="samesame" class="md-nav__button md-logo" aria-label="samesame" data-md-component="logo">
+    <a href="../../.." title="samesame" class="md-nav__button md-logo" aria-label="samesame" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M249.9 66.8c10.4-14.3 7.2-34.3-7.1-44.7s-34.3-7.2-44.7 7.1l-106 145.7-37.5-37.5c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l64 64c6.6 6.6 15.8 10 25.1 9.3s17.9-5.5 23.4-13.1l128-176zm128 136c10.4-14.3 7.2-34.3-7.1-44.7s-34.3-7.2-44.7 7.1l-170 233.7-69.5-69.5c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l96 96c6.6 6.6 15.8 10 25.1 9.3s17.9-5.5 23.4-13.1l192-264z"/></svg>
@@ -326,7 +326,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         
   
   
@@ -533,7 +533,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../noninferiority/" class="md-nav__link">
+      <a href="../check-shift-harm/" class="md-nav__link">
         
   
   
@@ -608,7 +608,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../credit-example/" class="md-nav__link">
+      <a href="../../credit/monitor-credit-risk/" class="md-nav__link">
         
   
   
@@ -631,7 +631,30 @@
   
   
     <li class="md-nav__item">
-      <a href="../credit-ood-detection/" class="md-nav__link">
+      <a href="../../credit/monitor-prediction-errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Monitor prediction errors
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../credit/monitor-confidence-ood/" class="md-nav__link">
         
   
   
@@ -706,7 +729,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/testing/" class="md-nav__link">
+      <a href="../../../api/testing/" class="md-nav__link">
         
   
   
@@ -729,7 +752,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/advanced/" class="md-nav__link">
+      <a href="../../../api/advanced/" class="md-nav__link">
         
   
   
@@ -752,7 +775,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/bayes_factors/" class="md-nav__link">
+      <a href="../../../api/bayes_factors/" class="md-nav__link">
         
   
   
@@ -775,7 +798,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/importance_weights/" class="md-nav__link">
+      <a href="../../../api/importance_weights/" class="md-nav__link">
         
   
   
@@ -798,7 +821,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/logit_scores/" class="md-nav__link">
+      <a href="../../../api/logit_scores/" class="md-nav__link">
         
   
   
@@ -939,19 +962,20 @@
 
 
 <h1 id="tutorial-detect-a-distribution-shift">Tutorial: Detect a distribution shift<a class="headerlink" href="#tutorial-detect-a-distribution-shift" title="Permanent link">&para;</a></h1>
-<p><strong>What you'll learn:</strong></p>
+<p>This tutorial is a guided first run of <code>test_shift(...)</code>.
+You will generate one score per row, run the test, and interpret the result.</p>
+<p><strong>By the end, you will be able to:</strong></p>
 <ul>
 <li>How to check whether two datasets come from the same distribution</li>
 <li>How to create one score per row without leaking training data</li>
 <li>How to run <code>test_shift(...)</code> and read the result</li>
 </ul>
-<p><strong>Goal:</strong> Determine whether two datasets appear to come from the same underlying distribution.</p>
-<p>This is useful any time you need to compare two groups of data — for example, checking whether
-your production data still looks like your training data, or whether this week's batch matches
-last week's.</p>
+<p>You can use the same workflow when comparing training vs production data, or one batch vs another.</p>
 <p>You do not compare the raw feature table directly. Instead, a classifier turns each row into one
 score that reflects how strongly it resembles the new dataset rather than the reference dataset.
-If those scores separate the groups too well, that is evidence that the datasets differ.</p>
+If those scores separate the groups too well, that is evidence that the datasets differ. This
+procedure is a <strong>classifier two-sample test</strong>; statistical significance is assessed via a
+permutation test on the group labels.</p>
 <h2 id="what-you-need">What you need<a class="headerlink" href="#what-you-need" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Two datasets to compare (e.g., training data vs. production data)</li>
@@ -1034,7 +1058,7 @@ which is strong evidence against the null hypothesis of no distributional differ
 <blockquote>
 <p><strong>Important:</strong> <code>test_shift</code> tells you <em>whether</em> distributions differ, not <em>how bad</em> the difference is
 or whether it will hurt your model. For that, see
-<a href="../noninferiority/">Check whether a shift is harmful</a>.</p>
+<a href="/examples/tutorials/check-shift-harm.md">Check whether a shift is harmful</a>.</p>
 </blockquote>
 <h2 id="alternative-out-of-bag-oob-predictions">Alternative: out-of-bag (OOB) predictions<a class="headerlink" href="#alternative-out-of-bag-oob-predictions" title="Permanent link">&para;</a></h2>
 <p>If you are using a Random Forest or another ensemble model, you can use its built-in
@@ -1076,7 +1100,7 @@ use cross-fitting for other classifiers.</p>
     to find which features are most different between the two groups.</li>
 <li><strong>Shift detected — now what?</strong> A significant shift result means the distributions differ.
     To check whether that difference is actually <em>harmful</em>, continue to
-    <a href="../noninferiority/">Check whether a shift is harmful</a>.</li>
+    <a href="/examples/tutorials/check-shift-harm.md">Check whether a shift is harmful</a>.</li>
 </ul>
 
 
@@ -1132,10 +1156,10 @@ use cross-fitting for other classifiers.</p>
     
     
       
-      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand"], "search": "../../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.92b07e13.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.92b07e13.min.js"></script>
       
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       
