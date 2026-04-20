@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Samesame - Classifier Two-sample Tests">
+        <meta name="description" content="Samesame - Score-vector shift hypothesis tests">
       
       
         <meta name="author" content="Vathy M. Kamulete">
@@ -26,7 +26,7 @@
     
     
       
-        <title>Noninferiority tests - samesame</title>
+        <title>Check whether a shift is harmful - samesame</title>
       
     
     
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#how-to-test-for-harmful-shift-noninferiority" class="md-skip">
+        <a href="#tutorial-check-whether-a-shift-is-harmful" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Noninferiority tests
+              Check whether a shift is harmful
             
           </span>
         </div>
@@ -220,7 +220,7 @@
           
   
   
-  Examples
+  Tutorials
 
         </a>
       </li>
@@ -236,11 +236,31 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../api/bayes/" class="md-tabs__link">
+        <a href="../credit-example/" class="md-tabs__link">
           
   
   
-  API
+  How-to guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/testing/" class="md-tabs__link">
+          
+  
+  
+  API reference
 
         </a>
       </li>
@@ -354,7 +374,7 @@
   
   
   <span class="md-ellipsis">
-    Examples
+    Tutorials
     
   </span>
   
@@ -365,7 +385,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
-            Examples
+            Tutorials
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -381,7 +401,7 @@
   
   
   <span class="md-ellipsis">
-    Distribution shifts
+    Detect a distribution shift
     
   </span>
   
@@ -413,7 +433,7 @@
   
   
   <span class="md-ellipsis">
-    Noninferiority tests
+    Check whether a shift is harmful
     
   </span>
   
@@ -426,7 +446,7 @@
   
   
   <span class="md-ellipsis">
-    Noninferiority tests
+    Check whether a shift is harmful
     
   </span>
   
@@ -449,36 +469,36 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-problem-with-asking-are-these-the-same" class="md-nav__link">
+  <a href="#why-difference-alone-is-not-enough" class="md-nav__link">
     <span class="md-ellipsis">
-      The problem with asking "are these the same?"
+      Why difference alone is not enough
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#ctst-vs-dsos-at-a-glance" class="md-nav__link">
+  <a href="#shift-vs-adverse-shift-at-a-glance" class="md-nav__link">
     <span class="md-ellipsis">
-      CTST vs. DSOS at a glance
+      Shift vs. Adverse Shift at a glance
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#what-are-outlier-scores" class="md-nav__link">
+  <a href="#what-kind-of-input-does-this-test-need" class="md-nav__link">
     <span class="md-ellipsis">
-      What are "outlier scores"?
+      What kind of input does this test need?
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#how-dsos-works-in-plain-terms" class="md-nav__link">
+  <a href="#how-the-test-works" class="md-nav__link">
     <span class="md-ellipsis">
-      How DSOS works (in plain terms)
+      How the test works
     </span>
   </a>
   
@@ -504,9 +524,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#step-2-run-the-dsos-test" class="md-nav__link">
+  <a href="#step-2-run-the-adverse-shift-test" class="md-nav__link">
     <span class="md-ellipsis">
-      Step 2 — Run the DSOS test
+      Step 2 — Run the adverse-shift test
     </span>
   </a>
   
@@ -524,20 +544,14 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Reading the results">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#frequentist-vs-bayesian-p-value" class="md-nav__link">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#optional-bayesian-evidence" class="md-nav__link">
     <span class="md-ellipsis">
-      Frequentist vs. Bayesian p-value
+      Optional: Bayesian evidence
     </span>
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -554,52 +568,6 @@
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../credit-example/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Credit example
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../credit-ood-detection/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Credit OOD detection
-    
-  </span>
-  
-
-      </a>
     </li>
   
 
@@ -642,7 +610,7 @@
   
   
   <span class="md-ellipsis">
-    API
+    How-to guides
     
   </span>
   
@@ -653,7 +621,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
-            API
+            How-to guides
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -664,12 +632,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/bayes/" class="md-nav__link">
+      <a href="../credit-example/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    bayes
+    Monitor a credit risk model
     
   </span>
   
@@ -687,12 +655,87 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/ctst/" class="md-nav__link">
+      <a href="../credit-ood-detection/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    ctst
+    Monitor model confidence
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    API reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            API reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Testing functions
     
   </span>
   
@@ -710,12 +753,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/metrics/" class="md-nav__link">
+      <a href="../../api/advanced/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    metrics
+    Advanced controls
     
   </span>
   
@@ -733,12 +776,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/nit/" class="md-nav__link">
+      <a href="../../api/bayes_factors/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    nit
+    Bayes factors
     
   </span>
   
@@ -756,12 +799,35 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/ood/" class="md-nav__link">
+      <a href="../../api/importance_weights/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    ood
+    Importance weights
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/logit_scores/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Logit scores
     
   </span>
   
@@ -806,36 +872,36 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-problem-with-asking-are-these-the-same" class="md-nav__link">
+  <a href="#why-difference-alone-is-not-enough" class="md-nav__link">
     <span class="md-ellipsis">
-      The problem with asking "are these the same?"
+      Why difference alone is not enough
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#ctst-vs-dsos-at-a-glance" class="md-nav__link">
+  <a href="#shift-vs-adverse-shift-at-a-glance" class="md-nav__link">
     <span class="md-ellipsis">
-      CTST vs. DSOS at a glance
+      Shift vs. Adverse Shift at a glance
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#what-are-outlier-scores" class="md-nav__link">
+  <a href="#what-kind-of-input-does-this-test-need" class="md-nav__link">
     <span class="md-ellipsis">
-      What are "outlier scores"?
+      What kind of input does this test need?
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#how-dsos-works-in-plain-terms" class="md-nav__link">
+  <a href="#how-the-test-works" class="md-nav__link">
     <span class="md-ellipsis">
-      How DSOS works (in plain terms)
+      How the test works
     </span>
   </a>
   
@@ -861,9 +927,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#step-2-run-the-dsos-test" class="md-nav__link">
+  <a href="#step-2-run-the-adverse-shift-test" class="md-nav__link">
     <span class="md-ellipsis">
-      Step 2 — Run the DSOS test
+      Step 2 — Run the adverse-shift test
     </span>
   </a>
   
@@ -881,20 +947,14 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Reading the results">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#frequentist-vs-bayesian-p-value" class="md-nav__link">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#optional-bayesian-evidence" class="md-nav__link">
     <span class="md-ellipsis">
-      Frequentist vs. Bayesian p-value
+      Optional: Bayesian evidence
     </span>
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -926,18 +986,24 @@
   
 
 
-<h1 id="how-to-test-for-harmful-shift-noninferiority">How to Test for Harmful Shift (Noninferiority)<a class="headerlink" href="#how-to-test-for-harmful-shift-noninferiority" title="Permanent link">&para;</a></h1>
+<h1 id="tutorial-check-whether-a-shift-is-harmful">Tutorial: Check whether a shift is harmful<a class="headerlink" href="#tutorial-check-whether-a-shift-is-harmful" title="Permanent link">&para;</a></h1>
+<p><strong>What you'll learn:</strong></p>
+<ul>
+<li>The difference between detecting any shift and detecting a <em>harmful</em> shift</li>
+<li>How to use <code>test_adverse_shift(...)</code> and tell it which direction means worse</li>
+<li>How to read the p-value and decide whether the shift matters</li>
+</ul>
 <p><strong>Goal:</strong> Determine whether a new dataset is <em>meaningfully worse</em> than a reference dataset,
 not just different.</p>
-<h2 id="the-problem-with-asking-are-these-the-same">The problem with asking "are these the same?"<a class="headerlink" href="#the-problem-with-asking-are-these-the-same" title="Permanent link">&para;</a></h2>
+<h2 id="why-difference-alone-is-not-enough">Why difference alone is not enough<a class="headerlink" href="#why-difference-alone-is-not-enough" title="Permanent link">&para;</a></h2>
 <p>Imagine you deploy a machine learning model in January and again in February.
-You run a distribution test (CTST) and get a small p-value — the February data is statistically
+You run <code>test_shift(...)</code> and get a small p-value — the February data is statistically
 different from January. Should you be worried?</p>
 <p>Not necessarily. Any two real-world datasets will differ slightly due to random variation.
-CTST is sensitive enough to pick up even tiny, inconsequential differences.</p>
-<p>What you usually <em>actually</em> want to know is: <strong>"Is February's data worse in a way that could
-hurt my model?"</strong> That is the question DSOS answers.</p>
-<h2 id="ctst-vs-dsos-at-a-glance">CTST vs. DSOS at a glance<a class="headerlink" href="#ctst-vs-dsos-at-a-glance" title="Permanent link">&para;</a></h2>
+Shift testing can detect even small, practically unimportant differences.</p>
+<p>The more decision-relevant question is: <strong>"Has February's data shifted in a way that could
+harm the model or the downstream process?"</strong> That is the question <code>test_adverse_shift(...)</code> answers.</p>
+<h2 id="shift-vs-adverse-shift-at-a-glance">Shift vs. Adverse Shift at a glance<a class="headerlink" href="#shift-vs-adverse-shift-at-a-glance" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -948,39 +1014,41 @@ hurt my model?"</strong> That is the question DSOS answers.</p>
 </thead>
 <tbody>
 <tr>
-<td>CTST</td>
+<td><code>test_shift</code></td>
 <td>Are the two distributions different?</td>
 <td>Any time you want to detect <em>any</em> change</td>
 </tr>
 <tr>
-<td>DSOS</td>
+<td><code>test_adverse_shift</code></td>
 <td>Is the new data <em>worse</em> than the reference?</td>
 <td>When you care about <em>harmful</em> shifts only</td>
 </tr>
 </tbody>
 </table>
-<p>Use both together: CTST to detect change, DSOS to judge severity.</p>
-<h2 id="what-are-outlier-scores">What are "outlier scores"?<a class="headerlink" href="#what-are-outlier-scores" title="Permanent link">&para;</a></h2>
-<p>DSOS works by comparing <strong>outlier scores</strong> — a number assigned to each sample that represents
-how unusual or risky it is. Higher scores mean "worse". Examples:</p>
+<p>Use both together: <code>test_shift</code> to detect change, <code>test_adverse_shift</code> to judge severity.</p>
+<p>Like the shift test, this procedure works on one score per sample rather than the full table.</p>
+<h2 id="what-kind-of-input-does-this-test-need">What kind of input does this test need?<a class="headerlink" href="#what-kind-of-input-does-this-test-need" title="Permanent link">&para;</a></h2>
+<p><code>test_adverse_shift</code> needs one score per sample that encodes how adverse that sample is.
+Larger values must correspond to "worse". Examples:</p>
 <ul>
 <li>A model's predicted probability of failure or default</li>
-<li>A reconstruction error from an anomaly detection model</li>
-<li>A measure of patient discomfort or risk</li>
+<li>An anomaly level from a detector</li>
+<li>A patient's discomfort or risk measure</li>
 </ul>
-<p>DSOS asks: does the new dataset have disproportionately more high-scoring (worse) samples?</p>
-<h2 id="how-dsos-works-in-plain-terms">How DSOS works (in plain terms)<a class="headerlink" href="#how-dsos-works-in-plain-terms" title="Permanent link">&para;</a></h2>
+<p>The test asks whether the new dataset contains a disproportionate share of the large values.</p>
+<h2 id="how-the-test-works">How the test works<a class="headerlink" href="#how-the-test-works" title="Permanent link">&para;</a></h2>
 <ol>
-<li>Combine both datasets and label them (reference = 0, new = 1)</li>
-<li>Compute a weighted AUC that gives extra importance to the highest-scoring samples</li>
-<li>Use a one-sided permutation test to ask: are the worst samples concentrated in the new dataset?</li>
+<li>Pool both datasets and mark which samples belong to each group.</li>
+<li>Check whether the largest values are concentrated in the new dataset.</li>
+<li>Shuffle the group labels many times to build a baseline. If the real concentration
+  is unusually high relative to those shuffled baselines, the test flags it as significant
+  (small p-value).</li>
 </ol>
-<p>No parametric assumptions are required, and you do not need to specify a margin in advance.</p>
+<p>You do not need to assume a particular distributional form, and you do not need to set a threshold in advance.</p>
 <h2 id="example-comparing-two-treatments">Example: comparing two treatments<a class="headerlink" href="#example-comparing-two-treatments" title="Permanent link">&para;</a></h2>
-<p>This example is based on a <a href="https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf">SAS case study</a>
-comparing two treatments for relief from leg discomfort: <em>Armanaleg</em> (the established reference)
-and <em>Bowl</em> (the new treatment). The scores below measure discomfort — higher means more discomfort,
-which is worse.</p>
+<p>This example compares two treatments for relief from leg discomfort: <em>Armanaleg</em> (the established
+reference) and <em>Bowl</em> (the new treatment). The scores measure discomfort — higher means more
+discomfort, which is worse.</p>
 <p>We want to know: <strong>is the Bowl treatment meaningfully worse than Armanaleg?</strong></p>
 <h3 id="step-1-load-the-data">Step 1 — Load the data<a class="headerlink" href="#step-1-load-the-data" title="Permanent link">&para;</a></h3>
 <p>Relief scores are converted to discomfort scores by flipping them, so that higher always means worse:</p>
@@ -1000,20 +1068,21 @@ which is worse.</p>
 <span class="n">armanaleg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">discomfort</span><span class="p">[:</span><span class="mi">28</span><span class="p">])</span>   <span class="c1"># reference treatment</span>
 <span class="n">bowl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">discomfort</span><span class="p">[</span><span class="mi">28</span><span class="p">:])</span>        <span class="c1"># new treatment</span>
 </code></pre></div>
-<h3 id="step-2-run-the-dsos-test">Step 2 — Run the DSOS test<a class="headerlink" href="#step-2-run-the-dsos-test" title="Permanent link">&para;</a></h3>
-<p>Pass the reference sample first, then the new sample. DSOS tests whether <code>bowl</code>
+<h3 id="step-2-run-the-adverse-shift-test">Step 2 — Run the adverse-shift test<a class="headerlink" href="#step-2-run-the-adverse-shift-test" title="Permanent link">&para;</a></h3>
+<p>Pass the reference sample first, then the new sample. <code>test_adverse_shift(...)</code> tests whether <code>bowl</code>
 contains disproportionately more high-discomfort (worse) cases than <code>armanaleg</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">samesame.nit</span><span class="w"> </span><span class="kn">import</span> <span class="n">DSOS</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">samesame.bayes</span><span class="w"> </span><span class="kn">import</span> <span class="n">as_pvalue</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="kn">import</span> <span class="n">test_adverse_shift</span>
 
-<span class="n">dsos</span> <span class="o">=</span> <span class="n">DSOS</span><span class="o">.</span><span class="n">from_samples</span><span class="p">(</span><span class="n">armanaleg</span><span class="p">,</span> <span class="n">bowl</span><span class="p">)</span>
+<span class="n">harm</span> <span class="o">=</span> <span class="n">test_adverse_shift</span><span class="p">(</span>
+  <span class="n">reference</span><span class="o">=</span><span class="n">armanaleg</span><span class="p">,</span>
+  <span class="n">candidate</span><span class="o">=</span><span class="n">bowl</span><span class="p">,</span>
+  <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;higher-is-worse&quot;</span><span class="p">,</span>
+<span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Frequentist p-value: </span><span class="si">{</span><span class="n">dsos</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Bayesian    p-value: </span><span class="si">{</span><span class="n">as_pvalue</span><span class="p">(</span><span class="n">dsos</span><span class="o">.</span><span class="n">bayes_factor</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Adverse-shift p-value: </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p><strong>Output:</strong></p>
-<div class="highlight"><pre><span></span><code>Frequentist p-value: 0.1215
-Bayesian    p-value: 0.1159
+<div class="highlight"><pre><span></span><code>Adverse-shift p-value: 0.1215
 </code></pre></div>
 <h2 id="reading-the-results">Reading the results<a class="headerlink" href="#reading-the-results" title="Permanent link">&para;</a></h2>
 <table>
@@ -1030,30 +1099,37 @@ Bayesian    p-value: 0.1159
 </tr>
 <tr>
 <td>Large (≥ 0.05)</td>
-<td>Insufficient evidence that the new data is worse (noninferior result)</td>
+<td>Not enough evidence that the new data is worse</td>
 </tr>
 </tbody>
 </table>
-<p>Here, p = 0.1215 is large. We cannot conclude that Bowl is meaningfully worse than Armanaleg —
-the new treatment passes the noninferiority check.</p>
-<h3 id="frequentist-vs-bayesian-p-value">Frequentist vs. Bayesian p-value<a class="headerlink" href="#frequentist-vs-bayesian-p-value" title="Permanent link">&para;</a></h3>
-<p>DSOS provides two ways to summarise the evidence:</p>
-<ul>
-<li><strong>Frequentist p-value</strong> (<code>dsos.pvalue</code>): the standard approach, based on permutations</li>
-<li><strong>Bayesian p-value</strong> (<code>as_pvalue(dsos.bayes_factor)</code>): derived from the Bayes factor,
-  which quantifies how much evidence there is <em>in favour of</em> an adverse shift</li>
-</ul>
-<p>Both tell the same story here. The Bayesian option is useful when you want to make
-probability statements about the hypothesis, or when you are running sequential tests
-over time.</p>
+<p>Here, p = 0.1215 is large. We do not have sufficient evidence to conclude that Bowl is meaningfully worse than Armanaleg.</p>
+<h2 id="optional-bayesian-evidence">Optional: Bayesian evidence<a class="headerlink" href="#optional-bayesian-evidence" title="Permanent link">&para;</a></h2>
+<p>Bayesian evidence is optional. It provides a second summary of uncertainty alongside the standard p-value.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="kn">import</span> <span class="n">advanced</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">samesame.bayes_factors</span><span class="w"> </span><span class="kn">import</span> <span class="n">as_pvalue</span>
+
+<span class="n">detail</span> <span class="o">=</span> <span class="n">advanced</span><span class="o">.</span><span class="n">test_adverse_shift</span><span class="p">(</span>
+    <span class="n">reference</span><span class="o">=</span><span class="n">armanaleg</span><span class="p">,</span>
+    <span class="n">candidate</span><span class="o">=</span><span class="n">bowl</span><span class="p">,</span>
+    <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;higher-is-worse&quot;</span><span class="p">,</span>
+    <span class="n">bayesian</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Bayesian p-value: </span><span class="si">{</span><span class="n">as_pvalue</span><span class="p">(</span><span class="n">detail</span><span class="o">.</span><span class="n">bayes_factor</span><span class="p">)</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>In this example, the Bayesian summary leads to the same practical conclusion as the ordinary
+p-value: there is no clear evidence that the new treatment is worse.</p>
+<p>Use the primary API when you only need the standard p-value. Opt into <code>advanced.test_adverse_shift(...)</code>
+when you need posterior draws or Bayes factors.</p>
 <h2 id="tips">Tips<a class="headerlink" href="#tips" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Score direction matters:</strong> Make sure high scores mean "worse". If your scores are
-  confidence values (higher = better), negate them before passing to DSOS.</li>
-<li><strong>No labels needed:</strong> Outlier scores can come from your existing model's predictions —
+<li><strong>Direction matters:</strong> Set <code>direction="higher-is-worse"</code> when large values are harmful.
+  Set <code>direction="higher-is-better"</code> when large values mean confidence or health.</li>
+<li><strong>No labels needed:</strong> These scores can come from your existing model's predictions —
   you do not need ground truth labels. This is especially useful in production monitoring.</li>
-<li><strong>Pair with CTST:</strong> Run CTST first to detect <em>any</em> change, then run DSOS to decide
-  whether the change is harmful. See the <a href="../credit-example/">Credit example</a> for a full
+<li><strong>Pair with shift testing:</strong> Run <code>test_shift(...)</code> first to detect <em>any</em> change, then run <code>test_adverse_shift(...)</code> to decide
+  whether the change is harmful. See the <a href="../credit-example/">credit risk how-to</a> for a full
   demonstration of both tests together.</li>
 </ul>
 
