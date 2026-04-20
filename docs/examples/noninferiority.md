@@ -9,17 +9,17 @@
 **Goal:** Determine whether a new dataset is *meaningfully worse* than a reference dataset,
 not just different.
 
-## The problem with asking "are these the same?"
+## Why difference alone is not enough
 
 Imagine you deploy a machine learning model in January and again in February.
 You run `test_shift(...)` and get a small p-value — the February data is statistically
 different from January. Should you be worried?
 
 Not necessarily. Any two real-world datasets will differ slightly due to random variation.
-Shift testing is sensitive enough to pick up even tiny, inconsequential differences.
+Shift testing can detect even small, practically unimportant differences.
 
-What you usually *actually* want to know is: **"Is February's data worse in a way that could
-hurt my model?"** That is the question `test_adverse_shift(...)` answers.
+The more decision-relevant question is: **"Has February's data shifted in a way that could
+harm the model or the downstream process?"** That is the question `test_adverse_shift(...)` answers.
 
 ## Shift vs. Adverse Shift at a glance
 
@@ -30,28 +30,28 @@ hurt my model?"** That is the question `test_adverse_shift(...)` answers.
 
 Use both together: `test_shift` to detect change, `test_adverse_shift` to judge severity.
 
-Like the shift test, this works on one number per sample rather than the full table.
+Like the shift test, this procedure works on one score per sample rather than the full table.
 
 ## What kind of input does this test need?
 
-`test_adverse_shift` needs one number per sample that says how concerning that sample is.
-Larger values must line up with "worse". Examples:
+`test_adverse_shift` needs one score per sample that encodes how adverse that sample is.
+Larger values must correspond to "worse". Examples:
 
 - A model's predicted probability of failure or default
 - An anomaly level from a detector
 - A patient's discomfort or risk measure
 
-The test asks: does the new dataset contain too many of the large values?
+The test asks whether the new dataset contains a disproportionate share of the large values.
 
 ## How the test works
 
 1. Pool both datasets and mark which samples belong to each group.
 2. Check whether the largest values are concentrated in the new dataset.
 3. Shuffle the group labels many times to build a baseline. If the real concentration
-  is unusually high compared to those shuffled baselines, the test flags it as significant
-   (small p-value).
+  is unusually high relative to those shuffled baselines, the test flags it as significant
+  (small p-value).
 
-You do not need to assume a particular distribution shape, and you do not need to set a cutoff in advance.
+You do not need to assume a particular distributional form, and you do not need to set a threshold in advance.
 
 ## Example: comparing two treatments
 
@@ -113,13 +113,11 @@ Adverse-shift p-value: 0.1215
 | Small (< 0.05)  | Evidence that the new data is adversely worse than the reference      |
 | Large (≥ 0.05)  | Not enough evidence that the new data is worse                        |
 
-Here, p = 0.1215 is large. We cannot conclude that Bowl is meaningfully worse than Armanaleg —
-the new treatment is acceptable.
+Here, p = 0.1215 is large. We do not have sufficient evidence to conclude that Bowl is meaningfully worse than Armanaleg.
 
 ## Optional: Bayesian evidence
 
-Bayesian evidence is optional. Think of it as a second way to summarise uncertainty
-alongside the standard p-value.
+Bayesian evidence is optional. It provides a second summary of uncertainty alongside the standard p-value.
 
 ```python
 from samesame import advanced
@@ -135,7 +133,7 @@ detail = advanced.test_adverse_shift(
 print(f"Bayesian p-value: {as_pvalue(detail.bayes_factor):.4f}")
 ```
 
-In this example, the Bayesian summary leads to the same practical takeaway as the ordinary
+In this example, the Bayesian summary leads to the same practical conclusion as the ordinary
 p-value: there is no clear evidence that the new treatment is worse.
 
 Use the primary API when you only need the standard p-value. Opt into `advanced.test_adverse_shift(...)`
@@ -145,7 +143,7 @@ when you need posterior draws or Bayes factors.
 
 - **Direction matters:** Set `direction="higher-is-worse"` when large values are harmful.
   Set `direction="higher-is-better"` when large values mean confidence or health.
-- **No labels needed:** These per-row numbers can come from your existing model's predictions —
+- **No labels needed:** These scores can come from your existing model's predictions —
   you do not need ground truth labels. This is especially useful in production monitoring.
 - **Pair with shift testing:** Run `test_shift(...)` first to detect *any* change, then run `test_adverse_shift(...)` to decide
   whether the change is harmful. See the [credit risk how-to](credit-example.md) for a full

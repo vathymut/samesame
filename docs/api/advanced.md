@@ -1,7 +1,7 @@
 # Advanced controls
 
-Use this page when you need extra controls such as sample weights, more resamples,
-or Bayesian evidence.
+Use this page when you need additional controls such as sample weights, more resamples,
+the null distribution, or Bayesian evidence.
 
 ## What you get back
 

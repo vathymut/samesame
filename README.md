@@ -14,14 +14,14 @@
 
 > Same, same but different ...
 
-`samesame` helps you compare a reference dataset with a new one.
+`samesame` helps you compare a reference sample with a new sample.
 
 It answers two practical questions:
 
 - Did anything change? Use `test_shift(...)`.
 - Did things get worse? Use `test_adverse_shift(...)`.
 
-Use it for model monitoring, data validation, drift checks, or any workflow where you need to compare two groups and decide whether the difference matters.
+Use it for model monitoring, data validation, drift assessment, or any workflow where you need to compare two groups and determine whether the difference is practically important.
 
 ## Who is this for?
 
@@ -40,8 +40,8 @@ python -m pip install samesame
 
 ## Quick Start
 
-Suppose you already have one number per row for a reference batch and a new batch.
-Larger numbers mean "more concerning". That number might come from predicted risk,
+Suppose you already have one score per row for a reference sample and a new sample.
+Larger scores should correspond either to more adverse outcomes or to greater unusualness. That score might come from predicted risk,
 anomaly detection, model confidence, or another monitoring step.
 
 ```python
@@ -63,23 +63,23 @@ harm = test_adverse_shift(
 print(f"Did things get worse? p-value = {harm.pvalue:.4f}")
 ```
 
-**How to read this:** a small p-value from `test_shift(...)` suggests the new batch looks different.
-A small p-value from `test_adverse_shift(...)` suggests it also looks worse.
+**How to read this:** a small p-value from `test_shift(...)` indicates evidence that the new sample differs from the reference sample.
+A small p-value from `test_adverse_shift(...)` indicates evidence that it has also shifted in a worse direction.
 If the first is small and the second is large, the data changed but not in a clearly harmful way.
 
-## How it works in plain language
+## How it works
 
 `samesame` does not compare raw tables directly. The usual workflow is:
 
-1. Turn each row into one monitoring number.
-2. Compare those numbers between the reference and candidate groups.
+1. Turn each row into one score.
+2. Compare those scores between the reference and candidate groups.
 
-If your data has many columns, that number usually comes from a model:
-predicted risk, anomaly level, model confidence, or the output of a classifier trained to tell the two groups apart.
-You can think of it as a risk-like or confidence-like value for each row.
+If your data has many columns, that score usually comes from a model:
+predicted risk, anomaly level, model confidence, or the output of a classifier trained to distinguish the two groups.
+You can think of it as a scalar summary of how each row should be monitored.
 
-So under the hood, the package turns a multivariate dataset into one number per row, then runs two checks:
-`test_shift(...)` asks whether the groups differ overall, and `test_adverse_shift(...)` asks whether the candidate group contains more of the bad end of the distribution.
+So under the hood, the package turns a multivariate dataset into one score per row, then runs two checks:
+`test_shift(...)` asks whether the groups differ overall, and `test_adverse_shift(...)` asks whether the candidate group is more concentrated in the adverse tail of the score distribution.
 
 ## What you get back
 
@@ -88,7 +88,7 @@ So under the hood, the package turns a multivariate dataset into one number per 
 | `test_shift` | `ShiftResult` | `.statistic`, `.pvalue`, `.statistic_name` |
 | `test_adverse_shift` | `AdverseShiftResult` | `.statistic`, `.pvalue`, `.direction` |
 
-If you need the raw resampling values or optional Bayesian output, use `samesame.advanced`.
+If you need the resampling distribution or optional Bayesian output, use `samesame.advanced`.
 
 ## Where to go next
 
@@ -109,7 +109,7 @@ Step-by-step examples are available in the [documentation](https://vathymut.gith
 - `test_shift(*, reference, candidate, statistic="roc_auc")`
 - `test_adverse_shift(*, reference, candidate, direction=...)`
 - `samesame.advanced` for sample weights, more resamples, and optional Bayesian output
-- `samesame.logit_scores` for turning classifier outputs into one confidence number per row
+- `samesame.logit_scores` for turning classifier outputs into a confidence score
 - `samesame.importance_weights` for adjusting for known group differences
 - `samesame.bayes_factors` for converting between p-values and Bayes factors
 
@@ -120,9 +120,6 @@ Most users can keep the default settings. If your inputs are already binary 0/1 
 
 `samesame` has minimal dependencies. It is built on top of, and fully compatible with,
 [scikit-learn][scikit-learn] and [numpy][numpy].
-
-The public API is task-first, but it is built on standard methods for comparing per-row
-monitoring values and checking whether a shift is harmful.
 
 [numpy]: https://numpy.org/
 [scikit-learn]: https://scikit-learn.org/stable

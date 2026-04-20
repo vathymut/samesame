@@ -3,18 +3,18 @@
 **What you'll learn:**
 
 - How to check whether two datasets come from the same distribution
-- How to create one comparison number per row without leaking training data
+- How to create one score per row without leaking training data
 - How to run `test_shift(...)` and read the result
 
-**Goal:** Determine whether two datasets come from the same underlying distribution.
+**Goal:** Determine whether two datasets appear to come from the same underlying distribution.
 
 This is useful any time you need to compare two groups of data — for example, checking whether
 your production data still looks like your training data, or whether this week's batch matches
 last week's.
 
 You do not compare the raw feature table directly. Instead, a classifier turns each row into one
-number that says how much it looks like the new dataset rather than the reference dataset.
-If those numbers separate the groups too well, the datasets are probably different.
+score that reflects how strongly it resembles the new dataset rather than the reference dataset.
+If those scores separate the groups too well, that is evidence that the datasets differ.
 
 ## What you need
 
@@ -39,17 +39,17 @@ X, y = make_classification(
 )
 ```
 
-## Step 2 — Create one comparison number per row
+## Step 2 — Create one score per row
 
 This step is important. If you train a classifier on the full dataset and then evaluate the same
-rows, the model can look better than it really is because it remembers the training data.
-For a fair test, each row must be evaluated by a model that did *not* train on it. These values are
+rows, the classifier can appear artificially strong because it is being tested on data it has already seen.
+For a valid comparison, each row must be evaluated by a model that did *not* train on it. These values are
 often called **out-of-sample predictions**.
 
 **Recommended: use `cross_val_predict`**
 
-`cross_val_predict` splits the data into folds. Each row is then evaluated by a model that trained
-on the other folds. This is the safest default:
+`cross_val_predict` splits the data into folds. Each row is then evaluated by a model trained
+on the remaining folds. This is the safest default for most users:
 
 ```python
 from sklearn.ensemble import HistGradientBoostingClassifier
@@ -68,8 +68,8 @@ y_hat = cross_val_predict(
 
 ## Step 3 — Run the test
 
-Split those model outputs back into reference and candidate groups, then pass them to
-`test_shift`. The default statistic is ROC AUC. You can think of it as a separation number:
+Split those model outputs back into reference and candidate groups, then pass those scores to
+`test_shift`. The default statistic is ROC AUC. You can think of it as a separation measure:
 0.5 means the classifier cannot tell the groups apart, and 1.0 means it separates them perfectly:
 
 ```python
@@ -99,7 +99,7 @@ print(f"  p-value:         {shift.pvalue:.4f}")
 | Large (≥ 0.05)  | Not enough evidence to conclude the distributions differ       |
 
 Here, p = 0.0002 is very small — the classifier can easily tell the two groups apart,
-which is strong evidence of a distributional difference.
+which is strong evidence against the null hypothesis of no distributional difference.
 
 > **Important:** `test_shift` tells you *whether* distributions differ, not *how bad* the difference is
 > or whether it will hurt your model. For that, see
@@ -140,12 +140,12 @@ print(f"  p-value:         {shift_oob.pvalue:.4f}")
 ```
 
 Both approaches give the same conclusion here. Use OOB when you already have a Random Forest;
-use cross-fitting for any other classifier.
+use cross-fitting for other classifiers.
 
 ## Want more control?
 
-If you need sample weights, more resamples, or the raw null distribution, use
-`samesame.advanced.test_shift(...)`. Most readers can skip that on a first pass and come back to it later.
+If you need sample weights, more resamples, or the full null distribution, use
+`samesame.advanced.test_shift(...)`. Most readers can skip that on a first pass and return to it later.
 
 ## Tips
 

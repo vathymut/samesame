@@ -31,9 +31,9 @@ Two questions arise:
 
 1. **Are the feature distributions different?** If the new customers look nothing like the
    training data, the model may not be reliable on them.
-2. **Are the model's predictions worse?** Even if features differ, the model might still
-   generalise. What we really care about is whether it is now predicting higher default risk
-   — i.e., whether outcomes have shifted adversely.
+2. **Has predicted risk shifted adversely?** Even if features differ, the model might still
+  generalise. The more relevant question is whether it is now assigning higher default risk
+  to the deployment population.
 
 We will answer both questions using `test_shift(...)` (for question 1) and `test_adverse_shift(...)` (for question 2).
 If you want to monitor **model confidence** instead of **predicted risk**, continue to
@@ -91,8 +91,8 @@ Deployment set:  2188 samples
 
 We train a Random Forest to distinguish training samples from deployment samples.
 If the classifier can tell them apart easily (high AUC), the distributions are different.
-We use **out-of-bag (OOB) predictions**. In plain terms, each row is evaluated only by trees that
-did not train on it, which keeps the result fair:
+We use **out-of-bag (OOB) predictions**. In practical terms, each row is evaluated only by trees that
+did not train on it, which reduces optimistic bias:
 
 ```python
 # Label the two populations: 0 = training, 1 = deployment
@@ -109,7 +109,7 @@ rf_domain = RandomForestClassifier(
 rf_domain.fit(X_concat, split)
 oob_scores = rf_domain.oob_decision_function_[:, 1]  # probability of being deployment
 
-# Run the shift test on the per-row outputs
+# Run the shift test on the scores
 shift = test_shift(
   reference=oob_scores[split.values == 0],
   candidate=oob_scores[split.values == 1],
@@ -125,8 +125,8 @@ AUC statistic: 1.0000
 p-value:       0.0002
 ```
 
-AUC is a separation number. An AUC of 1.0 means the classifier perfectly separates the two populations.
-The p-value of 0.0002 confirms this is far beyond chance — **there is strong evidence of
+AUC is a separation measure. An AUC of 1.0 means the classifier perfectly separates the two populations.
+The p-value of 0.0002 provides strong evidence against the null hypothesis of no shift — **there is strong evidence of
 dataset shift**.
 
 ### Which features are driving the shift?
@@ -155,21 +155,21 @@ PercentTradesNeverDelq        0.042478
 ```
 
 `ExternalRiskEstimate` dominates because it was used to create the split — that is expected.
-Interestingly, several other features (`MSinceMostRecentDelq`, `MaxDelq2PublicRecLast12M`) also
-differ between the groups, which suggests that the features may be correlated.
+Several other features (`MSinceMostRecentDelq`, `MaxDelq2PublicRecLast12M`) also
+differ between the groups, which suggests correlated structure beyond the variable used to define the split.
 
 ---
 
-## Step 2 — Test for performance degradation
+## Step 2 — Test for adverse risk shift
 
-**Question:** Has the model started predicting worse outcomes for the deployment population?
+**Question:** Is the model assigning systematically higher default risk to the deployment population?
 
 Even though the feature distributions are different, the model might still generalise.
 We now check whether the model's predicted default probabilities are higher (worse) for
 deployment samples than for training samples.
 
 We train a credit risk model on the training set and compare its predictions on both populations.
-For the training set, we again use out-of-bag predictions so the per-row values stay fair:
+For the training set, we again use out-of-bag predictions so the scores stay fair:
 
 ```python
 # Train a credit risk model to predict loan default (Bad = 1)
@@ -187,7 +187,7 @@ rf_bad.fit(X_train, loan_status)
 bad_train = rf_bad.oob_decision_function_[:, 1].ravel()
 bad_test  = rf_bad.predict_proba(X_test)[:, 1].ravel()
 
-# Run the harmful-shift test: are there disproportionately more high-risk predictions in deployment?
+# Run the adverse-shift test: are there disproportionately more high-risk predictions in deployment?
 harm = test_adverse_shift(
   reference=bad_train,
   candidate=bad_test,
@@ -204,18 +204,18 @@ Statistic: 0.2483
 p-value:   0.0001
 ```
 
-> A higher statistic means more of the largest values are concentrated in the deployment set.
+> A higher statistic means that more of the largest values are concentrated in the deployment set.
 
-p = 0.0001 — **strong evidence of adverse shift**. The model is predicting substantially
-higher default risk for deployment samples. This confirms not only that the data is different,
-but that the difference is harmful: predictions have shifted toward worse outcomes.
+p = 0.0001 — **strong evidence of adverse shift**. The model is assigning substantially
+higher default risk to deployment samples. This confirms not only that the data is different,
+but that the shift is adverse with respect to the score being monitored.
 
 This is a good example of when the model output itself is already meaningful. A higher predicted
-default probability is directly interpretable as higher business risk, so it is a natural thing to
-monitor. When a model output is *not* directly interpretable as "worse", you need a different per-row
-signal, such as a confidence value. See [Monitor model confidence](credit-ood-detection.md).
+default probability is directly interpretable as higher business risk, so it is a natural score to
+monitor. When a model output is *not* directly interpretable as "worse", you need a different
+score, such as a confidence score. See [Monitor model confidence](credit-ood-detection.md).
 
-The important limitation is the reverse: a confidence-style signal is **not** a substitute for business impact.
+The important limitation is the reverse: a confidence score is **not** a substitute for business impact.
 A model can become more confident in its predictions while those predictions become more harmful to
 the business. When you already have a value with direct business meaning, such as default probability,
 that value should remain the primary monitoring signal.
@@ -234,7 +234,7 @@ Running both tests together gives a richer picture than either test alone:
 | Neither significant              | No evidence of a problem. Continue as normal.        |
 
 In this example, **both tests are significant** — the deployment population is different
-and the model's predictions are worse. The recommended action is to retrain or recalibrate
+and predicted risk is higher. The recommended action is to retrain or recalibrate
 the model for the new population.
 
 ---
@@ -249,5 +249,5 @@ the model for the new population.
   and `test_adverse_shift(...)` tells you *whether it matters*.
 - In this example, **predicted risk increased**, but in the companion [how-to guide](credit-ood-detection.md), **model
   confidence did not worsen**. Those are different signals and both are worth monitoring.
-- If your model output is not itself a meaningful risk value, use a confidence value instead; see
+- If your model output is not itself a meaningful risk value, use a confidence score instead; see
   [Monitor model confidence](credit-ood-detection.md).
