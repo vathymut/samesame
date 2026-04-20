@@ -5,7 +5,7 @@
 # LICENSE file in the root directory of this source tree.
 #
 
-"""Reference OOD scoring functions based on classifier logits.
+"""Reference logit-derived score functions for confidence and OOD monitoring.
 
 These post-hoc methods are intended for pre-trained classifiers and return
 scores that can be used to rank inputs by in-distribution confidence.
@@ -39,8 +39,6 @@ def _validate_logits(logits: NDArray) -> NDArray:
     if not np.isfinite(logits).all():
         raise ValueError("logits contain NaN or infinite values")
 
-    # Prefer float32 for compactness, but keep wider dtype when float32 would
-    # overflow otherwise finite inputs (e.g., very large float64 logits).
     if np.issubdtype(logits.dtype, np.floating):
         max_abs = np.max(np.abs(logits), initial=0.0)
         if max_abs <= np.finfo(np.float32).max:
@@ -185,3 +183,6 @@ def max_logit(logits: NDArray) -> NDArray:
     """
     logits = _validate_logits(logits)
     return np.max(logits, axis=1)
+
+
+__all__ = ["logit_gap", "max_logit"]

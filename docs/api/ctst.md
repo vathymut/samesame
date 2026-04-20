@@ -1,3 +1,0 @@
-# ctst
-
-::: samesame.ctst

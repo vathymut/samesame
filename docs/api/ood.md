@@ -1,3 +1,0 @@
-# ood
-
-::: samesame.ood

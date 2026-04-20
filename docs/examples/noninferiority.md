@@ -1,4 +1,10 @@
-# How to Test for Harmful Shift (Noninferiority)
+# Tutorial: Check whether a shift is harmful
+
+**What you'll learn:**
+
+- The difference between detecting any shift and detecting a *harmful* shift
+- How to use `test_adverse_shift(...)` and what "direction" means
+- How to read the p-value and decide whether the shift matters
 
 **Goal:** Determine whether a new dataset is *meaningfully worse* than a reference dataset,
 not just different.
@@ -6,49 +12,50 @@ not just different.
 ## The problem with asking "are these the same?"
 
 Imagine you deploy a machine learning model in January and again in February.
-You run a distribution test (CTST) and get a small p-value — the February data is statistically
+You run `test_shift(...)` and get a small p-value — the February data is statistically
 different from January. Should you be worried?
 
 Not necessarily. Any two real-world datasets will differ slightly due to random variation.
-CTST is sensitive enough to pick up even tiny, inconsequential differences.
+Shift testing is sensitive enough to pick up even tiny, inconsequential differences.
 
 What you usually *actually* want to know is: **"Is February's data worse in a way that could
-hurt my model?"** That is the question DSOS answers.
+hurt my model?"** That is the question `test_adverse_shift(...)` answers.
 
-## CTST vs. DSOS at a glance
+## Shift vs. Adverse Shift at a glance
 
 | Test  | Question it answers                          | When to use it                              |
 |-------|----------------------------------------------|---------------------------------------------|
-| CTST  | Are the two distributions different?         | Any time you want to detect *any* change     |
-| DSOS  | Is the new data *worse* than the reference?  | When you care about *harmful* shifts only   |
+| `test_shift` | Are the two distributions different?         | Any time you want to detect *any* change |
+| `test_adverse_shift` | Is the new data *worse* than the reference?  | When you care about *harmful* shifts only |
 
-Use both together: CTST to detect change, DSOS to judge severity.
+Use both together: `test_shift` to detect change, `test_adverse_shift` to judge severity.
 
-## What are "outlier scores"?
+## What kind of scores does this test need?
 
-DSOS works by comparing **outlier scores** — a number assigned to each sample that represents
-how unusual or risky it is. Higher scores mean "worse". Examples:
+`test_adverse_shift` needs one number per sample that captures how bad or risky that sample is.
+Higher scores mean "worse". Examples:
 
 - A model's predicted probability of failure or default
-- A reconstruction error from an anomaly detection model
-- A measure of patient discomfort or risk
+- A reconstruction error from an anomaly detector
+- A patient's discomfort or risk score
 
-DSOS asks: does the new dataset have disproportionately more high-scoring (worse) samples?
+The test asks: does the new dataset have disproportionately more high-scoring (worse) samples?
 
-## How DSOS works (in plain terms)
+## How the test works
 
-1. Combine both datasets and label them (reference = 0, new = 1)
-2. Compute a weighted AUC that gives extra importance to the highest-scoring samples
-3. Use a one-sided permutation test to ask: are the worst samples concentrated in the new dataset?
+1. Pool both datasets and mark which samples belong to each group.
+2. Measure how much the worst-scoring samples are concentrated in the new dataset.
+3. Shuffle the group labels randomly many times to build a baseline. If the real concentration
+   is unusually high compared to those random baselines, the test flags it as significant
+   (small p-value).
 
 No parametric assumptions are required, and you do not need to specify a margin in advance.
 
 ## Example: comparing two treatments
 
-This example is based on a [SAS case study](https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf)
-comparing two treatments for relief from leg discomfort: *Armanaleg* (the established reference)
-and *Bowl* (the new treatment). The scores below measure discomfort — higher means more discomfort,
-which is worse.
+This example compares two treatments for relief from leg discomfort: *Armanaleg* (the established
+reference) and *Bowl* (the new treatment). The scores measure discomfort — higher means more
+discomfort, which is worse.
 
 We want to know: **is the Bowl treatment meaningfully worse than Armanaleg?**
 
@@ -74,26 +81,27 @@ armanaleg = np.array(discomfort[:28])   # reference treatment
 bowl = np.array(discomfort[28:])        # new treatment
 ```
 
-### Step 2 — Run the DSOS test
+### Step 2 — Run the adverse-shift test
 
-Pass the reference sample first, then the new sample. DSOS tests whether `bowl`
+Pass the reference sample first, then the new sample. `test_adverse_shift(...)` tests whether `bowl`
 contains disproportionately more high-discomfort (worse) cases than `armanaleg`:
 
 ```python
-from samesame.nit import DSOS
-from samesame.bayes import as_pvalue
+from samesame import test_adverse_shift
 
-dsos = DSOS.from_samples(armanaleg, bowl)
+harm = test_adverse_shift(
+  reference=armanaleg,
+  candidate=bowl,
+  direction="higher-is-worse",
+)
 
-print(f"Frequentist p-value: {dsos.pvalue:.4f}")
-print(f"Bayesian    p-value: {as_pvalue(dsos.bayes_factor):.4f}")
+print(f"Adverse-shift p-value: {harm.pvalue:.4f}")
 ```
 
 **Output:**
 
 ```text
-Frequentist p-value: 0.1215
-Bayesian    p-value: 0.1159
+Adverse-shift p-value: 0.1215
 ```
 
 ## Reading the results
@@ -104,34 +112,36 @@ Bayesian    p-value: 0.1159
 | Large (≥ 0.05)  | Insufficient evidence that the new data is worse (noninferior result) |
 
 Here, p = 0.1215 is large. We cannot conclude that Bowl is meaningfully worse than Armanaleg —
-the new treatment passes the noninferiority check.
+the new treatment is acceptable.
 
-## DSOS and WeightedAUC
+## Optional: Bayesian evidence
 
-`DSOS` is an alias for `WeightedAUC` in the API.
+Bayesian evidence is optional. It gives you an alternative way to quantify uncertainty
+beyond the standard p-value.
 
-- Use `DSOS.from_samples(reference_scores, new_scores)` for the standard unweighted path.
-- If you need `sample_weight`, construct `WeightedAUC(...)` directly with
-  `actual`, `predicted`, and `sample_weight`.
+```python
+from samesame import advanced
+from samesame.bayes_factors import as_pvalue
 
-### Frequentist vs. Bayesian p-value
+detail = advanced.test_adverse_shift(
+    reference=armanaleg,
+    candidate=bowl,
+    direction="higher-is-worse",
+    bayesian=True,
+)
 
-DSOS provides two ways to summarise the evidence:
+print(f"Bayesian p-value: {as_pvalue(detail.bayes_factor):.4f}")
+```
 
-- **Frequentist p-value** (`dsos.pvalue`): the standard approach, based on permutations
-- **Bayesian p-value** (`as_pvalue(dsos.bayes_factor)`): derived from the Bayes factor,
-  which quantifies how much evidence there is *in favour of* an adverse shift
-
-Both tell the same story here. The Bayesian option is useful when you want to make
-probability statements about the hypothesis, or when you are running sequential tests
-over time.
+Use the primary API when you only need the standard p-value. Opt into `advanced.test_adverse_shift(...)`
+when you need posterior draws or Bayes factors.
 
 ## Tips
 
-- **Score direction matters:** Make sure high scores mean "worse". If your scores are
-  confidence values (higher = better), negate them before passing to DSOS.
-- **No labels needed:** Outlier scores can come from your existing model's predictions —
+- **Score direction matters:** Set `direction="higher-is-worse"` when large scores are harmful.
+  Set `direction="higher-is-better"` when large scores mean confidence or health.
+- **No labels needed:** Scores can come from your existing model's predictions —
   you do not need ground truth labels. This is especially useful in production monitoring.
-- **Pair with CTST:** Run CTST first to detect *any* change, then run DSOS to decide
-  whether the change is harmful. See the [Credit example](credit-example.md) for a full
+- **Pair with shift testing:** Run `test_shift(...)` first to detect *any* change, then run `test_adverse_shift(...)` to decide
+  whether the change is harmful. See the [credit risk how-to](credit-example.md) for a full
   demonstration of both tests together.

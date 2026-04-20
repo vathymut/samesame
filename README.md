@@ -14,16 +14,15 @@
 
 > Same, same but different ...
 
-`samesame` helps you answer a question every data scientist faces after deploying a model:
-**"Has my data changed in a way that could hurt my model?"**
+`samesame` runs hypothesis tests over score vectors.
 
-It provides two complementary statistical tests:
+It gives you two primary actions:
 
-- **CTST** — detects whether two datasets come from different distributions ("something changed")
-- **DSOS** — detects whether that change is actually harmful ("things got worse")
+- `test_shift` asks whether two score distributions differ.
+- `test_adverse_shift` asks whether the new scores got worse in a direction you define explicitly.
 
-This distinction matters. Not every distributional difference is a problem.
-`samesame` helps you tell the two apart so you can avoid unnecessary alerts and focus on real issues.
+This is useful when you already have per-row scores from a classifier, anomaly detector,
+risk model, or confidence heuristic and want statistically defensible answers instead of ad hoc thresholds.
 
 ## Who is this for?
 
@@ -49,78 +48,102 @@ You want to know: (a) are the distributions different? and (b) is the test set a
 
 ```python
 import numpy as np
-from sklearn.metrics import roc_auc_score
-from samesame.ctst import CTST
-from samesame.nit import DSOS
+from samesame import test_adverse_shift, test_shift
 
 rng = np.random.default_rng(123_456)
 os_train = rng.normal(size=600)  # outlier scores from training
 os_test  = rng.normal(size=600)  # outlier scores from deployment
 
 # Question 1: Are the distributions different?
-ctst = CTST.from_samples(os_train, os_test, metric=roc_auc_score)
-print(f"CTST p-value: {ctst.pvalue:.4f}")
-# CTST p-value: 0.0358  → distributions differ (small p-value)
+shift = test_shift(reference=os_train, candidate=os_test)
+print(f"Shift p-value: {shift.pvalue:.4f}")
 
 # Question 2: Is the test set actually worse (more outliers)?
-dsos = DSOS.from_samples(os_train, os_test)
-print(f"DSOS p-value: {dsos.pvalue:.4f}")
-# DSOS p-value: 0.9500  → no adverse shift detected (large p-value)
+harm = test_adverse_shift(
+	reference=os_train,
+	candidate=os_test,
+	direction="higher-is-worse",
+)
+print(f"Adverse-shift p-value: {harm.pvalue:.4f}")
 ```
 
-**What this means:** CTST flags a difference (the distributions are not identical), but DSOS says
+**What this means:** `test_shift` flags a difference (the distributions are not identical), but `test_adverse_shift` says
 the test set is *not* disproportionately worse. This is a common real-world situation — minor
-statistical differences that do not signal a real problem. Without DSOS, you might raise a false alarm.
+statistical differences that do not signal a real problem. Without a harmful-shift test, you might raise a false alarm.
 
-## Modules
+## What you get back
 
-| Module             | What it does                                              |
-|--------------------|-----------------------------------------------------------|
-| `samesame.ctst`    | Classifier two-sample tests — did the distribution change? |
-| `samesame.nit`     | Noninferiority tests — is the change actually harmful?    |
-| `samesame.bayes`   | Bayesian inference — convert p-values to Bayes factors    |
-| `samesame.metrics` | Weighted ROC utilities (for example, WAUC)                |
-| `samesame.iw`      | Importance weighting — covariate-shift sample weights (AIWERM, RIWERM) |
-| `samesame.ood`     | Out-of-distribution scoring — flag unusual inputs         |
+| Function | Result type | Fields |
+|----------|-------------|--------|
+| `test_shift` | `ShiftResult` | `.statistic`, `.pvalue`, `.statistic_name` |
+| `test_adverse_shift` | `AdverseShiftResult` | `.statistic`, `.pvalue`, `.direction` |
 
-## Test result attributes
+## Primary API
 
-Every test result object exposes these attributes (where applicable):
+- `test_shift(*, reference, candidate, statistic="roc_auc")`
+- `test_adverse_shift(*, reference, candidate, direction=...)`
 
-| Attribute       | Description                                      |
-|-----------------|--------------------------------------------------|
-| `.statistic`    | The observed test statistic                      |
-| `.null`         | The null distribution (from permutations)        |
-| `.pvalue`       | The p-value                                      |
-| `.posterior`    | The Bayesian posterior distribution (DSOS only)  |
-| `.bayes_factor` | The Bayes factor (DSOS only)                     |
+All arguments are keyword-only — you must name them when calling the functions.
 
-## API quick reference
+Built-in statistics for `test_shift`:
 
-- **CTST**: Use `CTST.from_samples(a, b, metric=...)` for the common unweighted path, or
-	`CTST(actual=..., predicted=..., metric=..., sample_weight=..., alternative=..., n_resamples=...)`
-	when you need explicit control over weighting, hypothesis direction, or resampling depth.
-- **DSOS / WeightedAUC**: `DSOS` is an alias of `WeightedAUC`.
-	If you need `sample_weight`, construct `WeightedAUC(...)` directly.
-- **OOD utilities**: `samesame.ood` includes both `logit_gap` (recommended default) and
-	`max_logit` (simple baseline).
-- **Importance weights**: `samesame.iw.aiw(actual, predicted, *, lam=1.0)` and
-	`samesame.iw.riw(actual, predicted, *, lam=0.5)` return per-sample weight vectors
-	suitable for passing as `sample_weight` to `wauc` or `CTST`.
+- `roc_auc` (default, works for any numeric score)
+- `balanced_accuracy` (binary scores only)
+- `matthews_corrcoef` (binary scores only)
+
+## Other modules
+
+These modules are available when you need them, but you don't need them to get started:
+
+| Module | What it does |
+|--------|--------------|
+| `samesame.advanced` | extra controls: sample weights, resampling depth, Bayesian test option |
+| `samesame.logit_scores` | convert classifier outputs into confidence scores |
+| `samesame.importance_weights` | build per-sample weights to account for group differences |
+| `samesame.bayes_factors` | convert between p-values and Bayes factors |
+
+Example advanced usage:
+
+```python
+from samesame import advanced
+
+detail = advanced.test_shift(
+	reference=os_train,
+	candidate=os_test,
+	n_resamples=4999,
+)
+
+harm_detail = advanced.test_adverse_shift(
+	reference=os_train,
+	candidate=os_test,
+	direction="higher-is-worse",
+	bayesian=True,
+)
+```
+
+The advanced namespace returns detail-rich results, including resampling artifacts.
 
 ## Examples
 
-Step-by-step worked examples are available in the [documentation](https://vathymut.github.io/samesame/):
+Step-by-step examples are available in the [documentation](https://vathymut.github.io/samesame/):
 
-- [Detecting distribution shifts](https://vathymut.github.io/samesame/examples/distribution-shifts/)
-- [Noninferiority testing](https://vathymut.github.io/samesame/examples/noninferiority/)
-- [Credit risk: shift and degradation](https://vathymut.github.io/samesame/examples/credit-example/)
-- [Credit OOD detection](https://vathymut.github.io/samesame/examples/credit-ood-detection/)
+**Tutorials**
+
+- [Detect a distribution shift](https://vathymut.github.io/samesame/examples/distribution-shifts/)
+- [Check whether a shift is harmful](https://vathymut.github.io/samesame/examples/noninferiority/)
+
+**How-to guides**
+
+- [Monitor a credit risk model](https://vathymut.github.io/samesame/examples/credit-example/)
+- [Monitor model confidence](https://vathymut.github.io/samesame/examples/credit-ood-detection/)
 
 ## Dependencies
 
 `samesame` has minimal dependencies. It is built on top of, and fully compatible with,
 [scikit-learn][scikit-learn] and [numpy][numpy].
+
+The public API is task-first, but the underlying methods still correspond to familiar ideas from
+classifier two-sample testing and harmful-shift testing in the literature.
 
 [numpy]: https://numpy.org/
 [scikit-learn]: https://scikit-learn.org/stable

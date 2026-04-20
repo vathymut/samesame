@@ -4,7 +4,7 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 #
-"""Importance weighting schemes for covariate shift adaptation."""
+"""Importance-weight builders for covariate shift adaptation."""
 
 from __future__ import annotations
 
@@ -144,7 +144,7 @@ def aiw(
     Examples
     --------
     >>> import numpy as np
-    >>> from samesame.iw import aiw
+    >>> from samesame.importance_weights import aiw
     >>> actual = np.array([0, 0, 1, 1])
     >>> predicted = np.array([0.25, 0.4, 0.6, 0.75])
     >>> np.round(aiw(actual, predicted), 4)
@@ -243,7 +243,7 @@ def riw(
     Examples
     --------
     >>> import numpy as np
-    >>> from samesame.iw import riw
+    >>> from samesame.importance_weights import riw
     >>> actual = np.array([0, 0, 1, 1])
     >>> predicted = np.array([0.25, 0.4, 0.6, 0.75])
     >>> np.round(riw(actual, predicted), 4)

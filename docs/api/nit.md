@@ -1,3 +1,0 @@
-# nit
-
-::: samesame.nit

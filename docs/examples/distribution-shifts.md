@@ -1,4 +1,10 @@
-# How to Detect Distribution Shifts
+# Tutorial: Detect a distribution shift
+
+**What you'll learn:**
+
+- How to check whether two datasets come from the same distribution
+- How to get fair, unbiased classifier predictions
+- How to run `test_shift(...)` and read the result
 
 **Goal:** Determine whether two datasets come from the same underlying distribution.
 
@@ -6,9 +12,8 @@ This is useful any time you need to compare two groups of data — for example, 
 your production data still looks like your training data, or whether this week's batch matches
 last week's.
 
-`samesame` uses a **Classifier Two-Sample Test (CTST)** for this. The core idea is simple:
-train a classifier to distinguish between the two datasets. If it can do so reliably (high AUC),
-the two datasets are probably different. If it can't do better than random, they are likely the same.
+`samesame` assumes you already have out-of-sample scores from a model that tried to separate the
+two datasets. If those scores separate the groups too well, the two datasets are probably different.
 
 ## What you need
 
@@ -48,8 +53,7 @@ trained on the remaining folds. This is the most statistically sound approach:
 ```python
 from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.model_selection import cross_val_predict
-from sklearn.metrics import roc_auc_score
-from samesame.ctst import CTST
+from samesame import test_shift
 
 # Predict each sample's probability using a model that never saw that sample
 y_hat = cross_val_predict(
@@ -63,14 +67,20 @@ y_hat = cross_val_predict(
 
 ## Step 3 — Run the test
 
-Pass the group labels and the predictions to `CTST`. The AUC (area under the ROC curve)
-measures how well the classifier separates the two groups — 0.5 means no separation
+Split the out-of-sample scores back into reference and candidate vectors, then pass those score
+vectors to `test_shift`. The default statistic is ROC AUC, so 0.5 means no separation
 (groups look the same), 1.0 means perfect separation (groups are clearly different):
 
 ```python
-ctst = CTST(actual=y, predicted=y_hat, metric=roc_auc_score)
-print(f"  statistic (AUC): {ctst.statistic:.2f}")
-print(f"  p-value:         {ctst.pvalue:.4f}")
+reference_scores = y_hat[y == 0]
+candidate_scores = y_hat[y == 1]
+
+shift = test_shift(
+    reference=reference_scores,
+    candidate=candidate_scores,
+)
+print(f"  statistic (AUC): {shift.statistic:.2f}")
+print(f"  p-value:         {shift.pvalue:.4f}")
 ```
 
 **Output:**
@@ -90,8 +100,9 @@ print(f"  p-value:         {ctst.pvalue:.4f}")
 Here, p = 0.0002 is very small — the classifier can easily tell the two groups apart,
 which is strong evidence of a distributional difference.
 
-> **Important:** CTST tells you *whether* distributions differ, not *how bad* the difference is
-> or whether it will hurt your model. For that, see the [Noninferiority guide](noninferiority.md).
+> **Important:** `test_shift` tells you *whether* distributions differ, not *how bad* the difference is
+> or whether it will hurt your model. For that, see
+> [Check whether a shift is harmful](noninferiority.md).
 
 ## Alternative: out-of-bag (OOB) predictions
 
@@ -112,9 +123,12 @@ rf = RandomForestClassifier(
 rf.fit(X, y)
 y_oob = rf.oob_decision_function_[:, 1]
 
-ctst_oob = CTST(actual=y, predicted=y_oob, metric=roc_auc_score)
-print(f"  statistic (AUC): {ctst_oob.statistic:.2f}")
-print(f"  p-value:         {ctst_oob.pvalue:.4f}")
+shift_oob = test_shift(
+    reference=y_oob[y == 0],
+    candidate=y_oob[y == 1],
+)
+print(f"  statistic (AUC): {shift_oob.statistic:.2f}")
+print(f"  p-value:         {shift_oob.pvalue:.4f}")
 ```
 
 **Output:**
@@ -127,36 +141,37 @@ print(f"  p-value:         {ctst_oob.pvalue:.4f}")
 Both approaches give the same conclusion here. Use OOB when you already have a Random Forest;
 use cross-fitting for any other classifier.
 
-## Common CTST options
+## Advanced options
 
-Use `CTST.from_samples(...)` when you only have two score vectors and do not need per-row weights.
-When you need more control, build `CTST(...)` directly:
+The primary API is intentionally minimal. When you need weights, custom resampling depth,
+or raw null distributions, use `samesame.advanced.test_shift(...)`:
 
 ```python
+from samesame import advanced
+
 weights = np.ones_like(y_hat)
 
-ctst_weighted = CTST(
-    actual=y,
-    predicted=y_hat,
-    metric=roc_auc_score,
+shift_weighted = advanced.test_shift(
+    reference=y_hat[y == 0],
+    candidate=y_hat[y == 1],
     sample_weight=weights,
     alternative="greater",  # one-sided alternative
-    n_resamples=4999,         # trade precision vs. runtime
+    n_resamples=4999,        # trade precision vs. runtime
 )
 ```
 
 Practical defaults:
 
-- `alternative="two-sided"` is the default and best for generic shift detection
-- `n_resamples=9999` is the default and gives stable p-values in most settings
-- `sample_weight` is optional; pass it only when some observations should count more than others
+- `test_shift(...)` uses `statistic="roc_auc"` by default
+- the primary API uses statistically rigorous defaults and hides tuning knobs
+- `sample_weight` is an advanced feature only
 
 ## Tips
 
-- **AUC vs. balanced accuracy:** Use AUC when your classifier outputs probabilities. Use balanced
-    accuracy when it outputs binary labels. Both work with `CTST`.
+- **AUC vs. binary statistics:** Use the default AUC when your classifier outputs probabilities.
+    Use `balanced_accuracy` or `matthews_corrcoef` only when your score vectors are already binary.
 - **Investigate drivers:** If a shift is detected, inspect your classifier's feature importances
     to find which features are most different between the two groups.
-- **Shift detected — now what?** A significant CTST result means the distributions differ.
+- **Shift detected — now what?** A significant shift result means the distributions differ.
     To check whether that difference is actually *harmful*, continue to
-    [Noninferiority testing](noninferiority.md).
+    [Check whether a shift is harmful](noninferiority.md).

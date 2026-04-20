@@ -69,7 +69,7 @@ def as_bf(
     Examples
     --------
     >>> import numpy as np
-    >>> from samesame.bayes import as_bf
+    >>> from samesame.bayes_factors import as_bf
     >>> as_bf(0.5)
     np.float64(1.0)
     >>> np.round(as_bf(0.05), 1)
@@ -79,8 +79,8 @@ def as_bf(
     """
     if np.any(np.logical_or(pvalue >= 1, pvalue <= 0)):
         raise ValueError("pvalue must be within the open interval (0, 1).")
-    pvalue = np.clip(pvalue, 1e-10, 1 - 1e-10)  # Avoid numerical issues at extremes
-    return 1.0 / np.exp(logit(pvalue))  # evidence in favor of an effect
+    pvalue = np.clip(pvalue, 1e-10, 1 - 1e-10)
+    return 1.0 / np.exp(logit(pvalue))
 
 
 def as_pvalue(
@@ -127,7 +127,7 @@ def as_pvalue(
     Examples
     --------
     >>> import numpy as np
-    >>> from samesame.bayes import as_pvalue
+    >>> from samesame.bayes_factors import as_pvalue
     >>> as_pvalue(1)
     np.float64(0.5)
     >>> np.round(as_pvalue(19), 2)
@@ -137,7 +137,7 @@ def as_pvalue(
     """
     if np.any(bayes_factor <= 0):
         raise ValueError("bayes_factor must be strictly positive.")
-    bf_ = np.clip(bayes_factor, 1e-10, 1e10)  # Ensure numerical stability
+    bf_ = np.clip(bayes_factor, 1e-10, 1e10)
     pvalue = expit(-np.log(bf_))
     return pvalue
 
@@ -190,7 +190,7 @@ def bayes_factor(
     Examples
     --------
     >>> import numpy as np
-    >>> from samesame.bayes import bayes_factor
+    >>> from samesame.bayes_factors import bayes_factor
     >>> posterior_samples = np.array([0.2, 0.5, 0.8, 0.9])
     >>> bayes_factor(posterior_samples, threshold=0.5)
     np.float64(1.0)

@@ -1,3 +1,0 @@
-# bayes
-
-::: samesame.bayes

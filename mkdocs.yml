@@ -1,23 +1,23 @@
 site_name: samesame
 repo_url: https://github.com/vathymut/samesame
 site_url: https://vathymut.github.io/samesame/
-site_description: Samesame - Classifier Two-sample Tests
+site_description: Samesame - Score-vector shift hypothesis tests
 site_author: Vathy M. Kamulete
 
 nav:
   - Home: index.md
-  - Examples:
-    - Distribution shifts: examples/distribution-shifts.md
-    - Noninferiority tests: examples/noninferiority.md
-    - Credit example: examples/credit-example.md
-    - Credit OOD detection: examples/credit-ood-detection.md
-  - API:
-      - bayes: api/bayes.md
-      - ctst: api/ctst.md
-      - iw: api/iw.md
-      - metrics: api/metrics.md
-      - nit: api/nit.md
-      - ood: api/ood.md
+  - Tutorials:
+    - Detect a distribution shift: examples/distribution-shifts.md
+    - Check whether a shift is harmful: examples/noninferiority.md
+  - How-to guides:
+    - Monitor a credit risk model: examples/credit-example.md
+    - Monitor model confidence: examples/credit-ood-detection.md
+  - API reference:
+      - Testing functions: api/testing.md
+      - Advanced controls: api/advanced.md
+      - Bayes factors: api/bayes_factors.md
+      - Importance weights: api/importance_weights.md
+      - Logit scores: api/logit_scores.md
 plugins:
   - search
   - autorefs

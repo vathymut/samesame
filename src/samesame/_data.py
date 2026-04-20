@@ -6,40 +6,27 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
-
 import numpy as np
-from numpy.typing import NDArray
-from sklearn.utils.multiclass import type_of_target
+from numpy.typing import ArrayLike, NDArray
 
-
-def assign_labels(samples: Sequence[NDArray]) -> NDArray:
-    if len(samples) <= 1:
-        raise ValueError(f"len(samples) must be greater than 1, got {len(samples)}.")
-    labels = [np.repeat(i, np.array(s).shape[0]) for i, s in enumerate(samples)]
-    return np.concatenate(labels, axis=None).astype(int)
-
-
-def group_by(data: NDArray, groups: NDArray):
-    unique_groups, group_indices = np.unique(groups, return_inverse=True)
-    grouped = [data[group_indices == i] for i in range(len(unique_groups))]
-    return grouped
-
-
-def concat_samples(samples: Sequence[NDArray]) -> NDArray:
-    first_sample = np.asarray(samples[0])
-    if first_sample.ndim < 2:
-        return np.concatenate(samples, axis=None)
-    return np.concatenate(samples, axis=0)
+from samesame._utils import as_numeric_vector
 
 
 def build_two_sample_dataset(
-    first_sample: NDArray,
-    second_sample: NDArray,
-) -> tuple[NDArray, NDArray]:
-    if type_of_target(first_sample) != type_of_target(second_sample):
-        raise ValueError(
-            "first_sample and second_sample must have the same target type."
+    reference: ArrayLike,
+    candidate: ArrayLike,
+) -> tuple[NDArray[np.int_], NDArray]:
+    """Build binary labels and a combined score vector from two samples."""
+    reference_scores = as_numeric_vector(reference, name="reference")
+    candidate_scores = as_numeric_vector(candidate, name="candidate")
+    labels = np.concatenate(
+        (
+            np.zeros(reference_scores.shape[0], dtype=int),
+            np.ones(candidate_scores.shape[0], dtype=int),
         )
-    samples = (first_sample, second_sample)
-    return assign_labels(samples), concat_samples(samples)
+    )
+    scores = np.concatenate((reference_scores, candidate_scores))
+    return labels, scores
+
+
+__all__ = ["build_two_sample_dataset"]

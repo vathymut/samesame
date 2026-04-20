@@ -8,7 +8,7 @@
 import numpy as np
 import pytest
 
-from samesame.bayes import as_bf, as_pvalue, bayes_factor
+from samesame.bayes_factors import as_bf, as_pvalue, bayes_factor
 
 
 def test_conversion(bayes_factors):

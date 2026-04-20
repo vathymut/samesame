@@ -4,12 +4,12 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 #
-"""Tests for samesame.iw (AIWERM and RIWERM importance weighting)."""
+"""Tests for samesame.importance_weights."""
 
 import numpy as np
 import pytest
 
-from samesame.iw import aiw, riw
+from samesame.importance_weights import aiw, riw
 
 
 # ---------------------------------------------------------------------------

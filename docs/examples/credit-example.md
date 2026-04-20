@@ -1,15 +1,19 @@
-# Tutorial: Monitoring a Credit Risk Model for Shift
+# How to: Monitor a credit risk model
 
 **What you'll learn:**
 
-- How to detect whether your production data looks different from your training data (dataset shift)
-- How to find which features are responsible for that difference
-- How to check whether a model's predictions have shifted toward worse outcomes (performance degradation)
+- How to detect whether your deployment data looks different from your training data
+- How to find which features are most different between the two groups
+- How to check whether a model's predictions have shifted toward worse outcomes
 - How to interpret both results and decide what action to take
 
-**Prerequisites:** Familiarity with scikit-learn basics (fitting a model, `predict_proba`).
-New to these tests? Read [Detecting distribution shifts](distribution-shifts.md) and
-[Noninferiority testing](noninferiority.md) first.
+!!! note "Before you start"
+    This guide assumes you have completed both tutorials:
+
+    - [Detect a distribution shift](distribution-shifts.md)
+    - [Check whether a shift is harmful](noninferiority.md)
+
+    You also need basic familiarity with scikit-learn — fitting a model and calling `predict_proba`.
 
 ---
 
@@ -27,9 +31,9 @@ Two questions arise:
    generalise. What we really care about is whether it is now predicting higher default risk
    — i.e., whether outcomes have shifted adversely.
 
-We will answer both questions using CTST (for question 1) and DSOS (for question 2).
-If you want to monitor **model uncertainty** instead of **predicted risk**, continue to
-[Credit OOD detection](credit-ood-detection.md) after this tutorial.
+We will answer both questions using `test_shift(...)` (for question 1) and `test_adverse_shift(...)` (for question 2).
+If you want to monitor **model confidence** instead of **predicted risk**, continue to
+[Monitor model confidence](credit-ood-detection.md) after completing this guide.
 
 ---
 
@@ -47,10 +51,8 @@ import re
 import pandas as pd
 from sklearn.datasets import fetch_openml
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import roc_auc_score
 
-from samesame.ctst import CTST
-from samesame.nit import DSOS
+from samesame import test_adverse_shift, test_shift
 
 # Download the HELOC dataset (requires internet access on first run)
 fico = fetch_openml(data_id=45554, as_frame=True)
@@ -79,7 +81,7 @@ Deployment set:  2188 samples
 
 ---
 
-## Step 1 — Detect dataset shift (CTST)
+## Step 1 — Detect dataset shift
 
 **Question:** Are the feature distributions of the training and deployment sets different?
 
@@ -103,10 +105,13 @@ rf_domain = RandomForestClassifier(
 rf_domain.fit(X_concat, split)
 oob_scores = rf_domain.oob_decision_function_[:, 1]  # probability of being deployment
 
-# Run the CTST
-ctst = CTST(actual=split.values, predicted=oob_scores, metric=roc_auc_score)
-print(f"AUC statistic: {ctst.statistic:.4f}")
-print(f"p-value:       {ctst.pvalue:.4f}")
+# Run the shift test on score vectors
+shift = test_shift(
+  reference=oob_scores[split.values == 0],
+  candidate=oob_scores[split.values == 1],
+)
+print(f"AUC statistic: {shift.statistic:.4f}")
+print(f"p-value:       {shift.pvalue:.4f}")
 ```
 
 **Output:**
@@ -151,7 +156,7 @@ differ between the groups, which suggests that the features may be correlated.
 
 ---
 
-## Step 2 — Test for performance degradation (DSOS)
+## Step 2 — Test for performance degradation
 
 **Question:** Has the model started predicting worse outcomes for the deployment population?
 
@@ -178,18 +183,24 @@ rf_bad.fit(X_train, loan_status)
 bad_train = rf_bad.oob_decision_function_[:, 1].ravel()
 bad_test  = rf_bad.predict_proba(X_test)[:, 1].ravel()
 
-# Run DSOS: are there disproportionately more high-risk predictions in deployment?
-dsos = DSOS.from_samples(bad_train, bad_test)
-print(f"WAUC statistic: {dsos.statistic:.4f}")
-print(f"p-value:        {dsos.pvalue:.4f}")
+# Run the harmful-shift test: are there disproportionately more high-risk predictions in deployment?
+harm = test_adverse_shift(
+  reference=bad_train,
+  candidate=bad_test,
+  direction="higher-is-worse",
+)
+print(f"Statistic: {harm.statistic:.4f}")
+print(f"p-value:   {harm.pvalue:.4f}")
 ```
 
 **Output:**
 
 ```text
-WAUC statistic: 0.2483
-p-value:        0.0001
+Statistic: 0.2483
+p-value:   0.0001
 ```
+
+> A higher statistic means more of the worst-scoring samples are concentrated in the deployment set.
 
 p = 0.0001 — **strong evidence of adverse shift**. The model is predicting substantially
 higher default risk for deployment samples. This confirms not only that the data is different,
@@ -198,7 +209,7 @@ but that the difference is harmful: predictions have shifted toward worse outcom
 This is a good example of when the model output itself is already meaningful. A higher predicted
 default probability is directly interpretable as higher business risk, so it is a natural score to
 monitor. When a model output is *not* directly interpretable as "worse", you need a different score,
-such as an out-of-distribution score. See [Credit OOD detection](credit-ood-detection.md).
+such as a confidence score. See [Monitor model confidence](credit-ood-detection.md).
 
 The important limitation is the reverse: an OOD score is **not** a substitute for business impact.
 A model can become more confident in its predictions while those predictions become more harmful to
@@ -209,13 +220,13 @@ that score should remain the primary monitoring signal.
 
 ## Step 3 — Interpret the combined results
 
-Running both CTST and DSOS together gives a richer picture than either test alone:
+Running both tests together gives a richer picture than either test alone:
 
 | Scenario                         | Recommended action                                   |
 |----------------------------------|------------------------------------------------------|
-| Both CTST and DSOS significant   | Data and outcomes have shifted. Retrain or recalibrate the model. |
-| Only CTST significant            | Data looks different, but outcomes haven't shifted. Monitor closely. |
-| Only DSOS significant            | Outcome shift without feature change (concept drift). Investigate root causes. |
+| Both shift and adverse-shift significant   | Data and outcomes have shifted. Retrain or recalibrate the model. |
+| Only shift significant            | Data looks different, but outcomes haven't shifted. Monitor closely. |
+| Only adverse-shift significant            | Outcome shift without feature change (concept drift). Investigate root causes. |
 | Neither significant              | No evidence of a problem. Continue as normal.        |
 
 In this example, **both tests are significant** — the deployment population is different
@@ -226,13 +237,13 @@ the model for the new population.
 
 ## Key takeaways
 
-- **CTST** detects whether feature distributions differ between training and deployment.
+- **Shift testing** detects whether feature distributions differ between training and deployment.
   Feature importances help identify *which* features are responsible.
-- **DSOS** detects whether the model's predictions have shifted adversely. It does not require
+- **Adverse-shift testing** detects whether the model's predictions have shifted adversely. It does not require
   ground truth labels, making it practical for production monitoring before labels arrive.
-- Use **both tests together** for a complete picture: CTST tells you *what* changed,
-  DSOS tells you *whether it matters*.
-- In this example, **predicted risk increased**, but in the companion OOD tutorial, **model
-  familiarity did not worsen**. Those are different signals and both are worth monitoring.
-- If your model output is not itself a meaningful risk score, use an OOD score instead; see
-  [Credit OOD detection](credit-ood-detection.md).
+- Use **both tests together** for a complete picture: `test_shift(...)` tells you *what* changed,
+  and `test_adverse_shift(...)` tells you *whether it matters*.
+- In this example, **predicted risk increased**, but in the companion [how-to guide](credit-ood-detection.md), **model
+  confidence did not worsen**. Those are different signals and both are worth monitoring.
+- If your model output is not itself a meaningful risk score, use a confidence score instead; see
+  [Monitor model confidence](credit-ood-detection.md).

@@ -1,9 +1,13 @@
-# Tutorial: Detecting Out-of-Distribution Customers with LogitGap
+# How to: Monitor model confidence
 
-This tutorial is a continuation of the [Credit Example](credit-example.md), but it answers a
+!!! note "Before you start"
+    This guide builds directly on the [credit risk how-to](credit-example.md).
+    Complete that guide first — it introduces the HELOC dataset and the credit model used here.
+
+This guide uses the same data and model as the [credit risk how-to](credit-example.md), but asks a
 different question.
 
-In the credit example, the model's **predicted probability of default** was already useful as a
+In that guide, the model's **predicted probability of default** was already useful as a
 "worse outcome" score. Even without ground-truth labels in production, a higher default probability
 is directly interpretable as higher business risk.
 
@@ -20,7 +24,7 @@ In those cases, you need a different score. This tutorial shows how to use an
 - How OOD scores differ from predicted default probabilities
 - Why **LogitGap** is a better default choice than **MaxLogit**
 - How to visualize OOD scores for training and deployment data
-- How to use DSOS to test whether deployment predictions are lower confidence than training predictions
+- How to use `test_adverse_shift(...)` to test whether deployment predictions are lower confidence than training predictions
 
 ## Two kinds of scores
 
@@ -64,7 +68,7 @@ For a novice workflow: use **LogitGap first** and treat MaxLogit as a simpler ba
 
 ## Setup
 
-We reuse the same HELOC split as in the [Credit Example](credit-example.md):
+We reuse the same HELOC split as in the [credit risk how-to](credit-example.md):
 
 - **Training set** (`ExternalRiskEstimate > 63`): 7,683 lower-risk customers
 - **Deployment set** (`ExternalRiskEstimate ≤ 63`): 2,188 higher-risk customers
@@ -78,8 +82,8 @@ from scipy.special import logit
 from sklearn.datasets import fetch_openml
 from sklearn.ensemble import RandomForestClassifier
 
-from samesame.nit import DSOS
-from samesame.ood import logit_gap, max_logit
+from samesame import test_adverse_shift
+from samesame.logit_scores import logit_gap, max_logit
 
 # Load the HELOC dataset
 fico = fetch_openml(data_id=45554, as_frame=True)
@@ -121,7 +125,8 @@ rf_bad.fit(X_train, bad_train)
 ## Step 2 — Convert model outputs into OOD scores
 
 `RandomForestClassifier` gives class probabilities. To compute LogitGap, we first convert these
-probabilities into logits. We then apply `logit_gap`.
+probabilities into **logits** — unbounded numbers that represent confidence before being squashed
+into the 0–1 probability range. We then apply `logit_gap`.
 
 We use:
 
@@ -195,25 +200,29 @@ What to look for:
 For this HELOC split, the deployment histogram should shift **right**, not left, because the
 observed LogitGap values are higher in deployment than in training.
 
-## Step 4 — Test the shift with DSOS
+## Step 4 — Test the shift with `test_adverse_shift(...)`
 
 Now we turn the score shift into a formal hypothesis test.
 
-DSOS expects **higher** scores to mean "worse". But higher LogitGap means **higher confidence**,
-which is the opposite of what we want. So we negate the scores before passing them into DSOS.
+Higher LogitGap means **higher confidence**, which is better. We express that directly with
+`direction="higher-is-better"` instead of negating the scores manually.
 
 ```python
-dsos_ood = DSOS.from_samples(-ood_train, -ood_test)
+harm = test_adverse_shift(
+    reference=ood_train,
+    candidate=ood_test,
+    direction="higher-is-better",
+)
 
-print("OOD shift test using DSOS on LogitGap")
-print(f"  statistic: {dsos_ood.statistic:.4f}")
-print(f"  p-value:   {dsos_ood.pvalue:.4f}")
+print("OOD shift test using test_adverse_shift on LogitGap")
+print(f"  statistic: {harm.statistic:.4f}")
+print(f"  p-value:   {harm.pvalue:.4f}")
 ```
 
 **Output:**
 
 ```text
-OOD shift test using DSOS on LogitGap
+OOD shift test using test_adverse_shift on LogitGap
     statistic: 0.0409
     p-value:   1.0000
 ```
@@ -227,7 +236,7 @@ Here the p-value is `1.0000`, so there is **no evidence** that deployment contai
 low-confidence predictions than training. In fact, the LogitGap scores move in the opposite direction:
 the deployment customers look *more* confidently classified by this model.
 
-This contrast with the [Credit Example](credit-example.md) is the main lesson:
+This contrast with the [credit risk how-to](credit-example.md) is the main lesson:
 
 - **Default probability** increased sharply in deployment, so the model predicts worse business outcomes.
 - **LogitGap** also increased, so the model does **not** look less confident on deployment data.
@@ -243,7 +252,7 @@ business outcome metric when such a metric is available.
 ## When should you use this instead of default probability?
 
 Use **predicted default probability** when the model output already has a clear business meaning,
-as it does in the [Credit Example](credit-example.md).
+as it does in the [credit risk how-to](credit-example.md).
 
 Use an **OOD score** when:
 
@@ -267,7 +276,7 @@ This tutorial uses **LogitGap** as a practical OOD score for novice users.
 - It is easy to compute from model outputs
 - It is more informative than MaxLogit in most cases
 - It works even when the model prediction itself is not an interpretable "worse outcome" score
-- Combined with DSOS, it gives you a principled way to test whether deployment confidence degrades relative to training
+- Combined with `test_adverse_shift(...)`, it gives you a principled way to test whether deployment confidence degrades relative to training
 
 In this specific credit example, LogitGap does **not** flag deployment as lower confidence. That is a
 useful result, not a failure: it shows that confidence and business risk are different concepts and

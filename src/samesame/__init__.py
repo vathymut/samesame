@@ -1,20 +1,23 @@
-# Copyright (c) 2025-present, Royal Bank of Canada.
-# All rights reserved.
-#
-# This source code is licensed under the license found in the
-# LICENSE file in the root directory of this source tree.
-#
+"""Task-first API for hypothesis tests over score vectors.
 
-from . import (
-    bayes,
-    ctst,
-    iw,
-    nit,
+The primary API exposes two functions:
+
+- ``test_shift`` for generic score-distribution differences
+- ``test_adverse_shift`` for harmful score shifts with explicit direction
+"""
+
+from . import advanced
+from ._api import (
+    AdverseShiftResult,
+    ShiftResult,
+    test_adverse_shift,
+    test_shift,
 )
 
 __all__ = [
-    "bayes",
-    "ctst",
-    "iw",
-    "nit",
+    "AdverseShiftResult",
+    "ShiftResult",
+    "advanced",
+    "test_adverse_shift",
+    "test_shift",
 ]

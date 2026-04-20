@@ -4,7 +4,7 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 #
-"""Tests for out-of-distribution (OOD) detection functions.
+"""Tests for logit-derived score functions.
 
 Tests verify implementations of LogitGap and MaxLogit scoring functions
 against the specifications in "Revisiting Logit Distributions for Reliable
@@ -16,7 +16,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from samesame.ood import logit_gap, max_logit
+from samesame.logit_scores import logit_gap, max_logit
 
 
 @pytest.fixture
