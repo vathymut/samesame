@@ -92,7 +92,7 @@ def logit_gap(logits: NDArray) -> NDArray:
     Notes
     -----
     The implementation uses
-    :math:`\max_k z_k - \frac{1}{K-1}\sum_{j \ne k^*} z_j`, where
+    :math:`\\max_k z_k - \\frac{1}{K-1}\\sum_{j \\ne k^*} z_j`, where
     :math:`k^*` is the index of the maximum logit. This is equivalent to the
     formulation in [1]_.
 

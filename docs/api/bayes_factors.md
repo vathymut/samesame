@@ -1,6 +1,6 @@
 # Bayes factors
 
-Utilities for converting between p-values and Bayes factors, and for computing
-Bayes factors from posterior samples.
+Use this page when you want to convert between p-values and Bayes factors,
+or compute Bayes factors from posterior samples.
 
 ::: samesame.bayes_factors

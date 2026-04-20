@@ -3,7 +3,7 @@
 **What you'll learn:**
 
 - The difference between detecting any shift and detecting a *harmful* shift
-- How to use `test_adverse_shift(...)` and what "direction" means
+- How to use `test_adverse_shift(...)` and tell it which direction means worse
 - How to read the p-value and decide whether the shift matters
 
 **Goal:** Determine whether a new dataset is *meaningfully worse* than a reference dataset,
@@ -30,26 +30,28 @@ hurt my model?"** That is the question `test_adverse_shift(...)` answers.
 
 Use both together: `test_shift` to detect change, `test_adverse_shift` to judge severity.
 
-## What kind of scores does this test need?
+Like the shift test, this works on one number per sample rather than the full table.
 
-`test_adverse_shift` needs one number per sample that captures how bad or risky that sample is.
-Higher scores mean "worse". Examples:
+## What kind of input does this test need?
+
+`test_adverse_shift` needs one number per sample that says how concerning that sample is.
+Larger values must line up with "worse". Examples:
 
 - A model's predicted probability of failure or default
-- A reconstruction error from an anomaly detector
-- A patient's discomfort or risk score
+- An anomaly level from a detector
+- A patient's discomfort or risk measure
 
-The test asks: does the new dataset have disproportionately more high-scoring (worse) samples?
+The test asks: does the new dataset contain too many of the large values?
 
 ## How the test works
 
 1. Pool both datasets and mark which samples belong to each group.
-2. Measure how much the worst-scoring samples are concentrated in the new dataset.
-3. Shuffle the group labels randomly many times to build a baseline. If the real concentration
-   is unusually high compared to those random baselines, the test flags it as significant
+2. Check whether the largest values are concentrated in the new dataset.
+3. Shuffle the group labels many times to build a baseline. If the real concentration
+  is unusually high compared to those shuffled baselines, the test flags it as significant
    (small p-value).
 
-No parametric assumptions are required, and you do not need to specify a margin in advance.
+You do not need to assume a particular distribution shape, and you do not need to set a cutoff in advance.
 
 ## Example: comparing two treatments
 
@@ -109,15 +111,15 @@ Adverse-shift p-value: 0.1215
 | p-value         | What it means                                                         |
 |-----------------|-----------------------------------------------------------------------|
 | Small (< 0.05)  | Evidence that the new data is adversely worse than the reference      |
-| Large (≥ 0.05)  | Insufficient evidence that the new data is worse (noninferior result) |
+| Large (≥ 0.05)  | Not enough evidence that the new data is worse                        |
 
 Here, p = 0.1215 is large. We cannot conclude that Bowl is meaningfully worse than Armanaleg —
 the new treatment is acceptable.
 
 ## Optional: Bayesian evidence
 
-Bayesian evidence is optional. It gives you an alternative way to quantify uncertainty
-beyond the standard p-value.
+Bayesian evidence is optional. Think of it as a second way to summarise uncertainty
+alongside the standard p-value.
 
 ```python
 from samesame import advanced
@@ -133,14 +135,17 @@ detail = advanced.test_adverse_shift(
 print(f"Bayesian p-value: {as_pvalue(detail.bayes_factor):.4f}")
 ```
 
+In this example, the Bayesian summary leads to the same practical takeaway as the ordinary
+p-value: there is no clear evidence that the new treatment is worse.
+
 Use the primary API when you only need the standard p-value. Opt into `advanced.test_adverse_shift(...)`
 when you need posterior draws or Bayes factors.
 
 ## Tips
 
-- **Score direction matters:** Set `direction="higher-is-worse"` when large scores are harmful.
-  Set `direction="higher-is-better"` when large scores mean confidence or health.
-- **No labels needed:** Scores can come from your existing model's predictions —
+- **Direction matters:** Set `direction="higher-is-worse"` when large values are harmful.
+  Set `direction="higher-is-better"` when large values mean confidence or health.
+- **No labels needed:** These per-row numbers can come from your existing model's predictions —
   you do not need ground truth labels. This is especially useful in production monitoring.
 - **Pair with shift testing:** Run `test_shift(...)` first to detect *any* change, then run `test_adverse_shift(...)` to decide
   whether the change is harmful. See the [credit risk how-to](credit-example.md) for a full

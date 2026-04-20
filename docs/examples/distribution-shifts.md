@@ -3,7 +3,7 @@
 **What you'll learn:**
 
 - How to check whether two datasets come from the same distribution
-- How to get fair, unbiased classifier predictions
+- How to create one comparison number per row without leaking training data
 - How to run `test_shift(...)` and read the result
 
 **Goal:** Determine whether two datasets come from the same underlying distribution.
@@ -12,14 +12,15 @@ This is useful any time you need to compare two groups of data — for example, 
 your production data still looks like your training data, or whether this week's batch matches
 last week's.
 
-`samesame` assumes you already have out-of-sample scores from a model that tried to separate the
-two datasets. If those scores separate the groups too well, the two datasets are probably different.
+You do not compare the raw feature table directly. Instead, a classifier turns each row into one
+number that says how much it looks like the new dataset rather than the reference dataset.
+If those numbers separate the groups too well, the datasets are probably different.
 
 ## What you need
 
 - Two datasets to compare (e.g., training data vs. production data)
 - A classifier from scikit-learn
-- Out-of-sample predictions from that classifier (explained below)
+- Classifier outputs for rows it did not train on (explained below)
 
 ## Step 1 — Prepare the data
 
@@ -38,17 +39,17 @@ X, y = make_classification(
 )
 ```
 
-## Step 2 — Get out-of-sample predictions
+## Step 2 — Create one comparison number per row
 
-This step is important. If you train a classifier on the full dataset and then score the same
-data, the classifier will appear to perform well even if the groups are actually identical —
-it simply memorises the training data. To get a fair test, you need **out-of-sample predictions**,
-where each sample is scored by a model that was *not* trained on it.
+This step is important. If you train a classifier on the full dataset and then evaluate the same
+rows, the model can look better than it really is because it remembers the training data.
+For a fair test, each row must be evaluated by a model that did *not* train on it. These values are
+often called **out-of-sample predictions**.
 
-**Recommended: cross-fitting with `cross_val_predict`**
+**Recommended: use `cross_val_predict`**
 
-Cross-fitting splits the data into folds and makes predictions on each fold using a model
-trained on the remaining folds. This is the most statistically sound approach:
+`cross_val_predict` splits the data into folds. Each row is then evaluated by a model that trained
+on the other folds. This is the safest default:
 
 ```python
 from sklearn.ensemble import HistGradientBoostingClassifier
@@ -67,17 +68,17 @@ y_hat = cross_val_predict(
 
 ## Step 3 — Run the test
 
-Split the out-of-sample scores back into reference and candidate vectors, then pass those score
-vectors to `test_shift`. The default statistic is ROC AUC, so 0.5 means no separation
-(groups look the same), 1.0 means perfect separation (groups are clearly different):
+Split those model outputs back into reference and candidate groups, then pass them to
+`test_shift`. The default statistic is ROC AUC. You can think of it as a separation number:
+0.5 means the classifier cannot tell the groups apart, and 1.0 means it separates them perfectly:
 
 ```python
-reference_scores = y_hat[y == 0]
-candidate_scores = y_hat[y == 1]
+reference_values = y_hat[y == 0]
+candidate_values = y_hat[y == 1]
 
 shift = test_shift(
-    reference=reference_scores,
-    candidate=candidate_scores,
+    reference=reference_values,
+    candidate=candidate_values,
 )
 print(f"  statistic (AUC): {shift.statistic:.2f}")
 print(f"  p-value:         {shift.pvalue:.4f}")
@@ -107,9 +108,9 @@ which is strong evidence of a distributional difference.
 ## Alternative: out-of-bag (OOB) predictions
 
 If you are using a Random Forest or another ensemble model, you can use its built-in
-**out-of-bag (OOB)** predictions instead of running cross-fitting explicitly.
-OOB predictions are generated during training for free — each tree only scores samples
-it was not trained on:
+**out-of-bag (OOB)** predictions instead of running `cross_val_predict` explicitly.
+This is the Random Forest version of the same idea: each row is evaluated only by trees that did not
+train on it:
 
 ```python
 from sklearn.ensemble import RandomForestClassifier
@@ -141,35 +142,15 @@ print(f"  p-value:         {shift_oob.pvalue:.4f}")
 Both approaches give the same conclusion here. Use OOB when you already have a Random Forest;
 use cross-fitting for any other classifier.
 
-## Advanced options
+## Want more control?
 
-The primary API is intentionally minimal. When you need weights, custom resampling depth,
-or raw null distributions, use `samesame.advanced.test_shift(...)`:
-
-```python
-from samesame import advanced
-
-weights = np.ones_like(y_hat)
-
-shift_weighted = advanced.test_shift(
-    reference=y_hat[y == 0],
-    candidate=y_hat[y == 1],
-    sample_weight=weights,
-    alternative="greater",  # one-sided alternative
-    n_resamples=4999,        # trade precision vs. runtime
-)
-```
-
-Practical defaults:
-
-- `test_shift(...)` uses `statistic="roc_auc"` by default
-- the primary API uses statistically rigorous defaults and hides tuning knobs
-- `sample_weight` is an advanced feature only
+If you need sample weights, more resamples, or the raw null distribution, use
+`samesame.advanced.test_shift(...)`. Most readers can skip that on a first pass and come back to it later.
 
 ## Tips
 
-- **AUC vs. binary statistics:** Use the default AUC when your classifier outputs probabilities.
-    Use `balanced_accuracy` or `matthews_corrcoef` only when your score vectors are already binary.
+- **Which option should you use?** Most users can keep the default `roc_auc`. Use `balanced_accuracy`
+    or `matthews_corrcoef` only when your model output is already binary 0/1 values.
 - **Investigate drivers:** If a shift is detected, inspect your classifier's feature importances
     to find which features are most different between the two groups.
 - **Shift detected — now what?** A significant shift result means the distributions differ.

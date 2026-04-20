@@ -1,5 +1,14 @@
 # How to: Monitor model confidence
 
+**Use this guide when:** your model output is not itself a useful risk signal and you want to
+monitor whether deployment predictions look less certain than training predictions.
+
+**What you'll do:**
+
+- Turn model outputs into one confidence value per row
+- Compare training and deployment values
+- Test whether deployment predictions look less certain
+
 !!! note "Before you start"
     This guide builds directly on the [credit risk how-to](credit-example.md).
     Complete that guide first — it introduces the HELOC dataset and the credit model used here.
@@ -16,45 +25,38 @@ measure of badness. A classifier might predict "cat" versus "dog", or one produc
 another. Those labels are meaningful predictions, but they do not tell you whether a sample is
 **risky**, **unusual**, or **outside the training distribution**.
 
-In those cases, you need a different score. This tutorial shows how to use an
-**out-of-distribution (OOD) score** as a proxy for worse outcomes.
+In those cases, you need a different per-row signal. This guide shows how to use an
+**out-of-distribution (OOD) score**, which is a confidence-style value for how unusual an input looks.
 
-## What you will learn
-
-- How OOD scores differ from predicted default probabilities
-- Why **LogitGap** is a better default choice than **MaxLogit**
-- How to visualize OOD scores for training and deployment data
-- How to use `test_adverse_shift(...)` to test whether deployment predictions are lower confidence than training predictions
-
-## Two kinds of scores
+## Two kinds of monitoring signals
 
 The key distinction is:
 
-| Score type | What it measures | When to use it |
-|------------|------------------|----------------|
+| Signal | What it measures | When to use it |
+|--------|------------------|----------------|
 | **Predicted default probability** | How likely the model thinks default is | Use when higher predictions already mean worse business outcomes |
-| **OOD score** | How confident the model is in its prediction | Use when the model output is not itself a meaningful risk score |
+| **Confidence value (often called an OOD score)** | How confident the model is in its prediction | Use when the model output is not itself a meaningful risk signal |
 
-In this credit example, default probability and OOD score are both available, but they answer
+In this credit example, default probability and a confidence value are both available, but they answer
 different questions:
 
 - **Default probability:** "Does this customer look risky?"
-- **OOD score:** "How confident is the model in this prediction?"
+- **Confidence value:** "How confident is the model in this prediction?"
 
 These are related, but not the same. A sample can receive a high-confidence prediction without
 necessarily having the highest predicted default probability.
 
-In this tutorial, LogitGap is used to compare confidence behavior between training and test
+In this guide, LogitGap is used to compare confidence behavior between training and test
 predictions, not to directly measure business harm.
 
-That difference matters in practice. An OOD score can move in a reassuring direction because the
+That difference matters in practice. A confidence value can move in a reassuring direction because the
 model is becoming **more confident**, while the business outcome moves in a harmful direction because
 the model is becoming **more confidently wrong** or **more confidently harmful** for the business.
-So OOD scores should not be read as a direct measure of business safety.
+So confidence values should not be read as a direct measure of business safety.
 
 ## Why LogitGap?
 
-We use **LogitGap** as the OOD score in this tutorial.
+We use **LogitGap** as the confidence value in this guide.
 
 - **LogitGap** looks at the gap between the model's strongest class score and the remaining class scores.
 - A **large** gap means the model is confident in its class decision.
@@ -64,7 +66,7 @@ You may also see **MaxLogit** in the literature. It uses only the single largest
 reasonable baseline, but LogitGap usually carries more information because it uses the separation
 between classes, not just the top score.
 
-For a novice workflow: use **LogitGap first** and treat MaxLogit as a simpler baseline worth knowing about.
+For a beginner-friendly workflow, use **LogitGap first** and treat MaxLogit as a simpler baseline worth knowing about.
 
 ## Setup
 
@@ -105,7 +107,7 @@ print(f"Deployment set: {len(X_test)} samples")
 ## Step 1 — Train the same credit model
 
 We first train the same credit risk model used in the previous tutorial. The model predicts the
-probability of default, but here we are going to reuse its internal scores to measure
+probability of default, but here we are going to reuse its internal outputs to measure
 **confidence patterns**, not just risk.
 
 ```python
@@ -122,15 +124,15 @@ rf_bad = RandomForestClassifier(
 rf_bad.fit(X_train, bad_train)
 ```
 
-## Step 2 — Convert model outputs into OOD scores
+## Step 2 — Convert model outputs into one confidence value per row
 
 `RandomForestClassifier` gives class probabilities. To compute LogitGap, we first convert these
-probabilities into **logits** — unbounded numbers that represent confidence before being squashed
-into the 0–1 probability range. We then apply `logit_gap`.
+probabilities into **logits**. A logit is the same information written on an open-ended scale
+instead of the 0 to 1 probability scale. We then apply `logit_gap`.
 
 We use:
 
-- **OOB predictions** for the training set, so each training point is scored by trees that did not train on it
+- **OOB predictions** for the training set, so each training point is evaluated by trees that did not train on it
 - **Standard predictions** for the deployment set
 
 ```python
@@ -154,12 +156,12 @@ print(f"Training mean MaxLogit:   {max_train.mean():.3f}")
 print(f"Deployment mean MaxLogit: {max_test.mean():.3f}")
 ```
 
-### How to read these scores
+### How to read these values
 
 - **Higher LogitGap**: the model has a larger margin between classes, so it is more confident in its prediction
 - **Lower LogitGap**: the model has a smaller margin between classes, so it is less confident in its prediction
 
-This score is primarily about confidence (class separation), not direct business harm.
+This value is primarily about confidence, not direct business harm.
 If the deployment distribution shifts downward relative to training, it indicates lower-confidence
 predictions in deployment.
 
@@ -175,9 +177,9 @@ Deployment median LogitGap: 2.1617
 That means the deployment population has **higher**, not lower, LogitGap scores in this example.
 So the model appears **more** confident on the deployment population according to this score.
 
-## Step 3 — Plot the score distributions
+## Step 3 — Plot the value distributions
 
-Before running a formal test, it helps to look at the scores directly.
+Before running a formal test, it helps to look at the values directly.
 
 ```python
 fig, ax = plt.subplots(figsize=(7, 4))
@@ -185,7 +187,7 @@ ax.hist(ood_train, bins=40, alpha=0.6, label="Training", density=True)
 ax.hist(ood_test, bins=40, alpha=0.6, label="Deployment", density=True)
 ax.set_xlabel("LogitGap score")
 ax.set_ylabel("Density")
-ax.set_title("Training vs deployment OOD scores")
+ax.set_title("Training vs deployment confidence values")
 ax.legend()
 plt.tight_layout()
 plt.show()
@@ -195,17 +197,17 @@ What to look for:
 
 - If the **deployment** histogram sits noticeably **left** of the training histogram, deployment
     predictions are made with lower confidence.
-- If the two histograms largely overlap, there is less evidence of an OOD shift.
+- If the two histograms largely overlap, there is less evidence of a confidence shift.
 
 For this HELOC split, the deployment histogram should shift **right**, not left, because the
 observed LogitGap values are higher in deployment than in training.
 
 ## Step 4 — Test the shift with `test_adverse_shift(...)`
 
-Now we turn the score shift into a formal hypothesis test.
+Now we turn that confidence shift into a formal hypothesis test.
 
 Higher LogitGap means **higher confidence**, which is better. We express that directly with
-`direction="higher-is-better"` instead of negating the scores manually.
+`direction="higher-is-better"` instead of negating the values manually.
 
 ```python
 harm = test_adverse_shift(
@@ -214,7 +216,7 @@ harm = test_adverse_shift(
     direction="higher-is-better",
 )
 
-print("OOD shift test using test_adverse_shift on LogitGap")
+print("Confidence-value shift test using test_adverse_shift on LogitGap")
 print(f"  statistic: {harm.statistic:.4f}")
 print(f"  p-value:   {harm.pvalue:.4f}")
 ```
@@ -222,7 +224,7 @@ print(f"  p-value:   {harm.pvalue:.4f}")
 **Output:**
 
 ```text
-OOD shift test using test_adverse_shift on LogitGap
+Confidence-value shift test using test_adverse_shift on LogitGap
     statistic: 0.0409
     p-value:   1.0000
 ```
@@ -230,7 +232,7 @@ OOD shift test using test_adverse_shift on LogitGap
 ### How to interpret the result
 
 - **Small p-value**: strong evidence that deployment contains more low-confidence predictions than training
-- **Large p-value**: not enough evidence to claim an OOD shift
+- **Large p-value**: not enough evidence to claim a confidence drop in deployment
 
 Here the p-value is `1.0000`, so there is **no evidence** that deployment contains more
 low-confidence predictions than training. In fact, the LogitGap scores move in the opposite direction:
@@ -244,9 +246,9 @@ This contrast with the [credit risk how-to](credit-example.md) is the main lesso
 Those two findings are not contradictory. They answer different questions. A customer can look
 high-risk to the model while still being predicted with high confidence.
 
-This is also the main warning for production monitoring: a confidence-style OOD score can be
+This is also the main warning for production monitoring: a confidence-style value can be
 misleading if you treat it as a business-risk score. The model can become **more confident** while
-its predictions become **more harmful**. Use OOD scores to monitor confidence patterns, not to replace a
+its predictions become **more harmful**. Use confidence values to monitor confidence patterns, not to replace a
 business outcome metric when such a metric is available.
 
 ## When should you use this instead of default probability?
@@ -254,7 +256,7 @@ business outcome metric when such a metric is available.
 Use **predicted default probability** when the model output already has a clear business meaning,
 as it does in the [credit risk how-to](credit-example.md).
 
-Use an **OOD score** when:
+Use a **confidence value** when:
 
 - the model output is not itself a risk score
 - you want to detect lower-confidence or unusual inputs, not just high-risk predictions
@@ -263,15 +265,15 @@ Use an **OOD score** when:
 In practice, the two approaches complement each other:
 
 - **Default probability** tells you whether the model predicts bad outcomes
-- **OOD score** tells you how confidence behavior changes across populations
+- **Confidence value** tells you how confidence behavior changes across populations
 
 This HELOC example shows why it is worth monitoring both. Here, default probability detects a clear
-adverse shift, while LogitGap does not detect a confidence drop. If you had watched only the OOD
-score, you could have missed a harmful business change.
+adverse shift, while LogitGap does not detect a confidence drop. If you had watched only the confidence
+value, you could have missed a harmful business change.
 
-## Key takeaway
+## Summary
 
-This tutorial uses **LogitGap** as a practical OOD score for novice users.
+This guide uses **LogitGap** as a practical confidence value for beginners.
 
 - It is easy to compute from model outputs
 - It is more informative than MaxLogit in most cases
@@ -280,4 +282,4 @@ This tutorial uses **LogitGap** as a practical OOD score for novice users.
 
 In this specific credit example, LogitGap does **not** flag deployment as lower confidence. That is a
 useful result, not a failure: it shows that confidence and business risk are different concepts and
-should be monitored separately. When a business-risk score exists, do not let an OOD score override it.
+should be monitored separately. When a business-risk score exists, do not let a confidence value override it.

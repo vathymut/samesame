@@ -1,11 +1,15 @@
 # How to: Monitor a credit risk model
 
-**What you'll learn:**
+**Use this guide when:** you have a model in production and want to check whether the new
+population looks different from the training population, and whether the model is now predicting
+higher risk.
 
-- How to detect whether your deployment data looks different from your training data
-- How to find which features are most different between the two groups
-- How to check whether a model's predictions have shifted toward worse outcomes
-- How to interpret both results and decide what action to take
+**What you'll do:**
+
+- Check whether deployment data looks different from training data
+- Find which features drive that difference
+- Check whether predicted default risk is higher in deployment
+- Use both results to decide what action to take
 
 !!! note "Before you start"
     This guide assumes you have completed both tutorials:
@@ -87,8 +91,8 @@ Deployment set:  2188 samples
 
 We train a Random Forest to distinguish training samples from deployment samples.
 If the classifier can tell them apart easily (high AUC), the distributions are different.
-We use **out-of-bag (OOB) predictions** so that each sample is scored by trees that
-never trained on it — this gives us unbiased, valid predictions:
+We use **out-of-bag (OOB) predictions**. In plain terms, each row is evaluated only by trees that
+did not train on it, which keeps the result fair:
 
 ```python
 # Label the two populations: 0 = training, 1 = deployment
@@ -105,7 +109,7 @@ rf_domain = RandomForestClassifier(
 rf_domain.fit(X_concat, split)
 oob_scores = rf_domain.oob_decision_function_[:, 1]  # probability of being deployment
 
-# Run the shift test on score vectors
+# Run the shift test on the per-row outputs
 shift = test_shift(
   reference=oob_scores[split.values == 0],
   candidate=oob_scores[split.values == 1],
@@ -121,7 +125,7 @@ AUC statistic: 1.0000
 p-value:       0.0002
 ```
 
-An AUC of 1.0 means the classifier perfectly separates the two populations.
+AUC is a separation number. An AUC of 1.0 means the classifier perfectly separates the two populations.
 The p-value of 0.0002 confirms this is far beyond chance — **there is strong evidence of
 dataset shift**.
 
@@ -165,7 +169,7 @@ We now check whether the model's predicted default probabilities are higher (wor
 deployment samples than for training samples.
 
 We train a credit risk model on the training set and compare its predictions on both populations.
-OOB predictions are used for the training set to avoid inflated scores:
+For the training set, we again use out-of-bag predictions so the per-row values stay fair:
 
 ```python
 # Train a credit risk model to predict loan default (Bad = 1)
@@ -200,21 +204,21 @@ Statistic: 0.2483
 p-value:   0.0001
 ```
 
-> A higher statistic means more of the worst-scoring samples are concentrated in the deployment set.
+> A higher statistic means more of the largest values are concentrated in the deployment set.
 
 p = 0.0001 — **strong evidence of adverse shift**. The model is predicting substantially
 higher default risk for deployment samples. This confirms not only that the data is different,
 but that the difference is harmful: predictions have shifted toward worse outcomes.
 
 This is a good example of when the model output itself is already meaningful. A higher predicted
-default probability is directly interpretable as higher business risk, so it is a natural score to
-monitor. When a model output is *not* directly interpretable as "worse", you need a different score,
-such as a confidence score. See [Monitor model confidence](credit-ood-detection.md).
+default probability is directly interpretable as higher business risk, so it is a natural thing to
+monitor. When a model output is *not* directly interpretable as "worse", you need a different per-row
+signal, such as a confidence value. See [Monitor model confidence](credit-ood-detection.md).
 
-The important limitation is the reverse: an OOD score is **not** a substitute for business impact.
+The important limitation is the reverse: a confidence-style signal is **not** a substitute for business impact.
 A model can become more confident in its predictions while those predictions become more harmful to
-the business. When you already have a score with direct business meaning, such as default probability,
-that score should remain the primary monitoring signal.
+the business. When you already have a value with direct business meaning, such as default probability,
+that value should remain the primary monitoring signal.
 
 ---
 
@@ -235,7 +239,7 @@ the model for the new population.
 
 ---
 
-## Key takeaways
+## Summary
 
 - **Shift testing** detects whether feature distributions differ between training and deployment.
   Feature importances help identify *which* features are responsible.
@@ -245,5 +249,5 @@ the model for the new population.
   and `test_adverse_shift(...)` tells you *whether it matters*.
 - In this example, **predicted risk increased**, but in the companion [how-to guide](credit-ood-detection.md), **model
   confidence did not worsen**. Those are different signals and both are worth monitoring.
-- If your model output is not itself a meaningful risk score, use a confidence score instead; see
+- If your model output is not itself a meaningful risk value, use a confidence value instead; see
   [Monitor model confidence](credit-ood-detection.md).

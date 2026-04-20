@@ -1,6 +1,6 @@
 # Logit scores
 
-Functions for converting classifier outputs into confidence scores, useful when the
-model's direct prediction is not itself a meaningful "worse outcome" score.
+Use this page when you want to turn classifier outputs into one confidence-style value per row,
+especially when the model prediction is not itself a useful risk signal.
 
 ::: samesame.logit_scores
