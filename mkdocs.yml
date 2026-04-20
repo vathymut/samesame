@@ -7,11 +7,12 @@ site_author: Vathy M. Kamulete
 nav:
   - Home: index.md
   - Tutorials:
-    - Detect a distribution shift: examples/distribution-shifts.md
-    - Check whether a shift is harmful: examples/noninferiority.md
+    - Detect a distribution shift: examples/tutorials/detect-distribution-shift.md
+    - Check whether a shift is harmful: examples/tutorials/check-shift-harm.md
   - How-to guides:
-    - Monitor a credit risk model: examples/credit-example.md
-    - Monitor model confidence: examples/credit-ood-detection.md
+    - Monitor a credit risk model: examples/credit/monitor-credit-risk.md
+    - Monitor prediction errors: examples/credit/monitor-prediction-errors.md
+    - Monitor model confidence: examples/credit/monitor-confidence-ood.md
   - API reference:
       - Testing functions: api/testing.md
       - Advanced controls: api/advanced.md

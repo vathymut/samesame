@@ -14,8 +14,8 @@ higher risk.
 !!! note "Before you start"
     This guide assumes you have completed both tutorials:
 
-    - [Detect a distribution shift](distribution-shifts.md)
-    - [Check whether a shift is harmful](noninferiority.md)
+  - [Detect a distribution shift](/examples/tutorials/detect-distribution-shift.md)
+  - [Check whether a shift is harmful](/examples/tutorials/check-shift-harm.md)
 
     You also need basic familiarity with scikit-learn — fitting a model and calling `predict_proba`.
 
@@ -35,9 +35,9 @@ Two questions arise:
   generalise. The more relevant question is whether it is now assigning higher default risk
   to the deployment population.
 
-We will answer both questions using `test_shift(...)` (for question 1) and `test_adverse_shift(...)` (for question 2).
+We answer both questions with `test_shift(...)` (question 1) and `test_adverse_shift(...)` (question 2).
 If you want to monitor **model confidence** instead of **predicted risk**, continue to
-[Monitor model confidence](credit-ood-detection.md) after completing this guide.
+[Monitor model confidence](/examples/credit/monitor-confidence-ood.md) after completing this guide.
 
 ---
 
@@ -89,10 +89,9 @@ Deployment set:  2188 samples
 
 **Question:** Are the feature distributions of the training and deployment sets different?
 
-We train a Random Forest to distinguish training samples from deployment samples.
-If the classifier can tell them apart easily (high AUC), the distributions are different.
-We use **out-of-bag (OOB) predictions**. In practical terms, each row is evaluated only by trees that
-did not train on it, which reduces optimistic bias:
+This is a **classifier two-sample test**: a Random Forest is trained to distinguish training from
+deployment samples, and AUC measures how easily they can be separated. OOB predictions ensure
+each row is scored by trees that did not train on it, preventing optimistic bias:
 
 ```python
 # Label the two populations: 0 = training, 1 = deployment
@@ -213,7 +212,7 @@ but that the shift is adverse with respect to the score being monitored.
 This is a good example of when the model output itself is already meaningful. A higher predicted
 default probability is directly interpretable as higher business risk, so it is a natural score to
 monitor. When a model output is *not* directly interpretable as "worse", you need a different
-score, such as a confidence score. See [Monitor model confidence](credit-ood-detection.md).
+score, such as a confidence score. See [Monitor model confidence](/examples/credit/monitor-confidence-ood.md).
 
 The important limitation is the reverse: a confidence score is **not** a substitute for business impact.
 A model can become more confident in its predictions while those predictions become more harmful to
@@ -247,7 +246,8 @@ the model for the new population.
   ground truth labels, making it practical for production monitoring before labels arrive.
 - Use **both tests together** for a complete picture: `test_shift(...)` tells you *what* changed,
   and `test_adverse_shift(...)` tells you *whether it matters*.
-- In this example, **predicted risk increased**, but in the companion [how-to guide](credit-ood-detection.md), **model
+- In this example, **predicted risk increased**, but in the companion [how-to guide](/examples/credit/monitor-confidence-ood.md), **model
   confidence did not worsen**. Those are different signals and both are worth monitoring.
+- If labels are available for the test set, per-sample prediction errors (Brier score, log-loss) provide a direct measure of model accuracy; see [Monitor prediction errors](/examples/credit/monitor-prediction-errors.md).
 - If your model output is not itself a meaningful risk value, use a confidence score instead; see
-  [Monitor model confidence](credit-ood-detection.md).
+  [Monitor model confidence](/examples/credit/monitor-confidence-ood.md).

@@ -1,20 +1,21 @@
 # Tutorial: Detect a distribution shift
 
-**What you'll learn:**
+This tutorial is a guided first run of `test_shift(...)`.
+You will generate one score per row, run the test, and interpret the result.
+
+**By the end, you will be able to:**
 
 - How to check whether two datasets come from the same distribution
 - How to create one score per row without leaking training data
 - How to run `test_shift(...)` and read the result
 
-**Goal:** Determine whether two datasets appear to come from the same underlying distribution.
-
-This is useful any time you need to compare two groups of data — for example, checking whether
-your production data still looks like your training data, or whether this week's batch matches
-last week's.
+You can use the same workflow when comparing training vs production data, or one batch vs another.
 
 You do not compare the raw feature table directly. Instead, a classifier turns each row into one
 score that reflects how strongly it resembles the new dataset rather than the reference dataset.
-If those scores separate the groups too well, that is evidence that the datasets differ.
+If those scores separate the groups too well, that is evidence that the datasets differ. This
+procedure is a **classifier two-sample test**; statistical significance is assessed via a
+permutation test on the group labels.
 
 ## What you need
 
@@ -103,7 +104,7 @@ which is strong evidence against the null hypothesis of no distributional differ
 
 > **Important:** `test_shift` tells you *whether* distributions differ, not *how bad* the difference is
 > or whether it will hurt your model. For that, see
-> [Check whether a shift is harmful](noninferiority.md).
+> [Check whether a shift is harmful](/examples/tutorials/check-shift-harm.md).
 
 ## Alternative: out-of-bag (OOB) predictions
 
@@ -155,4 +156,4 @@ If you need sample weights, more resamples, or the full null distribution, use
     to find which features are most different between the two groups.
 - **Shift detected — now what?** A significant shift result means the distributions differ.
     To check whether that difference is actually *harmful*, continue to
-    [Check whether a shift is harmful](noninferiority.md).
+    [Check whether a shift is harmful](/examples/tutorials/check-shift-harm.md).

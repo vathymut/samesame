@@ -41,8 +41,8 @@ python -m pip install samesame
 ## Quick Start
 
 Suppose you already have one score per row for a reference sample and a new sample.
-Larger scores should correspond either to more adverse outcomes or to greater unusualness. That score might come from predicted risk,
-anomaly detection, model confidence, or another monitoring step.
+Larger scores should indicate either worse outcomes or unusual ones.
+The score usually comes from a (pre-trained) model. For example, you might train a classifier to distinguish between the reference and candidate data, then use the predicted probabilities as scores. Or you might use a model's confidence or prediction errors as scores. The choice of score depends on your application and what kind of shift you want to detect.
 
 ```python
 import numpy as np
@@ -74,12 +74,8 @@ If the first is small and the second is large, the data changed but not in a cle
 1. Turn each row into one score.
 2. Compare those scores between the reference and candidate groups.
 
-If your data has many columns, that score usually comes from a model:
-predicted risk, anomaly level, model confidence, or the output of a classifier trained to distinguish the two groups.
-You can think of it as a scalar summary of how each row should be monitored.
-
-So under the hood, the package turns a multivariate dataset into one score per row, then runs two checks:
-`test_shift(...)` asks whether the groups differ overall, and `test_adverse_shift(...)` asks whether the candidate group is more concentrated in the adverse tail of the score distribution.
+And so, the package turns a multivariate dataset into a univariate score per row, then runs two statistical tests:
+`test_shift(...)` asks whether the groups differ overall, and `test_adverse_shift(...)` asks whether the candidate group is more concentrated in the adverse tail of the score distribution. Both tests are based on **permutations**, so no distributional assumptions are required.
 
 ## What you get back
 
@@ -96,13 +92,14 @@ Step-by-step examples are available in the [documentation](https://vathymut.gith
 
 **Tutorials**
 
-- [Detect a distribution shift](https://vathymut.github.io/samesame/examples/distribution-shifts/)
-- [Check whether a shift is harmful](https://vathymut.github.io/samesame/examples/noninferiority/)
+- [Detect a distribution shift](https://vathymut.github.io/samesame/examples/tutorials/detect-distribution-shift/)
+- [Check whether a shift is harmful](https://vathymut.github.io/samesame/examples/tutorials/check-shift-harm/)
 
 **How-to guides**
 
-- [Monitor a credit risk model](https://vathymut.github.io/samesame/examples/credit-example/)
-- [Monitor model confidence](https://vathymut.github.io/samesame/examples/credit-ood-detection/)
+- [Monitor a credit risk model](https://vathymut.github.io/samesame/examples/credit/monitor-credit-risk/)
+- [Monitor prediction errors with per-sample scores](https://vathymut.github.io/samesame/examples/credit/monitor-prediction-errors/)
+- [Monitor model confidence](https://vathymut.github.io/samesame/examples/credit/monitor-confidence-ood/)
 
 ## API at a glance
 
