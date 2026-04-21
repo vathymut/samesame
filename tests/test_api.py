@@ -152,6 +152,53 @@ def test_advanced_shift_supports_sample_weight(
     assert base.statistic != weighted.statistic
 
 
+def test_advanced_shift_supports_contextual_riw(
+    shift_samples: dict[str, np.ndarray],
+) -> None:
+    rng = np.random.default_rng(42)
+    context_membership_probabilities = rng.uniform(0.2, 0.8, size=600)
+    base = samesame.advanced.test_shift(**shift_samples, n_resamples=64)
+    contextual = samesame.advanced.test_shift(
+        **shift_samples,
+        n_resamples=64,
+        context_membership_probabilities=context_membership_probabilities,
+        context_mode="source-reweighting",
+        context_lam=0.5,
+    )
+
+    assert isinstance(contextual, ShiftDetails)
+    assert base.statistic != contextual.statistic
+
+
+def test_advanced_shift_rejects_mixed_weighting_inputs(
+    shift_samples: dict[str, np.ndarray],
+) -> None:
+    rng = np.random.default_rng(7)
+    context_membership_probabilities = rng.uniform(0.2, 0.8, size=600)
+    sample_weight = np.linspace(1.0, 2.0, 600)
+    with pytest.raises(ValueError, match="cannot be combined"):
+        samesame.advanced.test_shift(
+            **shift_samples,
+            n_resamples=64,
+            sample_weight=sample_weight,
+            context_membership_probabilities=context_membership_probabilities,
+            context_mode="source-reweighting",
+        )
+
+
+def test_advanced_shift_requires_complete_context_inputs(
+    shift_samples: dict[str, np.ndarray],
+) -> None:
+    rng = np.random.default_rng(11)
+    context_membership_probabilities = rng.uniform(0.2, 0.8, size=600)
+    with pytest.raises(ValueError, match="provided together"):
+        samesame.advanced.test_shift(
+            **shift_samples,
+            n_resamples=64,
+            context_membership_probabilities=context_membership_probabilities,
+        )
+
+
 def test_advanced_adverse_shift_bayesian_opt_in(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
@@ -174,3 +221,25 @@ def test_advanced_adverse_shift_bayesian_opt_in(
     assert bayesian.posterior is not None
     assert bayesian.posterior.shape == (64,)
     assert bayesian.bayes_factor is not None
+
+
+def test_advanced_adverse_shift_supports_contextual_riw(
+    confidence_samples: dict[str, np.ndarray],
+) -> None:
+    rng = np.random.default_rng(99)
+    context_membership_probabilities = rng.uniform(0.2, 0.8, size=500)
+    base = samesame.advanced.test_adverse_shift(
+        **confidence_samples,
+        direction="higher-is-better",
+        n_resamples=64,
+    )
+    contextual = samesame.advanced.test_adverse_shift(
+        **confidence_samples,
+        direction="higher-is-better",
+        n_resamples=64,
+        context_membership_probabilities=context_membership_probabilities,
+        context_mode="target-reweighting",
+    )
+
+    assert isinstance(contextual, AdverseShiftDetails)
+    assert base.statistic != contextual.statistic

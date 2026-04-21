@@ -13,6 +13,7 @@ from samesame._bayesboot import bayesian_posterior
 from samesame._data import build_two_sample_dataset
 from samesame._metrics import get_shift_metric, requires_binary_scores, wauc
 from samesame._stats import _bayes_factor
+from samesame.importance_weights import ContextWeightingMode, contextual_riw
 from samesame._utils import (
     Direction,
     validate_and_normalise_weights,
@@ -128,6 +129,37 @@ def _validate_shift_scores(statistic_name: str, predicted: NDArray) -> None:
         raise ValueError(f"statistic={statistic_name!r} requires binary score vectors.")
 
 
+def _resolve_context_sample_weight(
+    *,
+    actual: NDArray[np.int_],
+    sample_weight: ArrayLike | None,
+    context_membership_probabilities: ArrayLike | None,
+    context_mode: ContextWeightingMode | None,
+    context_lam: float,
+    context_prior_ratio: float | None,
+) -> ArrayLike | None:
+    """Resolve effective weights from either explicit weights or context-aware RIW."""
+    if context_membership_probabilities is None and context_mode is None:
+        return sample_weight
+    if context_membership_probabilities is None or context_mode is None:
+        raise ValueError(
+            "context_membership_probabilities and context_mode must be provided "
+            "together."
+        )
+    if sample_weight is not None:
+        raise ValueError(
+            "sample_weight cannot be combined with context-aware weighting inputs."
+        )
+    context_probs = np.asarray(context_membership_probabilities, dtype=float)
+    return contextual_riw(
+        actual,
+        context_probs,
+        mode=context_mode,
+        lam=context_lam,
+        prior_ratio=context_prior_ratio,
+    )
+
+
 def _prepare_adverse_inputs(
     *,
     reference: ArrayLike,
@@ -216,6 +248,10 @@ def _advanced_test_shift(
     statistic: ShiftStatistic = "roc_auc",
     n_resamples: int = 9999,
     sample_weight: ArrayLike | None = None,
+    context_membership_probabilities: ArrayLike | None = None,
+    context_mode: ContextWeightingMode | None = None,
+    context_lam: float = 0.5,
+    context_prior_ratio: float | None = None,
     alternative: Literal["less", "greater", "two-sided"] = "two-sided",
     rng: np.random.Generator | None = None,
     batch: int | None = None,
@@ -224,13 +260,21 @@ def _advanced_test_shift(
     actual, predicted = build_two_sample_dataset(reference, candidate)
     statistic_name, metric = get_shift_metric(statistic)
     _validate_shift_scores(statistic_name, predicted)
+    effective_weight = _resolve_context_sample_weight(
+        actual=actual,
+        sample_weight=sample_weight,
+        context_membership_probabilities=context_membership_probabilities,
+        context_mode=context_mode,
+        context_lam=context_lam,
+        context_prior_ratio=context_prior_ratio,
+    )
     result, _ = _run_permutation_test(
         actual,
         predicted,
         metric,
         n_resamples=n_resamples,
         alternative=alternative,
-        sample_weight=sample_weight,
+        sample_weight=effective_weight,
         rng=rng,
         batch=batch,
     )
@@ -249,6 +293,10 @@ def _advanced_test_adverse_shift(
     direction: Direction,
     n_resamples: int = 9999,
     sample_weight: ArrayLike | None = None,
+    context_membership_probabilities: ArrayLike | None = None,
+    context_mode: ContextWeightingMode | None = None,
+    context_lam: float = 0.5,
+    context_prior_ratio: float | None = None,
     bayesian: bool = False,
     rng: np.random.Generator | None = None,
     batch: int | None = None,
@@ -259,6 +307,14 @@ def _advanced_test_adverse_shift(
         candidate=candidate,
         direction=direction,
     )
+    effective_weight = _resolve_context_sample_weight(
+        actual=actual,
+        sample_weight=sample_weight,
+        context_membership_probabilities=context_membership_probabilities,
+        context_mode=context_mode,
+        context_lam=context_lam,
+        context_prior_ratio=context_prior_ratio,
+    )
     resolved_rng = _resolve_rng(rng)
     result, weights = _run_permutation_test(
         actual,
@@ -266,7 +322,7 @@ def _advanced_test_adverse_shift(
         wauc,
         n_resamples=n_resamples,
         alternative="greater",
-        sample_weight=sample_weight,
+        sample_weight=effective_weight,
         rng=resolved_rng,
         batch=batch,
     )

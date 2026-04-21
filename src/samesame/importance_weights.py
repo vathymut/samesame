@@ -8,10 +8,18 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 import numpy as np
 from numpy.typing import NDArray
 
 from samesame._utils import validate_binary_actual_with_predicted
+
+ContextWeightingMode = Literal[
+    "source-reweighting",
+    "target-reweighting",
+    "double-weighting-covariate-shift-adaptation",
+]
 
 
 def _density_ratio(
@@ -259,4 +267,93 @@ def riw(
     return density_ratio / ((1.0 - lam) + lam * density_ratio)
 
 
-__all__ = ["aiw", "riw"]
+def _inverse_riw_from_density_ratio(
+    density_ratio: NDArray[np.float64],
+    *,
+    lam: float,
+) -> NDArray[np.float64]:
+    """Compute RIW in the inverse-importance direction from density ratios."""
+    # Algebraically equivalent to RIW applied to 1 / r, avoiding explicit division.
+    return 1.0 / (lam + (1.0 - lam) * density_ratio)
+
+
+def _validate_context_mode(mode: str) -> ContextWeightingMode:
+    """Validate context weighting mode for RIW-based builders."""
+    valid_modes: tuple[ContextWeightingMode, ...] = (
+        "source-reweighting",
+        "target-reweighting",
+        "double-weighting-covariate-shift-adaptation",
+    )
+    if mode not in valid_modes:
+        listed = ", ".join(repr(item) for item in valid_modes)
+        raise ValueError(f"mode must be one of {listed}.")
+    return mode
+
+
+def contextual_riw(
+    actual: NDArray[np.int_],
+    predicted: NDArray,
+    *,
+    mode: ContextWeightingMode,
+    lam: float = 0.5,
+    prior_ratio: float | None = None,
+) -> NDArray[np.float64]:
+    """
+    Build context-aware RIW sample weights for shift testing.
+
+    This function provides three academically named weighting strategies:
+
+    - ``source-reweighting``
+    - ``target-reweighting``
+    - ``double-weighting-covariate-shift-adaptation``
+
+    Parameters
+    ----------
+    actual : NDArray[np.int_]
+        Binary group labels where ``0`` is reference/source and ``1`` is
+        candidate/target.
+    predicted : NDArray
+        Membership probabilities :math:`\hat{p} = P(\text{target} \mid x)`
+        in the open interval ``(0, 1)``.
+    mode : ContextWeightingMode
+        Context-aware weighting mode.
+    lam : float, optional
+        RIW blending parameter in :math:`[0, 1]`, by default ``0.5``.
+    prior_ratio : float or None, optional
+        Ratio :math:`n_{\text{tr}} / n_{\text{te}}` for prior correction.
+        If ``None``, inferred from ``actual``.
+
+    Returns
+    -------
+    NDArray[np.float64]
+        Per-sample weights of shape ``predicted.shape``.
+
+    Raises
+    ------
+    ValueError
+        If inputs are invalid or ``mode`` is unsupported.
+    """
+    actual, predicted = validate_binary_actual_with_predicted(actual, predicted)
+    if lam < 0.0 or lam > 1.0:
+        raise ValueError("lam must be in [0, 1].")
+    validated_mode = _validate_context_mode(mode)
+    ratio = _resolve_prior_ratio(actual, prior_ratio)
+    density_ratio = _density_ratio(predicted, prior_ratio=ratio)
+    source_weight = density_ratio / ((1.0 - lam) + lam * density_ratio)
+    target_weight = _inverse_riw_from_density_ratio(density_ratio, lam=lam)
+
+    weights = np.ones_like(density_ratio, dtype=np.float64)
+    if validated_mode == "source-reweighting":
+        weights[actual == 0] = source_weight[actual == 0]
+        return weights
+    if validated_mode == "target-reweighting":
+        weights[actual == 1] = target_weight[actual == 1]
+        return weights
+
+    # Double-weighting emphasizes common support by reweighting both groups.
+    weights[actual == 0] = source_weight[actual == 0]
+    weights[actual == 1] = target_weight[actual == 1]
+    return weights
+
+
+__all__ = ["aiw", "riw", "contextual_riw", "ContextWeightingMode"]

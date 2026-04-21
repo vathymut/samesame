@@ -9,7 +9,7 @@
 import numpy as np
 import pytest
 
-from samesame.importance_weights import aiw, riw
+from samesame.importance_weights import aiw, contextual_riw, riw
 
 
 # ---------------------------------------------------------------------------
@@ -165,3 +165,53 @@ def test_output_shape_and_dtype(membership_probs):
     assert aiw_result.dtype == np.float64
     assert riw_result.shape == (4,)
     assert riw_result.dtype == np.float64
+
+
+# ---------------------------------------------------------------------------
+# Context-aware RIW weighting modes
+# ---------------------------------------------------------------------------
+
+
+def test_contextual_riw_source_mode(membership_probs):
+    result = contextual_riw(
+        **membership_probs,
+        mode="source-reweighting",
+        lam=0.5,
+    )
+    expected = np.array([0.5, 0.8, 1.0, 1.0])
+    assert np.allclose(result, expected)
+
+
+def test_contextual_riw_target_mode(membership_probs):
+    result = contextual_riw(
+        **membership_probs,
+        mode="target-reweighting",
+        lam=0.5,
+    )
+    expected = np.array([1.0, 1.0, 0.8, 0.5])
+    assert np.allclose(result, expected)
+
+
+def test_contextual_riw_double_weighting_mode(membership_probs):
+    result = contextual_riw(
+        **membership_probs,
+        mode="double-weighting-covariate-shift-adaptation",
+        lam=0.5,
+    )
+    expected = np.array([0.5, 0.8, 0.8, 0.5])
+    assert np.allclose(result, expected)
+
+
+def test_contextual_riw_invalid_mode_raises(membership_probs):
+    with pytest.raises(ValueError, match="mode must be one of"):
+        contextual_riw(
+            **membership_probs,
+            mode="not-a-mode",  # type: ignore[arg-type]
+        )
+
+
+def test_contextual_riw_invalid_lam_raises(membership_probs):
+    with pytest.raises(ValueError, match="lam must be in"):
+        contextual_riw(**membership_probs, mode="source-reweighting", lam=-0.1)
+    with pytest.raises(ValueError, match="lam must be in"):
+        contextual_riw(**membership_probs, mode="source-reweighting", lam=1.1)
