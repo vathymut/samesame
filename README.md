@@ -4,6 +4,7 @@
 # samesame
 
 <!-- badges: start -->
+[![Development Status](https://img.shields.io/badge/status-alpha%20%E2%80%94%20APIs%20subject%20to%20change-orange)](https://github.com/vathymut/samesame)
 [![Python](https://img.shields.io/badge/python-3.12+-blue.svg)](https://pypi.org/project/samesame/)
 [![Downloads](https://static.pepy.tech/badge/samesame)](https://pepy.tech/project/samesame)
 [![Static Badge](https://img.shields.io/badge/docs-link-blue)](https://vathymut.github.io/samesame/)
