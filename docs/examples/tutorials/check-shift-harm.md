@@ -2,7 +2,7 @@
 
 This tutorial is a guided first run of `test_adverse_shift(...)`.
 You will start from a score where larger values mean better outcomes, set direction correctly,
-and interpret whether the candidate sample is meaningfully worse.
+and interpret whether the target sample is meaningfully worse.
 
 **By the end, you will be able to:**
 
@@ -29,7 +29,7 @@ harm the model or the downstream process?"** That is the question `test_adverse_
 | Test  | Question it answers                          | When to use it                              |
 |-------|----------------------------------------------|---------------------------------------------|
 | `test_shift` | Are the two distributions different?         | Any time you want to detect *any* change |
-| `test_adverse_shift` | Is the new data *worse* than the reference?  | When you care about *harmful* shifts only |
+| `test_adverse_shift` | Is the target data *worse* than the source?  | When you care about *harmful* shifts only |
 
 Use both together: `test_shift` to detect change, `test_adverse_shift` to judge severity.
 
@@ -56,8 +56,8 @@ No distributional assumption is required, and no threshold needs to be specified
 
 ## Example: comparing two treatments
 
-This example compares two treatments for relief from leg discomfort: *Armanaleg* (the established
-reference) and *Bowl* (the new treatment). The scores measure discomfort — higher means more
+This example compares two treatments for relief from leg discomfort: *Armanaleg* (the source
+treatment) and *Bowl* (the target treatment). The scores measure discomfort — higher means more
 discomfort, which is worse.
 
 We want to know: **is the Bowl treatment meaningfully worse than Armanaleg?**
@@ -76,21 +76,21 @@ relief = np.array([
     12,  9, 11, 10, 12,  7,  8,  5, 10,  7, 13, 12, 13, 11,
      7, 12, 10, 11, 10,  8,  6,  9, 11,  8,  5, 11, 10,  8,
 ])
-armanaleg  = relief[:28]  # reference treatment
-bowl       = relief[28:]  # new treatment
+armanaleg  = relief[:28]  # source treatment
+bowl       = relief[28:]  # target treatment
 ```
 
 ### Step 2 — Run the adverse-shift test
 
-Pass the reference sample first, then the new sample. `test_adverse_shift(...)` tests whether `bowl`
+Pass the source sample first, then the target sample. `test_adverse_shift(...)` tests whether `bowl`
 contains disproportionately more high-discomfort (worse) cases than `armanaleg`:
 
 ```python
 from samesame import test_adverse_shift
 
 harm = test_adverse_shift(
-  reference=armanaleg,
-  candidate=bowl,
+  source=armanaleg,
+  target=bowl,
   direction="higher-is-better",
 )
 
@@ -107,8 +107,8 @@ Adverse-shift p-value: 0.1215
 
 | p-value         | What it means                                                         |
 |-----------------|-----------------------------------------------------------------------|
-| Small (< 0.05)  | Evidence that the new data is adversely worse than the reference      |
-| Large (≥ 0.05)  | Not enough evidence that the new data is worse                        |
+| Small (< 0.05)  | Evidence that the target data is adversely worse than the source      |
+| Large (≥ 0.05)  | Not enough evidence that the target data is worse                     |
 
 Here, p = 0.1215 is large. We do not have sufficient evidence to conclude that Bowl is meaningfully worse than Armanaleg.
 
@@ -118,13 +118,14 @@ Bayesian evidence is optional. It provides a second summary of uncertainty along
 
 ```python
 from samesame import advanced
+from samesame.advanced import AdverseShiftOptions
 from samesame.bayes_factors import as_pvalue
 
 bayes_harm = advanced.test_adverse_shift(
-    reference=armanaleg,
-    candidate=bowl,
-    direction="higher-is-better",
-    bayesian=True,
+  source=armanaleg,
+  target=bowl,
+  direction="higher-is-better",
+  options=AdverseShiftOptions(bayesian=True),
 )
 
 print(f"Bayesian p-value: {as_pvalue(bayes_harm.bayes_factor):.4f}")

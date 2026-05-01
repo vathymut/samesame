@@ -94,7 +94,7 @@ def aiw(
     Parameters
     ----------
     actual : NDArray[np.int_]
-        Binary group labels. ``0`` indicates the training/reference group;
+        Binary group labels. ``0`` indicates the training/source group;
         ``1`` indicates the test/target group.
     predicted : NDArray
         Membership probabilities :math:`\\hat{p} = P(\\text{test} \\mid x)
@@ -185,7 +185,7 @@ def riw(
     Parameters
     ----------
     actual : NDArray[np.int_]
-        Binary group labels. ``0`` indicates the training/reference group;
+        Binary group labels. ``0`` indicates the training/source group;
         ``1`` indicates the test/target group.
     predicted : NDArray
         Membership probabilities :math:`\\hat{p} = P(\\text{test} \\mid x)
@@ -310,8 +310,7 @@ def contextual_riw(
     Parameters
     ----------
     actual : NDArray[np.int_]
-        Binary group labels where ``0`` is reference/source and ``1`` is
-        candidate/target.
+        Binary group labels where ``0`` is source and ``1`` is target.
     predicted : NDArray
         Membership probabilities :math:`\hat{p} = P(\text{target} \mid x)`
         in the open interval ``(0, 1)``.

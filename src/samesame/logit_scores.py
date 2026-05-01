@@ -5,10 +5,10 @@
 # LICENSE file in the root directory of this source tree.
 #
 
-"""Reference logit-derived score functions for confidence and OOD monitoring.
+"""Logit-derived outlier score functions for confidence and OOD monitoring.
 
 These post-hoc methods are intended for pre-trained classifiers and return
-scores that can be used to rank inputs by in-distribution confidence.
+outlier scores that can be used to rank inputs by in-distribution confidence.
 
 References
 ----------
@@ -49,7 +49,7 @@ def _validate_logits(logits: NDArray) -> NDArray:
 
 
 def logit_gap(logits: NDArray) -> NDArray:
-    """LogitGap OOD detection score.
+    """LogitGap OOD outlier score.
 
     Compute the average gap between the largest logit and the remaining logits
     for each sample.
@@ -57,7 +57,7 @@ def logit_gap(logits: NDArray) -> NDArray:
     Intuitively, in-distribution samples tend to have a dominant class logit,
     while out-of-distribution samples often have flatter logit profiles.
 
-    The scoring function is defined as:
+    The outlier-scoring function is defined as:
 
     .. math::
 
@@ -65,7 +65,7 @@ def logit_gap(logits: NDArray) -> NDArray:
         \\sum_{j=2}^{K} (z'_1 - z'_j)
 
     where :math:`z'_1` is the maximum logit and :math:`z'_j` are logits
-    sorted in descending order. Higher scores indicate higher confidence
+    sorted in descending order. Higher outlier scores indicate higher confidence
     for ID samples.
 
     Parameters
@@ -77,7 +77,7 @@ def logit_gap(logits: NDArray) -> NDArray:
     Returns
     -------
     NDArray
-        Array of shape (n_samples,) containing OOD scores. Higher scores
+        Array of shape (n_samples,) containing OOD outlier scores. Higher scores
         indicate higher likelihood of being in-distribution.
 
     Raises
@@ -109,8 +109,8 @@ def logit_gap(logits: NDArray) -> NDArray:
     >>> np.round(logit_gap(logits), 2)
     array([4.25, 0.15], dtype=float32)
     >>> logits = np.array([[5.0, 1.0, 0.5], [2.0, 2.1, 1.9]])
-    >>> scores = logit_gap(logits)  # doctest: +SKIP
-    >>> print(scores)
+    >>> outlier_scores = logit_gap(logits)  # doctest: +SKIP
+    >>> print(outlier_scores)
     [4.25 0.15]
     """
     logits = _validate_logits(logits)
@@ -121,20 +121,20 @@ def logit_gap(logits: NDArray) -> NDArray:
 
 
 def max_logit(logits: NDArray) -> NDArray:
-    """MaxLogit OOD detection score (baseline method).
+    """MaxLogit OOD outlier score (baseline method).
 
     Compute the maximum logit for each sample.
 
     This is a simple baseline that uses only the top class logit and ignores
     the rest of the logit vector.
 
-    The scoring function is defined as:
+    The outlier-scoring function is defined as:
 
     .. math::
 
         S_{\\text{MaxLogit}}(x; f) = \\max_k z_k
 
-    where :math:`z_k` is the logit for class k. Higher scores indicate
+    where :math:`z_k` is the logit for class k. Higher outlier scores indicate
     higher confidence for the predicted class.
 
     Parameters
@@ -146,7 +146,7 @@ def max_logit(logits: NDArray) -> NDArray:
     Returns
     -------
     NDArray
-        Array of shape (n_samples,) containing OOD scores (maximum logits).
+        Array of shape (n_samples,) containing OOD outlier scores (maximum logits).
         Higher scores indicate higher confidence, but with limited
         discriminative power for OOD detection compared to LogitGap.
 
@@ -177,8 +177,8 @@ def max_logit(logits: NDArray) -> NDArray:
     >>> max_logit(logits)
     array([5. , 2.1], dtype=float32)
     >>> logits = np.array([[5.0, 1.0, 0.5], [2.0, 2.1, 1.9]])
-    >>> scores = max_logit(logits)  # doctest: +SKIP
-    >>> print(scores)
+    >>> outlier_scores = max_logit(logits)  # doctest: +SKIP
+    >>> print(outlier_scores)
     [5.0 2.1]
     """
     logits = _validate_logits(logits)

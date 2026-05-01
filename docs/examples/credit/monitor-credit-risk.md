@@ -110,8 +110,8 @@ oob_scores = rf_domain.oob_decision_function_[:, 1]  # probability of being depl
 
 # Run the shift test on the scores
 shift = test_shift(
-  reference=oob_scores[split.values == 0],
-  candidate=oob_scores[split.values == 1],
+  source=oob_scores[split.values == 0],
+  target=oob_scores[split.values == 1],
 )
 print(f"AUC statistic: {shift.statistic:.4f}")
 print(f"p-value:       {shift.pvalue:.4f}")
@@ -188,8 +188,8 @@ bad_test  = rf_bad.predict_proba(X_test)[:, 1].ravel()
 
 # Run the adverse-shift test: are there disproportionately more high-risk predictions in deployment?
 harm = test_adverse_shift(
-  reference=bad_train,
-  candidate=bad_test,
+  source=bad_train,
+  target=bad_test,
   direction="higher-is-worse",
 )
 print(f"Statistic: {harm.statistic:.4f}")

@@ -150,14 +150,14 @@ Both scores are "higher is worse", so we pass `direction="higher-is-worse"`.
 
 ```python
 harm_brier = test_adverse_shift(
-    reference=brier_train,
-    candidate=brier_test,
+  source=brier_train,
+  target=brier_test,
     direction="higher-is-worse",
 )
 
 harm_logloss = test_adverse_shift(
-    reference=logloss_train,
-    candidate=logloss_test,
+  source=logloss_train,
+  target=logloss_test,
     direction="higher-is-worse",
 )
 

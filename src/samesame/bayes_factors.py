@@ -5,7 +5,7 @@
 # LICENSE file in the root directory of this source tree.
 #
 
-"""Reference functions for one-sided p-values and Bayes factors.
+"""Utilities for one-sided p-values and Bayes factors.
 
 The functions in this module provide numerically stable conversions between
 one-sided p-values and Bayes factors for directional hypotheses, and direct

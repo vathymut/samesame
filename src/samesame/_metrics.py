@@ -57,7 +57,7 @@ def get_shift_metric(name: str) -> tuple[str, Callable]:
 
 
 def requires_binary_scores(name: str) -> bool:
-    """Return whether the named metric requires binary score vectors."""
+    """Return whether the named metric requires binary outlier scores."""
     return name in _BINARY_ONLY_STATISTICS
 
 

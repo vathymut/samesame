@@ -12,7 +12,7 @@ You will generate one score per row, run the test, and interpret the result.
 You can use the same workflow when comparing training vs production data, or one batch vs another.
 
 You do not compare the raw feature table directly. Instead, a classifier turns each row into one
-score that reflects how strongly it resembles the new dataset rather than the reference dataset.
+score that reflects how strongly it resembles the target dataset rather than the source dataset.
 If those scores separate the groups too well, that is evidence that the datasets differ. This
 procedure is a **classifier two-sample test**; statistical significance is assessed via a
 permutation test on the group labels.
@@ -25,13 +25,13 @@ permutation test on the group labels.
 
 ## Step 1 — Prepare the data
 
-Label one dataset as `0` (reference) and the other as `1` (new). Combine them.
+Label one dataset as `0` (source) and the other as `1` (target). Combine them.
 `make_classification` is used here just to create a quick synthetic example with two groups:
 
 ```python
 from sklearn.datasets import make_classification
 
-# X contains the features; y is the group label (0 = reference, 1 = new)
+# X contains the features; y is the group label (0 = source, 1 = target)
 X, y = make_classification(
         n_samples=100,
         n_features=4,
@@ -69,17 +69,17 @@ y_hat = cross_val_predict(
 
 ## Step 3 — Run the test
 
-Split those model outputs back into reference and candidate groups, then pass those scores to
+Split those model outputs back into source and target groups, then pass those scores to
 `test_shift`. The default statistic is ROC AUC. You can think of it as a separation measure:
 0.5 means the classifier cannot tell the groups apart, and 1.0 means it separates them perfectly:
 
 ```python
-reference_values = y_hat[y == 0]
-candidate_values = y_hat[y == 1]
+source_values = y_hat[y == 0]
+target_values = y_hat[y == 1]
 
 shift = test_shift(
-    reference=reference_values,
-    candidate=candidate_values,
+    source=source_values,
+    target=target_values,
 )
 print(f"  statistic (AUC): {shift.statistic:.2f}")
 print(f"  p-value:         {shift.pvalue:.4f}")
@@ -126,8 +126,8 @@ rf.fit(X, y)
 y_oob = rf.oob_decision_function_[:, 1]
 
 shift_oob = test_shift(
-    reference=y_oob[y == 0],
-    candidate=y_oob[y == 1],
+    source=y_oob[y == 0],
+    target=y_oob[y == 1],
 )
 print(f"  statistic (AUC): {shift_oob.statistic:.2f}")
 print(f"  p-value:         {shift_oob.pvalue:.4f}")

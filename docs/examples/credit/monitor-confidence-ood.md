@@ -6,7 +6,7 @@ monitor whether deployment predictions appear less certain than training predict
 **What you'll do:**
 
 - Turn model outputs into a confidence score
-- Compare training and deployment scores
+- Compare training and deployment outlier scores
 - Test whether deployment predictions look less certain
 
 !!! note "Before you start"
@@ -15,7 +15,7 @@ monitor whether deployment predictions appear less certain than training predict
 
 This guide uses the same data and model as the [credit risk how-to](/examples/credit/monitor-credit-risk.md),
 but focuses on confidence rather than business risk. In the credit-risk guide, predicted default
-probability has direct business meaning. Here, we use an **out-of-distribution (OOD) score** to
+probability has direct business meaning. Here, we use an **out-of-distribution (OOD) outlier score** to
 monitor whether predictions become less certain.
 
 If ground-truth labels are available for the test set, per-sample prediction errors (Brier score, log-loss) provide a more direct measure of model accuracy; see [Monitor prediction errors](/examples/credit/monitor-prediction-errors.md).
@@ -27,13 +27,13 @@ The key distinction is:
 | Signal | What it measures | When to use it |
 |--------|------------------|----------------|
 | **Predicted default probability** | How likely the model thinks default is | Use when higher predictions already mean worse business outcomes |
-| **Confidence score (often called an OOD score)** | How confident the model is in its prediction | Use when the model output is not itself a meaningful risk signal |
+| **Confidence outlier score (often called an OOD outlier score)** | How confident the model is in its prediction | Use when the model output is not itself a meaningful risk signal |
 
 In this credit example, default probability and a confidence score are both available, but they answer
 different questions:
 
 - **Default probability:** "Does this customer look risky?"
-- **Confidence score:** "How confident is the model in this prediction?"
+- **Confidence outlier score:** "How confident is the model in this prediction?"
 
 These are related, but not the same. A sample can receive a high-confidence prediction without
 necessarily having the highest predicted default probability.
@@ -50,7 +50,7 @@ So confidence scores should not be read as a direct measure of business safety.
 
 We use **LogitGap** as the confidence score in this guide.
 
-- **LogitGap** looks at the gap between the model's strongest class score and the remaining class scores.
+- **LogitGap** looks at the gap between the model's strongest class logit and the remaining class logits.
 - A **large** gap means the model is confident in its class decision.
 - A **small** gap means the model is uncertain and the sample may be out-of-distribution.
 
@@ -148,12 +148,12 @@ print(f"Training mean MaxLogit:   {max_train.mean():.3f}")
 print(f"Deployment mean MaxLogit: {max_test.mean():.3f}")
 ```
 
-### How to read these scores
+### How to read these outlier scores
 
 - **Higher LogitGap**: the model has a larger margin between classes, so it is more confident in its prediction
 - **Lower LogitGap**: the model has a smaller margin between classes, so it is less confident in its prediction
 
-This score is primarily about confidence, not direct business harm.
+This outlier score is primarily about confidence, not direct business harm.
 If the deployment distribution shifts downward relative to training, it indicates lower-confidence
 predictions in deployment.
 
@@ -166,20 +166,20 @@ Training median LogitGap: 1.5824
 Deployment median LogitGap: 2.1617
 ```
 
-That means the deployment population has **higher**, not lower, LogitGap scores in this example.
-So the model appears **more** confident on the deployment population according to this score.
+That means the deployment population has **higher**, not lower, LogitGap outlier scores in this example.
+So the model appears **more** confident on the deployment population according to this outlier score.
 
-## Step 3 — Plot the score distributions
+## Step 3 — Plot the outlier score distributions
 
-Before running a formal test, it helps to inspect the score distributions directly.
+Before running a formal test, it helps to inspect the outlier score distributions directly.
 
 ```python
 fig, ax = plt.subplots(figsize=(7, 4))
 ax.hist(ood_train, bins=40, alpha=0.6, label="Training", density=True)
 ax.hist(ood_test, bins=40, alpha=0.6, label="Deployment", density=True)
-ax.set_xlabel("LogitGap score")
+ax.set_xlabel("LogitGap outlier score")
 ax.set_ylabel("Density")
-ax.set_title("Training vs deployment scores")
+ax.set_title("Training vs deployment outlier scores")
 ax.legend()
 plt.tight_layout()
 plt.show()
@@ -203,12 +203,12 @@ Higher LogitGap means **higher confidence**, which is better. We express that di
 
 ```python
 harm = test_adverse_shift(
-    reference=ood_train,
-    candidate=ood_test,
+    source=ood_train,
+    target=ood_test,
     direction="higher-is-better",
 )
 
-print("Confidence-score adverse-shift test on LogitGap")
+print("Confidence outlier-score adverse-shift test on LogitGap")
 print(f"  statistic: {harm.statistic:.4f}")
 print(f"  p-value:   {harm.pvalue:.4f}")
 ```
@@ -216,7 +216,7 @@ print(f"  p-value:   {harm.pvalue:.4f}")
 **Output:**
 
 ```text
-Confidence-score adverse-shift test on LogitGap
+Confidence outlier-score adverse-shift test on LogitGap
     statistic: 0.0409
     p-value:   1.0000
 ```
@@ -227,7 +227,7 @@ Confidence-score adverse-shift test on LogitGap
 - **Large p-value**: not enough evidence to claim a confidence drop in deployment
 
 Here the p-value is `1.0000`, so there is **no evidence** that deployment contains more
-low-confidence predictions than training. In fact, the LogitGap scores move in the opposite direction:
+low-confidence predictions than training. In fact, the LogitGap outlier scores move in the opposite direction:
 the deployment customers look *more* confidently classified by this model.
 
 This contrast with the [credit risk how-to](/examples/credit/monitor-credit-risk.md) is the main lesson:

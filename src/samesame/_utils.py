@@ -23,7 +23,7 @@ def as_numeric_vector(values: ArrayLike, *, name: str) -> NDArray:
     Parameters
     ----------
     values : ArrayLike
-        Input values expected to represent a score vector.
+            Input values expected to represent outlier scores.
     name : str
         Public parameter name used in validation messages.
 
@@ -46,7 +46,7 @@ def validate_binary_actual_with_predicted(
     actual: NDArray,
     predicted: NDArray,
 ) -> tuple[NDArray, NDArray]:
-    """Validate binary labels against an aligned score vector."""
+    """Validate binary labels against aligned outlier scores."""
     actual = column_or_1d(actual)
     predicted = as_numeric_vector(predicted, name="predicted")
     check_consistent_length(actual, predicted)

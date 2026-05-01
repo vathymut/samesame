@@ -1,4 +1,4 @@
-"""Task-first API for hypothesis tests over score vectors.
+"""Task-first API for hypothesis tests over outlier scores.
 
 The primary API exposes two functions:
 

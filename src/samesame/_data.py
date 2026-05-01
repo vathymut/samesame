@@ -13,19 +13,19 @@ from samesame._utils import as_numeric_vector
 
 
 def build_two_sample_dataset(
-    reference: ArrayLike,
-    candidate: ArrayLike,
+    source: ArrayLike,
+    target: ArrayLike,
 ) -> tuple[NDArray[np.int_], NDArray]:
-    """Build binary labels and a combined score vector from two samples."""
-    reference_scores = as_numeric_vector(reference, name="reference")
-    candidate_scores = as_numeric_vector(candidate, name="candidate")
+    """Build binary labels and combined outlier scores from two samples."""
+    source_scores = as_numeric_vector(source, name="source")
+    target_scores = as_numeric_vector(target, name="target")
     labels = np.concatenate(
         (
-            np.zeros(reference_scores.shape[0], dtype=int),
-            np.ones(candidate_scores.shape[0], dtype=int),
+            np.zeros(source_scores.shape[0], dtype=int),
+            np.ones(target_scores.shape[0], dtype=int),
         )
     )
-    scores = np.concatenate((reference_scores, candidate_scores))
+    scores = np.concatenate((source_scores, target_scores))
     return labels, scores
 
 
