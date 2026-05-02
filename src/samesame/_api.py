@@ -35,8 +35,6 @@ from samesame._utils import (
     validate_and_normalise_weights,
     validate_direction,
 )
-from samesame.weights import WeightingMode, contextual_weights
-
 
 # ---------------------------------------------------------------------------
 # Private helpers
@@ -46,25 +44,10 @@ from samesame.weights import WeightingMode, contextual_weights
 def _resolve_weights(
     actual: NDArray,
     weights: ArrayLike | None,
-    membership_prob: ArrayLike | None,
-    mode: WeightingMode,
-    alpha_blend: float,
 ) -> NDArray | None:
-    if weights is not None and membership_prob is not None:
-        raise ValueError("Provide either weights or membership_prob, not both.")
-    if weights is not None:
-        return validate_and_normalise_weights(
-            np.asarray(weights, dtype=float), len(actual)
-        )
-    if membership_prob is not None:
-        raw = contextual_weights(
-            actual,
-            np.asarray(membership_prob, dtype=float),
-            mode=mode,
-            alpha_blend=alpha_blend,
-        )
-        return validate_and_normalise_weights(raw, len(actual))
-    return None
+    if weights is None:
+        return None
+    return validate_and_normalise_weights(np.asarray(weights, dtype=float), len(actual))
 
 
 def _validate_shift_scores(statistic_name: str, predicted: NDArray) -> None:
@@ -124,9 +107,6 @@ def test_shift(
     batch: int | None = None,
     rng: np.random.Generator | None = None,
     weights: ArrayLike | None = None,
-    membership_prob: ArrayLike | None = None,
-    mode: WeightingMode = "source",
-    alpha_blend: float = 0.5,
 ) -> ShiftDetails:
     """Test whether two outlier score distributions differ.
 
@@ -150,18 +130,9 @@ def test_shift(
         Random number generator for reproducibility. ``None`` creates a
         fresh one.
     weights : ArrayLike or None, optional
-        Explicit per-sample weights for the pooled (source + target)
-        dataset. Mutually exclusive with ``membership_prob``.
-    membership_prob : ArrayLike or None, optional
-        Per-sample probability of belonging to the target group, in (0, 1).
-        When supplied, context-aware RIW weights are computed automatically.
-        Mutually exclusive with ``weights``.
-    mode : {'source', 'target', 'both'}, optional
-        Which group to reweight when ``membership_prob`` is given.
-        Ignored when ``membership_prob`` is ``None``.
-    alpha_blend : float, optional
-        Blending parameter controlling numerical stability of RIW weights.
-        Only used when ``membership_prob`` is given. Default is ``0.5``.
+        Explicit per-sample weights for the pooled (source + target) dataset.
+        Use :func:`~samesame.weights.contextual_weights` to build these from
+        context membership probabilities.
 
     Returns
     -------
@@ -173,9 +144,7 @@ def test_shift(
     actual, predicted = dataset.labels, dataset.scores
     statistic_name, metric = get_shift_metric(statistic)
     _validate_shift_scores(statistic_name, predicted)
-    effective_weight = _resolve_weights(
-        actual, weights, membership_prob, mode, alpha_blend
-    )
+    effective_weight = _resolve_weights(actual, weights)
     result = _run_permutation_test(
         actual,
         predicted,
@@ -203,9 +172,6 @@ def test_adverse_shift(
     batch: int | None = None,
     rng: np.random.Generator | None = None,
     weights: ArrayLike | None = None,
-    membership_prob: ArrayLike | None = None,
-    mode: WeightingMode = "source",
-    alpha_blend: float = 0.5,
 ) -> AdverseShiftDetails:
     """Test whether the target sample is harmfully shifted.
 
@@ -226,17 +192,9 @@ def test_adverse_shift(
         Random number generator for reproducibility. ``None`` creates a
         fresh one.
     weights : ArrayLike or None, optional
-        Explicit per-sample weights for the pooled dataset. Mutually
-        exclusive with ``membership_prob``.
-    membership_prob : ArrayLike or None, optional
-        Per-sample probability of belonging to the target group, in (0, 1).
-        When supplied, context-aware RIW weights are computed automatically.
-        Mutually exclusive with ``weights``.
-    mode : {'source', 'target', 'both'}, optional
-        Which group to reweight when ``membership_prob`` is given.
-    alpha_blend : float, optional
-        Blending parameter controlling numerical stability of RIW weights.
-        Only used when ``membership_prob`` is given. Default is ``0.5``.
+        Explicit per-sample weights for the pooled dataset.
+        Use :func:`~samesame.weights.contextual_weights` to build these from
+        context membership probabilities.
 
     Returns
     -------
@@ -253,9 +211,7 @@ def test_adverse_shift(
     validated_direction = validate_direction(direction)
     if validated_direction == "higher-is-better":
         predicted = -predicted
-    effective_weight = _resolve_weights(
-        actual, weights, membership_prob, mode, alpha_blend
-    )
+    effective_weight = _resolve_weights(actual, weights)
     result = _run_permutation_test(
         actual,
         predicted,
@@ -283,9 +239,6 @@ def adverse_shift_posterior(
     n_resamples: int = 9999,
     rng: np.random.Generator | None = None,
     weights: ArrayLike | None = None,
-    membership_prob: ArrayLike | None = None,
-    mode: WeightingMode = "source",
-    alpha_blend: float = 0.5,
 ) -> BayesianEvidence:
     """Compute a Bayesian posterior and Bayes factor for an adverse-shift result.
 
@@ -310,17 +263,9 @@ def adverse_shift_posterior(
         Random number generator for reproducibility. ``None`` creates a
         fresh one.
     weights : ArrayLike or None, optional
-        Explicit per-sample weights for the pooled dataset. Mutually
-        exclusive with ``membership_prob``.
-    membership_prob : ArrayLike or None, optional
-        Per-sample probability of belonging to the target group, in (0, 1).
-        When supplied, context-aware RIW weights are computed automatically.
-        Mutually exclusive with ``weights``.
-    mode : {'source', 'target', 'both'}, optional
-        Which group to reweight when ``membership_prob`` is given.
-    alpha_blend : float, optional
-        Blending parameter controlling numerical stability of RIW weights.
-        Only used when ``membership_prob`` is given. Default is ``0.5``.
+        Explicit per-sample weights for the pooled dataset.
+        Use :func:`~samesame.weights.contextual_weights` to build these from
+        context membership probabilities.
 
     Returns
     -------
@@ -336,9 +281,7 @@ def adverse_shift_posterior(
     validated_direction = validate_direction(direction)
     if validated_direction == "higher-is-better":
         predicted = -predicted
-    effective_weight = _resolve_weights(
-        actual, weights, membership_prob, mode, alpha_blend
-    )
+    effective_weight = _resolve_weights(actual, weights)
     posterior = np.asarray(
         bayesian_posterior(
             actual,

@@ -35,11 +35,11 @@ A method whose mathematical form and usage semantics are traceable to the target
 _Avoid_: Paper-inspired tweak, approximate variant
 
 **Context Membership Probability**:
-The per-sample probability that an observation belongs to the target group, constrained to the open interval (0, 1).
-_Avoid_: Logit score, raw classifier margin
+The per-sample probability that an observation belongs to the target group, constrained to the open interval (0, 1). Passed to `contextual_weights` as two separate arrays: `source_prob` (probabilities for source samples) and `target_prob` (probabilities for target samples). The prior ratio is always inferred from `len(source_prob) / len(target_prob)` — never supplied explicitly.
+_Avoid_: Logit score, raw classifier margin, pooled flat array passed with a hidden ordering invariant
 
 **Context-Aware Weighting Mode**:
-A named policy that maps membership probabilities and group labels into sample weights for shift testing.
+A named policy (`'source'`, `'target'`, `'both'`) that controls which group's samples are reweighted by `contextual_weights`. Passed as the `mode` parameter.
 _Avoid_: Ad hoc weighting, custom formula
 
 ## Relationships
@@ -60,6 +60,7 @@ _Avoid_: Ad hoc weighting, custom formula
 - "sample weight" was used loosely for both user-supplied weights and computed importance weights — resolved: `SampleWeighting` is the explicit user-supplied strategy; importance weights are always derived from membership probabilities via RIW.
 - "statistic" appears both as the test statistic name (a string like `"roc_auc"`) and as the computed numeric value — context distinguishes them; `statistic_name` and `statistic` (float) are the canonical field names.
 - "pricing experiment" could mean a fully randomized A/B test or an adaptive/contextual bandit; resolved: `samesame.subgroup` is only valid for **fully randomized two-arm experiments** where `P(treatment=1 | X) = 0.5`. Logs from adaptive or contextual pricing policies require IPS correction before use and are explicitly out of scope for v1.
+- `alpha_blend` was the original parameter name for the RIW blending coefficient; resolved: renamed to `lambda_` (public-facing) to align with domain notation. `balance: bool` was a toggle for prior-ratio inference; resolved: always inferred from group sizes — removed entirely. `group`/`membership_prob` positional parameters for `contextual_weights` replaced by keyword-only `source_prob`/`target_prob` to make the source-first ordering invariant structural rather than documented.
 
 ## Core API language (distribution shift)
 
@@ -92,8 +93,8 @@ A per-sample weight used to correct for covariate shift between source and targe
 _Avoid_: reweighting factor
 
 **RIW (Relative Importance Weight)**:
-The primary importance weighting strategy. Stabilises plain density-ratio weighting by blending source and target distributions in the denominator. Controlled by `lam`.
-_Avoid_: RIWERM (internal paper term, not user-facing)
+The primary importance weighting strategy. Stabilises plain density-ratio weighting by blending source and target distributions in the denominator. Controlled by `lambda_` (public parameter name) / `lam` (internal variable name). Default `lambda_=0.5`.
+_Avoid_: RIWERM (internal paper term, not user-facing), `alpha_blend` (superseded name)
 
 **Weighting strategy**:
 A tagged choice among: no weighting, explicit per-sample weights (`SampleWeighting`), or contextual RIW (`ContextualRIWWeighting`). Represented as a frozen dataclass union.

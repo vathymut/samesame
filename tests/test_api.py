@@ -15,6 +15,7 @@ from samesame import (
     test_adverse_shift as run_adverse_shift_test,
     test_shift as run_shift_test,
 )
+from samesame.weights import contextual_weights
 
 
 def test_root_exports() -> None:
@@ -136,45 +137,20 @@ def test_shift_supports_explicit_weights(
     assert base.statistic != weighted.statistic
 
 
-def test_shift_supports_membership_prob(
+def test_shift_supports_contextual_weights(
     shift_samples: dict[str, np.ndarray],
 ) -> None:
     rng = np.random.default_rng(42)
-    probs = rng.uniform(0.2, 0.8, size=600)
-    base = run_shift_test(**shift_samples, n_resamples=64)
-    contextual = run_shift_test(
-        **shift_samples, n_resamples=64, membership_prob=probs, mode="source"
+    source, target = shift_samples["source"], shift_samples["target"]
+    source_prob = rng.uniform(0.2, 0.5, size=len(source))
+    target_prob = rng.uniform(0.5, 0.8, size=len(target))
+    weights = contextual_weights(
+        source_prob=source_prob, target_prob=target_prob, mode="source"
     )
+    base = run_shift_test(**shift_samples, n_resamples=64)
+    contextual = run_shift_test(**shift_samples, n_resamples=64, weights=weights)
     assert isinstance(contextual, ShiftDetails)
     assert base.statistic != contextual.statistic
-
-
-def test_shift_rejects_both_weights_and_membership_prob(
-    shift_samples: dict[str, np.ndarray],
-) -> None:
-    rng = np.random.default_rng(7)
-    probs = rng.uniform(0.2, 0.8, size=600)
-    sample_weights = np.linspace(1.0, 2.0, 600)
-    with pytest.raises(ValueError, match="Provide either weights or membership_prob"):
-        run_shift_test(
-            **shift_samples,
-            n_resamples=64,
-            weights=sample_weights,
-            membership_prob=probs,
-        )
-
-
-def test_shift_weights_and_membership_prob_are_distinct(
-    shift_samples: dict[str, np.ndarray],
-) -> None:
-    rng = np.random.default_rng(7)
-    probs = rng.uniform(0.2, 0.8, size=600)
-    sample_weights = np.linspace(1.0, 2.0, 600)
-    sw_result = run_shift_test(**shift_samples, n_resamples=64, weights=sample_weights)
-    mp_result = run_shift_test(
-        **shift_samples, n_resamples=64, membership_prob=probs, mode="source"
-    )
-    assert sw_result.statistic != mp_result.statistic
 
 
 def test_adverse_shift_bayesian_evidence(
@@ -199,11 +175,16 @@ def test_adverse_shift_bayesian_evidence(
     assert isinstance(evidence.bayes_factor, float)
 
 
-def test_adverse_shift_supports_membership_prob(
+def test_adverse_shift_supports_contextual_weights(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
     rng = np.random.default_rng(99)
-    probs = rng.uniform(0.2, 0.8, size=500)
+    source, target = confidence_samples["source"], confidence_samples["target"]
+    source_prob = rng.uniform(0.2, 0.5, size=len(source))
+    target_prob = rng.uniform(0.5, 0.8, size=len(target))
+    weights = contextual_weights(
+        source_prob=source_prob, target_prob=target_prob, mode="target"
+    )
     base = run_adverse_shift_test(
         **confidence_samples, direction="higher-is-better", n_resamples=64
     )
@@ -211,8 +192,7 @@ def test_adverse_shift_supports_membership_prob(
         **confidence_samples,
         direction="higher-is-better",
         n_resamples=64,
-        membership_prob=probs,
-        mode="target",
+        weights=weights,
     )
     assert isinstance(contextual, AdverseShiftDetails)
     assert base.statistic != contextual.statistic
