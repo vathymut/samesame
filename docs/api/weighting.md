@@ -1,4 +1,4 @@
-# Sample weights
+# Weighting parameters
 
 Pass pre-computed or context-aware weights directly to `test_shift` or
 `test_adverse_shift` to correct for known covariate shift between your source
@@ -37,3 +37,9 @@ result = samesame.test_adverse_shift(
 
 See [Sample weights](importance_weights.md) if you need to compute or inspect
 weights outside of a test call using `samesame.weights.contextual_weights`.
+
+For a step-by-step worked example, see the tutorial
+[Adjust for covariate shift with importance weights](../examples/tutorials/adjust-for-covariate-shift.md).
+For the conceptual background on why density ratios need stabilisation and when to choose
+each mode, see
+[Why importance weights stabilise shift detection](../explanation/importance-weights-rationale.md).

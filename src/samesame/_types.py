@@ -42,12 +42,19 @@ class AdverseShiftDetails(TestResult):
 
     direction: Direction
     null_distribution: NDArray[np.float64]
-    bayes_factor: float | None = None
-    posterior: NDArray[np.float64] | None = None
+
+
+@dataclass(frozen=True)
+class BayesianEvidence:
+    """Bayesian evidence layer computed on top of an adverse-shift result."""
+
+    posterior: NDArray[np.float64]
+    bayes_factor: float
 
 
 __all__ = [
     "AdverseShiftDetails",
+    "BayesianEvidence",
     "ShiftDetails",
     "ShiftStatistic",
     "TestResult",

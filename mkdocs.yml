@@ -9,10 +9,15 @@ nav:
   - Tutorials:
     - Detect a distribution shift: examples/tutorials/detect-distribution-shift.md
     - Check whether a shift is harmful: examples/tutorials/check-shift-harm.md
+    - Adjust for covariate shift with importance weights: examples/tutorials/adjust-for-covariate-shift.md
   - How-to guides:
     - Monitor a credit risk model: examples/credit/monitor-credit-risk.md
     - Monitor prediction errors: examples/credit/monitor-prediction-errors.md
     - Monitor model confidence: examples/credit/monitor-confidence-ood.md
+    - Use source reweighting for adverse-shift testing: examples/weighting/source-reweighting.md
+    - Use double-weighting for covariate-shift adaptation: examples/weighting/double-weighting.md
+  - Explanation:
+    - Why importance weights stabilise shift detection: explanation/importance-weights-rationale.md
   - API reference:
       - Testing functions: api/testing.md
       - Advanced controls: api/advanced.md

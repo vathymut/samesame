@@ -104,7 +104,7 @@ which is strong evidence against the null hypothesis of no distributional differ
 
 > **Important:** `test_shift` tells you *whether* distributions differ, not *how bad* the difference is
 > or whether it will hurt your model. For that, see
-> [Check whether a shift is harmful](/examples/tutorials/check-shift-harm.md).
+> [Check whether a shift is harmful](check-shift-harm.md).
 
 ## Tips
 
@@ -114,4 +114,4 @@ which is strong evidence against the null hypothesis of no distributional differ
     to find which features are most different between the two groups.
 - **Shift detected — now what?** A significant shift result means the distributions differ.
     To check whether that difference is actually *harmful*, continue to
-    [Check whether a shift is harmful](/examples/tutorials/check-shift-harm.md).
+    [Check whether a shift is harmful](check-shift-harm.md).

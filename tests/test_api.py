@@ -9,7 +9,9 @@ import pytest
 import samesame
 from samesame import (
     AdverseShiftDetails,
+    BayesianEvidence,
     ShiftDetails,
+    adverse_shift_posterior,
     test_adverse_shift as run_adverse_shift_test,
     test_shift as run_shift_test,
 )
@@ -18,6 +20,7 @@ from samesame import (
 def test_root_exports() -> None:
     assert hasattr(samesame, "test_shift")
     assert hasattr(samesame, "test_adverse_shift")
+    assert hasattr(samesame, "adverse_shift_posterior")
     assert hasattr(samesame, "weights")
     assert not hasattr(samesame, "advanced")
     assert not hasattr(samesame, "CTST")
@@ -174,27 +177,26 @@ def test_shift_weights_and_membership_prob_are_distinct(
     assert sw_result.statistic != mp_result.statistic
 
 
-def test_adverse_shift_bayesian_opt_in(
+def test_adverse_shift_bayesian_evidence(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
-    base = run_adverse_shift_test(
+    result = run_adverse_shift_test(
         **confidence_samples,
         direction="higher-is-better",
         n_resamples=64,
+        rng=np.random.default_rng(0),
     )
-    bayesian = run_adverse_shift_test(
+    evidence = adverse_shift_posterior(
         **confidence_samples,
         direction="higher-is-better",
+        result=result,
         n_resamples=64,
-        bayesian=True,
         rng=np.random.default_rng(42),
     )
-    assert isinstance(base, AdverseShiftDetails)
-    assert base.posterior is None
-    assert base.bayes_factor is None
-    assert bayesian.posterior is not None
-    assert bayesian.posterior.shape == (64,)
-    assert bayesian.bayes_factor is not None
+    assert isinstance(result, AdverseShiftDetails)
+    assert isinstance(evidence, BayesianEvidence)
+    assert evidence.posterior.shape == (64,)
+    assert isinstance(evidence.bayes_factor, float)
 
 
 def test_adverse_shift_supports_membership_prob(

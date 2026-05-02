@@ -10,15 +10,15 @@ monitor whether deployment predictions appear less certain than training predict
 - Test whether deployment predictions look less certain
 
 !!! note "Before you start"
-    This guide builds directly on the [credit risk how-to](/examples/credit/monitor-credit-risk.md).
+    This guide builds directly on the [credit risk how-to](monitor-credit-risk.md).
     Complete that guide first — it introduces the HELOC dataset and the credit model used here.
 
-This guide uses the same data and model as the [credit risk how-to](/examples/credit/monitor-credit-risk.md),
+This guide uses the same data and model as the [credit risk how-to](monitor-credit-risk.md),
 but focuses on confidence rather than business risk. In the credit-risk guide, predicted default
 probability has direct business meaning. Here, we use an **out-of-distribution (OOD) outlier score** to
 monitor whether predictions become less certain.
 
-If ground-truth labels are available for the test set, per-sample prediction errors (Brier score, log-loss) provide a more direct measure of model accuracy; see [Monitor prediction errors](/examples/credit/monitor-prediction-errors.md).
+If ground-truth labels are available for the test set, per-sample prediction errors (Brier score, log-loss) provide a more direct measure of model accuracy; see [Monitor prediction errors](monitor-prediction-errors.md).
 
 ## Two kinds of monitoring signals
 
@@ -62,7 +62,7 @@ As a default workflow, use **LogitGap first** and treat MaxLogit as a simpler ba
 
 ## Setup
 
-This guide uses the same HELOC dataset and split as the [credit risk how-to](/examples/credit/monitor-credit-risk.md) — see that guide for a full walkthrough of the setup.
+This guide uses the same HELOC dataset and split as the [credit risk how-to](monitor-credit-risk.md) — see that guide for a full walkthrough of the setup.
 
 ```python
 import re
@@ -94,7 +94,7 @@ print(f"Deployment set: {len(X_test)} samples")
 
 ## Step 1 — Train the same credit model
 
-Reuse the credit risk model from the [credit risk how-to](/examples/credit/monitor-credit-risk.md). Here we extract its internal outputs to measure **confidence patterns**, not risk.
+Reuse the credit risk model from the [credit risk how-to](monitor-credit-risk.md). Here we extract its internal outputs to measure **confidence patterns**, not risk.
 
 ```python
 # Train a default-prediction model on the training population
@@ -224,7 +224,7 @@ Here the p-value is `1.0000`, so there is **no evidence** that deployment contai
 low-confidence predictions than training. In fact, the LogitGap outlier scores move in the opposite direction:
 the deployment customers look *more* confidently classified by this model.
 
-This contrast with the [credit risk how-to](/examples/credit/monitor-credit-risk.md) is the main lesson:
+This contrast with the [credit risk how-to](monitor-credit-risk.md) is the main lesson:
 
 - **Default probability** increased sharply in deployment, so the model predicts worse business outcomes.
 - **LogitGap** also increased, so the model does **not** look less confident on deployment data.
@@ -240,7 +240,7 @@ business outcome metric when such a metric is available.
 ## When should you use this instead of default probability?
 
 Use **predicted default probability** when the model output already has a clear business meaning,
-as it does in the [credit risk how-to](/examples/credit/monitor-credit-risk.md).
+as it does in the [credit risk how-to](monitor-credit-risk.md).
 
 Use a **confidence score** when:
 
@@ -266,8 +266,8 @@ This guide uses **LogitGap** as a practical confidence score for first-pass moni
 - It works even when the model prediction itself is not an interpretable "worse outcome" score
 - Combined with `test_adverse_shift(...)`, it gives you a principled way to test whether deployment confidence degrades relative to training
 
-For a direct business-risk signal, use [Monitor a credit risk model](/examples/credit/monitor-credit-risk.md).
-For label-based monitoring, use [Monitor prediction errors](/examples/credit/monitor-prediction-errors.md).
+For a direct business-risk signal, use [Monitor a credit risk model](monitor-credit-risk.md).
+For label-based monitoring, use [Monitor prediction errors](monitor-prediction-errors.md).
 
 In this specific credit example, LogitGap does **not** flag deployment as lower confidence. That is a
 useful result, not a failure: it shows that confidence and business risk are different concepts and

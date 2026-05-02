@@ -13,8 +13,8 @@ on the test set.
 !!! note "Before you start"
     This guide assumes you have completed both tutorials:
 
-  - [Detect a distribution shift](/examples/tutorials/detect-distribution-shift.md)
-  - [Check whether a shift is harmful](/examples/tutorials/check-shift-harm.md)
+  - [Detect a distribution shift](../tutorials/detect-distribution-shift.md)
+  - [Check whether a shift is harmful](../tutorials/check-shift-harm.md)
 
     You also need basic familiarity with scikit-learn — fitting a model and calling \`predict_proba\`.
 
@@ -42,8 +42,8 @@ historical batch.
 
 This guide complements the other monitoring guides:
 
-- Use [Monitor a credit risk model](/examples/credit/monitor-credit-risk.md) when you need a label-free business-risk signal.
-- Use [Monitor model confidence](/examples/credit/monitor-confidence-ood.md) when you need a label-free confidence signal.
+- Use [Monitor a credit risk model](monitor-credit-risk.md) when you need a label-free business-risk signal.
+- Use [Monitor model confidence](monitor-confidence-ood.md) when you need a label-free confidence signal.
 - Use this guide when labels are available and you want direct per-sample error measures.
 
 ---
@@ -51,7 +51,7 @@ This guide complements the other monitoring guides:
 ## Setup
 
 We use the **HELOC dataset** (FICO Explainable AI Challenge), split randomly into training and
-test sets. Unlike the [credit risk how-to](/examples/credit/monitor-credit-risk.md), this split is not based on a
+test sets. Unlike the [credit risk how-to](monitor-credit-risk.md), this split is not based on a
 feature threshold — it is a stratified random split, so both sets are drawn from the same
 population.
 
@@ -183,7 +183,7 @@ Log-loss    — statistic: 0.0846,  p-value: 0.2744
 Here, p ≈ 0.27 for both scores. This is expected: both sets were drawn from the same population,
 so there is no reason to expect the model to perform systematically worse on the test set.
 
-Contrast this with the [credit risk how-to](/examples/credit/monitor-credit-risk.md), where a deliberate population
+Contrast this with the [credit risk how-to](monitor-credit-risk.md), where a deliberate population
 split produces a highly significant result (p = 0.0001). In that guide, the test set contains
 structurally different, higher-risk customers. Here, stratified random splitting ensures the two
 sets are comparable, and the test correctly finds no evidence of adverse shift.
@@ -229,6 +229,6 @@ confirm or revise the earlier assessment.
   trained on, which would produce artificially low error scores.
 - For this stratified random split, neither score shows significant adverse shift (p ≈ 0.27) —
   the expected result when both sets are drawn from the same population.
-- For an example where adverse shift is detected, see [Monitor a credit risk model](/examples/credit/monitor-credit-risk.md).
-- For label-free monitoring, see [Monitor a credit risk model](/examples/credit/monitor-credit-risk.md) (predicted
-  probability) or [Monitor model confidence](/examples/credit/monitor-confidence-ood.md) (confidence scores).
+- For an example where adverse shift is detected, see [Monitor a credit risk model](monitor-credit-risk.md).
+- For label-free monitoring, see [Monitor a credit risk model](monitor-credit-risk.md) (predicted
+  probability) or [Monitor model confidence](monitor-confidence-ood.md) (confidence scores).

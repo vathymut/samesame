@@ -77,7 +77,9 @@ If the first is small and the second is large, the data changed but not in a cle
 
 Both tests are **permutation-based**, so no distributional assumptions are required.
 
-<!-- TODO(agents): The contextual weighting narrative belongs here once samesame.weighting stories are fully fleshed out. Do NOT expand or add content to this section until that work is complete and this comment is removed. -->
+When you know that source and target have different feature distributions — covariate shift —
+you can supply per-sample importance weights to focus the test on the region where both groups
+overlap. See [Adjust for covariate shift with importance weights](examples/tutorials/adjust-for-covariate-shift.md).
 
 ## Where to go next
 
