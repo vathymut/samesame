@@ -60,7 +60,6 @@ import numpy as np
 from sklearn.datasets import fetch_openml
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-
 from samesame import test_adverse_shift
 
 fico = fetch_openml(data_id=45554, as_frame=True)
@@ -105,8 +104,8 @@ rf = RandomForestClassifier(
 )
 rf.fit(X_train, y_train)
 
-p_train = rf.oob_decision_function_[:, 1]  # OOB predictions for training set
-p_test  = rf.predict_proba(X_test)[:, 1]   # standard predictions for test set
+p_train = rf.oob_decision_function_[:, 1]  # OOB predictions for training
+p_test  = rf.predict_proba(X_test)[:, 1]   # standard predictions for test
 ```
 
 ---
@@ -121,7 +120,7 @@ and the predicted probability for that row.
 brier_train = (y_train - p_train) ** 2
 brier_test  = (y_test  - p_test)  ** 2
 
-# Log-loss: log-probability assigned to the correct label (clipped to avoid log(0))
+# Log-loss: log-probability assigned to the correct label (clipped for numerical safety)
 eps = 1e-10
 p_tr = np.clip(p_train, eps, 1 - eps)
 p_te = np.clip(p_test,  eps, 1 - eps)
@@ -150,14 +149,14 @@ Both scores are "higher is worse", so we pass `direction="higher-is-worse"`.
 
 ```python
 harm_brier = test_adverse_shift(
-  source=brier_train,
-  target=brier_test,
+    source=brier_train,
+    target=brier_test,
     direction="higher-is-worse",
 )
 
 harm_logloss = test_adverse_shift(
-  source=logloss_train,
-  target=logloss_test,
+    source=logloss_train,
+    target=logloss_test,
     direction="higher-is-worse",
 )
 

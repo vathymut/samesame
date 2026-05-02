@@ -55,7 +55,6 @@ import re
 import pandas as pd
 from sklearn.datasets import fetch_openml
 from sklearn.ensemble import RandomForestClassifier
-
 from samesame import test_adverse_shift, test_shift
 
 # Download the HELOC dataset (requires internet access on first run)
@@ -106,12 +105,12 @@ rf_domain = RandomForestClassifier(
     min_samples_leaf=10,
 )
 rf_domain.fit(X_concat, split)
-oob_scores = rf_domain.oob_decision_function_[:, 1]  # probability of being deployment
+oob_scores = rf_domain.oob_decision_function_[:, 1]  # P(deployment)
 
-# Run the shift test on the scores
+# Run the shift test
 shift = test_shift(
-  source=oob_scores[split.values == 0],
-  target=oob_scores[split.values == 1],
+    source=oob_scores[split.values == 0],
+    target=oob_scores[split.values == 1],
 )
 print(f"AUC statistic: {shift.statistic:.4f}")
 print(f"p-value:       {shift.pvalue:.4f}")
@@ -171,7 +170,7 @@ We train a credit risk model on the training set and compare its predictions on 
 For the training set, we again use out-of-bag predictions so the scores stay fair:
 
 ```python
-# Train a credit risk model to predict loan default (Bad = 1)
+# Train a credit risk model to predict loan default
 loan_status = y_train.map({'Good': 0, 'Bad': 1}).values
 rf_bad = RandomForestClassifier(
     n_estimators=500,
@@ -181,16 +180,14 @@ rf_bad = RandomForestClassifier(
 )
 rf_bad.fit(X_train, loan_status)
 
-# Predicted default probability for each group
-# Training: OOB predictions (unbiased); Deployment: standard predictions
+# OOB predictions for training (unbiased); standard predictions for deployment
 bad_train = rf_bad.oob_decision_function_[:, 1].ravel()
 bad_test  = rf_bad.predict_proba(X_test)[:, 1].ravel()
 
-# Run the adverse-shift test: are there disproportionately more high-risk predictions in deployment?
 harm = test_adverse_shift(
-  source=bad_train,
-  target=bad_test,
-  direction="higher-is-worse",
+    source=bad_train,
+    target=bad_test,
+    direction="higher-is-worse",
 )
 print(f"Statistic: {harm.statistic:.4f}")
 print(f"p-value:   {harm.pvalue:.4f}")

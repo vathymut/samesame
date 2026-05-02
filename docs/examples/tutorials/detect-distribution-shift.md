@@ -5,9 +5,9 @@ You will generate one score per row, run the test, and interpret the result.
 
 **By the end, you will be able to:**
 
-- How to check whether two datasets come from the same distribution
-- How to create one score per row without leaking training data
-- How to run `test_shift(...)` and read the result
+- Check whether two datasets come from the same distribution
+- Create one score per row without leaking training data
+- Run `test_shift(...)` and read the result
 
 You can use the same workflow when comparing training vs production data, or one batch vs another.
 
@@ -31,12 +31,12 @@ Label one dataset as `0` (source) and the other as `1` (target). Combine them.
 ```python
 from sklearn.datasets import make_classification
 
-# X contains the features; y is the group label (0 = source, 1 = target)
+# X contains features; y is the group label (0 = source, 1 = target)
 X, y = make_classification(
-        n_samples=100,
-        n_features=4,
-        n_classes=2,
-        random_state=123_456,
+    n_samples=100,
+    n_features=4,
+    n_classes=2,
+    random_state=123_456,
 )
 ```
 
@@ -57,14 +57,14 @@ from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.model_selection import cross_val_predict
 from samesame import test_shift
 
-# Predict each sample's probability using a model that never saw that sample
+# Each sample is scored by a model that never saw it during training
 y_hat = cross_val_predict(
-        HistGradientBoostingClassifier(random_state=123_456),
-        X,
-        y,
-        cv=10,
-        method="predict_proba",
-)[:, 1]  # take the probability of belonging to group 1
+    HistGradientBoostingClassifier(random_state=123_456),
+    X,
+    y,
+    cv=10,
+    method="predict_proba",
+)[:, 1]  # probability of belonging to group 1 (target)
 ```
 
 ## Step 3 — Run the test
@@ -74,12 +74,12 @@ Split those model outputs back into source and target groups, then pass those sc
 0.5 means the classifier cannot tell the groups apart, and 1.0 means it separates them perfectly:
 
 ```python
-source_values = y_hat[y == 0]
-target_values = y_hat[y == 1]
+source_scores = y_hat[y == 0]
+target_scores = y_hat[y == 1]
 
 shift = test_shift(
-    source=source_values,
-    target=target_values,
+    source=source_scores,
+    target=target_scores,
 )
 print(f"  statistic (AUC): {shift.statistic:.2f}")
 print(f"  p-value:         {shift.pvalue:.4f}")
@@ -105,48 +105,6 @@ which is strong evidence against the null hypothesis of no distributional differ
 > **Important:** `test_shift` tells you *whether* distributions differ, not *how bad* the difference is
 > or whether it will hurt your model. For that, see
 > [Check whether a shift is harmful](/examples/tutorials/check-shift-harm.md).
-
-## Alternative: out-of-bag (OOB) predictions
-
-If you are using a Random Forest or another ensemble model, you can use its built-in
-**out-of-bag (OOB)** predictions instead of running `cross_val_predict` explicitly.
-This is the Random Forest version of the same idea: each row is evaluated only by trees that did not
-train on it:
-
-```python
-from sklearn.ensemble import RandomForestClassifier
-
-rf = RandomForestClassifier(
-        n_estimators=500,
-        oob_score=True,
-        min_samples_leaf=10,
-        random_state=123_456,
-)
-rf.fit(X, y)
-y_oob = rf.oob_decision_function_[:, 1]
-
-shift_oob = test_shift(
-    source=y_oob[y == 0],
-    target=y_oob[y == 1],
-)
-print(f"  statistic (AUC): {shift_oob.statistic:.2f}")
-print(f"  p-value:         {shift_oob.pvalue:.4f}")
-```
-
-**Output:**
-
-```text
-    statistic (AUC): 0.94
-    p-value:         0.0002
-```
-
-Both approaches give the same conclusion here. Use OOB when you already have a Random Forest;
-use cross-fitting for other classifiers.
-
-## Want more control?
-
-If you need sample weights, more resamples, or the full null distribution, use
-`samesame.advanced.test_shift(...)`. Most readers can skip that on a first pass and return to it later.
 
 ## Tips
 

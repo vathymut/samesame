@@ -4,9 +4,29 @@ This context defines the domain language for implementing paper-aligned weightin
 
 ## Language
 
-**TEH Module**:
-A new top-level submodule (`samesame.teh`) that implements treatment effect heterogeneity testing from Watson & Holmes (2020), taking `(y, treatment, X)` inputs. Architecturally separate from the distribution-shift API.
-_Avoid_: Extending test_shift, repurposing WeightingStrategy for this
+**Subgroup Testing Module**:
+A new top-level submodule (`samesame.subgroup`) that implements price-sensitivity heterogeneity testing for two-arm randomized pricing experiments, based on the Watson & Holmes (2020) statistical framework, taking `(y, treatment, X)` inputs where `y` is the binary purchase decision and `treatment` is the binary pricing arm assignment. Architecturally separate from the distribution-shift API.
+_Avoid_: Extending test_shift, repurposing WeightingStrategy for this; applying to adaptive/bandit pricing logs without IPS correction
+
+**Crossover price-sensitivity segment**:
+A customer segment in a two-arm pricing experiment where the optimal pricing arm allocation differs; tested via a two-sample hypothesis test on held-out subgroup predictions. The pricing analogue of crossover TEH in Watson & Holmes (2020).
+_Avoid_: Qualitative interaction (Gail-Simon framing)
+
+**Non-crossover price-sensitivity**:
+A type of price-sensitivity heterogeneity where one pricing arm is everywhere superior but the conversion lift varies systematically across customers; tested by stacking ML predictions against a baseline GLM. The pricing analogue of non-crossover TEH in Watson & Holmes (2020).
+_Avoid_: Quantitative interaction
+
+**Pricing Arm**:
+The binary experimental assignment `treatment ∈ {0, 1}` indicating which price policy a customer was randomly allocated to in a two-arm pricing experiment. The module is policy-agnostic — arm semantics are the user's responsibility. Must be fully randomized: `P(treatment=1 | X) = 0.5` for all customers.
+_Avoid_: Treatment group, ad arm, intervention arm
+
+**Purchase Decision**:
+The binary outcome variable `y ∈ {0, 1}` representing whether a customer completed a purchase (1) or not (0) in a pricing experiment. This is the only supported outcome type in v1 of `samesame.subgroup`.
+_Avoid_: Revenue, conversion rate (use as aggregate statistic only), click
+
+**Aggregate p-value**:
+A single p-value combining split-wise evidence from K balanced two-fold data splits, computed as `min(1, Q_alpha({2*p_i}))` where Q_alpha is the alpha-quantile (default alpha=0.5, the median).
+_Avoid_: Combined p-value, meta-analytic p-value
 A release goal focused on adding new capability, not only stabilizing existing behavior.
 _Avoid_: Hardening-only milestone, maintenance-only release
 
@@ -39,6 +59,7 @@ _Avoid_: Ad hoc weighting, custom formula
 - Scope of "implement the paper" resolved: all three method components are in-scope: (1) crossover TEH test via repeated balanced two-fold data-splitting, (2) non-crossover TEH test via ML-stacking against a baseline model, (3) aggregate p-value construction from split-wise p-values for strict type I error control.
 - "sample weight" was used loosely for both user-supplied weights and computed importance weights — resolved: `SampleWeighting` is the explicit user-supplied strategy; importance weights are always derived from membership probabilities via RIW.
 - "statistic" appears both as the test statistic name (a string like `"roc_auc"`) and as the computed numeric value — context distinguishes them; `statistic_name` and `statistic` (float) are the canonical field names.
+- "pricing experiment" could mean a fully randomized A/B test or an adaptive/contextual bandit; resolved: `samesame.subgroup` is only valid for **fully randomized two-arm experiments** where `P(treatment=1 | X) = 0.5`. Logs from adaptive or contextual pricing policies require IPS correction before use and are explicitly out of scope for v1.
 
 ## Core API language (distribution shift)
 

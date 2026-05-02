@@ -62,10 +62,7 @@ As a default workflow, use **LogitGap first** and treat MaxLogit as a simpler ba
 
 ## Setup
 
-We reuse the same HELOC split as in the [credit risk how-to](/examples/credit/monitor-credit-risk.md):
-
-- **Training set** (`ExternalRiskEstimate > 63`): 7,683 lower-risk customers
-- **Deployment set** (`ExternalRiskEstimate ≤ 63`): 2,188 higher-risk customers
+This guide uses the same HELOC dataset and split as the [credit risk how-to](/examples/credit/monitor-credit-risk.md) — see that guide for a full walkthrough of the setup.
 
 ```python
 import re
@@ -75,7 +72,6 @@ import matplotlib.pyplot as plt
 from scipy.special import logit
 from sklearn.datasets import fetch_openml
 from sklearn.ensemble import RandomForestClassifier
-
 from samesame import test_adverse_shift
 from samesame.logit_scores import logit_gap, max_logit
 
@@ -98,9 +94,7 @@ print(f"Deployment set: {len(X_test)} samples")
 
 ## Step 1 — Train the same credit model
 
-We first train the same credit risk model used in the previous tutorial. The model predicts the
-probability of default, but here we are going to reuse its internal outputs to measure
-**confidence patterns**, not just risk.
+Reuse the credit risk model from the [credit risk how-to](/examples/credit/monitor-credit-risk.md). Here we extract its internal outputs to measure **confidence patterns**, not risk.
 
 ```python
 # Train a default-prediction model on the training population
@@ -108,10 +102,10 @@ bad_mapping = {'Good': 0, 'Bad': 1}
 bad_train = y_train.map(bad_mapping).values
 
 rf_bad = RandomForestClassifier(
-        n_estimators=500,
-        oob_score=True,
-        random_state=12345,
-        min_samples_leaf=10,
+    n_estimators=500,
+    oob_score=True,
+    random_state=12345,
+    min_samples_leaf=10,
 )
 rf_bad.fit(X_train, bad_train)
 ```

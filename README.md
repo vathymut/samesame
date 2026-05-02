@@ -4,7 +4,7 @@
 # samesame
 
 <!-- badges: start -->
-[![Development Status](https://img.shields.io/badge/status-alpha%20%E2%80%94%20APIs%20subject%20to%20change-orange)](https://github.com/vathymut/samesame)
+[![Development Status](https://img.shields.io/badge/status-early%20development-yellow)](https://github.com/vathymut/samesame)
 [![Python](https://img.shields.io/badge/python-3.12+-blue.svg)](https://pypi.org/project/samesame/)
 [![Downloads](https://static.pepy.tech/badge/samesame)](https://pepy.tech/project/samesame)
 [![Static Badge](https://img.shields.io/badge/docs-link-blue)](https://vathymut.github.io/samesame/)
@@ -50,16 +50,16 @@ import numpy as np
 from samesame import test_adverse_shift, test_shift
 
 rng = np.random.default_rng(123_456)
-source_values = rng.normal(size=600)
-target_values = rng.normal(size=600)
+source_scores = rng.normal(size=600)
+target_scores = rng.normal(size=600)
 
-shift = test_shift(source=source_values, target=target_values)
-print(f"Did anything change? p-value = {shift.pvalue:.4f}")
+shift = test_shift(source=source_scores, target=target_scores)
+print(f"Did anything change?  p-value = {shift.pvalue:.4f}")
 
 harm = test_adverse_shift(
-	source=source_values,
-	target=target_values,
-	direction="higher-is-worse",
+    source=source_scores,
+    target=target_scores,
+    direction="higher-is-worse",
 )
 print(f"Did things get worse? p-value = {harm.pvalue:.4f}")
 ```
@@ -72,20 +72,12 @@ If the first is small and the second is large, the data changed but not in a cle
 
 `samesame` does not compare raw tables directly. The usual workflow is:
 
-1. Turn each row into one score.
-2. Compare those scores between the source and target groups.
+1. Turn each row into one score — typically from a classifier trained to distinguish the two groups.
+2. Compare those scores with `test_shift(...)` (did anything change?) and `test_adverse_shift(...)` (did it get worse?).
 
-And so, the package turns a multivariate dataset into a univariate score per row, then runs two statistical tests:
-`test_shift(...)` asks whether the groups differ overall, and `test_adverse_shift(...)` asks whether the target group is more concentrated in the adverse tail of the score distribution. Both tests are based on **permutations**, so no distributional assumptions are required.
+Both tests are **permutation-based**, so no distributional assumptions are required.
 
-## What you get back
-
-| Function | Result type | Fields |
-|----------|-------------|--------|
-| `test_shift` | `ShiftResult` | `.statistic`, `.pvalue`, `.statistic_name` |
-| `test_adverse_shift` | `AdverseShiftResult` | `.statistic`, `.pvalue`, `.direction` |
-
-If you need the resampling distribution or optional Bayesian output, use `samesame.advanced`.
+<!-- TODO(agents): The contextual weighting narrative belongs here once samesame.weighting stories are fully fleshed out. Do NOT expand or add content to this section until that work is complete and this comment is removed. -->
 
 ## Where to go next
 
@@ -101,18 +93,6 @@ Step-by-step examples are available in the [documentation](https://vathymut.gith
 - [Monitor a credit risk model](https://vathymut.github.io/samesame/examples/credit/monitor-credit-risk/)
 - [Monitor prediction errors with per-sample scores](https://vathymut.github.io/samesame/examples/credit/monitor-prediction-errors/)
 - [Monitor model confidence](https://vathymut.github.io/samesame/examples/credit/monitor-confidence-ood/)
-
-## API at a glance
-
-- `test_shift(*, source, target, statistic="roc_auc")`
-- `test_adverse_shift(*, source, target, direction=...)`
-- `samesame.advanced` for sample weights, more resamples, and optional Bayesian output
-- `samesame.logit_scores` for turning classifier outputs into a confidence score
-- `samesame.importance_weights` for adjusting for known group differences
-- `samesame.bayes_factors` for converting between p-values and Bayes factors
-
-Most users can keep the default settings. If your inputs are already binary 0/1 values,
-`test_shift(...)` also supports `balanced_accuracy` and `matthews_corrcoef`.
 
 ## Dependencies
 

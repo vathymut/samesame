@@ -6,32 +6,16 @@ and interpret whether the target sample is meaningfully worse.
 
 **By the end, you will be able to:**
 
-- The difference between detecting any shift and detecting a *harmful* shift
-- How to use `test_adverse_shift(...)` and tell it which direction means worse
-- How to read the p-value and decide whether the shift matters
+- Distinguish detecting any shift from detecting a *harmful* shift
+- Use `test_adverse_shift(...)` and set direction correctly
+- Read the p-value and decide whether the shift matters
 
 In practice, this test complements `test_shift(...)`: first detect change, then assess harm.
-
-## Why difference alone is not enough
-
-Imagine you deploy a machine learning model in January and again in February.
-You run `test_shift(...)` and get a small p-value — the February data is statistically
-different from January. Should you be worried?
-
-Not necessarily. Any two real-world datasets will differ slightly due to random variation.
-Shift testing can detect even small, practically unimportant differences.
-
-The more decision-relevant question is: **"Has February's data shifted in a way that could
-harm the model or the downstream process?"** That is the question `test_adverse_shift(...)` answers.
-
-## Shift vs. Adverse Shift at a glance
 
 | Test  | Question it answers                          | When to use it                              |
 |-------|----------------------------------------------|---------------------------------------------|
 | `test_shift` | Are the two distributions different?         | Any time you want to detect *any* change |
 | `test_adverse_shift` | Is the target data *worse* than the source?  | When you care about *harmful* shifts only |
-
-Use both together: `test_shift` to detect change, `test_adverse_shift` to judge severity.
 
 Like the shift test, this procedure works on one score per sample rather than the full table.
 
@@ -45,14 +29,6 @@ Larger values must correspond to "worse". Examples:
 - A patient's discomfort or risk measure
 
 The test asks whether the new dataset contains a disproportionate share of the large values.
-
-## How the test works
-
-1. Pool both datasets and mark which samples belong to each group.
-2. Compute how concentrated the largest values are in the new dataset.
-3. Assess statistical significance via a **permutation test**: how often does random reassignment of group labels produce a concentration as extreme as the one observed? A small p-value means the observed concentration is unlikely under the null.
-
-No distributional assumption is required, and no threshold needs to be specified in advance.
 
 ## Example: comparing two treatments
 
@@ -68,6 +44,7 @@ Relief scores are converted to discomfort scores internally, via `direction="hig
 
 ```python
 import numpy as np
+from samesame import test_adverse_shift
 
 relief = np.array([
      9, 14, 13,  8, 10,  5, 11,  9, 12, 10,  9, 11,  8, 11,
@@ -76,8 +53,8 @@ relief = np.array([
     12,  9, 11, 10, 12,  7,  8,  5, 10,  7, 13, 12, 13, 11,
      7, 12, 10, 11, 10,  8,  6,  9, 11,  8,  5, 11, 10,  8,
 ])
-armanaleg  = relief[:28]  # source treatment
-bowl       = relief[28:]  # target treatment
+armanaleg = relief[:28]   # source treatment
+bowl      = relief[28:]   # target treatment
 ```
 
 ### Step 2 — Run the adverse-shift test
@@ -86,14 +63,11 @@ Pass the source sample first, then the target sample. `test_adverse_shift(...)` 
 contains disproportionately more high-discomfort (worse) cases than `armanaleg`:
 
 ```python
-from samesame import test_adverse_shift
-
 harm = test_adverse_shift(
-  source=armanaleg,
-  target=bowl,
-  direction="higher-is-better",
+    source=armanaleg,
+    target=bowl,
+    direction="higher-is-better",
 )
-
 print(f"Adverse-shift p-value: {harm.pvalue:.4f}")
 ```
 
@@ -112,30 +86,7 @@ Adverse-shift p-value: 0.1215
 
 Here, p = 0.1215 is large. We do not have sufficient evidence to conclude that Bowl is meaningfully worse than Armanaleg.
 
-## Optional: Bayesian evidence
-
-Bayesian evidence is optional. It provides a second summary of uncertainty alongside the standard p-value.
-
-```python
-from samesame import advanced
-from samesame.advanced import AdverseShiftOptions
-from samesame.bayes_factors import as_pvalue
-
-bayes_harm = advanced.test_adverse_shift(
-  source=armanaleg,
-  target=bowl,
-  direction="higher-is-better",
-  options=AdverseShiftOptions(bayesian=True),
-)
-
-print(f"Bayesian p-value: {as_pvalue(bayes_harm.bayes_factor):.4f}")
-```
-
-In this example, the Bayesian summary leads to the same practical conclusion as the ordinary
-p-value: there is no clear evidence that the new treatment is worse.
-
-Use the primary API when you only need the standard p-value. Opt into `advanced.test_adverse_shift(...)`
-when you need posterior draws or Bayes factors.
+> **Advanced:** For Bayesian evidence alongside the standard p-value, see [`samesame.advanced.test_adverse_shift`](/api/advanced.md) and `samesame.bayes_factors`.
 
 ## Tips
 
