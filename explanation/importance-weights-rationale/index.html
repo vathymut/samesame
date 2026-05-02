@@ -12,22 +12,28 @@
         <meta name="author" content="Vathy M. Kamulete">
       
       
+        <link rel="canonical" href="https://vathymut.github.io/samesame/explanation/importance-weights-rationale/">
       
       
+        <link rel="prev" href="../../examples/weighting/double-weighting/">
       
-      <link rel="icon" href="/samesame/assets/images/favicon.png">
+      
+        <link rel="next" href="../../api/testing/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.18">
     
     
       
-        <title>samesame</title>
+        <title>Why importance weights stabilise shift detection - samesame</title>
       
     
     
-      <link rel="stylesheet" href="/samesame/assets/stylesheets/main.7e37652d.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.7e37652d.min.css">
       
         
-        <link rel="stylesheet" href="/samesame/assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -46,9 +52,9 @@
       
     
     
-      <link rel="stylesheet" href="/samesame/assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL("/samesame/",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -71,6 +77,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#why-importance-weights-stabilise-shift-detection" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -83,7 +94,7 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="/samesame/." title="samesame" class="md-header__button md-logo" aria-label="samesame" data-md-component="logo">
+    <a href="../.." title="samesame" class="md-header__button md-logo" aria-label="samesame" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M249.9 66.8c10.4-14.3 7.2-34.3-7.1-44.7s-34.3-7.2-44.7 7.1l-106 145.7-37.5-37.5c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l64 64c6.6 6.6 15.8 10 25.1 9.3s17.9-5.5 23.4-13.1l128-176zm128 136c10.4-14.3 7.2-34.3-7.1-44.7s-34.3-7.2-44.7 7.1l-170 233.7-69.5-69.5c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l96 96c6.6 6.6 15.8 10 25.1 9.3s17.9-5.5 23.4-13.1l192-264z"/></svg>
@@ -103,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              
+              Why importance weights stabilise shift detection
             
           </span>
         </div>
@@ -182,7 +193,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="/samesame/." class="md-tabs__link">
+      <a href="../.." class="md-tabs__link">
         
   
   
@@ -203,7 +214,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/samesame/examples/tutorials/detect-distribution-shift/" class="md-tabs__link">
+        <a href="../../examples/tutorials/detect-distribution-shift/" class="md-tabs__link">
           
   
   
@@ -223,7 +234,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/samesame/examples/credit/monitor-credit-risk/" class="md-tabs__link">
+        <a href="../../examples/credit/monitor-credit-risk/" class="md-tabs__link">
           
   
   
@@ -239,11 +250,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="/samesame/explanation/importance-weights-rationale/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
           
   
   
@@ -263,7 +276,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/samesame/api/testing/" class="md-tabs__link">
+        <a href="../../api/testing/" class="md-tabs__link">
           
   
   
@@ -303,7 +316,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="/samesame/." title="samesame" class="md-nav__button md-logo" aria-label="samesame" data-md-component="logo">
+    <a href="../.." title="samesame" class="md-nav__button md-logo" aria-label="samesame" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M249.9 66.8c10.4-14.3 7.2-34.3-7.1-44.7s-34.3-7.2-44.7 7.1l-106 145.7-37.5-37.5c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l64 64c6.6 6.6 15.8 10 25.1 9.3s17.9-5.5 23.4-13.1l128-176zm128 136c10.4-14.3 7.2-34.3-7.1-44.7s-34.3-7.2-44.7 7.1l-170 233.7-69.5-69.5c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l96 96c6.6 6.6 15.8 10 25.1 9.3s17.9-5.5 23.4-13.1l192-264z"/></svg>
@@ -333,7 +346,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/samesame/." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -400,7 +413,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/samesame/examples/tutorials/detect-distribution-shift/" class="md-nav__link">
+      <a href="../../examples/tutorials/detect-distribution-shift/" class="md-nav__link">
         
   
   
@@ -423,7 +436,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/samesame/examples/tutorials/check-shift-harm/" class="md-nav__link">
+      <a href="../../examples/tutorials/check-shift-harm/" class="md-nav__link">
         
   
   
@@ -446,7 +459,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/samesame/examples/tutorials/adjust-for-covariate-shift/" class="md-nav__link">
+      <a href="../../examples/tutorials/adjust-for-covariate-shift/" class="md-nav__link">
         
   
   
@@ -521,7 +534,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/samesame/examples/credit/monitor-credit-risk/" class="md-nav__link">
+      <a href="../../examples/credit/monitor-credit-risk/" class="md-nav__link">
         
   
   
@@ -544,7 +557,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/samesame/examples/credit/monitor-prediction-errors/" class="md-nav__link">
+      <a href="../../examples/credit/monitor-prediction-errors/" class="md-nav__link">
         
   
   
@@ -567,7 +580,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/samesame/examples/credit/monitor-confidence-ood/" class="md-nav__link">
+      <a href="../../examples/credit/monitor-confidence-ood/" class="md-nav__link">
         
   
   
@@ -590,7 +603,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/samesame/examples/weighting/source-reweighting/" class="md-nav__link">
+      <a href="../../examples/weighting/source-reweighting/" class="md-nav__link">
         
   
   
@@ -613,7 +626,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/samesame/examples/weighting/double-weighting/" class="md-nav__link">
+      <a href="../../examples/weighting/double-weighting/" class="md-nav__link">
         
   
   
@@ -640,28 +653,31 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
             
   
   
@@ -674,7 +690,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             Explanation
@@ -685,10 +701,32 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="/samesame/explanation/importance-weights-rationale/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Why importance weights stabilise shift detection
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -699,6 +737,113 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-density-ratio-problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      The density-ratio problem
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#taming-the-ratio-with-riw-blending" class="md-nav__link">
+    <span class="md-ellipsis">
+      Taming the ratio with RIW blending
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#three-weighting-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Three weighting modes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Three weighting modes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#source-source-reweighting" class="md-nav__link">
+    <span class="md-ellipsis">
+      source — source reweighting
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#target-target-reweighting" class="md-nav__link">
+    <span class="md-ellipsis">
+      target — target reweighting
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#both-double-weighting" class="md-nav__link">
+    <span class="md-ellipsis">
+      both — double-weighting
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prior-ratio-and-group-sizes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prior ratio and group sizes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Decision guide
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -763,7 +908,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/samesame/api/testing/" class="md-nav__link">
+      <a href="../../api/testing/" class="md-nav__link">
         
   
   
@@ -786,7 +931,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/samesame/api/advanced/" class="md-nav__link">
+      <a href="../../api/advanced/" class="md-nav__link">
         
   
   
@@ -809,7 +954,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/samesame/api/weighting/" class="md-nav__link">
+      <a href="../../api/weighting/" class="md-nav__link">
         
   
   
@@ -832,7 +977,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/samesame/api/bayes_factors/" class="md-nav__link">
+      <a href="../../api/bayes_factors/" class="md-nav__link">
         
   
   
@@ -855,7 +1000,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/samesame/api/importance_weights/" class="md-nav__link">
+      <a href="../../api/importance_weights/" class="md-nav__link">
         
   
   
@@ -878,7 +1023,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/samesame/api/logit_scores/" class="md-nav__link">
+      <a href="../../api/logit_scores/" class="md-nav__link">
         
   
   
@@ -918,6 +1063,103 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-density-ratio-problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      The density-ratio problem
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#taming-the-ratio-with-riw-blending" class="md-nav__link">
+    <span class="md-ellipsis">
+      Taming the ratio with RIW blending
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#three-weighting-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Three weighting modes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Three weighting modes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#source-source-reweighting" class="md-nav__link">
+    <span class="md-ellipsis">
+      source — source reweighting
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#target-target-reweighting" class="md-nav__link">
+    <span class="md-ellipsis">
+      target — target reweighting
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#both-double-weighting" class="md-nav__link">
+    <span class="md-ellipsis">
+      both — double-weighting
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prior-ratio-and-group-sizes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prior ratio and group sizes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Decision guide
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -929,8 +1171,151 @@
             <div class="md-content" data-md-component="content">
               <article class="md-content__inner md-typeset">
                 
-  <h1>404 - Not found</h1>
+                  
 
+
+  
+  
+
+
+<h1 id="why-importance-weights-stabilise-shift-detection">Why importance weights stabilise shift detection<a class="headerlink" href="#why-importance-weights-stabilise-shift-detection" title="Permanent link">&para;</a></h1>
+<p>This page explains the conceptual landscape behind importance weighting in `samesame`.
+It covers why plain density-ratio weights can become extreme, what <code>lambda_</code> trades off,
+and when each of the three weighting modes is appropriate.</p>
+<p>There are no code examples here. For worked code, see the tutorial
+<a href="../../examples/tutorials/adjust-for-covariate-shift/">Adjust for covariate shift with importance weights</a>.</p>
+<hr />
+<h2 id="the-density-ratio-problem">The density-ratio problem<a class="headerlink" href="#the-density-ratio-problem" title="Permanent link">&para;</a></h2>
+<p>A classifier two-sample test trains a classifier to distinguish source from target samples and
+uses its predicted probabilities as shift scores. When covariate shift is present — source and
+target differ in their feature distributions — the ideal correction is to reweight source samples
+by the <strong>density ratio</strong>:</p>
+<div class="arithmatex">\[
+w(x) = \frac{p_{\text{target}}(x)}{p_{\text{source}}(x)}
+\]</div>
+<p>In practice, this ratio is estimated from a membership classifier. Let <span class="arithmatex">\(\hat{p}(x)\)</span> be the
+predicted probability that sample <span class="arithmatex">\(x\)</span> belongs to the target group. Then the estimated density
+ratio is:</p>
+<div class="arithmatex">\[
+\hat{w}(x) = \frac{\hat{p}(x)}{1 - \hat{p}(x)} \cdot \frac{n_{\text{source}}}{n_{\text{target}}}
+\]</div>
+<p>The problem is that when the classifier separates groups well — exactly the situation where you
+need weighting — the estimated <span class="arithmatex">\(\hat{p}(x)\)</span> for source samples in the overlap region can
+approach 0.5 while for isolated outliers it approaches 0. Division by a near-zero denominator
+then produces extreme weight values. One or a handful of source outliers can dominate the entire
+weighted test, masking real signal in the shared region.</p>
+<hr />
+<h2 id="taming-the-ratio-with-riw-blending">Taming the ratio with RIW blending<a class="headerlink" href="#taming-the-ratio-with-riw-blending" title="Permanent link">&para;</a></h2>
+<p>`samesame` uses <strong>Relative Importance Weighting (RIW)</strong> to stabilise the density ratio.
+The RIW weight for a source sample is:</p>
+<div class="arithmatex">\[
+w_{\text{source}}(x) = \frac{\hat{w}(x)}{(1 - \lambda) + \lambda \cdot \hat{w}(x)}
+\]</div>
+<p>where <span class="arithmatex">\(\lambda\)</span> is `lambda_`. For target samples receiving inverse weights:</p>
+<div class="arithmatex">\[
+w_{\text{target}}(x) = \frac{1}{\lambda + (1 - \lambda) \cdot \hat{w}(x)}
+\]</div>
+<p>The blended denominator in both formulas prevents any single weight from growing without bound.
+The parameter `lambda_` controls the trade-off:</p>
+<table>
+<thead>
+<tr>
+<th>`lambda_`</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>`0.0`</td>
+<td>Plain density ratio; equivalent to IWERM. Maximum variance.</td>
+</tr>
+<tr>
+<td>`0.5` (default)</td>
+<td>Balanced blend; practical default for most applications.</td>
+</tr>
+<tr>
+<td>`1.0`</td>
+<td>All weights become uniform (no correction at all).</td>
+</tr>
+</tbody>
+</table>
+<p>Lower values apply more aggressive correction but increase variance. Higher values are more
+conservative. The default `lambda_=0.5` is a good starting point; reduce it if you are
+confident the overlap region is large and the classifier is well-calibrated.</p>
+<hr />
+<h2 id="three-weighting-modes">Three weighting modes<a class="headerlink" href="#three-weighting-modes" title="Permanent link">&para;</a></h2>
+<p><code>contextual_weights</code> supports three modes that differ in which group receives non-unit weights:</p>
+<h3 id="source-source-reweighting">source — source reweighting<a class="headerlink" href="#source-source-reweighting" title="Permanent link">&para;</a></h3>
+<p>Source samples that look unlike any target sample receive downweighted importance.
+Target samples all receive weight 1. Use this when the source group contains outliers
+that are foreign to the target population and you want the test to focus on the overlap region
+from the source side.</p>
+<h3 id="target-target-reweighting">target — target reweighting<a class="headerlink" href="#target-target-reweighting" title="Permanent link">&para;</a></h3>
+<p>Target samples that look unlike any source sample receive downweighted importance.
+Source samples all receive weight 1. Use this when the target group contains outliers
+foreign to the source population.</p>
+<h3 id="both-double-weighting">both — double-weighting<a class="headerlink" href="#both-double-weighting" title="Permanent link">&para;</a></h3>
+<p>Both source and target outliers are downweighted simultaneously. Both sides of the density
+ratio are corrected. Use this when both groups contain outliers foreign to the other group
+and you want the test to focus exclusively on the common support region. This is the most
+aggressive correction and should be chosen only when outliers are genuinely present in both
+groups.</p>
+<hr />
+<h2 id="prior-ratio-and-group-sizes">Prior ratio and group sizes<a class="headerlink" href="#prior-ratio-and-group-sizes" title="Permanent link">&para;</a></h2>
+<p>When source and target group sizes differ, the raw density ratio is biased.
+`contextual_weights` always corrects for this automatically by multiplying the
+density ratio by <span class="arithmatex">\(n_{\text{source}} / n_{\text{target}}\)</span>, inferred from the lengths
+of `source_prob` and `target_prob`. No manual flag is needed.</p>
+<hr />
+<h2 id="decision-guide">Decision guide<a class="headerlink" href="#decision-guide" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Recommended mode</th>
+<th>Key parameter</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>First-pass check; source contains outliers foreign to target</td>
+<td>`mode="source"` with `lambda_=0.5`</td>
+<td>`lambda_`</td>
+</tr>
+<tr>
+<td>Target contains outliers foreign to source</td>
+<td>`mode="target"` with `lambda_=0.5`</td>
+<td>`lambda_`</td>
+</tr>
+<tr>
+<td>Both groups contain outliers foreign to the other</td>
+<td>`mode="both"` with `lambda_=0.5`</td>
+<td>`mode`, `lambda_`</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Shimodaira, H. (2000). Improving predictive inference under covariate shift by weighting the
+  log-likelihood function. <em>Journal of Statistical Planning and Inference</em>, 90(2), 227–244.</li>
+<li>Yamada, M., Suzuki, T., Kanamori, T., Hachiya, H., &amp; Sugiyama, M. (2013). Relative
+  density-ratio estimation for robust distribution comparison. <em>Neural Computation</em>, 25(5),
+  1324–1370.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
               </article>
             </div>
           
@@ -972,10 +1357,10 @@
     
     
       
-      <script id="__config" type="application/json">{"base": "/samesame/", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand"], "search": "/samesame/assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="/samesame/assets/javascripts/bundle.92b07e13.min.js"></script>
+      <script src="../../assets/javascripts/bundle.92b07e13.min.js"></script>
       
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
       

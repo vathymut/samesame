@@ -256,6 +256,26 @@
     
     
       <li class="md-tabs__item">
+        <a href="../../../explanation/importance-weights-rationale/" class="md-tabs__link">
+          
+  
+  
+  Explanation
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
         <a href="../../../api/testing/" class="md-tabs__link">
           
   
@@ -491,24 +511,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#alternative-out-of-bag-oob-predictions" class="md-nav__link">
-    <span class="md-ellipsis">
-      Alternative: out-of-bag (OOB) predictions
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#want-more-control" class="md-nav__link">
-    <span class="md-ellipsis">
-      Want more control?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#tips" class="md-nav__link">
     <span class="md-ellipsis">
       Tips
@@ -539,6 +541,29 @@
   
   <span class="md-ellipsis">
     Check whether a shift is harmful
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adjust-for-covariate-shift/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Adjust for covariate shift with importance weights
     
   </span>
   
@@ -670,6 +695,52 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../weighting/source-reweighting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Use source reweighting for adverse-shift testing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../weighting/double-weighting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Use double-weighting for covariate-shift adaptation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -707,7 +778,7 @@
   
   
   <span class="md-ellipsis">
-    API reference
+    Explanation
     
   </span>
   
@@ -717,6 +788,81 @@
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Explanation
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../explanation/importance-weights-rationale/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Why importance weights stabilise shift detection
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    API reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             API reference
           </label>
@@ -758,6 +904,29 @@
   
   <span class="md-ellipsis">
     Advanced controls
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/weighting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Weighting strategies
     
   </span>
   
@@ -916,24 +1085,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#alternative-out-of-bag-oob-predictions" class="md-nav__link">
-    <span class="md-ellipsis">
-      Alternative: out-of-bag (OOB) predictions
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#want-more-control" class="md-nav__link">
-    <span class="md-ellipsis">
-      Want more control?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#tips" class="md-nav__link">
     <span class="md-ellipsis">
       Tips
@@ -966,13 +1117,13 @@
 You will generate one score per row, run the test, and interpret the result.</p>
 <p><strong>By the end, you will be able to:</strong></p>
 <ul>
-<li>How to check whether two datasets come from the same distribution</li>
-<li>How to create one score per row without leaking training data</li>
-<li>How to run <code>test_shift(...)</code> and read the result</li>
+<li>Check whether two datasets come from the same distribution</li>
+<li>Create one score per row without leaking training data</li>
+<li>Run <code>test_shift(...)</code> and read the result</li>
 </ul>
 <p>You can use the same workflow when comparing training vs production data, or one batch vs another.</p>
 <p>You do not compare the raw feature table directly. Instead, a classifier turns each row into one
-score that reflects how strongly it resembles the new dataset rather than the reference dataset.
+score that reflects how strongly it resembles the target dataset rather than the source dataset.
 If those scores separate the groups too well, that is evidence that the datasets differ. This
 procedure is a <strong>classifier two-sample test</strong>; statistical significance is assessed via a
 permutation test on the group labels.</p>
@@ -983,16 +1134,16 @@ permutation test on the group labels.</p>
 <li>Classifier outputs for rows it did not train on (explained below)</li>
 </ul>
 <h2 id="step-1-prepare-the-data">Step 1 — Prepare the data<a class="headerlink" href="#step-1-prepare-the-data" title="Permanent link">&para;</a></h2>
-<p>Label one dataset as <code>0</code> (reference) and the other as <code>1</code> (new). Combine them.
+<p>Label one dataset as <code>0</code> (source) and the other as <code>1</code> (target). Combine them.
 <code>make_classification</code> is used here just to create a quick synthetic example with two groups:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_classification</span>
 
-<span class="c1"># X contains the features; y is the group label (0 = reference, 1 = new)</span>
+<span class="c1"># X contains features; y is the group label (0 = source, 1 = target)</span>
 <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">make_classification</span><span class="p">(</span>
-        <span class="n">n_samples</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-        <span class="n">n_features</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
-        <span class="n">n_classes</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-        <span class="n">random_state</span><span class="o">=</span><span class="mi">123_456</span><span class="p">,</span>
+    <span class="n">n_samples</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">n_features</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+    <span class="n">n_classes</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">123_456</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
 <h2 id="step-2-create-one-score-per-row">Step 2 — Create one score per row<a class="headerlink" href="#step-2-create-one-score-per-row" title="Permanent link">&para;</a></h2>
@@ -1007,25 +1158,25 @@ on the remaining folds. This is the safest default for most users:</p>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">cross_val_predict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="kn">import</span> <span class="n">test_shift</span>
 
-<span class="c1"># Predict each sample&#39;s probability using a model that never saw that sample</span>
+<span class="c1"># Each sample is scored by a model that never saw it during training</span>
 <span class="n">y_hat</span> <span class="o">=</span> <span class="n">cross_val_predict</span><span class="p">(</span>
-        <span class="n">HistGradientBoostingClassifier</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">123_456</span><span class="p">),</span>
-        <span class="n">X</span><span class="p">,</span>
-        <span class="n">y</span><span class="p">,</span>
-        <span class="n">cv</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-        <span class="n">method</span><span class="o">=</span><span class="s2">&quot;predict_proba&quot;</span><span class="p">,</span>
-<span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># take the probability of belonging to group 1</span>
+    <span class="n">HistGradientBoostingClassifier</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">123_456</span><span class="p">),</span>
+    <span class="n">X</span><span class="p">,</span>
+    <span class="n">y</span><span class="p">,</span>
+    <span class="n">cv</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;predict_proba&quot;</span><span class="p">,</span>
+<span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># probability of belonging to group 1 (target)</span>
 </code></pre></div>
 <h2 id="step-3-run-the-test">Step 3 — Run the test<a class="headerlink" href="#step-3-run-the-test" title="Permanent link">&para;</a></h2>
-<p>Split those model outputs back into reference and candidate groups, then pass those scores to
+<p>Split those model outputs back into source and target groups, then pass those scores to
 <code>test_shift</code>. The default statistic is ROC AUC. You can think of it as a separation measure:
 0.5 means the classifier cannot tell the groups apart, and 1.0 means it separates them perfectly:</p>
-<div class="highlight"><pre><span></span><code><span class="n">reference_values</span> <span class="o">=</span> <span class="n">y_hat</span><span class="p">[</span><span class="n">y</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
-<span class="n">candidate_values</span> <span class="o">=</span> <span class="n">y_hat</span><span class="p">[</span><span class="n">y</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
+<div class="highlight"><pre><span></span><code><span class="n">source_scores</span> <span class="o">=</span> <span class="n">y_hat</span><span class="p">[</span><span class="n">y</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">target_scores</span> <span class="o">=</span> <span class="n">y_hat</span><span class="p">[</span><span class="n">y</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
 
 <span class="n">shift</span> <span class="o">=</span> <span class="n">test_shift</span><span class="p">(</span>
-    <span class="n">reference</span><span class="o">=</span><span class="n">reference_values</span><span class="p">,</span>
-    <span class="n">candidate</span><span class="o">=</span><span class="n">candidate_values</span><span class="p">,</span>
+    <span class="n">source</span><span class="o">=</span><span class="n">source_scores</span><span class="p">,</span>
+    <span class="n">target</span><span class="o">=</span><span class="n">target_scores</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  statistic (AUC): </span><span class="si">{</span><span class="n">shift</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  p-value:         </span><span class="si">{</span><span class="n">shift</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1058,40 +1209,8 @@ which is strong evidence against the null hypothesis of no distributional differ
 <blockquote>
 <p><strong>Important:</strong> <code>test_shift</code> tells you <em>whether</em> distributions differ, not <em>how bad</em> the difference is
 or whether it will hurt your model. For that, see
-<a href="/examples/tutorials/check-shift-harm.md">Check whether a shift is harmful</a>.</p>
+<a href="../check-shift-harm/">Check whether a shift is harmful</a>.</p>
 </blockquote>
-<h2 id="alternative-out-of-bag-oob-predictions">Alternative: out-of-bag (OOB) predictions<a class="headerlink" href="#alternative-out-of-bag-oob-predictions" title="Permanent link">&para;</a></h2>
-<p>If you are using a Random Forest or another ensemble model, you can use its built-in
-<strong>out-of-bag (OOB)</strong> predictions instead of running <code>cross_val_predict</code> explicitly.
-This is the Random Forest version of the same idea: each row is evaluated only by trees that did not
-train on it:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestClassifier</span>
-
-<span class="n">rf</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span>
-        <span class="n">n_estimators</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
-        <span class="n">oob_score</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-        <span class="n">random_state</span><span class="o">=</span><span class="mi">123_456</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="n">rf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-<span class="n">y_oob</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">oob_decision_function_</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
-
-<span class="n">shift_oob</span> <span class="o">=</span> <span class="n">test_shift</span><span class="p">(</span>
-    <span class="n">reference</span><span class="o">=</span><span class="n">y_oob</span><span class="p">[</span><span class="n">y</span> <span class="o">==</span> <span class="mi">0</span><span class="p">],</span>
-    <span class="n">candidate</span><span class="o">=</span><span class="n">y_oob</span><span class="p">[</span><span class="n">y</span> <span class="o">==</span> <span class="mi">1</span><span class="p">],</span>
-<span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  statistic (AUC): </span><span class="si">{</span><span class="n">shift_oob</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  p-value:         </span><span class="si">{</span><span class="n">shift_oob</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</code></pre></div>
-<p><strong>Output:</strong></p>
-<div class="highlight"><pre><span></span><code>    statistic (AUC): 0.94
-    p-value:         0.0002
-</code></pre></div>
-<p>Both approaches give the same conclusion here. Use OOB when you already have a Random Forest;
-use cross-fitting for other classifiers.</p>
-<h2 id="want-more-control">Want more control?<a class="headerlink" href="#want-more-control" title="Permanent link">&para;</a></h2>
-<p>If you need sample weights, more resamples, or the full null distribution, use
-<code>samesame.advanced.test_shift(...)</code>. Most readers can skip that on a first pass and return to it later.</p>
 <h2 id="tips">Tips<a class="headerlink" href="#tips" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Which option should you use?</strong> Most users can keep the default <code>roc_auc</code>. Use <code>balanced_accuracy</code>
@@ -1100,7 +1219,7 @@ use cross-fitting for other classifiers.</p>
     to find which features are most different between the two groups.</li>
 <li><strong>Shift detected — now what?</strong> A significant shift result means the distributions differ.
     To check whether that difference is actually <em>harmful</em>, continue to
-    <a href="/examples/tutorials/check-shift-harm.md">Check whether a shift is harmful</a>.</li>
+    <a href="../check-shift-harm/">Check whether a shift is harmful</a>.</li>
 </ul>
 
 

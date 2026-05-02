@@ -256,6 +256,26 @@
     
     
       <li class="md-tabs__item">
+        <a href="../../../explanation/importance-weights-rationale/" class="md-tabs__link">
+          
+  
+  
+  Explanation
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
         <a href="../../../api/testing/" class="md-tabs__link">
           
   
@@ -422,6 +442,29 @@
   
   <span class="md-ellipsis">
     Check whether a shift is harmful
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/adjust-for-covariate-shift/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Adjust for covariate shift with importance weights
     
   </span>
   
@@ -679,6 +722,52 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../weighting/source-reweighting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Use source reweighting for adverse-shift testing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../weighting/double-weighting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Use double-weighting for covariate-shift adaptation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -716,7 +805,7 @@
   
   
   <span class="md-ellipsis">
-    API reference
+    Explanation
     
   </span>
   
@@ -726,6 +815,81 @@
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Explanation
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../explanation/importance-weights-rationale/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Why importance weights stabilise shift detection
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    API reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             API reference
           </label>
@@ -767,6 +931,29 @@
   
   <span class="md-ellipsis">
     Advanced controls
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/weighting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Weighting strategies
     
   </span>
   
@@ -994,9 +1181,9 @@ on the test set.</p>
 <p>This guide assumes you have completed both tutorials:</p>
 </div>
 <ul>
-<li><a href="/examples/tutorials/detect-distribution-shift.md">Detect a distribution shift</a></li>
+<li><a href="../../tutorials/detect-distribution-shift/">Detect a distribution shift</a></li>
 <li>
-<p><a href="/examples/tutorials/check-shift-harm.md">Check whether a shift is harmful</a></p>
+<p><a href="../../tutorials/check-shift-harm/">Check whether a shift is harmful</a></p>
 <p>You also need basic familiarity with scikit-learn — fitting a model and calling `predict_proba`.</p>
 </li>
 </ul>
@@ -1019,21 +1206,20 @@ outcomes are delayed, but they are appropriate for evaluating a held-out test se
 historical batch.</p>
 <p>This guide complements the other monitoring guides:</p>
 <ul>
-<li>Use <a href="/examples/credit/monitor-credit-risk.md">Monitor a credit risk model</a> when you need a label-free business-risk signal.</li>
-<li>Use <a href="/examples/credit/monitor-confidence-ood.md">Monitor model confidence</a> when you need a label-free confidence signal.</li>
+<li>Use <a href="../monitor-credit-risk/">Monitor a credit risk model</a> when you need a label-free business-risk signal.</li>
+<li>Use <a href="../monitor-confidence-ood/">Monitor model confidence</a> when you need a label-free confidence signal.</li>
 <li>Use this guide when labels are available and you want direct per-sample error measures.</li>
 </ul>
 <hr />
 <h2 id="setup">Setup<a class="headerlink" href="#setup" title="Permanent link">&para;</a></h2>
 <p>We use the <strong>HELOC dataset</strong> (FICO Explainable AI Challenge), split randomly into training and
-test sets. Unlike the <a href="/examples/credit/monitor-credit-risk.md">credit risk how-to</a>, this split is not based on a
+test sets. Unlike the <a href="../monitor-credit-risk/">credit risk how-to</a>, this split is not based on a
 feature threshold — it is a stratified random split, so both sets are drawn from the same
 population.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">fetch_openml</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestClassifier</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span>
-
 <span class="kn">from</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="kn">import</span> <span class="n">test_adverse_shift</span>
 
 <span class="n">fico</span> <span class="o">=</span> <span class="n">fetch_openml</span><span class="p">(</span><span class="n">data_id</span><span class="o">=</span><span class="mi">45554</span><span class="p">,</span> <span class="n">as_frame</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -1069,8 +1255,8 @@ artificially low error scores and bias the comparison.</p>
 <span class="p">)</span>
 <span class="n">rf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
 
-<span class="n">p_train</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">oob_decision_function_</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># OOB predictions for training set</span>
-<span class="n">p_test</span>  <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_test</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>   <span class="c1"># standard predictions for test set</span>
+<span class="n">p_train</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">oob_decision_function_</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># OOB predictions for training</span>
+<span class="n">p_test</span>  <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_test</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>   <span class="c1"># standard predictions for test</span>
 </code></pre></div>
 <hr />
 <h2 id="step-2-compute-per-sample-prediction-errors">Step 2 — Compute per-sample prediction errors<a class="headerlink" href="#step-2-compute-per-sample-prediction-errors" title="Permanent link">&para;</a></h2>
@@ -1080,7 +1266,7 @@ and the predicted probability for that row.</p>
 <span class="n">brier_train</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_train</span> <span class="o">-</span> <span class="n">p_train</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
 <span class="n">brier_test</span>  <span class="o">=</span> <span class="p">(</span><span class="n">y_test</span>  <span class="o">-</span> <span class="n">p_test</span><span class="p">)</span>  <span class="o">**</span> <span class="mi">2</span>
 
-<span class="c1"># Log-loss: log-probability assigned to the correct label (clipped to avoid log(0))</span>
+<span class="c1"># Log-loss: log-probability assigned to the correct label (clipped for numerical safety)</span>
 <span class="n">eps</span> <span class="o">=</span> <span class="mf">1e-10</span>
 <span class="n">p_tr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">p_train</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">eps</span><span class="p">)</span>
 <span class="n">p_te</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">p_test</span><span class="p">,</span>  <span class="n">eps</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">eps</span><span class="p">)</span>
@@ -1100,14 +1286,14 @@ this difference is consistent with random variation or reflects a systematic pat
 <h2 id="step-3-test-for-adverse-shift">Step 3 — Test for adverse shift<a class="headerlink" href="#step-3-test-for-adverse-shift" title="Permanent link">&para;</a></h2>
 <p>Both scores are "higher is worse", so we pass <code>direction="higher-is-worse"</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="n">harm_brier</span> <span class="o">=</span> <span class="n">test_adverse_shift</span><span class="p">(</span>
-    <span class="n">reference</span><span class="o">=</span><span class="n">brier_train</span><span class="p">,</span>
-    <span class="n">candidate</span><span class="o">=</span><span class="n">brier_test</span><span class="p">,</span>
+    <span class="n">source</span><span class="o">=</span><span class="n">brier_train</span><span class="p">,</span>
+    <span class="n">target</span><span class="o">=</span><span class="n">brier_test</span><span class="p">,</span>
     <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;higher-is-worse&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">harm_logloss</span> <span class="o">=</span> <span class="n">test_adverse_shift</span><span class="p">(</span>
-    <span class="n">reference</span><span class="o">=</span><span class="n">logloss_train</span><span class="p">,</span>
-    <span class="n">candidate</span><span class="o">=</span><span class="n">logloss_test</span><span class="p">,</span>
+    <span class="n">source</span><span class="o">=</span><span class="n">logloss_train</span><span class="p">,</span>
+    <span class="n">target</span><span class="o">=</span><span class="n">logloss_test</span><span class="p">,</span>
     <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;higher-is-worse&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 
@@ -1140,7 +1326,7 @@ Log-loss    — statistic: 0.0846,  p-value: 0.2744
 </table>
 <p>Here, p ≈ 0.27 for both scores. This is expected: both sets were drawn from the same population,
 so there is no reason to expect the model to perform systematically worse on the test set.</p>
-<p>Contrast this with the <a href="/examples/credit/monitor-credit-risk.md">credit risk how-to</a>, where a deliberate population
+<p>Contrast this with the <a href="../monitor-credit-risk/">credit risk how-to</a>, where a deliberate population
 split produces a highly significant result (p = 0.0001). In that guide, the test set contains
 structurally different, higher-risk customers. Here, stratified random splitting ensures the two
 sets are comparable, and the test correctly finds no evidence of adverse shift.</p>
@@ -1197,9 +1383,9 @@ confirm or revise the earlier assessment.</p>
   trained on, which would produce artificially low error scores.</li>
 <li>For this stratified random split, neither score shows significant adverse shift (p ≈ 0.27) —
   the expected result when both sets are drawn from the same population.</li>
-<li>For an example where adverse shift is detected, see <a href="/examples/credit/monitor-credit-risk.md">Monitor a credit risk model</a>.</li>
-<li>For label-free monitoring, see <a href="/examples/credit/monitor-credit-risk.md">Monitor a credit risk model</a> (predicted
-  probability) or <a href="/examples/credit/monitor-confidence-ood.md">Monitor model confidence</a> (confidence scores).</li>
+<li>For an example where adverse shift is detected, see <a href="../monitor-credit-risk/">Monitor a credit risk model</a>.</li>
+<li>For label-free monitoring, see <a href="../monitor-credit-risk/">Monitor a credit risk model</a> (predicted
+  probability) or <a href="../monitor-confidence-ood/">Monitor model confidence</a> (confidence scores).</li>
 </ul>
 
 
