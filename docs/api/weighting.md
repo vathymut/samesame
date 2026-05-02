@@ -1,51 +1,39 @@
-# Weighting strategies
+# Sample weights
 
-Use this page when you need to pass a weighting strategy to `ShiftOptions` or
-`AdverseShiftOptions` to correct for known covariate shift between your source
+Pass pre-computed or context-aware weights directly to `test_shift` or
+`test_adverse_shift` to correct for known covariate shift between your source
 and target groups.
 
-## Choosing a strategy
+## Choosing an approach
 
-| Strategy | When to use it |
-|----------|----------------|
-| `NoWeighting` | Default. All samples are treated equally. |
-| `SampleWeighting` | You already have computed per-sample weights. |
-| `ContextualRIWWeighting` | You have membership probabilities from a classifier and want the library to compute RIW weights for you. |
+| Scenario | Parameters to use |
+|----------|-------------------|
+| No weighting (default) | Omit `weights` and `membership_prob` |
+| You have explicit per-sample weights | `weights=my_weights` |
+| You have classifier membership probabilities | `membership_prob=probs`, `mode=...` |
 
 ```python
-from samesame.weighting import ContextualRIWWeighting, NoWeighting, SampleWeighting
-from samesame.advanced import AdverseShiftOptions, ShiftOptions
-import samesame.advanced as advanced
+import samesame
 
-# No weighting (default — identical to omitting the weighting argument)
-result = advanced.test_shift(
-    source=source_scores,
-    target=target_scores,
-    options=ShiftOptions(weighting=NoWeighting()),
-)
+# No weighting (default)
+result = samesame.test_shift(source=source_scores, target=target_scores)
 
 # Explicit per-sample weights you computed yourself
-result = advanced.test_shift(
+result = samesame.test_shift(
     source=source_scores,
     target=target_scores,
-    options=ShiftOptions(weighting=SampleWeighting(values=my_weights)),
+    weights=my_weights,
 )
 
-# Context-aware RIW weighting derived from membership probabilities
-result = advanced.test_adverse_shift(
+# Context-aware weights derived from membership probabilities
+result = samesame.test_adverse_shift(
     source=source_scores,
     target=target_scores,
     direction="higher-is-worse",
-    options=AdverseShiftOptions(
-        weighting=ContextualRIWWeighting(
-            probabilities=membership_probs,
-            mode="source-reweighting",
-        ),
-    ),
+    membership_prob=membership_probs,
+    mode="source",
 )
 ```
 
-See [Importance weights](importance_weights.md) if you need to compute or inspect
-raw importance weights outside of a test call.
-
-::: samesame.weighting
+See [Sample weights](importance_weights.md) if you need to compute or inspect
+weights outside of a test call using `samesame.weights.contextual_weights`.

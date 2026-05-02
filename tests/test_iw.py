@@ -4,152 +4,169 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 #
-"""Tests for samesame.importance_weights."""
+"""Tests for samesame.weights."""
 
 import numpy as np
 import pytest
 
-from samesame.importance_weights import aiw, contextual_riw, riw
+from samesame.weights import contextual_weights
 
 
 # ---------------------------------------------------------------------------
-# Numerical correctness
+# Numerical correctness — source mode
 # ---------------------------------------------------------------------------
 
 
-def test_aiw_lam1_balanced(membership_probs):
-    """aiw at lam=1.0 with balanced prior returns plain density ratios."""
-    result = aiw(**membership_probs, lam=1.0)
-    expected = [1 / 3, 2 / 3, 3 / 2, 3]
+def test_source_mode_reweights_source_only(membership_probs):
+    """In 'source' mode, target samples stay at weight 1."""
+    result = contextual_weights(**membership_probs, mode="source")
+    # source samples [0.25, 0.4] get RIW weights; target samples stay at 1.0
+    assert np.allclose(result[2:], [1.0, 1.0])
+    assert not np.allclose(result[:2], [1.0, 1.0])
+
+
+def test_source_mode_balanced_default(membership_probs):
+    """Default alpha_blend=0.5 with balanced groups gives expected source weights."""
+    result = contextual_weights(**membership_probs, mode="source")
+    expected = np.array([0.5, 0.8, 1.0, 1.0])
     assert np.allclose(result, expected)
 
 
-def test_aiw_lam0_uniform(membership_probs):
-    """aiw at lam=0.0 returns uniform weights regardless of predicted."""
-    result = aiw(**membership_probs, lam=0.0)
+def test_target_mode_reweights_target_only(membership_probs):
+    """In 'target' mode, source samples stay at weight 1."""
+    result = contextual_weights(**membership_probs, mode="target")
+    expected = np.array([1.0, 1.0, 0.8, 0.5])
+    assert np.allclose(result, expected)
+
+
+def test_both_mode_reweights_all(membership_probs):
+    """In 'both' mode, all samples are reweighted."""
+    result = contextual_weights(**membership_probs, mode="both")
+    expected = np.array([0.5, 0.8, 0.8, 0.5])
+    assert np.allclose(result, expected)
+
+
+def test_alpha_blend_one_gives_uniform(membership_probs):
+    """alpha_blend=1.0 collapses to uniform weights for source mode."""
+    result = contextual_weights(**membership_probs, mode="source", alpha_blend=1.0)
     assert np.allclose(result, [1.0, 1.0, 1.0, 1.0])
 
 
-def test_riw_lam0_equals_aiw_lam1(membership_probs):
-    """riw at lam=0.0 is algebraically identical to aiw at lam=1.0 (plain IWERM)."""
-    result_riw = riw(**membership_probs, lam=0.0)
-    result_aiw = aiw(**membership_probs, lam=1.0)
-    assert np.allclose(result_riw, result_aiw)
-
-
-def test_riw_lam1_uniform(membership_probs):
-    """riw at lam=1.0 returns uniform weights (r / r = 1)."""
-    result = riw(**membership_probs, lam=1.0)
-    assert np.allclose(result, [1.0, 1.0, 1.0, 1.0])
-
-
-def test_riw_lam_half_balanced(membership_probs):
-    """riw at default lam=0.5 with balanced prior returns expected values."""
-    result = riw(**membership_probs, lam=0.5)
-    expected = [0.5, 0.8, 1.2, 1.5]
-    assert np.allclose(result, expected)
+def test_alpha_blend_zero_gives_plain_density_ratio(membership_probs):
+    """alpha_blend=0.0 gives plain density-ratio weights for source samples."""
+    result = contextual_weights(**membership_probs, mode="source", alpha_blend=0.0)
+    # source: r = p/(1-p), target: weight 1
+    expected_source = np.array([0.25 / 0.75, 0.4 / 0.6])
+    assert np.allclose(result[:2], expected_source)
+    assert np.allclose(result[2:], [1.0, 1.0])
 
 
 # ---------------------------------------------------------------------------
-# ValueError: invalid predicted
+# balance parameter
 # ---------------------------------------------------------------------------
 
 
-def test_aiw_invalid_predicted_below_zero():
-    actual = np.array([0, 0, 1, 1])
-    predicted = np.array([-0.1, 0.5, 0.5, 0.5])
-    with pytest.raises(ValueError, match="predicted must be membership probabilities"):
-        aiw(actual, predicted)
+def test_balance_true_and_false_agree_on_balanced_groups(membership_probs):
+    """balance=True and balance=False agree when groups are already balanced."""
+    result_true = contextual_weights(**membership_probs, mode="source", balance=True)
+    result_false = contextual_weights(**membership_probs, mode="source", balance=False)
+    # fixture has 2 source and 2 target → inferred ratio = 1.0 = explicit 1.0
+    assert np.allclose(result_true, result_false)
 
 
-def test_aiw_invalid_predicted_at_zero():
-    actual = np.array([0, 0, 1, 1])
-    predicted = np.array([0.0, 0.5, 0.5, 0.5])
-    with pytest.raises(ValueError, match="predicted must be membership probabilities"):
-        aiw(actual, predicted)
+def test_balance_true_vs_false_differ_on_unbalanced_groups():
+    """balance=True and balance=False produce different results on unbalanced groups."""
+    group = np.array([0, 0, 0, 1], dtype=int)
+    membership_prob = np.array([0.4, 0.5, 0.6, 0.7])
+    result_balanced = contextual_weights(
+        group, membership_prob, mode="source", balance=True
+    )
+    result_unbalanced = contextual_weights(
+        group, membership_prob, mode="source", balance=False
+    )
+    assert not np.allclose(result_balanced, result_unbalanced)
 
 
-def test_aiw_invalid_predicted_at_one():
-    actual = np.array([0, 0, 1, 1])
-    predicted = np.array([0.5, 0.5, 0.5, 1.0])
-    with pytest.raises(ValueError, match="predicted must be membership probabilities"):
-        aiw(actual, predicted)
-
-
-def test_riw_invalid_predicted_out_of_range():
-    actual = np.array([0, 0, 1, 1])
-    predicted = np.array([-0.1, 0.5, 0.5, 0.5])
-    with pytest.raises(ValueError, match="predicted must be membership probabilities"):
-        riw(actual, predicted)
-
-
-# ---------------------------------------------------------------------------
-# ValueError: invalid lam
-# ---------------------------------------------------------------------------
-
-
-def test_aiw_invalid_lam(membership_probs):
-    with pytest.raises(ValueError, match="lam must be in"):
-        aiw(**membership_probs, lam=-0.1)
-    with pytest.raises(ValueError, match="lam must be in"):
-        aiw(**membership_probs, lam=1.1)
-
-
-def test_riw_invalid_lam(membership_probs):
-    with pytest.raises(ValueError, match="lam must be in"):
-        riw(**membership_probs, lam=-0.1)
-    with pytest.raises(ValueError, match="lam must be in"):
-        riw(**membership_probs, lam=1.1)
+def test_balance_false_applies_unit_ratio():
+    """balance=False treats groups as equal-sized (prior ratio = 1.0)."""
+    group = np.array([0, 0, 0, 1], dtype=int)
+    membership_prob = np.array([0.4, 0.5, 0.6, 0.7])
+    result = contextual_weights(
+        group, membership_prob, mode="source", balance=False, alpha_blend=0.0
+    )
+    # With ratio=1.0 and alpha_blend=0.0: weight = p/(1-p)
+    expected_source = membership_prob[:3] / (1 - membership_prob[:3])
+    assert np.allclose(result[:3], expected_source)
 
 
 # ---------------------------------------------------------------------------
-# prior_ratio inference and override
+# ValueError: invalid membership_prob
 # ---------------------------------------------------------------------------
 
 
-def test_inferred_prior_ratio_unbalanced():
-    """Auto-inferred prior_ratio=3.0 from [0, 0, 0, 1] is applied correctly."""
-    actual = np.array([0, 0, 0, 1])
-    predicted = np.array([0.4, 0.5, 0.6, 0.7])
-    result = aiw(actual, predicted, lam=1.0)
-    # n_tr=3, n_te=1 -> prior_ratio=3.0
-    expected = np.power((predicted / (1 - predicted)) * 3.0, 1.0)
-    assert np.allclose(result, expected)
+def test_invalid_membership_prob_below_zero():
+    group = np.array([0, 0, 1, 1])
+    membership_prob = np.array([-0.1, 0.5, 0.5, 0.5])
+    with pytest.raises(ValueError, match="membership_prob must be probabilities"):
+        contextual_weights(group, membership_prob)
 
 
-def test_prior_ratio_override():
-    """Explicit prior_ratio overrides auto-inference."""
-    actual = np.array([0, 0, 0, 1])
-    predicted = np.array([0.4, 0.5, 0.6, 0.7])
-    result_auto = aiw(actual, predicted, lam=1.0)
-    result_override = aiw(actual, predicted, lam=1.0, prior_ratio=1.0)
-    assert not np.allclose(result_auto, result_override)
+def test_invalid_membership_prob_at_zero():
+    group = np.array([0, 0, 1, 1])
+    membership_prob = np.array([0.0, 0.5, 0.5, 0.5])
+    with pytest.raises(ValueError, match="membership_prob must be probabilities"):
+        contextual_weights(group, membership_prob)
+
+
+def test_invalid_membership_prob_at_one():
+    group = np.array([0, 0, 1, 1])
+    membership_prob = np.array([0.5, 0.5, 0.5, 1.0])
+    with pytest.raises(ValueError, match="membership_prob must be probabilities"):
+        contextual_weights(group, membership_prob)
+
+
+# ---------------------------------------------------------------------------
+# ValueError: invalid alpha_blend
+# ---------------------------------------------------------------------------
+
+
+def test_invalid_alpha_blend_too_low(membership_probs):
+    with pytest.raises(ValueError, match="alpha_blend must be in"):
+        contextual_weights(**membership_probs, alpha_blend=-0.1)
+
+
+def test_invalid_alpha_blend_too_high(membership_probs):
+    with pytest.raises(ValueError, match="alpha_blend must be in"):
+        contextual_weights(**membership_probs, alpha_blend=1.1)
+
+
+# ---------------------------------------------------------------------------
+# ValueError: invalid mode
+# ---------------------------------------------------------------------------
+
+
+def test_invalid_mode_raises(membership_probs):
+    with pytest.raises(ValueError, match="mode must be one of"):
+        contextual_weights(**membership_probs, mode="not-a-mode")  # type: ignore[arg-type]
+
+
+# ---------------------------------------------------------------------------
+# ValueError: missing groups
+# ---------------------------------------------------------------------------
+
+
+def test_missing_source_group_raises():
+    group = np.array([1, 1, 1, 1])
+    membership_prob = np.array([0.2, 0.3, 0.4, 0.5])
+    with pytest.raises(ValueError):
+        contextual_weights(group, membership_prob)
 
 
 def test_length_mismatch_raises():
-    actual = np.array([0, 0, 1])
-    predicted = np.array([0.2, 0.4, 0.6, 0.8])
+    group = np.array([0, 0, 1])
+    membership_prob = np.array([0.2, 0.4, 0.6, 0.8])
     with pytest.raises(ValueError, match="inconsistent numbers of samples"):
-        aiw(actual, predicted)
-    with pytest.raises(ValueError, match="inconsistent numbers of samples"):
-        riw(actual, predicted)
-
-
-def test_missing_group_raises():
-    actual = np.array([0, 0, 0, 0])
-    predicted = np.array([0.2, 0.3, 0.4, 0.5])
-    with pytest.raises(ValueError, match="both 0 and 1"):
-        aiw(actual, predicted)
-    with pytest.raises(ValueError, match="both 0 and 1"):
-        riw(actual, predicted)
-
-
-@pytest.mark.parametrize("bad_prior", [0.0, -1.0, np.inf, np.nan])
-def test_invalid_prior_ratio_raises(membership_probs, bad_prior):
-    with pytest.raises(ValueError, match="prior_ratio"):
-        aiw(**membership_probs, prior_ratio=bad_prior)
-    with pytest.raises(ValueError, match="prior_ratio"):
-        riw(**membership_probs, prior_ratio=bad_prior)
+        contextual_weights(group, membership_prob)
 
 
 # ---------------------------------------------------------------------------
@@ -158,60 +175,6 @@ def test_invalid_prior_ratio_raises(membership_probs, bad_prior):
 
 
 def test_output_shape_and_dtype(membership_probs):
-    """aiw and riw return float64 arrays with the same shape as predicted."""
-    aiw_result = aiw(**membership_probs)
-    riw_result = riw(**membership_probs)
-    assert aiw_result.shape == (4,)
-    assert aiw_result.dtype == np.float64
-    assert riw_result.shape == (4,)
-    assert riw_result.dtype == np.float64
-
-
-# ---------------------------------------------------------------------------
-# Context-aware RIW weighting modes
-# ---------------------------------------------------------------------------
-
-
-def test_contextual_riw_source_mode(membership_probs):
-    result = contextual_riw(
-        **membership_probs,
-        mode="source-reweighting",
-        lam=0.5,
-    )
-    expected = np.array([0.5, 0.8, 1.0, 1.0])
-    assert np.allclose(result, expected)
-
-
-def test_contextual_riw_target_mode(membership_probs):
-    result = contextual_riw(
-        **membership_probs,
-        mode="target-reweighting",
-        lam=0.5,
-    )
-    expected = np.array([1.0, 1.0, 0.8, 0.5])
-    assert np.allclose(result, expected)
-
-
-def test_contextual_riw_double_weighting_mode(membership_probs):
-    result = contextual_riw(
-        **membership_probs,
-        mode="double-weighting-covariate-shift-adaptation",
-        lam=0.5,
-    )
-    expected = np.array([0.5, 0.8, 0.8, 0.5])
-    assert np.allclose(result, expected)
-
-
-def test_contextual_riw_invalid_mode_raises(membership_probs):
-    with pytest.raises(ValueError, match="mode must be one of"):
-        contextual_riw(
-            **membership_probs,
-            mode="not-a-mode",  # type: ignore[arg-type]
-        )
-
-
-def test_contextual_riw_invalid_lam_raises(membership_probs):
-    with pytest.raises(ValueError, match="lam must be in"):
-        contextual_riw(**membership_probs, mode="source-reweighting", lam=-0.1)
-    with pytest.raises(ValueError, match="lam must be in"):
-        contextual_riw(**membership_probs, mode="source-reweighting", lam=1.1)
+    result = contextual_weights(**membership_probs)
+    assert result.shape == (4,)
+    assert result.dtype == np.float64

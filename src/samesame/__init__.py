@@ -2,22 +2,26 @@
 
 The primary API exposes two functions:
 
-- ``test_shift`` for generic score-distribution differences
-- ``test_adverse_shift`` for harmful score shifts with explicit direction
+- ``test_shift`` — test whether two outlier score distributions differ
+- ``test_adverse_shift`` — test for harmful shifts with explicit direction
+
+Both return a full result including the null distribution.
 """
 
-from . import advanced
+from . import weights
 from ._api import (
-    AdverseShiftResult,
-    ShiftResult,
+    AdverseShiftDetails,
+    ShiftDetails,
     test_adverse_shift,
     test_shift,
 )
+from ._types import TestResult
 
 __all__ = [
-    "AdverseShiftResult",
-    "ShiftResult",
-    "advanced",
+    "AdverseShiftDetails",
+    "ShiftDetails",
+    "TestResult",
     "test_adverse_shift",
     "test_shift",
+    "weights",
 ]

@@ -8,46 +8,38 @@ import pytest
 
 import samesame
 from samesame import (
-    AdverseShiftResult,
-    ShiftResult,
+    AdverseShiftDetails,
+    ShiftDetails,
     test_adverse_shift as run_adverse_shift_test,
     test_shift as run_shift_test,
-)
-from samesame.advanced import (
-    AdverseShiftDetails,
-    AdverseShiftOptions,
-    ContextualRIWWeighting,
-    NoWeighting,
-    SampleWeighting,
-    ShiftDetails,
-    ShiftOptions,
 )
 
 
 def test_root_exports() -> None:
     assert hasattr(samesame, "test_shift")
     assert hasattr(samesame, "test_adverse_shift")
-    assert hasattr(samesame, "advanced")
+    assert hasattr(samesame, "weights")
+    assert not hasattr(samesame, "advanced")
     assert not hasattr(samesame, "CTST")
     assert not hasattr(samesame, "DSOS")
     assert not hasattr(samesame, "ctst")
     assert not hasattr(samesame, "nit")
 
 
-def test_primary_signatures_are_keyword_only() -> None:
-    shift_signature = inspect.signature(run_shift_test)
-    adverse_signature = inspect.signature(run_adverse_shift_test)
-    assert shift_signature.parameters["source"].kind is inspect.Parameter.KEYWORD_ONLY
-    assert adverse_signature.parameters["source"].kind is inspect.Parameter.KEYWORD_ONLY
+def test_signatures_are_keyword_only() -> None:
+    shift_sig = inspect.signature(run_shift_test)
+    adverse_sig = inspect.signature(run_adverse_shift_test)
+    assert shift_sig.parameters["source"].kind is inspect.Parameter.KEYWORD_ONLY
+    assert adverse_sig.parameters["source"].kind is inspect.Parameter.KEYWORD_ONLY
 
 
-def test_test_shift_defaults_to_roc_auc(shift_samples: dict[str, np.ndarray]) -> None:
-    result = run_shift_test(**shift_samples)
-
-    assert isinstance(result, ShiftResult)
+def test_test_shift_returns_shift_details(shift_samples: dict[str, np.ndarray]) -> None:
+    result = run_shift_test(**shift_samples, n_resamples=64)
+    assert isinstance(result, ShiftDetails)
     assert result.statistic_name == "roc_auc"
     assert isinstance(result.statistic, float)
     assert 0.0 <= result.pvalue <= 1.0
+    assert result.null_distribution.shape == (64,)
 
 
 def test_test_shift_requires_keyword_arguments(
@@ -77,12 +69,12 @@ def test_binary_only_statistics_accept_binary_scores(
     statistic: str,
 ) -> None:
     result = run_shift_test(**binary_shift_samples, statistic=statistic)  # type: ignore[arg-type]
-    assert isinstance(result, ShiftResult)
+    assert isinstance(result, ShiftDetails)
     assert result.statistic_name == statistic
 
 
-def test_primary_results_are_frozen(shift_samples: dict[str, np.ndarray]) -> None:
-    result = run_shift_test(**shift_samples)
+def test_results_are_frozen(shift_samples: dict[str, np.ndarray]) -> None:
+    result = run_shift_test(**shift_samples, n_resamples=64)
     with pytest.raises(FrozenInstanceError):
         result.pvalue = 0.0  # type: ignore[misc]
 
@@ -110,124 +102,93 @@ def test_test_adverse_shift_handles_higher_is_better(
     primary = run_adverse_shift_test(
         **confidence_samples,
         direction="higher-is-better",
+        n_resamples=64,
     )
-    mirrored = samesame.advanced.test_adverse_shift(
+    mirrored = run_adverse_shift_test(
         source=-confidence_samples["source"],
         target=-confidence_samples["target"],
         direction="higher-is-worse",
+        n_resamples=64,
     )
-
-    assert isinstance(primary, AdverseShiftResult)
+    assert isinstance(primary, AdverseShiftDetails)
     assert primary.direction == "higher-is-better"
     assert np.isclose(primary.statistic, mirrored.statistic)
     assert np.isclose(primary.pvalue, mirrored.pvalue)
 
 
-def test_primary_api_rejects_expert_keywords(
+def test_shift_null_distribution_matches_n_resamples(
     shift_samples: dict[str, np.ndarray],
 ) -> None:
-    with pytest.raises(TypeError):
-        run_shift_test(**shift_samples, n_resamples=64)  # type: ignore[call-arg]
+    result = run_shift_test(**shift_samples, n_resamples=99)
+    assert result.null_distribution.shape == (99,)
 
 
-def test_advanced_shift_returns_detail_result(
-    shift_samples: dict[str, np.ndarray],
-) -> None:
-    result = samesame.advanced.test_shift(
-        **shift_samples, options=ShiftOptions(n_resamples=64)
-    )
-
-    assert isinstance(result, ShiftDetails)
-    assert result.statistic_name == "roc_auc"
-    assert result.null_distribution.shape == (64,)
-
-
-def test_advanced_shift_supports_sample_weight(
+def test_shift_supports_explicit_weights(
     shift_samples: dict[str, np.ndarray],
 ) -> None:
     sample_weight = np.linspace(1.0, 3.0, 600)
-    base = samesame.advanced.test_shift(
-        **shift_samples, options=ShiftOptions(n_resamples=64)
-    )
-    weighted = samesame.advanced.test_shift(
-        **shift_samples,
-        options=ShiftOptions(
-            n_resamples=64,
-            weighting=SampleWeighting(values=sample_weight),
-        ),
-    )
-
+    base = run_shift_test(**shift_samples, n_resamples=64)
+    weighted = run_shift_test(**shift_samples, n_resamples=64, weights=sample_weight)
     assert isinstance(weighted, ShiftDetails)
     assert base.statistic != weighted.statistic
 
 
-def test_advanced_shift_supports_contextual_riw(
+def test_shift_supports_membership_prob(
     shift_samples: dict[str, np.ndarray],
 ) -> None:
     rng = np.random.default_rng(42)
-    context_membership_probabilities = rng.uniform(0.2, 0.8, size=600)
-    base = samesame.advanced.test_shift(
-        **shift_samples, options=ShiftOptions(n_resamples=64)
+    probs = rng.uniform(0.2, 0.8, size=600)
+    base = run_shift_test(**shift_samples, n_resamples=64)
+    contextual = run_shift_test(
+        **shift_samples, n_resamples=64, membership_prob=probs, mode="source"
     )
-    contextual = samesame.advanced.test_shift(
-        **shift_samples,
-        options=ShiftOptions(
-            n_resamples=64,
-            weighting=ContextualRIWWeighting(
-                probabilities=context_membership_probabilities,
-                mode="source-reweighting",
-                lam=0.5,
-            ),
-        ),
-    )
-
     assert isinstance(contextual, ShiftDetails)
     assert base.statistic != contextual.statistic
 
 
-def test_advanced_shift_weighting_strategies_are_distinct(
+def test_shift_rejects_both_weights_and_membership_prob(
     shift_samples: dict[str, np.ndarray],
 ) -> None:
-    """SampleWeighting and ContextualRIWWeighting must produce different statistics."""
     rng = np.random.default_rng(7)
     probs = rng.uniform(0.2, 0.8, size=600)
-    sample_weight = np.linspace(1.0, 2.0, 600)
-    sw_result = samesame.advanced.test_shift(
-        **shift_samples,
-        options=ShiftOptions(
-            n_resamples=64, weighting=SampleWeighting(values=sample_weight)
-        ),
-    )
-    riw_result = samesame.advanced.test_shift(
-        **shift_samples,
-        options=ShiftOptions(
+    sample_weights = np.linspace(1.0, 2.0, 600)
+    with pytest.raises(ValueError, match="Provide either weights or membership_prob"):
+        run_shift_test(
+            **shift_samples,
             n_resamples=64,
-            weighting=ContextualRIWWeighting(
-                probabilities=probs, mode="source-reweighting"
-            ),
-        ),
+            weights=sample_weights,
+            membership_prob=probs,
+        )
+
+
+def test_shift_weights_and_membership_prob_are_distinct(
+    shift_samples: dict[str, np.ndarray],
+) -> None:
+    rng = np.random.default_rng(7)
+    probs = rng.uniform(0.2, 0.8, size=600)
+    sample_weights = np.linspace(1.0, 2.0, 600)
+    sw_result = run_shift_test(**shift_samples, n_resamples=64, weights=sample_weights)
+    mp_result = run_shift_test(
+        **shift_samples, n_resamples=64, membership_prob=probs, mode="source"
     )
-    assert sw_result.statistic != riw_result.statistic
+    assert sw_result.statistic != mp_result.statistic
 
 
-def test_advanced_adverse_shift_bayesian_opt_in(
+def test_adverse_shift_bayesian_opt_in(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
-    base = samesame.advanced.test_adverse_shift(
+    base = run_adverse_shift_test(
         **confidence_samples,
         direction="higher-is-better",
-        options=AdverseShiftOptions(n_resamples=64),
+        n_resamples=64,
     )
-    bayesian = samesame.advanced.test_adverse_shift(
+    bayesian = run_adverse_shift_test(
         **confidence_samples,
         direction="higher-is-better",
-        options=AdverseShiftOptions(
-            n_resamples=64,
-            bayesian=True,
-            rng=np.random.default_rng(42),
-        ),
+        n_resamples=64,
+        bayesian=True,
+        rng=np.random.default_rng(42),
     )
-
     assert isinstance(base, AdverseShiftDetails)
     assert base.posterior is None
     assert base.bayes_factor is None
@@ -236,27 +197,20 @@ def test_advanced_adverse_shift_bayesian_opt_in(
     assert bayesian.bayes_factor is not None
 
 
-def test_advanced_adverse_shift_supports_contextual_riw(
+def test_adverse_shift_supports_membership_prob(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
     rng = np.random.default_rng(99)
-    context_membership_probabilities = rng.uniform(0.2, 0.8, size=500)
-    base = samesame.advanced.test_adverse_shift(
+    probs = rng.uniform(0.2, 0.8, size=500)
+    base = run_adverse_shift_test(
+        **confidence_samples, direction="higher-is-better", n_resamples=64
+    )
+    contextual = run_adverse_shift_test(
         **confidence_samples,
         direction="higher-is-better",
-        options=AdverseShiftOptions(n_resamples=64),
+        n_resamples=64,
+        membership_prob=probs,
+        mode="target",
     )
-    contextual = samesame.advanced.test_adverse_shift(
-        **confidence_samples,
-        direction="higher-is-better",
-        options=AdverseShiftOptions(
-            n_resamples=64,
-            weighting=ContextualRIWWeighting(
-                probabilities=context_membership_probabilities,
-                mode="target-reweighting",
-            ),
-        ),
-    )
-
     assert isinstance(contextual, AdverseShiftDetails)
     assert base.statistic != contextual.statistic

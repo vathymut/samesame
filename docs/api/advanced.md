@@ -1,57 +1,51 @@
-# Advanced controls
+# Additional controls
 
-Use this page when you need additional controls such as sample weights, more resamples,
-the null distribution, or Bayesian evidence.
+Both `test_shift` and `test_adverse_shift` accept keyword arguments for
+resampling, weighting, and Bayesian evidence. All results include the full
+null distribution.
 
 ## What you get back
 
-- `advanced.test_shift(...)` returns `ShiftDetails` with `.statistic`, `.pvalue`, `.statistic_name`, and `.null_distribution`
-- `advanced.test_adverse_shift(...)` returns `AdverseShiftDetails` with `.statistic`, `.pvalue`, `.direction`, `.null_distribution`, and optional `.bayes_factor` and `.posterior`
-- Both detailed result objects provide `.summary()` to get the simpler primary result
+- `test_shift(...)` returns `ShiftDetails` with `.statistic`, `.pvalue`, `.statistic_name`, and `.null_distribution`
+- `test_adverse_shift(...)` returns `AdverseShiftDetails` with `.statistic`, `.pvalue`, `.direction`, `.null_distribution`, and optional `.bayes_factor` and `.posterior`
 
-## Configuring tests with options objects
+## Configuring tests
 
-All advanced controls are passed through immutable options dataclasses instead of keyword arguments.
-Weighting strategy types live in `samesame.weighting`; options types live in `samesame.advanced`.
+All controls are direct keyword arguments — no wrapper objects required.
 
 ```python
-import samesame.advanced as advanced
-from samesame.advanced import AdverseShiftOptions, ShiftOptions
-from samesame.weighting import ContextualRIWWeighting, NoWeighting, SampleWeighting
+import samesame
 
 # Custom number of resamples and a one-sided alternative
-result = advanced.test_shift(
+result = samesame.test_shift(
     source=source_scores,
     target=target_scores,
-    options=ShiftOptions(n_resamples=4999, alternative="greater"),
+    n_resamples=4999,
+    alternative="greater",
 )
 
 # Explicit per-sample weights
-result = advanced.test_shift(
+result = samesame.test_shift(
     source=source_scores,
     target=target_scores,
-    options=ShiftOptions(weighting=SampleWeighting(values=my_weights)),
+    weights=my_weights,
 )
 
-# Context-aware RIW weighting for covariate shift adaptation
-result = advanced.test_adverse_shift(
+# Context-aware weights from membership probabilities
+result = samesame.test_adverse_shift(
     source=source_scores,
     target=target_scores,
     direction="higher-is-worse",
-    options=AdverseShiftOptions(
-        weighting=ContextualRIWWeighting(
-            probabilities=membership_probs,
-            mode="source-reweighting",
-        ),
-    ),
+    membership_prob=membership_probs,
+    mode="source",
 )
 
 # Bayesian evidence alongside the permutation p-value
-result = advanced.test_adverse_shift(
+result = samesame.test_adverse_shift(
     source=source_scores,
     target=target_scores,
     direction="higher-is-worse",
-    options=AdverseShiftOptions(bayesian=True),
+    bayesian=True,
 )
 print(f"p-value:      {result.pvalue:.4f}")
 print(f"Bayes factor: {result.bayes_factor:.2f}")
@@ -63,14 +57,13 @@ Pass a `numpy.random.Generator` via `rng` to make any test deterministic:
 
 ```python
 import numpy as np
-from samesame.advanced import ShiftOptions
 
-result = advanced.test_shift(
+result = samesame.test_shift(
     source=source_scores,
     target=target_scores,
-    options=ShiftOptions(rng=np.random.default_rng(42)),
+    rng=np.random.default_rng(42),
 )
 ```
 
-::: samesame.advanced
+::: samesame._api
 

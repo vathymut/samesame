@@ -41,6 +41,6 @@ def bayes_factors(size: int = 30) -> np.ndarray:
 
 @pytest.fixture
 def membership_probs() -> dict[str, np.ndarray]:
-    actual = np.array([0, 0, 1, 1], dtype=int)
-    predicted = np.array([0.25, 0.4, 0.6, 0.75])
-    return {"actual": actual, "predicted": predicted}
+    group = np.array([0, 0, 1, 1], dtype=int)
+    membership_prob = np.array([0.25, 0.4, 0.6, 0.75])
+    return {"group": group, "membership_prob": membership_prob}
