@@ -52,14 +52,23 @@ forward density ratio; target outliers receive lower weights via the inverse den
 
 ```python
 from samesame import test_adverse_shift
+from samesame.weights import contextual_weights
+
+source_prob = membership_prob[split.values == 0]
+target_prob = membership_prob[split.values == 1]
+
+weights_both = contextual_weights(
+    source_prob=source_prob,
+    target_prob=target_prob,
+    mode="both",
+    lambda_=0.5,
+)
 
 double = test_adverse_shift(
     source=bad_train,
     target=bad_test,
     direction="higher-is-worse",
-    membership_prob=membership_prob,
-    mode="both",
-    alpha_blend=0.5,
+    weights=weights_both,
     rng=np.random.default_rng(12345),
 )
 print(f"Double-weighted — statistic: {double.statistic:.4f}, p-value: {double.pvalue:.4f}")
@@ -81,13 +90,18 @@ unweighted = test_adverse_shift(
     direction="higher-is-worse",
     rng=np.random.default_rng(12345),
 )
+
+weights_source = contextual_weights(
+    source_prob=source_prob,
+    target_prob=target_prob,
+    mode="source",
+    lambda_=0.5,
+)
 source_rw = test_adverse_shift(
     source=bad_train,
     target=bad_test,
     direction="higher-is-worse",
-    membership_prob=membership_prob,
-    mode="source",
-    alpha_blend=0.5,
+    weights=weights_source,
     rng=np.random.default_rng(12345),
 )
 print(f"Unweighted    — statistic: {unweighted.statistic:.4f}, p-value: {unweighted.pvalue:.4f}")
@@ -106,17 +120,17 @@ Double-weighting measures adverse shift restricted to common support from both s
 
 ---
 
-## Choosing `alpha_blend`
+## Choosing `lambda_`
 
-The default `alpha_blend=0.5` is a balanced blend between the plain density ratio (`0.0`) and
+The default `lambda_=0.5` is a balanced blend between the plain density ratio (`0.0`) and
 uniform weights (`1.0`). For double-weighting:
 
-- **Lower `alpha_blend` (e.g., 0.2):** More aggressive correction; use only with a
+- **Lower `lambda_` (e.g., 0.2):** More aggressive correction; use only with a
   well-calibrated membership classifier and a large overlap region.
-- **Higher `alpha_blend` (e.g., 0.8):** More conservative; close to uniform weights.
+- **Higher `lambda_` (e.g., 0.8):** More conservative; close to uniform weights.
   Use when you are uncertain about the quality of membership probabilities.
 
-For the mathematical relationship between `alpha_blend` and weight magnitude, see
+For the mathematical relationship between `lambda_` and weight magnitude, see
 [Why importance weights stabilise shift detection](../../explanation/importance-weights-rationale.md).
 
 ---
@@ -127,4 +141,4 @@ For the mathematical relationship between `alpha_blend` and weight magnitude, se
   — the simpler alternative when only the source has outliers.
 - [Why importance weights stabilise shift detection](../../explanation/importance-weights-rationale.md)
   — RIW formulas and the three-mode decision guide.
-- [Weighting strategies](../../api/weighting.md) — full `membership_prob` and `mode` API reference.
+- [Weighting strategies](../../api/weighting.md) — full `contextual_weights` API reference.

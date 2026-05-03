@@ -78,16 +78,22 @@ target_scores = risk_score[group == 1]
 
 ## Step 3 — Run weighted adverse-shift testing
 
-Pass `membership_prob` to weight the test, and pass `source_scores`/`target_scores` as the
-adverse-shift signal.
+Split `membership_prob` by group label to get separate source and target arrays, build
+weights with `contextual_weights`, then pass them to `test_adverse_shift`.
 
 ```python
 from samesame import test_adverse_shift
+from samesame.weights import contextual_weights
 
-pooled_prob = np.concatenate([
-    membership_prob[group == 0],
-    membership_prob[group == 1],
-])
+source_prob = membership_prob[group == 0]
+target_prob = membership_prob[group == 1]
+
+weights = contextual_weights(
+    source_prob=source_prob,
+    target_prob=target_prob,
+    mode="source",
+    lambda_=0.5,
+)
 
 unweighted = test_adverse_shift(
     source=source_scores,
@@ -100,9 +106,7 @@ weighted = test_adverse_shift(
     source=source_scores,
     target=target_scores,
     direction="higher-is-worse",
-    membership_prob=pooled_prob,
-    mode="source",
-    alpha_blend=0.5,
+    weights=weights,
     rng=np.random.default_rng(123_456),
 )
 
@@ -128,7 +132,7 @@ low-overlap regions. If both are significant, the adverse shift persists in comm
 
 - Keep score streams separate: membership probabilities are for weighting; adverse-shift
   scores should come from a harmfulness signal such as risk, error, or low confidence.
-- `alpha_blend=0.5` is a practical default.
+- `lambda_=0.5` is a practical default.
 - Use `mode="both"` when both source and target contain low-overlap outliers.
 - For the rationale behind RIW and mode selection, see
     [Why importance weights stabilise shift detection](../../explanation/importance-weights-rationale.md).

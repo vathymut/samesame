@@ -6,14 +6,16 @@ and target groups.
 
 ## Choosing an approach
 
-| Scenario | Parameters to use |
-|----------|-------------------|
-| No weighting (default) | Omit `weights` and `membership_prob` |
-| You have explicit per-sample weights | `weights=my_weights` |
-| You have classifier membership probabilities | `membership_prob=probs`, `mode=...` |
+| Scenario | How to proceed |
+|----------|-----------------|
+| No weighting (default) | Omit `weights` |
+| You have explicit per-sample weights | Pass `weights=my_weights` |
+| You have classifier membership probabilities | Build weights with `contextual_weights(...)`, then pass `weights=` |
 
 ```python
+import numpy as np
 import samesame
+from samesame.weights import contextual_weights
 
 # No weighting (default)
 result = samesame.test_shift(source=source_scores, target=target_scores)
@@ -26,17 +28,21 @@ result = samesame.test_shift(
 )
 
 # Context-aware weights derived from membership probabilities
+weights = contextual_weights(
+    source_prob=source_membership_probs,  # probabilities for source samples
+    target_prob=target_membership_probs,  # probabilities for target samples
+    mode="source",
+)
 result = samesame.test_adverse_shift(
     source=source_scores,
     target=target_scores,
     direction="higher-is-worse",
-    membership_prob=membership_probs,
-    mode="source",
+    weights=weights,
 )
 ```
 
-See [Sample weights](importance_weights.md) if you need to compute or inspect
-weights outside of a test call using `samesame.weights.contextual_weights`.
+See [Sample weights](importance_weights.md) for the full `contextual_weights` reference
+and guidance on choosing `mode` and `lambda_`.
 
 For a step-by-step worked example, see the tutorial
 [Adjust for covariate shift with importance weights](../examples/tutorials/adjust-for-covariate-shift.md).

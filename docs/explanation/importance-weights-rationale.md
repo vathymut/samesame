@@ -1,7 +1,7 @@
 # Why importance weights stabilise shift detection
 
 This page explains the conceptual landscape behind importance weighting in \`samesame\`.
-It covers why plain density-ratio weights can become extreme, what \`alpha_blend\` trades off,
+It covers why plain density-ratio weights can become extreme, what `lambda_` trades off,
 and when each of the three weighting modes is appropriate.
 
 There are no code examples here. For worked code, see the tutorial
@@ -36,40 +36,39 @@ weighted test, masking real signal in the shared region.
 
 ---
 
-## Taming the ratio with alpha blending
+## Taming the ratio with RIW blending
 
 \`samesame\` uses **Relative Importance Weighting (RIW)** to stabilise the density ratio.
 The RIW weight for a source sample is:
 
 $$
-w_{\text{source}}(x) = \frac{\hat{w}(x)}{(1 - \alpha) + \alpha \cdot \hat{w}(x)}
+w_{\text{source}}(x) = \frac{\hat{w}(x)}{(1 - \lambda) + \lambda \cdot \hat{w}(x)}
 $$
 
-where $\alpha$ is \`alpha_blend\`. For target samples receiving inverse weights:
+where $\lambda$ is \`lambda_\`. For target samples receiving inverse weights:
 
 $$
-w_{\text{target}}(x) = \frac{1}{\alpha + (1 - \alpha) \cdot \hat{w}(x)}
+w_{\text{target}}(x) = \frac{1}{\lambda + (1 - \lambda) \cdot \hat{w}(x)}
 $$
 
 The blended denominator in both formulas prevents any single weight from growing without bound.
-The parameter \`alpha_blend\` controls the trade-off:
+The parameter \`lambda_\` controls the trade-off:
 
-| \`alpha_blend\` | Effect |
-|----------------|--------|
+| \`lambda_\` | Effect |
+|-------------|--------|
 | \`0.0\` | Plain density ratio; equivalent to IWERM. Maximum variance. |
 | \`0.5\` (default) | Balanced blend; practical default for most applications. |
 | \`1.0\` | All weights become uniform (no correction at all). |
 
 Lower values apply more aggressive correction but increase variance. Higher values are more
-conservative. The default \`alpha_blend=0.5\` is a good starting point; reduce it if you are
+conservative. The default \`lambda_=0.5\` is a good starting point; reduce it if you are
 confident the overlap region is large and the classifier is well-calibrated.
 
 ---
 
 ## Three weighting modes
 
-\`contextual_weights\` and the \`membership_prob\` path in \`test_shift\` / \`test_adverse_shift\`
-support three modes that differ in which group receives non-unit weights:
+`contextual_weights` supports three modes that differ in which group receives non-unit weights:
 
 ### source — source reweighting
 
@@ -94,15 +93,12 @@ groups.
 
 ---
 
-## The group balance correction
+## Prior ratio and group sizes
 
-When source and target group sizes differ, the raw density ratio is biased. By default
-(\`balance=True\`), \`contextual_weights\` corrects for this automatically by multiplying the
-density ratio by $n_{\text{source}} / n_{\text{target}}$. This is equivalent to specifying
-the prior ratio as the observed class balance.
-
-Set \`balance=False\` only if your membership classifier was already trained with equal class
-weights, or if you have an external reason to assume equal group sizes.
+When source and target group sizes differ, the raw density ratio is biased.
+\`contextual_weights\` always corrects for this automatically by multiplying the
+density ratio by $n_{\text{source}} / n_{\text{target}}$, inferred from the lengths
+of \`source_prob\` and \`target_prob\`. No manual flag is needed.
 
 ---
 
@@ -110,9 +106,9 @@ weights, or if you have an external reason to assume equal group sizes.
 
 | Scenario | Recommended mode | Key parameter |
 |----------|-----------------|---------------|
-| First-pass check; source contains outliers foreign to target | \`mode="source"\` with \`alpha_blend=0.5\` | \`alpha_blend\` |
-| Target contains outliers foreign to source | \`mode="target"\` with \`alpha_blend=0.5\` | \`alpha_blend\` |
-| Both groups contain outliers foreign to the other | \`mode="both"\` with \`alpha_blend=0.5\` | \`mode\`, \`alpha_blend\` |
+| First-pass check; source contains outliers foreign to target | \`mode="source"\` with \`lambda_=0.5\` | \`lambda_\` |
+| Target contains outliers foreign to source | \`mode="target"\` with \`lambda_=0.5\` | \`lambda_\` |
+| Both groups contain outliers foreign to the other | \`mode="both"\` with \`lambda_=0.5\` | \`mode\`, \`lambda_\` |
 
 ---
 

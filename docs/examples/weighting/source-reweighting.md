@@ -13,7 +13,7 @@ region and de-emphasise training samples that are completely foreign to the depl
 !!! note "Before you start"
     This guide assumes you have completed the tutorial
     [Adjust for covariate shift with importance weights](../tutorials/adjust-for-covariate-shift.md),
-    which introduces `contextual_weights` and the `membership_prob` API.
+    which introduces `contextual_weights` and the two-step weighting pattern.
 
 ---
 
@@ -96,21 +96,34 @@ and go directly into `membership_prob`. They are never used as adverse-shift sco
 
 ## Step 2 — Apply source reweighting
 
-Pass `membership_prob` and `mode="source"` to `test_adverse_shift`. Source samples that look
-unlike any deployment sample receive lower weights, so the adverse-shift test focuses on overlap:
+Split `membership_prob` into source and target arrays (in the order the pooled dataset was
+built), compute weights with `contextual_weights`, then pass them to `test_adverse_shift`:
 
 ```python
+from samesame.weights import contextual_weights
+
+source_prob = membership_prob[split.values == 0]
+target_prob = membership_prob[split.values == 1]
+
+weights = contextual_weights(
+    source_prob=source_prob,
+    target_prob=target_prob,
+    mode="source",
+    lambda_=0.5,
+)
+
 weighted = test_adverse_shift(
     source=bad_train,
     target=bad_test,
     direction="higher-is-worse",
-    membership_prob=membership_prob,
-    mode="source",
-    alpha_blend=0.5,
+    weights=weights,
     rng=np.random.default_rng(12345),
 )
 print(f"Weighted   statistic: {weighted.statistic:.4f}, p-value: {weighted.pvalue:.4f}")
 ```
+
+Source samples that look unlike any deployment sample receive lower weights, so the
+adverse-shift test focuses on overlap.
 
 ---
 
@@ -139,5 +152,5 @@ low-overlap source regions. If both are significant, the adverse shift persists 
 - [Use double-weighting for covariate-shift adaptation](double-weighting.md)
   — when deployment also contains outliers foreign to training.
 - [Why importance weights stabilise shift detection](../../explanation/importance-weights-rationale.md)
-  — conceptual background on RIW and `alpha_blend`.
-- [Weighting strategies](../../api/weighting.md) — full API reference for `membership_prob` and `mode`.
+  — conceptual background on RIW and `lambda_`.
+- [Weighting strategies](../../api/weighting.md) — full API reference for `contextual_weights`.
