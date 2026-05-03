@@ -1,8 +1,10 @@
 site_name: samesame
 repo_url: https://github.com/vathymut/samesame
+repo_name: vathymut/samesame
 site_url: https://vathymut.github.io/samesame/
 site_description: Samesame - Score-vector shift hypothesis tests
 site_author: Vathy M. Kamulete
+copyright: Copyright &copy; Vathy M. Kamulete
 
 nav:
   - Home: index.md
@@ -38,12 +40,20 @@ theme:
   icon:
     logo: fontawesome/solid/check-double
     favicon: fontawesome/solid/check-double
+  font:
+    text: Inter
+    code: JetBrains Mono
   features:
     - navigation.tabs
     - navigation.tabs.sticky
     - navigation.sections
     - navigation.top
     - navigation.expand
+    - navigation.footer
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
   palette:
     primary: white
     accent: blue
@@ -56,6 +66,14 @@ markdown_extensions:
   - pymdownx.snippets
   - pymdownx.superfences
   - admonition
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/vathymut/samesame
+      name: GitHub
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/samesame/
+      name: PyPI
 extra_javascript:
   - https://polyfill.io/v3/polyfill.min.js?features=es6
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
