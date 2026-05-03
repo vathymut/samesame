@@ -2,66 +2,66 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://vathymut.github.io/samesame/</loc>
-         <lastmod>2026-05-02</lastmod>
+         <lastmod>2026-05-03</lastmod>
     </url>
     <url>
          <loc>https://vathymut.github.io/samesame/api/advanced/</loc>
-         <lastmod>2026-05-02</lastmod>
+         <lastmod>2026-05-03</lastmod>
     </url>
     <url>
          <loc>https://vathymut.github.io/samesame/api/bayes_factors/</loc>
-         <lastmod>2026-05-02</lastmod>
+         <lastmod>2026-05-03</lastmod>
     </url>
     <url>
          <loc>https://vathymut.github.io/samesame/api/importance_weights/</loc>
-         <lastmod>2026-05-02</lastmod>
+         <lastmod>2026-05-03</lastmod>
     </url>
     <url>
          <loc>https://vathymut.github.io/samesame/api/logit_scores/</loc>
-         <lastmod>2026-05-02</lastmod>
+         <lastmod>2026-05-03</lastmod>
     </url>
     <url>
          <loc>https://vathymut.github.io/samesame/api/testing/</loc>
-         <lastmod>2026-05-02</lastmod>
+         <lastmod>2026-05-03</lastmod>
     </url>
     <url>
          <loc>https://vathymut.github.io/samesame/api/weighting/</loc>
-         <lastmod>2026-05-02</lastmod>
+         <lastmod>2026-05-03</lastmod>
     </url>
     <url>
          <loc>https://vathymut.github.io/samesame/examples/credit/monitor-confidence-ood/</loc>
-         <lastmod>2026-05-02</lastmod>
+         <lastmod>2026-05-03</lastmod>
     </url>
     <url>
          <loc>https://vathymut.github.io/samesame/examples/credit/monitor-credit-risk/</loc>
-         <lastmod>2026-05-02</lastmod>
+         <lastmod>2026-05-03</lastmod>
     </url>
     <url>
          <loc>https://vathymut.github.io/samesame/examples/credit/monitor-prediction-errors/</loc>
-         <lastmod>2026-05-02</lastmod>
+         <lastmod>2026-05-03</lastmod>
     </url>
     <url>
          <loc>https://vathymut.github.io/samesame/examples/tutorials/adjust-for-covariate-shift/</loc>
-         <lastmod>2026-05-02</lastmod>
+         <lastmod>2026-05-03</lastmod>
     </url>
     <url>
          <loc>https://vathymut.github.io/samesame/examples/tutorials/check-shift-harm/</loc>
-         <lastmod>2026-05-02</lastmod>
+         <lastmod>2026-05-03</lastmod>
     </url>
     <url>
          <loc>https://vathymut.github.io/samesame/examples/tutorials/detect-distribution-shift/</loc>
-         <lastmod>2026-05-02</lastmod>
+         <lastmod>2026-05-03</lastmod>
     </url>
     <url>
          <loc>https://vathymut.github.io/samesame/examples/weighting/double-weighting/</loc>
-         <lastmod>2026-05-02</lastmod>
+         <lastmod>2026-05-03</lastmod>
     </url>
     <url>
          <loc>https://vathymut.github.io/samesame/examples/weighting/source-reweighting/</loc>
-         <lastmod>2026-05-02</lastmod>
+         <lastmod>2026-05-03</lastmod>
     </url>
     <url>
          <loc>https://vathymut.github.io/samesame/explanation/importance-weights-rationale/</loc>
-         <lastmod>2026-05-02</lastmod>
+         <lastmod>2026-05-03</lastmod>
     </url>
 </urlset>
