@@ -20,7 +20,7 @@ import numpy as np
 from numpy.typing import NDArray
 from scipy.special import expit, logit
 
-from samesame._stats import _bayes_factor
+from samesame._bayesboot import _bayes_factor
 
 
 def as_bf(

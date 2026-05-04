@@ -169,7 +169,6 @@ def test_adverse_shift_bayesian_evidence(
     evidence = adverse_shift_posterior(
         **confidence_samples,
         direction="higher-is-better",
-        result=result,
         n_resamples=64,
         rng=np.random.default_rng(42),
     )
