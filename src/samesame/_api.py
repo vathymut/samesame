@@ -19,10 +19,9 @@ from numpy.typing import ArrayLike, NDArray
 from scipy.stats import permutation_test
 from sklearn.utils.multiclass import type_of_target
 
-from samesame._bayesboot import bayesian_posterior
+from samesame._bayesboot import _bayes_factor, bayesian_posterior
 from samesame._data import build_two_sample_dataset
 from samesame._metrics import get_shift_metric, requires_binary_scores, wauc
-from samesame._stats import _bayes_factor
 from samesame._types import (
     AdverseShiftDetails,
     BayesianEvidence,
@@ -116,14 +115,15 @@ def test_shift(
     rng: np.random.Generator | None = None,
     weights: ContextualWeights | None = None,
 ) -> ShiftDetails:
-    """Test whether two outlier score distributions differ.
+    """Test whether the source and target outlier score distributions differ.
 
     Parameters
     ----------
     source : ArrayLike
-        Baseline outlier scores.
+        Baseline outlier scores, typically from training or reference data.
     target : ArrayLike
-        New outlier scores to compare against ``source``.
+        New outlier scores to compare against ``source``, typically from
+        production or deployment data.
     statistic : {'roc_auc', 'balanced_accuracy', 'matthews_corrcoef'}, optional
         Named built-in statistic used inside the permutation test.
     alternative : {'two-sided', 'less', 'greater'}, optional
@@ -138,9 +138,11 @@ def test_shift(
         Random number generator for reproducibility. ``None`` creates a
         fresh one.
     weights : ContextualWeights or None, optional
-        Per-group importance weights. Build with
+        Importance weights to correct for covariate shift and related concerns
+        between source and target. Build from domain probabilities using
         :func:`~samesame.weights.contextual_weights`, or construct
         ``ContextualWeights(source=..., target=...)`` directly.
+        Pass ``None`` (default) to run an unweighted test.
 
     Returns
     -------
@@ -186,11 +188,14 @@ def test_adverse_shift(
     Parameters
     ----------
     source : ArrayLike
-        Baseline outlier scores.
+        Baseline outlier scores, typically from training or reference data.
     target : ArrayLike
-        New outlier scores to compare against ``source``.
+        New outlier scores to compare against ``source``, typically from
+        production or deployment data.
     direction : {'higher-is-worse', 'higher-is-better'}
-        Semantic direction of larger score values.
+        Whether higher outlier scores indicate worse outcomes
+        (``'higher-is-worse'``) or better outcomes (``'higher-is-better'``).
+        Required to determine the direction of adverse shift.
     n_resamples : int, optional
         Number of permutation resamples, by default ``9999``.
     batch : int or None, optional
@@ -200,9 +205,11 @@ def test_adverse_shift(
         Random number generator for reproducibility. ``None`` creates a
         fresh one.
     weights : ContextualWeights or None, optional
-        Per-group importance weights. Build with
+        Importance weights to correct for covariate shift and related concerns
+        between source and target. Build from domain probabilities using
         :func:`~samesame.weights.contextual_weights`, or construct
         ``ContextualWeights(source=..., target=...)`` directly.
+        Pass ``None`` (default) to run an unweighted test.
 
     Returns
     -------
@@ -243,37 +250,43 @@ def adverse_shift_posterior(
     source: ArrayLike,
     target: ArrayLike,
     direction: Direction,
-    result: AdverseShiftDetails,
     n_resamples: int = 9999,
     rng: np.random.Generator | None = None,
     weights: ContextualWeights | None = None,
+    threshold: float = 1 / 12,
 ) -> BayesianEvidence:
-    """Compute a Bayesian posterior and Bayes factor for an adverse-shift result.
+    """Compute Bayesian evidence for adverse shift using a bootstrap posterior.
 
-    Runs a Bayesian bootstrap over the WAUC metric and returns posterior draws
-    together with a Bayes factor. The Bayes factor threshold is derived
-    internally from the mean of ``result.null_distribution``.
+    Provides a Bayesian evidence layer on top of the adverse-shift test:
+    runs a Bayesian bootstrap over the WAUC metric and returns posterior
+    draws together with a Bayes factor against a reference threshold.
 
     Parameters
     ----------
     source : ArrayLike
-        Baseline outlier scores — must match those used to produce ``result``.
+        Baseline outlier scores, typically from training or reference data.
     target : ArrayLike
-        New outlier scores — must match those used to produce ``result``.
+        New outlier scores to compare against ``source``, typically from
+        production or deployment data.
     direction : {'higher-is-worse', 'higher-is-better'}
-        Semantic direction — must match the direction used to produce ``result``.
-    result : AdverseShiftDetails
-        The permutation-test result from :func:`test_adverse_shift`. Its
-        ``null_distribution`` is used to compute the Bayes factor threshold.
+        Whether higher outlier scores indicate worse outcomes
+        (``'higher-is-worse'``) or better outcomes (``'higher-is-better'``).
+        Required to determine the direction of adverse shift.
     n_resamples : int, optional
         Number of Bayesian bootstrap resamples, by default ``9999``.
     rng : numpy.random.Generator or None, optional
         Random number generator for reproducibility. ``None`` creates a
         fresh one.
     weights : ContextualWeights or None, optional
-        Per-group importance weights. Build with
+        Importance weights to correct for covariate shift and related concerns
+        between source and target. Build from domain probabilities using
         :func:`~samesame.weights.contextual_weights`, or construct
         ``ContextualWeights(source=..., target=...)`` directly.
+        Pass ``None`` (default) to run an unweighted test.
+    threshold : float, optional
+        WAUC value used as the null reference for the Bayes factor.
+        Defaults to ``1/12``, the asymptotic expected WAUC under the null
+        hypothesis that source and target are from the same distribution.
 
     Returns
     -------
@@ -282,7 +295,7 @@ def adverse_shift_posterior(
 
     See Also
     --------
-    test_adverse_shift : Run the permutation test that produces ``result``.
+    test_adverse_shift : Run the permutation test for adverse shift.
     """
     dataset = build_two_sample_dataset(source, target)
     actual, predicted = dataset.labels, dataset.scores
@@ -301,9 +314,7 @@ def adverse_shift_posterior(
         ),
         dtype=np.float64,
     )
-    bayes_factor_val = float(
-        _bayes_factor(posterior, float(np.mean(result.null_distribution)))
-    )
+    bayes_factor_val = float(_bayes_factor(posterior, threshold))
     return BayesianEvidence(
         posterior=posterior,
         bayes_factor=bayes_factor_val,

@@ -126,9 +126,9 @@ The default `lambda_=0.5` is a balanced blend between the plain density ratio (`
 uniform weights (`1.0`). For double-weighting:
 
 - **Lower `lambda_` (e.g., 0.2):** More aggressive correction; use only with a
-  well-calibrated membership classifier and a large overlap region.
+  well-calibrated domain classifier and a large overlap region.
 - **Higher `lambda_` (e.g., 0.8):** More conservative; close to uniform weights.
-  Use when you are uncertain about the quality of membership probabilities.
+  Use when you are uncertain about the quality of domain probabilities.
 
 For the mathematical relationship between `lambda_` and weight magnitude, see
 [Why importance weights stabilise shift detection](../../explanation/importance-weights-rationale.md).

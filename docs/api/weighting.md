@@ -10,7 +10,7 @@ and target groups.
 |----------|-----------------|
 | No weighting (default) | Omit `weights` |
 | You have explicit per-sample weights | Pass `weights=my_weights` |
-| You have classifier membership probabilities | Build weights with `contextual_weights(...)`, then pass `weights=` |
+| You have domain probabilities from a domain classifier | Build weights with `contextual_weights(...)`, then pass `weights=` |
 
 ```python
 import numpy as np
@@ -27,7 +27,7 @@ result = samesame.test_shift(
     weights=my_weights,
 )
 
-# Context-aware weights derived from membership probabilities
+# Context-aware weights derived from domain probabilities
 weights = contextual_weights(
     source_prob=source_membership_probs,  # probabilities for source samples
     target_prob=target_membership_probs,  # probabilities for target samples

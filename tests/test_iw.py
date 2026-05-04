@@ -100,21 +100,21 @@ def test_equal_group_sizes_give_unit_prior_ratio(membership_probs):
 
 
 def test_invalid_membership_prob_below_zero():
-    with pytest.raises(ValueError, match="membership probabilities"):
+    with pytest.raises(ValueError, match="domain probabilities"):
         contextual_weights(
             source_prob=np.array([-0.1, 0.5]), target_prob=np.array([0.5, 0.5])
         )
 
 
 def test_invalid_membership_prob_at_zero():
-    with pytest.raises(ValueError, match="membership probabilities"):
+    with pytest.raises(ValueError, match="domain probabilities"):
         contextual_weights(
             source_prob=np.array([0.0, 0.5]), target_prob=np.array([0.5, 0.5])
         )
 
 
 def test_invalid_membership_prob_at_one():
-    with pytest.raises(ValueError, match="membership probabilities"):
+    with pytest.raises(ValueError, match="domain probabilities"):
         contextual_weights(
             source_prob=np.array([0.5, 0.5]), target_prob=np.array([0.5, 1.0])
         )

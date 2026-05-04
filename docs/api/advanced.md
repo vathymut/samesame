@@ -34,7 +34,7 @@ result = samesame.test_shift(
     weights=my_weights,
 )
 
-# Context-aware weights from membership probabilities
+# Context-aware weights from domain probabilities
 weights = contextual_weights(
     source_prob=source_membership_probs,
     target_prob=target_membership_probs,

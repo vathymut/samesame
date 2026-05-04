@@ -7,7 +7,7 @@ region and de-emphasise training samples that are completely foreign to the depl
 **What you'll do:**
 
 - Reproduce an unweighted adverse-shift test as a baseline
-- Obtain membership probabilities from a separate domain classifier
+- Obtain domain probabilities from a domain classifier
 - Apply `mode="source"` reweighting and compare results
 
 !!! note "Before you start"

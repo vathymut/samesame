@@ -20,7 +20,7 @@ $$
 w(x) = \frac{p_{\text{target}}(x)}{p_{\text{source}}(x)}
 $$
 
-In practice, this ratio is estimated from a membership classifier. Let $\hat{p}(x)$ be the
+In practice, this ratio is estimated from a domain classifier. Let $\hat{p}(x)$ be the
 predicted probability that sample $x$ belongs to the target group. Then the estimated density
 ratio is:
 
@@ -62,7 +62,7 @@ The parameter \`lambda_\` controls the trade-off:
 
 Lower values apply more aggressive correction but increase variance. Higher values are more
 conservative. The default \`lambda_=0.5\` is a good starting point; reduce it if you are
-confident the overlap region is large and the classifier is well-calibrated.
+confident the overlap region is large and the domain classifier is well-calibrated.
 
 ---
 ## Normalization

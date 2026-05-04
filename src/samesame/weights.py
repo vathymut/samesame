@@ -13,14 +13,17 @@ WeightingMode = Literal["source", "target", "both"]
 
 @dataclass(frozen=True)
 class ContextualWeights:
-    """Per-sample importance weights split by group.
+    """Importance weights for source and target groups, used to
+    correct for covariate shift between source and target during a shift test.
 
     Attributes
     ----------
     source : NDArray[np.float64]
-        Weights for source samples, normalized to sum to ``len(source)``.
+        Importance weights for source samples, normalized to sum to
+        ``len(source)``.
     target : NDArray[np.float64]
-        Weights for target samples, normalized to sum to ``len(target)``.
+        Importance weights for target samples, normalized to sum to
+        ``len(target)``.
     """
 
     source: NDArray[np.float64]
@@ -34,9 +37,7 @@ def _density_ratio(
 ) -> NDArray[np.float64]:
     probs = np.asarray(membership_prob, dtype=np.float64)
     if np.any(probs <= 0.0) or np.any(probs >= 1.0):
-        raise ValueError(
-            "membership probabilities must be in the open interval (0, 1)."
-        )
+        raise ValueError("domain probabilities must be in the open interval (0, 1).")
     if not np.isfinite(group_balance) or group_balance <= 0.0:
         raise ValueError("group_balance must be finite and > 0.")
     return (probs / (1.0 - probs)) * group_balance
@@ -67,28 +68,37 @@ def contextual_weights(
 ) -> ContextualWeights:
     """Build context-aware sample weights for shift testing.
 
-    Computes per-sample RIW weights from context membership probabilities.
+    Computes RIW weights from domain probabilities.
     The prior ratio is always inferred from the lengths of ``source_prob``
     and ``target_prob``.
 
     Parameters
     ----------
     source_prob : NDArray
-        Per-sample probability of belonging to the target group for source
-        samples, in the open interval (0, 1).
+        Domain probabilities for source samples — probability, output by a
+        domain classifier, that each source observation belongs to the target
+        group. Must be in the open interval (0, 1).
     target_prob : NDArray
-        Per-sample probability of belonging to the target group for target
-        samples, in the open interval (0, 1).
+        Domain probabilities for target samples — probability, output by a
+        domain classifier, that each target observation belongs to the target
+        group. Must be in the open interval (0, 1).
     mode : {'source', 'target', 'both'}, optional
-        Which samples to reweight:
+        Context-aware weighting mode — controls which group's samples are
+        reweighted:
 
-        - ``'source'``: reweight source samples only (default).
-        - ``'target'``: reweight target samples only.
-        - ``'both'``: reweight both groups simultaneously.
+        - ``'source'``: reweight source samples only (default). Use when
+          correcting the source distribution to match target.
+        - ``'target'``: reweight target samples only. Use when correcting
+          the target distribution to match source.
+        - ``'both'``: reweight both groups simultaneously. Use when both
+          groups contain low-overlap outliers.
 
     lambda_ : float, optional
-        RIW blending parameter in [0, 1]. ``0.0`` gives plain density-ratio
-        weights; ``1.0`` gives uniform weights. Default is ``0.5``.
+        RIW blending coefficient in [0, 1] controlling the trade-off between
+        correction strength and variance stability. ``0.0`` gives plain
+        density-ratio weights (maximum correction, highest variance); ``1.0``
+        gives uniform weights (no correction). Default ``0.5`` is a balanced
+        starting point for most applications.
 
     Returns
     -------

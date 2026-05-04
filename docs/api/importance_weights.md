@@ -45,7 +45,7 @@ result = samesame.test_shift(
 )
 ```
 
-`source_prob` and `target_prob` are the membership probabilities for source and target samples
+`source_prob` and `target_prob` are the domain probabilities for source and target samples
 separately. The prior ratio is inferred automatically from their lengths.
 See [Weighting strategies](weighting.md) for a quick-reference comparison of all three
 approaches.

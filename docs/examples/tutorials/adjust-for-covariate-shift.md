@@ -1,12 +1,12 @@
 # Tutorial: Adjust for covariate shift with importance weights
 
 This tutorial shows how to use contextual RIW weights when testing for adverse shift.
-You will estimate membership probabilities from a domain classifier, then apply those
+You will estimate domain probabilities from a domain classifier, then apply those
 probabilities as weights while testing a separate harmfulness score stream.
 
 **By the end, you will be able to:**
 
-- Compute membership probabilities for contextual weighting
+- Compute domain probabilities for contextual weighting
 - Keep weighting inputs separate from adverse-shift score inputs
 - Run a weighted `test_adverse_shift` and compare it to the unweighted result
 
@@ -17,12 +17,12 @@ before this tutorial.
 ## What you need
 
 - Two groups to compare (source and target)
-- A classifier for estimating membership probabilities
+- A domain classifier for estimating domain probabilities
 - A separate harmfulness score per sample for `test_adverse_shift`
 
 ---
 
-## Step 1 — Generate membership probabilities
+## Step 1 — Generate domain probabilities
 
 This matches the detect-distribution-shift setup: train a classifier to distinguish source
 from target and use out-of-sample probabilities.
@@ -130,7 +130,7 @@ low-overlap regions. If both are significant, the adverse shift persists in comm
 
 ## Tips
 
-- Keep score streams separate: membership probabilities are for weighting; adverse-shift
+- Keep score streams separate: domain probabilities are for weighting; adverse-shift
   scores should come from a harmfulness signal such as risk, error, or low confidence.
 - `lambda_=0.5` is a practical default.
 - Use `mode="both"` when both source and target contain low-overlap outliers.
