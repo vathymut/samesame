@@ -2,12 +2,29 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Literal
 
 import numpy as np
 from numpy.typing import NDArray
 
 WeightingMode = Literal["source", "target", "both"]
+
+
+@dataclass(frozen=True)
+class ContextualWeights:
+    """Per-sample importance weights split by group.
+
+    Attributes
+    ----------
+    source : NDArray[np.float64]
+        Weights for source samples, normalized to sum to ``len(source)``.
+    target : NDArray[np.float64]
+        Weights for target samples, normalized to sum to ``len(target)``.
+    """
+
+    source: NDArray[np.float64]
+    target: NDArray[np.float64]
 
 
 def _density_ratio(
@@ -47,7 +64,7 @@ def contextual_weights(
     target_prob: NDArray,
     mode: WeightingMode = "source",
     lambda_: float = 0.5,
-) -> NDArray[np.float64]:
+) -> ContextualWeights:
     """Build context-aware sample weights for shift testing.
 
     Computes per-sample RIW weights from context membership probabilities.
@@ -75,10 +92,10 @@ def contextual_weights(
 
     Returns
     -------
-    NDArray[np.float64]
-        Per-sample weights in ``[source_weights..., target_weights...]`` order,
-        matching the layout of :func:`~samesame._data.build_two_sample_dataset`.
-        Samples not targeted by ``mode`` receive weight 1.
+    ContextualWeights
+        A frozen dataclass with ``.source`` and ``.target`` weight arrays.
+        Weights for each active group are normalized so they sum to that
+        group's sample size. Samples not targeted by ``mode`` receive weight 1.
 
     Raises
     ------
@@ -97,10 +114,16 @@ def contextual_weights(
     >>> from samesame.weights import contextual_weights
     >>> source_prob = np.array([0.25, 0.4])
     >>> target_prob = np.array([0.6, 0.75])
-    >>> np.round(contextual_weights(source_prob=source_prob, target_prob=target_prob), 4)
-    array([0.5, 0.8, 1. , 1. ])
-    >>> np.round(contextual_weights(source_prob=source_prob, target_prob=target_prob, mode="both"), 4)
-    array([0.5, 0.8, 0.8, 0.5])
+    >>> w = contextual_weights(source_prob=source_prob, target_prob=target_prob)
+    >>> np.round(w.source, 4)
+    array([0.7692, 1.2308])
+    >>> np.round(w.target, 4)
+    array([1., 1.])
+    >>> w2 = contextual_weights(source_prob=source_prob, target_prob=target_prob, mode="both")
+    >>> np.round(w2.source, 4)
+    array([0.7692, 1.2308])
+    >>> np.round(w2.target, 4)
+    array([1.2308, 0.7692])
     """
     source_prob = np.asarray(source_prob, dtype=np.float64)
     target_prob = np.asarray(target_prob, dtype=np.float64)
@@ -118,9 +141,11 @@ def contextual_weights(
     out_target = np.ones(n_target, dtype=np.float64)
     if mode in ("source", "both"):
         out_source = _riw(source_dr, lam=lambda_)
+        out_source = out_source * (n_source / out_source.sum())
     if mode in ("target", "both"):
         out_target = _inverse_riw(target_dr, lam=lambda_)
-    return np.concatenate([out_source, out_target])
+        out_target = out_target * (n_target / out_target.sum())
+    return ContextualWeights(source=out_source, target=out_target)
 
 
-__all__ = ["WeightingMode", "contextual_weights"]
+__all__ = ["ContextualWeights", "WeightingMode", "contextual_weights"]

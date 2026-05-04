@@ -19,10 +19,12 @@ from ._api import (
     test_shift,
 )
 from ._types import TestResult
+from .weights import ContextualWeights
 
 __all__ = [
     "AdverseShiftDetails",
     "BayesianEvidence",
+    "ContextualWeights",
     "ShiftDetails",
     "TestResult",
     "adverse_shift_posterior",

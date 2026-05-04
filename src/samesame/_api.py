@@ -35,6 +35,7 @@ from samesame._utils import (
     validate_and_normalise_weights,
     validate_direction,
 )
+from samesame.weights import ContextualWeights
 
 # ---------------------------------------------------------------------------
 # Private helpers
@@ -42,12 +43,19 @@ from samesame._utils import (
 
 
 def _resolve_weights(
-    actual: NDArray,
-    weights: ArrayLike | None,
+    weights: ContextualWeights | None,
+    n_source: int,
+    n_target: int,
 ) -> NDArray | None:
     if weights is None:
         return None
-    return validate_and_normalise_weights(np.asarray(weights, dtype=float), len(actual))
+    source_w = validate_and_normalise_weights(
+        np.asarray(weights.source, dtype=float), n_source
+    )
+    target_w = validate_and_normalise_weights(
+        np.asarray(weights.target, dtype=float), n_target
+    )
+    return np.concatenate([source_w, target_w])
 
 
 def _validate_shift_scores(statistic_name: str, predicted: NDArray) -> None:
@@ -106,7 +114,7 @@ def test_shift(
     n_resamples: int = 9999,
     batch: int | None = None,
     rng: np.random.Generator | None = None,
-    weights: ArrayLike | None = None,
+    weights: ContextualWeights | None = None,
 ) -> ShiftDetails:
     """Test whether two outlier score distributions differ.
 
@@ -129,10 +137,10 @@ def test_shift(
     rng : numpy.random.Generator or None, optional
         Random number generator for reproducibility. ``None`` creates a
         fresh one.
-    weights : ArrayLike or None, optional
-        Explicit per-sample weights for the pooled (source + target) dataset.
-        Use :func:`~samesame.weights.contextual_weights` to build these from
-        context membership probabilities.
+    weights : ContextualWeights or None, optional
+        Per-group importance weights. Build with
+        :func:`~samesame.weights.contextual_weights`, or construct
+        ``ContextualWeights(source=..., target=...)`` directly.
 
     Returns
     -------
@@ -144,7 +152,7 @@ def test_shift(
     actual, predicted = dataset.labels, dataset.scores
     statistic_name, metric = get_shift_metric(statistic)
     _validate_shift_scores(statistic_name, predicted)
-    effective_weight = _resolve_weights(actual, weights)
+    effective_weight = _resolve_weights(weights, dataset.n_source, dataset.n_target)
     result = _run_permutation_test(
         actual,
         predicted,
@@ -171,7 +179,7 @@ def test_adverse_shift(
     n_resamples: int = 9999,
     batch: int | None = None,
     rng: np.random.Generator | None = None,
-    weights: ArrayLike | None = None,
+    weights: ContextualWeights | None = None,
 ) -> AdverseShiftDetails:
     """Test whether the target sample is harmfully shifted.
 
@@ -191,10 +199,10 @@ def test_adverse_shift(
     rng : numpy.random.Generator or None, optional
         Random number generator for reproducibility. ``None`` creates a
         fresh one.
-    weights : ArrayLike or None, optional
-        Explicit per-sample weights for the pooled dataset.
-        Use :func:`~samesame.weights.contextual_weights` to build these from
-        context membership probabilities.
+    weights : ContextualWeights or None, optional
+        Per-group importance weights. Build with
+        :func:`~samesame.weights.contextual_weights`, or construct
+        ``ContextualWeights(source=..., target=...)`` directly.
 
     Returns
     -------
@@ -211,7 +219,7 @@ def test_adverse_shift(
     validated_direction = validate_direction(direction)
     if validated_direction == "higher-is-better":
         predicted = -predicted
-    effective_weight = _resolve_weights(actual, weights)
+    effective_weight = _resolve_weights(weights, dataset.n_source, dataset.n_target)
     result = _run_permutation_test(
         actual,
         predicted,
@@ -238,7 +246,7 @@ def adverse_shift_posterior(
     result: AdverseShiftDetails,
     n_resamples: int = 9999,
     rng: np.random.Generator | None = None,
-    weights: ArrayLike | None = None,
+    weights: ContextualWeights | None = None,
 ) -> BayesianEvidence:
     """Compute a Bayesian posterior and Bayes factor for an adverse-shift result.
 
@@ -262,10 +270,10 @@ def adverse_shift_posterior(
     rng : numpy.random.Generator or None, optional
         Random number generator for reproducibility. ``None`` creates a
         fresh one.
-    weights : ArrayLike or None, optional
-        Explicit per-sample weights for the pooled dataset.
-        Use :func:`~samesame.weights.contextual_weights` to build these from
-        context membership probabilities.
+    weights : ContextualWeights or None, optional
+        Per-group importance weights. Build with
+        :func:`~samesame.weights.contextual_weights`, or construct
+        ``ContextualWeights(source=..., target=...)`` directly.
 
     Returns
     -------
@@ -281,7 +289,7 @@ def adverse_shift_posterior(
     validated_direction = validate_direction(direction)
     if validated_direction == "higher-is-better":
         predicted = -predicted
-    effective_weight = _resolve_weights(actual, weights)
+    effective_weight = _resolve_weights(weights, dataset.n_source, dataset.n_target)
     posterior = np.asarray(
         bayesian_posterior(
             actual,

@@ -17,6 +17,10 @@ other group. If you have no prior knowledge of covariate shift, omit `weights`.
 
 `lambda_` controls numerical stability: `0.0` is the plain density ratio (IWERM); `1.0` is
 uniform weights (no correction). The default `0.5` is a safe starting point.
+
+Weights for each active group are automatically normalized to sum to that group's sample
+size. In `mode="both"`, source and target are normalized independently. Non-active groups
+always receive unit weights.
 For guidance on which mode fits your scenario, see
 [Why importance weights stabilise shift detection](../explanation/importance-weights-rationale.md).
 

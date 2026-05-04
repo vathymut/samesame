@@ -15,7 +15,7 @@ from samesame import (
     test_adverse_shift as run_adverse_shift_test,
     test_shift as run_shift_test,
 )
-from samesame.weights import contextual_weights
+from samesame.weights import ContextualWeights, contextual_weights
 
 
 def test_root_exports() -> None:
@@ -130,7 +130,11 @@ def test_shift_null_distribution_matches_n_resamples(
 def test_shift_supports_explicit_weights(
     shift_samples: dict[str, np.ndarray],
 ) -> None:
-    sample_weight = np.linspace(1.0, 3.0, 600)
+    source, target = shift_samples["source"], shift_samples["target"]
+    sample_weight = ContextualWeights(
+        source=np.linspace(1.0, 3.0, len(source)),
+        target=np.linspace(1.0, 3.0, len(target)),
+    )
     base = run_shift_test(**shift_samples, n_resamples=64)
     weighted = run_shift_test(**shift_samples, n_resamples=64, weights=sample_weight)
     assert isinstance(weighted, ShiftDetails)

@@ -65,7 +65,25 @@ conservative. The default \`lambda_=0.5\` is a good starting point; reduce it if
 confident the overlap region is large and the classifier is well-calibrated.
 
 ---
+## Normalization
 
+After computing the raw RIW values, `contextual_weights` normalizes the weights for each
+active group so they sum to that group's sample size:
+
+$$
+w_i^{\text{norm}} = w_i \cdot \frac{n}{\sum_j w_j}
+$$
+
+This normalization is applied independently per group. Source weights sum to $n_{\text{source}}$,
+target weights sum to $n_{\text{target}}$. Samples not targeted by `mode` keep weight 1 and
+are not renormalized — their sum is already equal to their group size by construction.
+
+The effect is to preserve the effective sample size interpretation of each group: weighted
+averages computed over the group behave like unweighted averages over a representative
+sample of that size. It also prevents the overall scale of weights from drifting when group
+sizes are unequal.
+
+---
 ## Three weighting modes
 
 `contextual_weights` supports three modes that differ in which group receives non-unit weights:
