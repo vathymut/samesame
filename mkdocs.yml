@@ -2,7 +2,7 @@ site_name: samesame
 repo_url: https://github.com/vathymut/samesame
 repo_name: vathymut/samesame
 site_url: https://vathymut.github.io/samesame/
-site_description: Samesame - Score-vector shift hypothesis tests
+site_description: Statistical tests for distribution shift — detect and evaluate whether a target sample has drifted from a source sample.
 site_author: Vathy M. Kamulete
 copyright: Copyright &copy; Vathy M. Kamulete
 

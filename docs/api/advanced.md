@@ -27,17 +27,17 @@ result = samesame.test_shift(
     alternative="greater",
 )
 
-# Explicit per-sample weights
+# Explicit per-sample weights wrapped in ContextualWeights
 result = samesame.test_shift(
     source=source_scores,
     target=target_scores,
-    weights=my_weights,
+    weights=samesame.ContextualWeights(source=source_weights, target=target_weights),
 )
 
 # Context-aware weights from domain probabilities
 weights = contextual_weights(
-    source_prob=source_membership_probs,
-    target_prob=target_membership_probs,
+    source_prob=source_domain_probs,
+    target_prob=target_domain_probs,
     mode="source",
 )
 result = samesame.test_adverse_shift(
@@ -57,7 +57,6 @@ evidence = samesame.adverse_shift_posterior(
     source=source_scores,
     target=target_scores,
     direction="higher-is-worse",
-    result=result,
 )
 print(f"p-value:      {result.pvalue:.4f}")
 print(f"Bayes factor: {evidence.bayes_factor:.2f}")

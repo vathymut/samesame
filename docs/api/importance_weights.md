@@ -21,6 +21,7 @@ uniform weights (no correction). The default `0.5` is a safe starting point.
 Weights for each active group are automatically normalized to sum to that group's sample
 size. In `mode="both"`, source and target are normalized independently. Non-active groups
 always receive unit weights.
+
 For guidance on which mode fits your scenario, see
 [Why importance weights stabilise shift detection](../explanation/importance-weights-rationale.md).
 
@@ -34,8 +35,8 @@ import samesame
 from samesame.weights import contextual_weights
 
 weights = contextual_weights(
-    source_prob=source_membership_probs,
-    target_prob=target_membership_probs,
+    source_prob=source_domain_probs,
+    target_prob=target_domain_probs,
     mode="source",
 )
 result = samesame.test_shift(

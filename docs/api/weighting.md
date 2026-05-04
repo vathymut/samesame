@@ -9,7 +9,7 @@ and target groups.
 | Scenario | How to proceed |
 |----------|-----------------|
 | No weighting (default) | Omit `weights` |
-| You have explicit per-sample weights | Pass `weights=my_weights` |
+| You have explicit per-sample weights | Wrap in `ContextualWeights(source=..., target=...)`, then pass `weights=` |
 | You have domain probabilities from a domain classifier | Build weights with `contextual_weights(...)`, then pass `weights=` |
 
 ```python
@@ -24,13 +24,13 @@ result = samesame.test_shift(source=source_scores, target=target_scores)
 result = samesame.test_shift(
     source=source_scores,
     target=target_scores,
-    weights=my_weights,
+    weights=samesame.ContextualWeights(source=source_weights, target=target_weights),
 )
 
 # Context-aware weights derived from domain probabilities
 weights = contextual_weights(
-    source_prob=source_membership_probs,  # probabilities for source samples
-    target_prob=target_membership_probs,  # probabilities for target samples
+    source_prob=source_domain_probs,  # domain probabilities for source samples
+    target_prob=target_domain_probs,  # domain probabilities for target samples
     mode="source",
 )
 result = samesame.test_adverse_shift(

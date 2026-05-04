@@ -5,9 +5,9 @@ Start here if you are new to the package or want the simplest API surface.
 
 ## What you get back
 
-- `test_shift(...)` returns `ShiftResult` with `.statistic`, `.pvalue`, and `.statistic_name`
-- `test_adverse_shift(...)` returns `AdverseShiftResult` with `.statistic`, `.pvalue`, and `.direction`
+- `test_shift(...)` returns `ShiftDetails` with `.statistic`, `.pvalue`, `.statistic_name`, and `.null_distribution`
+- `test_adverse_shift(...)` returns `AdverseShiftDetails` with `.statistic`, `.pvalue`, `.direction`, and `.null_distribution`
 
-If you need the null distribution, additional controls, or Bayesian output, see the advanced page.
+For Bayesian output or advanced controls, see the [advanced page](advanced.md).
 
 ::: samesame
