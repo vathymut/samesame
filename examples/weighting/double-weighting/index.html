@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Samesame - Score-vector shift hypothesis tests">
+        <meta name="description" content="Statistical tests for distribution shift — detect and evaluate whether a target sample has drifted from a source sample.">
       
       
         <meta name="author" content="Vathy M. Kamulete">
@@ -1240,9 +1240,9 @@ Double-weighting measures adverse shift restricted to common support from both s
 uniform weights (<code>1.0</code>). For double-weighting:</p>
 <ul>
 <li><strong>Lower <code>lambda_</code> (e.g., 0.2):</strong> More aggressive correction; use only with a
-  well-calibrated membership classifier and a large overlap region.</li>
+  well-calibrated domain classifier and a large overlap region.</li>
 <li><strong>Higher <code>lambda_</code> (e.g., 0.8):</strong> More conservative; close to uniform weights.
-  Use when you are uncertain about the quality of membership probabilities.</li>
+  Use when you are uncertain about the quality of domain probabilities.</li>
 </ul>
 <p>For the mathematical relationship between <code>lambda_</code> and weight magnitude, see
 <a href="../../../explanation/importance-weights-rationale/">Why importance weights stabilise shift detection</a>.</p>

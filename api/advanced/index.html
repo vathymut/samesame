@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Samesame - Score-vector shift hypothesis tests">
+        <meta name="description" content="Statistical tests for distribution shift — detect and evaluate whether a target sample has drifted from a source sample.">
       
       
         <meta name="author" content="Vathy M. Kamulete">
@@ -1228,17 +1228,17 @@ Bayesian evidence is available separately via <code>adverse_shift_posterior</cod
     <span class="n">alternative</span><span class="o">=</span><span class="s2">&quot;greater&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="c1"># Explicit per-sample weights</span>
+<span class="c1"># Explicit per-sample weights wrapped in ContextualWeights</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">samesame</span><span class="o">.</span><span class="n">test_shift</span><span class="p">(</span>
     <span class="n">source</span><span class="o">=</span><span class="n">source_scores</span><span class="p">,</span>
     <span class="n">target</span><span class="o">=</span><span class="n">target_scores</span><span class="p">,</span>
-    <span class="n">weights</span><span class="o">=</span><span class="n">my_weights</span><span class="p">,</span>
+    <span class="n">weights</span><span class="o">=</span><span class="n">samesame</span><span class="o">.</span><span class="n">ContextualWeights</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_weights</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_weights</span><span class="p">),</span>
 <span class="p">)</span>
 
-<span class="c1"># Context-aware weights from membership probabilities</span>
+<span class="c1"># Context-aware weights from domain probabilities</span>
 <span class="n">weights</span> <span class="o">=</span> <span class="n">contextual_weights</span><span class="p">(</span>
-    <span class="n">source_prob</span><span class="o">=</span><span class="n">source_membership_probs</span><span class="p">,</span>
-    <span class="n">target_prob</span><span class="o">=</span><span class="n">target_membership_probs</span><span class="p">,</span>
+    <span class="n">source_prob</span><span class="o">=</span><span class="n">source_domain_probs</span><span class="p">,</span>
+    <span class="n">target_prob</span><span class="o">=</span><span class="n">target_domain_probs</span><span class="p">,</span>
     <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;source&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">samesame</span><span class="o">.</span><span class="n">test_adverse_shift</span><span class="p">(</span>
@@ -1258,7 +1258,6 @@ Bayesian evidence is available separately via <code>adverse_shift_posterior</cod
     <span class="n">source</span><span class="o">=</span><span class="n">source_scores</span><span class="p">,</span>
     <span class="n">target</span><span class="o">=</span><span class="n">target_scores</span><span class="p">,</span>
     <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;higher-is-worse&quot;</span><span class="p">,</span>
-    <span class="n">result</span><span class="o">=</span><span class="n">result</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;p-value:      </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Bayes factor: </span><span class="si">{</span><span class="n">evidence</span><span class="o">.</span><span class="n">bayes_factor</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1585,17 +1584,17 @@ directly. No separate <code>advanced</code> sub-module is needed.</p>
 
 
 <h2 id="samesame._api.adverse_shift_posterior" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">adverse_shift_posterior</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">direction</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">n_resamples</span><span class="o">=</span><span class="mi">9999</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">adverse_shift_posterior</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">direction</span><span class="p">,</span> <span class="n">n_resamples</span><span class="o">=</span><span class="mi">9999</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span></code>
 
 <a href="#samesame._api.adverse_shift_posterior" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
     <div class="doc doc-contents ">
 
-        <p>Compute a Bayesian posterior and Bayes factor for an adverse-shift result.</p>
-<p>Runs a Bayesian bootstrap over the WAUC metric and returns posterior draws
-together with a Bayes factor. The Bayes factor threshold is derived
-internally from the mean of <code>result.null_distribution</code>.</p>
+        <p>Compute Bayesian evidence for adverse shift using a bootstrap posterior.</p>
+<p>Provides a Bayesian evidence layer on top of the adverse-shift test:
+runs a Bayesian bootstrap over the WAUC metric and returns posterior
+draws together with a Bayes factor against a reference threshold.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -1618,7 +1617,7 @@ internally from the mean of <code>result.null_distribution</code>.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Baseline outlier scores — must match those used to produce <code>result</code>.</p>
+                <p>Baseline outlier scores, typically from training or reference data.</p>
               </div>
             </td>
             <td>
@@ -1634,7 +1633,8 @@ internally from the mean of <code>result.null_distribution</code>.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>New outlier scores — must match those used to produce <code>result</code>.</p>
+                <p>New outlier scores to compare against <code>source</code>, typically from
+production or deployment data.</p>
               </div>
             </td>
             <td>
@@ -1650,33 +1650,13 @@ internally from the mean of <code>result.null_distribution</code>.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Semantic direction — must match the direction used to produce <code>result</code>.</p>
+                <p>Whether higher outlier scores indicate worse outcomes
+(<code>'higher-is-worse'</code>) or better outcomes (<code>'higher-is-better'</code>).
+Required to determine the direction of adverse shift.</p>
               </div>
             </td>
             <td>
                   <code>&#39;higher-is-worse&#39;</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>result</code>
-            </td>
-            <td>
-                  <code><a class="autorefs autorefs-internal" title="AdverseShiftDetails
-
-
-  
-      dataclass
-   (samesame._types.AdverseShiftDetails)" href="#samesame._api.AdverseShiftDetails">AdverseShiftDetails</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>The permutation-test result from :func:<code>test_adverse_shift</code>. Its
-<code>null_distribution</code> is used to compute the Bayes factor threshold.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
             </td>
           </tr>
           <tr class="doc-section-item">
@@ -1717,17 +1697,42 @@ fresh one.</p>
                 <code>weights</code>
             </td>
             <td>
-                  <code><span title="numpy.typing.ArrayLike">ArrayLike</span> or None</code>
+                  <code><a class="autorefs autorefs-internal" title="ContextualWeights
+
+
+  
+      dataclass
+   (samesame.weights.ContextualWeights)" href="../importance_weights/#samesame.weights.ContextualWeights">ContextualWeights</a> or None</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Explicit per-sample weights for the pooled dataset.
-Use :func:<code>~samesame.weights.contextual_weights</code> to build these from
-context membership probabilities.</p>
+                <p>Importance weights to correct for covariate shift and related concerns
+between source and target. Build from domain probabilities using
+:func:<code>~samesame.weights.contextual_weights</code>, or construct
+<code>ContextualWeights(source=..., target=...)</code> directly.
+Pass <code>None</code> (default) to run an unweighted test.</p>
               </div>
             </td>
             <td>
                   <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>threshold</code>
+            </td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>WAUC value used as the null reference for the Bayes factor.
+Defaults to <code>1/12</code>, the asymptotic expected WAUC under the null
+hypothesis that source and target are from the same distribution.</p>
+              </div>
+            </td>
+            <td>
+                  <code>1 / 12</code>
             </td>
           </tr>
       </tbody>
@@ -1764,27 +1769,12 @@ context membership probabilities.</p>
 
 <details class="see-also" open>
   <summary>See Also</summary>
-  <p>test_adverse_shift : Run the permutation test that produces <code>result</code>.</p>
+  <p>test_adverse_shift : Run the permutation test for adverse shift.</p>
 </details>
 
             <details class="quote">
               <summary>Source code in <code>src/samesame/_api.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
-<span class="normal">240</span>
-<span class="normal">241</span>
-<span class="normal">242</span>
-<span class="normal">243</span>
-<span class="normal">244</span>
-<span class="normal">245</span>
-<span class="normal">246</span>
-<span class="normal">247</span>
-<span class="normal">248</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">248</span>
 <span class="normal">249</span>
 <span class="normal">250</span>
 <span class="normal">251</span>
@@ -1838,42 +1828,67 @@ context membership probabilities.</p>
 <span class="normal">299</span>
 <span class="normal">300</span>
 <span class="normal">301</span>
-<span class="normal">302</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">adverse_shift_posterior</span><span class="p">(</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">adverse_shift_posterior</span><span class="p">(</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">source</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
     <span class="n">target</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
     <span class="n">direction</span><span class="p">:</span> <span class="n">Direction</span><span class="p">,</span>
-    <span class="n">result</span><span class="p">:</span> <span class="n">AdverseShiftDetails</span><span class="p">,</span>
     <span class="n">n_resamples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">9999</span><span class="p">,</span>
     <span class="n">rng</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">weights</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">weights</span><span class="p">:</span> <span class="n">ContextualWeights</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">12</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BayesianEvidence</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute a Bayesian posterior and Bayes factor for an adverse-shift result.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute Bayesian evidence for adverse shift using a bootstrap posterior.</span>
 
-<span class="sd">    Runs a Bayesian bootstrap over the WAUC metric and returns posterior draws</span>
-<span class="sd">    together with a Bayes factor. The Bayes factor threshold is derived</span>
-<span class="sd">    internally from the mean of ``result.null_distribution``.</span>
+<span class="sd">    Provides a Bayesian evidence layer on top of the adverse-shift test:</span>
+<span class="sd">    runs a Bayesian bootstrap over the WAUC metric and returns posterior</span>
+<span class="sd">    draws together with a Bayes factor against a reference threshold.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    source : ArrayLike</span>
-<span class="sd">        Baseline outlier scores — must match those used to produce ``result``.</span>
+<span class="sd">        Baseline outlier scores, typically from training or reference data.</span>
 <span class="sd">    target : ArrayLike</span>
-<span class="sd">        New outlier scores — must match those used to produce ``result``.</span>
+<span class="sd">        New outlier scores to compare against ``source``, typically from</span>
+<span class="sd">        production or deployment data.</span>
 <span class="sd">    direction : {&#39;higher-is-worse&#39;, &#39;higher-is-better&#39;}</span>
-<span class="sd">        Semantic direction — must match the direction used to produce ``result``.</span>
-<span class="sd">    result : AdverseShiftDetails</span>
-<span class="sd">        The permutation-test result from :func:`test_adverse_shift`. Its</span>
-<span class="sd">        ``null_distribution`` is used to compute the Bayes factor threshold.</span>
+<span class="sd">        Whether higher outlier scores indicate worse outcomes</span>
+<span class="sd">        (``&#39;higher-is-worse&#39;``) or better outcomes (``&#39;higher-is-better&#39;``).</span>
+<span class="sd">        Required to determine the direction of adverse shift.</span>
 <span class="sd">    n_resamples : int, optional</span>
 <span class="sd">        Number of Bayesian bootstrap resamples, by default ``9999``.</span>
 <span class="sd">    rng : numpy.random.Generator or None, optional</span>
 <span class="sd">        Random number generator for reproducibility. ``None`` creates a</span>
 <span class="sd">        fresh one.</span>
-<span class="sd">    weights : ArrayLike or None, optional</span>
-<span class="sd">        Explicit per-sample weights for the pooled dataset.</span>
-<span class="sd">        Use :func:`~samesame.weights.contextual_weights` to build these from</span>
-<span class="sd">        context membership probabilities.</span>
+<span class="sd">    weights : ContextualWeights or None, optional</span>
+<span class="sd">        Importance weights to correct for covariate shift and related concerns</span>
+<span class="sd">        between source and target. Build from domain probabilities using</span>
+<span class="sd">        :func:`~samesame.weights.contextual_weights`, or construct</span>
+<span class="sd">        ``ContextualWeights(source=..., target=...)`` directly.</span>
+<span class="sd">        Pass ``None`` (default) to run an unweighted test.</span>
+<span class="sd">    threshold : float, optional</span>
+<span class="sd">        WAUC value used as the null reference for the Bayes factor.</span>
+<span class="sd">        Defaults to ``1/12``, the asymptotic expected WAUC under the null</span>
+<span class="sd">        hypothesis that source and target are from the same distribution.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1882,14 +1897,14 @@ context membership probabilities.</p>
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
-<span class="sd">    test_adverse_shift : Run the permutation test that produces ``result``.</span>
+<span class="sd">    test_adverse_shift : Run the permutation test for adverse shift.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">dataset</span> <span class="o">=</span> <span class="n">build_two_sample_dataset</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
     <span class="n">actual</span><span class="p">,</span> <span class="n">predicted</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">scores</span>
     <span class="n">validated_direction</span> <span class="o">=</span> <span class="n">validate_direction</span><span class="p">(</span><span class="n">direction</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">validated_direction</span> <span class="o">==</span> <span class="s2">&quot;higher-is-better&quot;</span><span class="p">:</span>
         <span class="n">predicted</span> <span class="o">=</span> <span class="o">-</span><span class="n">predicted</span>
-    <span class="n">effective_weight</span> <span class="o">=</span> <span class="n">_resolve_weights</span><span class="p">(</span><span class="n">actual</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>
+    <span class="n">effective_weight</span> <span class="o">=</span> <span class="n">_resolve_weights</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">n_source</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">n_target</span><span class="p">)</span>
     <span class="n">posterior</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
         <span class="n">bayesian_posterior</span><span class="p">(</span>
             <span class="n">actual</span><span class="p">,</span>
@@ -1901,9 +1916,7 @@ context membership probabilities.</p>
         <span class="p">),</span>
         <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">bayes_factor_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span>
-        <span class="n">_bayes_factor</span><span class="p">(</span><span class="n">posterior</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">null_distribution</span><span class="p">)))</span>
-    <span class="p">)</span>
+    <span class="n">bayes_factor_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">_bayes_factor</span><span class="p">(</span><span class="n">posterior</span><span class="p">,</span> <span class="n">threshold</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">BayesianEvidence</span><span class="p">(</span>
         <span class="n">posterior</span><span class="o">=</span><span class="n">posterior</span><span class="p">,</span>
         <span class="n">bayes_factor</span><span class="o">=</span><span class="n">bayes_factor_val</span><span class="p">,</span>
@@ -1948,7 +1961,7 @@ context membership probabilities.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Baseline outlier scores.</p>
+                <p>Baseline outlier scores, typically from training or reference data.</p>
               </div>
             </td>
             <td>
@@ -1964,7 +1977,8 @@ context membership probabilities.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>New outlier scores to compare against <code>source</code>.</p>
+                <p>New outlier scores to compare against <code>source</code>, typically from
+production or deployment data.</p>
               </div>
             </td>
             <td>
@@ -1980,7 +1994,9 @@ context membership probabilities.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Semantic direction of larger score values.</p>
+                <p>Whether higher outlier scores indicate worse outcomes
+(<code>'higher-is-worse'</code>) or better outcomes (<code>'higher-is-better'</code>).
+Required to determine the direction of adverse shift.</p>
               </div>
             </td>
             <td>
@@ -2042,13 +2058,20 @@ fresh one.</p>
                 <code>weights</code>
             </td>
             <td>
-                  <code><span title="numpy.typing.ArrayLike">ArrayLike</span> or None</code>
+                  <code><a class="autorefs autorefs-internal" title="ContextualWeights
+
+
+  
+      dataclass
+   (samesame.weights.ContextualWeights)" href="../importance_weights/#samesame.weights.ContextualWeights">ContextualWeights</a> or None</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Explicit per-sample weights for the pooled dataset.
-Use :func:<code>~samesame.weights.contextual_weights</code> to build these from
-context membership probabilities.</p>
+                <p>Importance weights to correct for covariate shift and related concerns
+between source and target. Build from domain probabilities using
+:func:<code>~samesame.weights.contextual_weights</code>, or construct
+<code>ContextualWeights(source=..., target=...)</code> directly.
+Pass <code>None</code> (default) to run an unweighted test.</p>
               </div>
             </td>
             <td>
@@ -2095,17 +2118,7 @@ and <code>null_distribution</code>.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/samesame/_api.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">166</span>
-<span class="normal">167</span>
-<span class="normal">168</span>
-<span class="normal">169</span>
-<span class="normal">170</span>
-<span class="normal">171</span>
-<span class="normal">172</span>
-<span class="normal">173</span>
-<span class="normal">174</span>
-<span class="normal">175</span>
-<span class="normal">176</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">176</span>
 <span class="normal">177</span>
 <span class="normal">178</span>
 <span class="normal">179</span>
@@ -2159,7 +2172,22 @@ and <code>null_distribution</code>.</p>
 <span class="normal">227</span>
 <span class="normal">228</span>
 <span class="normal">229</span>
-<span class="normal">230</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_adverse_shift</span><span class="p">(</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_adverse_shift</span><span class="p">(</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">source</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
     <span class="n">target</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
@@ -2167,18 +2195,21 @@ and <code>null_distribution</code>.</p>
     <span class="n">n_resamples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">9999</span><span class="p">,</span>
     <span class="n">batch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">rng</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">weights</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">weights</span><span class="p">:</span> <span class="n">ContextualWeights</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AdverseShiftDetails</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Test whether the target sample is harmfully shifted.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    source : ArrayLike</span>
-<span class="sd">        Baseline outlier scores.</span>
+<span class="sd">        Baseline outlier scores, typically from training or reference data.</span>
 <span class="sd">    target : ArrayLike</span>
-<span class="sd">        New outlier scores to compare against ``source``.</span>
+<span class="sd">        New outlier scores to compare against ``source``, typically from</span>
+<span class="sd">        production or deployment data.</span>
 <span class="sd">    direction : {&#39;higher-is-worse&#39;, &#39;higher-is-better&#39;}</span>
-<span class="sd">        Semantic direction of larger score values.</span>
+<span class="sd">        Whether higher outlier scores indicate worse outcomes</span>
+<span class="sd">        (``&#39;higher-is-worse&#39;``) or better outcomes (``&#39;higher-is-better&#39;``).</span>
+<span class="sd">        Required to determine the direction of adverse shift.</span>
 <span class="sd">    n_resamples : int, optional</span>
 <span class="sd">        Number of permutation resamples, by default ``9999``.</span>
 <span class="sd">    batch : int or None, optional</span>
@@ -2187,10 +2218,12 @@ and <code>null_distribution</code>.</p>
 <span class="sd">    rng : numpy.random.Generator or None, optional</span>
 <span class="sd">        Random number generator for reproducibility. ``None`` creates a</span>
 <span class="sd">        fresh one.</span>
-<span class="sd">    weights : ArrayLike or None, optional</span>
-<span class="sd">        Explicit per-sample weights for the pooled dataset.</span>
-<span class="sd">        Use :func:`~samesame.weights.contextual_weights` to build these from</span>
-<span class="sd">        context membership probabilities.</span>
+<span class="sd">    weights : ContextualWeights or None, optional</span>
+<span class="sd">        Importance weights to correct for covariate shift and related concerns</span>
+<span class="sd">        between source and target. Build from domain probabilities using</span>
+<span class="sd">        :func:`~samesame.weights.contextual_weights`, or construct</span>
+<span class="sd">        ``ContextualWeights(source=..., target=...)`` directly.</span>
+<span class="sd">        Pass ``None`` (default) to run an unweighted test.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -2207,7 +2240,7 @@ and <code>null_distribution</code>.</p>
     <span class="n">validated_direction</span> <span class="o">=</span> <span class="n">validate_direction</span><span class="p">(</span><span class="n">direction</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">validated_direction</span> <span class="o">==</span> <span class="s2">&quot;higher-is-better&quot;</span><span class="p">:</span>
         <span class="n">predicted</span> <span class="o">=</span> <span class="o">-</span><span class="n">predicted</span>
-    <span class="n">effective_weight</span> <span class="o">=</span> <span class="n">_resolve_weights</span><span class="p">(</span><span class="n">actual</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>
+    <span class="n">effective_weight</span> <span class="o">=</span> <span class="n">_resolve_weights</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">n_source</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">n_target</span><span class="p">)</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">_run_permutation_test</span><span class="p">(</span>
         <span class="n">actual</span><span class="p">,</span>
         <span class="n">predicted</span><span class="p">,</span>
@@ -2241,7 +2274,7 @@ and <code>null_distribution</code>.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Test whether two outlier score distributions differ.</p>
+        <p>Test whether the source and target outlier score distributions differ.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -2264,7 +2297,7 @@ and <code>null_distribution</code>.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Baseline outlier scores.</p>
+                <p>Baseline outlier scores, typically from training or reference data.</p>
               </div>
             </td>
             <td>
@@ -2280,7 +2313,8 @@ and <code>null_distribution</code>.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>New outlier scores to compare against <code>source</code>.</p>
+                <p>New outlier scores to compare against <code>source</code>, typically from
+production or deployment data.</p>
               </div>
             </td>
             <td>
@@ -2375,13 +2409,20 @@ fresh one.</p>
                 <code>weights</code>
             </td>
             <td>
-                  <code><span title="numpy.typing.ArrayLike">ArrayLike</span> or None</code>
+                  <code><a class="autorefs autorefs-internal" title="ContextualWeights
+
+
+  
+      dataclass
+   (samesame.weights.ContextualWeights)" href="../importance_weights/#samesame.weights.ContextualWeights">ContextualWeights</a> or None</code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Explicit per-sample weights for the pooled (source + target) dataset.
-Use :func:<code>~samesame.weights.contextual_weights</code> to build these from
-context membership probabilities.</p>
+                <p>Importance weights to correct for covariate shift and related concerns
+between source and target. Build from domain probabilities using
+:func:<code>~samesame.weights.contextual_weights</code>, or construct
+<code>ContextualWeights(source=..., target=...)</code> directly.
+Pass <code>None</code> (default) to run an unweighted test.</p>
               </div>
             </td>
             <td>
@@ -2423,14 +2464,7 @@ and <code>null_distribution</code>.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/samesame/_api.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span>
-<span class="normal">103</span>
-<span class="normal">104</span>
-<span class="normal">105</span>
-<span class="normal">106</span>
-<span class="normal">107</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">107</span>
 <span class="normal">108</span>
 <span class="normal">109</span>
 <span class="normal">110</span>
@@ -2486,7 +2520,17 @@ and <code>null_distribution</code>.</p>
 <span class="normal">160</span>
 <span class="normal">161</span>
 <span class="normal">162</span>
-<span class="normal">163</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_shift</span><span class="p">(</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_shift</span><span class="p">(</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">source</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
     <span class="n">target</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
@@ -2495,16 +2539,17 @@ and <code>null_distribution</code>.</p>
     <span class="n">n_resamples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">9999</span><span class="p">,</span>
     <span class="n">batch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">rng</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">weights</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">weights</span><span class="p">:</span> <span class="n">ContextualWeights</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ShiftDetails</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test whether two outlier score distributions differ.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test whether the source and target outlier score distributions differ.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    source : ArrayLike</span>
-<span class="sd">        Baseline outlier scores.</span>
+<span class="sd">        Baseline outlier scores, typically from training or reference data.</span>
 <span class="sd">    target : ArrayLike</span>
-<span class="sd">        New outlier scores to compare against ``source``.</span>
+<span class="sd">        New outlier scores to compare against ``source``, typically from</span>
+<span class="sd">        production or deployment data.</span>
 <span class="sd">    statistic : {&#39;roc_auc&#39;, &#39;balanced_accuracy&#39;, &#39;matthews_corrcoef&#39;}, optional</span>
 <span class="sd">        Named built-in statistic used inside the permutation test.</span>
 <span class="sd">    alternative : {&#39;two-sided&#39;, &#39;less&#39;, &#39;greater&#39;}, optional</span>
@@ -2518,10 +2563,12 @@ and <code>null_distribution</code>.</p>
 <span class="sd">    rng : numpy.random.Generator or None, optional</span>
 <span class="sd">        Random number generator for reproducibility. ``None`` creates a</span>
 <span class="sd">        fresh one.</span>
-<span class="sd">    weights : ArrayLike or None, optional</span>
-<span class="sd">        Explicit per-sample weights for the pooled (source + target) dataset.</span>
-<span class="sd">        Use :func:`~samesame.weights.contextual_weights` to build these from</span>
-<span class="sd">        context membership probabilities.</span>
+<span class="sd">    weights : ContextualWeights or None, optional</span>
+<span class="sd">        Importance weights to correct for covariate shift and related concerns</span>
+<span class="sd">        between source and target. Build from domain probabilities using</span>
+<span class="sd">        :func:`~samesame.weights.contextual_weights`, or construct</span>
+<span class="sd">        ``ContextualWeights(source=..., target=...)`` directly.</span>
+<span class="sd">        Pass ``None`` (default) to run an unweighted test.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -2533,7 +2580,7 @@ and <code>null_distribution</code>.</p>
     <span class="n">actual</span><span class="p">,</span> <span class="n">predicted</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">scores</span>
     <span class="n">statistic_name</span><span class="p">,</span> <span class="n">metric</span> <span class="o">=</span> <span class="n">get_shift_metric</span><span class="p">(</span><span class="n">statistic</span><span class="p">)</span>
     <span class="n">_validate_shift_scores</span><span class="p">(</span><span class="n">statistic_name</span><span class="p">,</span> <span class="n">predicted</span><span class="p">)</span>
-    <span class="n">effective_weight</span> <span class="o">=</span> <span class="n">_resolve_weights</span><span class="p">(</span><span class="n">actual</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>
+    <span class="n">effective_weight</span> <span class="o">=</span> <span class="n">_resolve_weights</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">n_source</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">n_target</span><span class="p">)</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">_run_permutation_test</span><span class="p">(</span>
         <span class="n">actual</span><span class="p">,</span>
         <span class="n">predicted</span><span class="p">,</span>

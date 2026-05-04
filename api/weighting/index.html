@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Samesame - Score-vector shift hypothesis tests">
+        <meta name="description" content="Statistical tests for distribution shift — detect and evaluate whether a target sample has drifted from a source sample.">
       
       
         <meta name="author" content="Vathy M. Kamulete">
@@ -1043,10 +1043,10 @@ and target groups.</p>
 </tr>
 <tr>
 <td>You have explicit per-sample weights</td>
-<td>Pass <code>weights=my_weights</code></td>
+<td>Wrap in <code>ContextualWeights(source=..., target=...)</code>, then pass <code>weights=</code></td>
 </tr>
 <tr>
-<td>You have classifier membership probabilities</td>
+<td>You have domain probabilities from a domain classifier</td>
 <td>Build weights with <code>contextual_weights(...)</code>, then pass <code>weights=</code></td>
 </tr>
 </tbody>
@@ -1062,13 +1062,13 @@ and target groups.</p>
 <span class="n">result</span> <span class="o">=</span> <span class="n">samesame</span><span class="o">.</span><span class="n">test_shift</span><span class="p">(</span>
     <span class="n">source</span><span class="o">=</span><span class="n">source_scores</span><span class="p">,</span>
     <span class="n">target</span><span class="o">=</span><span class="n">target_scores</span><span class="p">,</span>
-    <span class="n">weights</span><span class="o">=</span><span class="n">my_weights</span><span class="p">,</span>
+    <span class="n">weights</span><span class="o">=</span><span class="n">samesame</span><span class="o">.</span><span class="n">ContextualWeights</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_weights</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_weights</span><span class="p">),</span>
 <span class="p">)</span>
 
-<span class="c1"># Context-aware weights derived from membership probabilities</span>
+<span class="c1"># Context-aware weights derived from domain probabilities</span>
 <span class="n">weights</span> <span class="o">=</span> <span class="n">contextual_weights</span><span class="p">(</span>
-    <span class="n">source_prob</span><span class="o">=</span><span class="n">source_membership_probs</span><span class="p">,</span>  <span class="c1"># probabilities for source samples</span>
-    <span class="n">target_prob</span><span class="o">=</span><span class="n">target_membership_probs</span><span class="p">,</span>  <span class="c1"># probabilities for target samples</span>
+    <span class="n">source_prob</span><span class="o">=</span><span class="n">source_domain_probs</span><span class="p">,</span>  <span class="c1"># domain probabilities for source samples</span>
+    <span class="n">target_prob</span><span class="o">=</span><span class="n">target_domain_probs</span><span class="p">,</span>  <span class="c1"># domain probabilities for target samples</span>
     <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;source&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">samesame</span><span class="o">.</span><span class="n">test_adverse_shift</span><span class="p">(</span>

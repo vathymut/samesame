@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Samesame - Score-vector shift hypothesis tests">
+        <meta name="description" content="Statistical tests for distribution shift — detect and evaluate whether a target sample has drifted from a source sample.">
       
       
         <meta name="author" content="Vathy M. Kamulete">
@@ -523,9 +523,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-1-generate-membership-probabilities" class="md-nav__link">
+  <a href="#step-1-generate-domain-probabilities" class="md-nav__link">
     <span class="md-ellipsis">
-      Step 1 — Generate membership probabilities
+      Step 1 — Generate domain probabilities
     </span>
   </a>
   
@@ -1051,9 +1051,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-1-generate-membership-probabilities" class="md-nav__link">
+  <a href="#step-1-generate-domain-probabilities" class="md-nav__link">
     <span class="md-ellipsis">
-      Step 1 — Generate membership probabilities
+      Step 1 — Generate domain probabilities
     </span>
   </a>
   
@@ -1116,11 +1116,11 @@
 
 <h1 id="tutorial-adjust-for-covariate-shift-with-importance-weights">Tutorial: Adjust for covariate shift with importance weights<a class="headerlink" href="#tutorial-adjust-for-covariate-shift-with-importance-weights" title="Permanent link">&para;</a></h1>
 <p>This tutorial shows how to use contextual RIW weights when testing for adverse shift.
-You will estimate membership probabilities from a domain classifier, then apply those
+You will estimate domain probabilities from a domain classifier, then apply those
 probabilities as weights while testing a separate harmfulness score stream.</p>
 <p><strong>By the end, you will be able to:</strong></p>
 <ul>
-<li>Compute membership probabilities for contextual weighting</li>
+<li>Compute domain probabilities for contextual weighting</li>
 <li>Keep weighting inputs separate from adverse-shift score inputs</li>
 <li>Run a weighted <code>test_adverse_shift</code> and compare it to the unweighted result</li>
 </ul>
@@ -1130,11 +1130,11 @@ before this tutorial.</p>
 <h2 id="what-you-need">What you need<a class="headerlink" href="#what-you-need" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Two groups to compare (source and target)</li>
-<li>A classifier for estimating membership probabilities</li>
+<li>A domain classifier for estimating domain probabilities</li>
 <li>A separate harmfulness score per sample for <code>test_adverse_shift</code></li>
 </ul>
 <hr />
-<h2 id="step-1-generate-membership-probabilities">Step 1 — Generate membership probabilities<a class="headerlink" href="#step-1-generate-membership-probabilities" title="Permanent link">&para;</a></h2>
+<h2 id="step-1-generate-domain-probabilities">Step 1 — Generate domain probabilities<a class="headerlink" href="#step-1-generate-domain-probabilities" title="Permanent link">&para;</a></h2>
 <p>This matches the detect-distribution-shift setup: train a classifier to distinguish source
 from target and use out-of-sample probabilities.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -1236,7 +1236,7 @@ low-overlap regions. If both are significant, the adverse shift persists in comm
 <hr />
 <h2 id="tips">Tips<a class="headerlink" href="#tips" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Keep score streams separate: membership probabilities are for weighting; adverse-shift
+<li>Keep score streams separate: domain probabilities are for weighting; adverse-shift
   scores should come from a harmfulness signal such as risk, error, or low confidence.</li>
 <li><code>lambda_=0.5</code> is a practical default.</li>
 <li>Use <code>mode="both"</code> when both source and target contain low-overlap outliers.</li>

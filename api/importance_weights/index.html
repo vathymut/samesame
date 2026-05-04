@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Samesame - Score-vector shift hypothesis tests">
+        <meta name="description" content="Statistical tests for distribution shift — detect and evaluate whether a target sample has drifted from a source sample.">
       
       
         <meta name="author" content="Vathy M. Kamulete">
@@ -959,6 +959,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#samesame.weights.ContextualWeights" class="md-nav__link">
+    <span class="md-ellipsis">
+      ContextualWeights
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#samesame.weights.contextual_weights" class="md-nav__link">
     <span class="md-ellipsis">
       contextual_weights
@@ -1069,6 +1078,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#samesame.weights.ContextualWeights" class="md-nav__link">
+    <span class="md-ellipsis">
+      ContextualWeights
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#samesame.weights.contextual_weights" class="md-nav__link">
     <span class="md-ellipsis">
       contextual_weights
@@ -1126,8 +1144,11 @@ other group. If you have no prior knowledge of covariate shift, omit <code>weigh
 </tbody>
 </table>
 <p><code>lambda_</code> controls numerical stability: <code>0.0</code> is the plain density ratio (IWERM); <code>1.0</code> is
-uniform weights (no correction). The default <code>0.5</code> is a safe starting point.
-For guidance on which mode fits your scenario, see
+uniform weights (no correction). The default <code>0.5</code> is a safe starting point.</p>
+<p>Weights for each active group are automatically normalized to sum to that group's sample
+size. In <code>mode="both"</code>, source and target are normalized independently. Non-active groups
+always receive unit weights.</p>
+<p>For guidance on which mode fits your scenario, see
 <a href="../../explanation/importance-weights-rationale/">Why importance weights stabilise shift detection</a>.</p>
 <h2 id="connecting-weights-to-a-shift-test">Connecting weights to a shift test<a class="headerlink" href="#connecting-weights-to-a-shift-test" title="Permanent link">&para;</a></h2>
 <p>Call <code>contextual_weights</code> to build per-sample weights, then pass the result as <code>weights=</code>
@@ -1136,8 +1157,8 @@ to <code>test_shift</code> or <code>test_adverse_shift</code>:</p>
 <span class="kn">from</span><span class="w"> </span><span class="nn">samesame.weights</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextual_weights</span>
 
 <span class="n">weights</span> <span class="o">=</span> <span class="n">contextual_weights</span><span class="p">(</span>
-    <span class="n">source_prob</span><span class="o">=</span><span class="n">source_membership_probs</span><span class="p">,</span>
-    <span class="n">target_prob</span><span class="o">=</span><span class="n">target_membership_probs</span><span class="p">,</span>
+    <span class="n">source_prob</span><span class="o">=</span><span class="n">source_domain_probs</span><span class="p">,</span>
+    <span class="n">target_prob</span><span class="o">=</span><span class="n">target_domain_probs</span><span class="p">,</span>
     <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;source&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">samesame</span><span class="o">.</span><span class="n">test_shift</span><span class="p">(</span>
@@ -1146,7 +1167,7 @@ to <code>test_shift</code> or <code>test_adverse_shift</code>:</p>
     <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
-<p><code>source_prob</code> and <code>target_prob</code> are the membership probabilities for source and target samples
+<p><code>source_prob</code> and <code>target_prob</code> are the domain probabilities for source and target samples
 separately. The prior ratio is inferred automatically from their lengths.
 See <a href="../weighting/">Weighting strategies</a> for a quick-reference comparison of all three
 approaches.</p>
@@ -1186,6 +1207,131 @@ tames them — see
 
 
 
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="samesame.weights.ContextualWeights" class="doc doc-heading">
+            <code>ContextualWeights</code>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#samesame.weights.ContextualWeights" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+
+        <p>Importance weights for source and target groups, used to
+correct for covariate shift between source and target during a shift test.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="samesame.weights.ContextualWeights.source">source</span></code></td>
+            <td>
+                  <code><span title="numpy.typing.NDArray">NDArray</span>[<span title="numpy.float64">float64</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Importance weights for source samples, normalized to sum to
+<code>len(source)</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="samesame.weights.ContextualWeights.target">target</span></code></td>
+            <td>
+                  <code><span title="numpy.typing.NDArray">NDArray</span>[<span title="numpy.float64">float64</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Importance weights for target samples, normalized to sum to
+<code>len(target)</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+              <details class="quote">
+                <summary>Source code in <code>src/samesame/weights.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ContextualWeights</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Importance weights for source and target groups, used to</span>
+<span class="sd">    correct for covariate shift between source and target during a shift test.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    source : NDArray[np.float64]</span>
+<span class="sd">        Importance weights for source samples, normalized to sum to</span>
+<span class="sd">        ``len(source)``.</span>
+<span class="sd">    target : NDArray[np.float64]</span>
+<span class="sd">        Importance weights for target samples, normalized to sum to</span>
+<span class="sd">        ``len(target)``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">source</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+    <span class="n">target</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
 
 <div class="doc doc-object doc-function">
 
@@ -1199,7 +1345,7 @@ tames them — see
     <div class="doc doc-contents ">
 
         <p>Build context-aware sample weights for shift testing.</p>
-<p>Computes per-sample RIW weights from context membership probabilities.
+<p>Computes RIW weights from domain probabilities.
 The prior ratio is always inferred from the lengths of <code>source_prob</code>
 and <code>target_prob</code>.</p>
 
@@ -1224,8 +1370,9 @@ and <code>target_prob</code>.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Per-sample probability of belonging to the target group for source
-samples, in the open interval (0, 1).</p>
+                <p>Domain probabilities for source samples — probability, output by a
+domain classifier, that each source observation belongs to the target
+group. Must be in the open interval (0, 1).</p>
               </div>
             </td>
             <td>
@@ -1241,8 +1388,9 @@ samples, in the open interval (0, 1).</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Per-sample probability of belonging to the target group for target
-samples, in the open interval (0, 1).</p>
+                <p>Domain probabilities for target samples — probability, output by a
+domain classifier, that each target observation belongs to the target
+group. Must be in the open interval (0, 1).</p>
               </div>
             </td>
             <td>
@@ -1258,11 +1406,15 @@ samples, in the open interval (0, 1).</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Which samples to reweight:</p>
+                <p>Context-aware weighting mode — controls which group's samples are
+reweighted:</p>
 <ul>
-<li><code>'source'</code>: reweight source samples only (default).</li>
-<li><code>'target'</code>: reweight target samples only.</li>
-<li><code>'both'</code>: reweight both groups simultaneously.</li>
+<li><code>'source'</code>: reweight source samples only (default). Use when
+  correcting the source distribution to match target.</li>
+<li><code>'target'</code>: reweight target samples only. Use when correcting
+  the target distribution to match source.</li>
+<li><code>'both'</code>: reweight both groups simultaneously. Use when both
+  groups contain low-overlap outliers.</li>
 </ul>
               </div>
             </td>
@@ -1279,8 +1431,11 @@ samples, in the open interval (0, 1).</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>RIW blending parameter in [0, 1]. <code>0.0</code> gives plain density-ratio
-weights; <code>1.0</code> gives uniform weights. Default is <code>0.5</code>.</p>
+                <p>RIW blending coefficient in [0, 1] controlling the trade-off between
+correction strength and variance stability. <code>0.0</code> gives plain
+density-ratio weights (maximum correction, highest variance); <code>1.0</code>
+gives uniform weights (no correction). Default <code>0.5</code> is a balanced
+starting point for most applications.</p>
               </div>
             </td>
             <td>
@@ -1302,13 +1457,18 @@ weights; <code>1.0</code> gives uniform weights. Default is <code>0.5</code>.</p
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="numpy.typing.NDArray">NDArray</span>[<span title="numpy.float64">float64</span>]</code>
+                  <code><a class="autorefs autorefs-internal" title="ContextualWeights
+
+
+  
+      dataclass
+   (samesame.weights.ContextualWeights)" href="#samesame.weights.ContextualWeights">ContextualWeights</a></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Per-sample weights in <code>[source_weights..., target_weights...]</code> order,
-matching the layout of :func:<code>~samesame._data.build_two_sample_dataset</code>.
-Samples not targeted by <code>mode</code> receive weight 1.</p>
+                <p>A frozen dataclass with <code>.source</code> and <code>.target</code> weight arrays.
+Weights for each active group are normalized so they sum to that
+group's sample size. Samples not targeted by <code>mode</code> receive weight 1.</p>
               </div>
             </td>
           </tr>
@@ -1374,34 +1534,22 @@ Samples not targeted by <code>mode</code> receive weight 1.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">samesame.weights</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextual_weights</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">source_prob</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">target_prob</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">contextual_weights</span><span class="p">(</span><span class="n">source_prob</span><span class="o">=</span><span class="n">source_prob</span><span class="p">,</span> <span class="n">target_prob</span><span class="o">=</span><span class="n">target_prob</span><span class="p">),</span> <span class="mi">4</span><span class="p">)</span>
-<span class="go">array([0.5, 0.8, 1. , 1. ])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">contextual_weights</span><span class="p">(</span><span class="n">source_prob</span><span class="o">=</span><span class="n">source_prob</span><span class="p">,</span> <span class="n">target_prob</span><span class="o">=</span><span class="n">target_prob</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">),</span> <span class="mi">4</span><span class="p">)</span>
-<span class="go">array([0.5, 0.8, 0.8, 0.5])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">w</span> <span class="o">=</span> <span class="n">contextual_weights</span><span class="p">(</span><span class="n">source_prob</span><span class="o">=</span><span class="n">source_prob</span><span class="p">,</span> <span class="n">target_prob</span><span class="o">=</span><span class="n">target_prob</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="go">array([0.7692, 1.2308])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="go">array([1., 1.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">w2</span> <span class="o">=</span> <span class="n">contextual_weights</span><span class="p">(</span><span class="n">source_prob</span><span class="o">=</span><span class="n">source_prob</span><span class="p">,</span> <span class="n">target_prob</span><span class="o">=</span><span class="n">target_prob</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">w2</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="go">array([0.7692, 1.2308])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">w2</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="go">array([1.2308, 0.7692])</span>
 </code></pre></div>
 
 
             <details class="quote">
               <summary>Source code in <code>src/samesame/weights.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 44</span>
-<span class="normal"> 45</span>
-<span class="normal"> 46</span>
-<span class="normal"> 47</span>
-<span class="normal"> 48</span>
-<span class="normal"> 49</span>
-<span class="normal"> 50</span>
-<span class="normal"> 51</span>
-<span class="normal"> 52</span>
-<span class="normal"> 53</span>
-<span class="normal"> 54</span>
-<span class="normal"> 55</span>
-<span class="normal"> 56</span>
-<span class="normal"> 57</span>
-<span class="normal"> 58</span>
-<span class="normal"> 59</span>
-<span class="normal"> 60</span>
-<span class="normal"> 61</span>
-<span class="normal"> 62</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 62</span>
 <span class="normal"> 63</span>
 <span class="normal"> 64</span>
 <span class="normal"> 65</span>
@@ -1462,44 +1610,88 @@ Samples not targeted by <code>mode</code> receive weight 1.</p>
 <span class="normal">120</span>
 <span class="normal">121</span>
 <span class="normal">122</span>
-<span class="normal">123</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">contextual_weights</span><span class="p">(</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">contextual_weights</span><span class="p">(</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">source_prob</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
     <span class="n">target_prob</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
     <span class="n">mode</span><span class="p">:</span> <span class="n">WeightingMode</span> <span class="o">=</span> <span class="s2">&quot;source&quot;</span><span class="p">,</span>
     <span class="n">lambda_</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ContextualWeights</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Build context-aware sample weights for shift testing.</span>
 
-<span class="sd">    Computes per-sample RIW weights from context membership probabilities.</span>
+<span class="sd">    Computes RIW weights from domain probabilities.</span>
 <span class="sd">    The prior ratio is always inferred from the lengths of ``source_prob``</span>
 <span class="sd">    and ``target_prob``.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    source_prob : NDArray</span>
-<span class="sd">        Per-sample probability of belonging to the target group for source</span>
-<span class="sd">        samples, in the open interval (0, 1).</span>
+<span class="sd">        Domain probabilities for source samples — probability, output by a</span>
+<span class="sd">        domain classifier, that each source observation belongs to the target</span>
+<span class="sd">        group. Must be in the open interval (0, 1).</span>
 <span class="sd">    target_prob : NDArray</span>
-<span class="sd">        Per-sample probability of belonging to the target group for target</span>
-<span class="sd">        samples, in the open interval (0, 1).</span>
+<span class="sd">        Domain probabilities for target samples — probability, output by a</span>
+<span class="sd">        domain classifier, that each target observation belongs to the target</span>
+<span class="sd">        group. Must be in the open interval (0, 1).</span>
 <span class="sd">    mode : {&#39;source&#39;, &#39;target&#39;, &#39;both&#39;}, optional</span>
-<span class="sd">        Which samples to reweight:</span>
+<span class="sd">        Context-aware weighting mode — controls which group&#39;s samples are</span>
+<span class="sd">        reweighted:</span>
 
-<span class="sd">        - ``&#39;source&#39;``: reweight source samples only (default).</span>
-<span class="sd">        - ``&#39;target&#39;``: reweight target samples only.</span>
-<span class="sd">        - ``&#39;both&#39;``: reweight both groups simultaneously.</span>
+<span class="sd">        - ``&#39;source&#39;``: reweight source samples only (default). Use when</span>
+<span class="sd">          correcting the source distribution to match target.</span>
+<span class="sd">        - ``&#39;target&#39;``: reweight target samples only. Use when correcting</span>
+<span class="sd">          the target distribution to match source.</span>
+<span class="sd">        - ``&#39;both&#39;``: reweight both groups simultaneously. Use when both</span>
+<span class="sd">          groups contain low-overlap outliers.</span>
 
 <span class="sd">    lambda_ : float, optional</span>
-<span class="sd">        RIW blending parameter in [0, 1]. ``0.0`` gives plain density-ratio</span>
-<span class="sd">        weights; ``1.0`` gives uniform weights. Default is ``0.5``.</span>
+<span class="sd">        RIW blending coefficient in [0, 1] controlling the trade-off between</span>
+<span class="sd">        correction strength and variance stability. ``0.0`` gives plain</span>
+<span class="sd">        density-ratio weights (maximum correction, highest variance); ``1.0``</span>
+<span class="sd">        gives uniform weights (no correction). Default ``0.5`` is a balanced</span>
+<span class="sd">        starting point for most applications.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    NDArray[np.float64]</span>
-<span class="sd">        Per-sample weights in ``[source_weights..., target_weights...]`` order,</span>
-<span class="sd">        matching the layout of :func:`~samesame._data.build_two_sample_dataset`.</span>
-<span class="sd">        Samples not targeted by ``mode`` receive weight 1.</span>
+<span class="sd">    ContextualWeights</span>
+<span class="sd">        A frozen dataclass with ``.source`` and ``.target`` weight arrays.</span>
+<span class="sd">        Weights for each active group are normalized so they sum to that</span>
+<span class="sd">        group&#39;s sample size. Samples not targeted by ``mode`` receive weight 1.</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
@@ -1518,10 +1710,16 @@ Samples not targeted by <code>mode</code> receive weight 1.</p>
 <span class="sd">    &gt;&gt;&gt; from samesame.weights import contextual_weights</span>
 <span class="sd">    &gt;&gt;&gt; source_prob = np.array([0.25, 0.4])</span>
 <span class="sd">    &gt;&gt;&gt; target_prob = np.array([0.6, 0.75])</span>
-<span class="sd">    &gt;&gt;&gt; np.round(contextual_weights(source_prob=source_prob, target_prob=target_prob), 4)</span>
-<span class="sd">    array([0.5, 0.8, 1. , 1. ])</span>
-<span class="sd">    &gt;&gt;&gt; np.round(contextual_weights(source_prob=source_prob, target_prob=target_prob, mode=&quot;both&quot;), 4)</span>
-<span class="sd">    array([0.5, 0.8, 0.8, 0.5])</span>
+<span class="sd">    &gt;&gt;&gt; w = contextual_weights(source_prob=source_prob, target_prob=target_prob)</span>
+<span class="sd">    &gt;&gt;&gt; np.round(w.source, 4)</span>
+<span class="sd">    array([0.7692, 1.2308])</span>
+<span class="sd">    &gt;&gt;&gt; np.round(w.target, 4)</span>
+<span class="sd">    array([1., 1.])</span>
+<span class="sd">    &gt;&gt;&gt; w2 = contextual_weights(source_prob=source_prob, target_prob=target_prob, mode=&quot;both&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; np.round(w2.source, 4)</span>
+<span class="sd">    array([0.7692, 1.2308])</span>
+<span class="sd">    &gt;&gt;&gt; np.round(w2.target, 4)</span>
+<span class="sd">    array([1.2308, 0.7692])</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">source_prob</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">source_prob</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
     <span class="n">target_prob</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">target_prob</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -1539,9 +1737,11 @@ Samples not targeted by <code>mode</code> receive weight 1.</p>
     <span class="n">out_target</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_target</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;source&quot;</span><span class="p">,</span> <span class="s2">&quot;both&quot;</span><span class="p">):</span>
         <span class="n">out_source</span> <span class="o">=</span> <span class="n">_riw</span><span class="p">(</span><span class="n">source_dr</span><span class="p">,</span> <span class="n">lam</span><span class="o">=</span><span class="n">lambda_</span><span class="p">)</span>
+        <span class="n">out_source</span> <span class="o">=</span> <span class="n">out_source</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_source</span> <span class="o">/</span> <span class="n">out_source</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
     <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;target&quot;</span><span class="p">,</span> <span class="s2">&quot;both&quot;</span><span class="p">):</span>
         <span class="n">out_target</span> <span class="o">=</span> <span class="n">_inverse_riw</span><span class="p">(</span><span class="n">target_dr</span><span class="p">,</span> <span class="n">lam</span><span class="o">=</span><span class="n">lambda_</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">out_source</span><span class="p">,</span> <span class="n">out_target</span><span class="p">])</span>
+        <span class="n">out_target</span> <span class="o">=</span> <span class="n">out_target</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_target</span> <span class="o">/</span> <span class="n">out_target</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">ContextualWeights</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">out_source</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">out_target</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>

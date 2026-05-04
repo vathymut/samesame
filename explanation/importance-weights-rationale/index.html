@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Samesame - Score-vector shift hypothesis tests">
+        <meta name="description" content="Statistical tests for distribution shift — detect and evaluate whether a target sample has drifted from a source sample.">
       
       
         <meta name="author" content="Vathy M. Kamulete">
@@ -774,6 +774,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#normalization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Normalization
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#three-weighting-modes" class="md-nav__link">
     <span class="md-ellipsis">
       Three weighting modes
@@ -1093,6 +1102,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#normalization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Normalization
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#three-weighting-modes" class="md-nav__link">
     <span class="md-ellipsis">
       Three weighting modes
@@ -1195,7 +1213,7 @@ by the <strong>density ratio</strong>:</p>
 <div class="arithmatex">\[
 w(x) = \frac{p_{\text{target}}(x)}{p_{\text{source}}(x)}
 \]</div>
-<p>In practice, this ratio is estimated from a membership classifier. Let <span class="arithmatex">\(\hat{p}(x)\)</span> be the
+<p>In practice, this ratio is estimated from a domain classifier. Let <span class="arithmatex">\(\hat{p}(x)\)</span> be the
 predicted probability that sample <span class="arithmatex">\(x\)</span> belongs to the target group. Then the estimated density
 ratio is:</p>
 <div class="arithmatex">\[
@@ -1243,7 +1261,21 @@ The parameter `lambda_` controls the trade-off:</p>
 </table>
 <p>Lower values apply more aggressive correction but increase variance. Higher values are more
 conservative. The default `lambda_=0.5` is a good starting point; reduce it if you are
-confident the overlap region is large and the classifier is well-calibrated.</p>
+confident the overlap region is large and the domain classifier is well-calibrated.</p>
+<hr />
+<h2 id="normalization">Normalization<a class="headerlink" href="#normalization" title="Permanent link">&para;</a></h2>
+<p>After computing the raw RIW values, <code>contextual_weights</code> normalizes the weights for each
+active group so they sum to that group's sample size:</p>
+<div class="arithmatex">\[
+w_i^{\text{norm}} = w_i \cdot \frac{n}{\sum_j w_j}
+\]</div>
+<p>This normalization is applied independently per group. Source weights sum to <span class="arithmatex">\(n_{\text{source}}\)</span>,
+target weights sum to <span class="arithmatex">\(n_{\text{target}}\)</span>. Samples not targeted by <code>mode</code> keep weight 1 and
+are not renormalized — their sum is already equal to their group size by construction.</p>
+<p>The effect is to preserve the effective sample size interpretation of each group: weighted
+averages computed over the group behave like unweighted averages over a representative
+sample of that size. It also prevents the overall scale of weights from drifting when group
+sizes are unequal.</p>
 <hr />
 <h2 id="three-weighting-modes">Three weighting modes<a class="headerlink" href="#three-weighting-modes" title="Permanent link">&para;</a></h2>
 <p><code>contextual_weights</code> supports three modes that differ in which group receives non-unit weights:</p>
