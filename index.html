@@ -1126,7 +1126,9 @@
 <blockquote>
 <p>Same, same but different ...</p>
 </blockquote>
-<p><code>samesame</code> helps you compare a source sample with a target sample.</p>
+<p><code>samesame</code> helps you compare a source sample with a target sample.
+The <strong>source</strong> is your reference — typically training data or an earlier time period.
+The <strong>target</strong> is what you're comparing against — typically production data or a later period.</p>
 <p>It answers two practical questions:</p>
 <ul>
 <li>Did anything change? Use <code>test_shift(...)</code>.</li>
@@ -1176,7 +1178,7 @@ If the first is small and the second is large, the data changed but not in a cle
 </ol>
 <p>Both tests are <strong>permutation-based</strong>, so no distributional assumptions are required.</p>
 <p>When you know that source and target have different feature distributions — covariate shift —
-you can supply per-sample importance weights to focus the test on the region where both groups
+you can supply sample importance weights to focus the test on the region where both groups
 overlap. See <a href="examples/tutorials/adjust-for-covariate-shift/">Adjust for covariate shift with importance weights</a>.</p>
 <h2 id="where-to-go-next">Where to go next<a class="headerlink" href="#where-to-go-next" title="Permanent link">&para;</a></h2>
 <p>Step-by-step examples are available in the <a href="https://vathymut.github.io/samesame/">documentation</a>:</p>
@@ -1188,7 +1190,7 @@ overlap. See <a href="examples/tutorials/adjust-for-covariate-shift/">Adjust for
 <p><strong>How-to guides</strong></p>
 <ul>
 <li><a href="https://vathymut.github.io/samesame/examples/credit/monitor-credit-risk/">Monitor a credit risk model</a></li>
-<li><a href="https://vathymut.github.io/samesame/examples/credit/monitor-prediction-errors/">Monitor prediction errors with per-sample scores</a></li>
+<li><a href="https://vathymut.github.io/samesame/examples/credit/monitor-prediction-errors/">Monitor prediction errors when labels are available</a></li>
 <li><a href="https://vathymut.github.io/samesame/examples/credit/monitor-confidence-ood/">Monitor model confidence</a></li>
 </ul>
 <h2 id="dependencies">Dependencies<a class="headerlink" href="#dependencies" title="Permanent link">&para;</a></h2>

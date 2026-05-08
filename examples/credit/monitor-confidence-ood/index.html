@@ -1246,7 +1246,7 @@ Complete that guide first — it introduces the HELOC dataset and the credit mod
 but focuses on confidence rather than business risk. In the credit-risk guide, predicted default
 probability has direct business meaning. Here, we use an <strong>out-of-distribution (OOD) outlier score</strong> to
 monitor whether predictions become less certain.</p>
-<p>If ground-truth labels are available for the test set, per-sample prediction errors (Brier score, log-loss) provide a more direct measure of model accuracy; see <a href="../monitor-prediction-errors/">Monitor prediction errors</a>.</p>
+<p>If ground-truth labels are available for the test set, prediction errors for each row (Brier score, log-loss) provide a more direct measure of model accuracy; see <a href="../monitor-prediction-errors/">Monitor prediction errors when labels are available</a>.</p>
 <h2 id="two-kinds-of-monitoring-signals">Two kinds of monitoring signals<a class="headerlink" href="#two-kinds-of-monitoring-signals" title="Permanent link">&para;</a></h2>
 <p>The key distinction is:</p>
 <table>

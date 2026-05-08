@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#how-to-monitor-prediction-errors-with-per-sample-scores" class="md-skip">
+        <a href="#how-to-monitor-prediction-errors-when-labels-are-available" class="md-skip">
           Skip to content
         </a>
       
@@ -639,9 +639,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-2-compute-per-sample-prediction-errors" class="md-nav__link">
+  <a href="#step-2-compute-prediction-errors-for-each-row" class="md-nav__link">
     <span class="md-ellipsis">
-      Step 2 — Compute per-sample prediction errors
+      Step 2 — Compute prediction errors for each row
     </span>
   </a>
   
@@ -1096,9 +1096,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-2-compute-per-sample-prediction-errors" class="md-nav__link">
+  <a href="#step-2-compute-prediction-errors-for-each-row" class="md-nav__link">
     <span class="md-ellipsis">
-      Step 2 — Compute per-sample prediction errors
+      Step 2 — Compute prediction errors for each row
     </span>
   </a>
   
@@ -1168,14 +1168,14 @@
   
 
 
-<h1 id="how-to-monitor-prediction-errors-with-per-sample-scores">How to: Monitor prediction errors with per-sample scores<a class="headerlink" href="#how-to-monitor-prediction-errors-with-per-sample-scores" title="Permanent link">&para;</a></h1>
+<h1 id="how-to-monitor-prediction-errors-when-labels-are-available">How to: Monitor prediction errors when labels are available<a class="headerlink" href="#how-to-monitor-prediction-errors-when-labels-are-available" title="Permanent link">&para;</a></h1>
 <p><strong>Use this guide when:</strong> ground-truth labels are available for both the training and test sets,
-and you want to test whether the model’s per-sample prediction errors are systematically higher
+and you want to test whether the model's prediction errors are systematically higher for each row
 on the test set.</p>
-<p><strong>What you’ll do:</strong></p>
+<p><strong>What you'll do:</strong></p>
 <ul>
 <li>Fit a credit risk model on a random training split using out-of-bag predictions</li>
-<li>Compute per-sample Brier scores and log-losses</li>
+<li>Compute a Brier score and log-loss for each row</li>
 <li>Test whether either score is adversely shifted between training and test</li>
 </ul>
 <div class="admonition note">
@@ -1191,8 +1191,8 @@ on the test set.</p>
 </ul>
 <hr />
 <h2 id="the-scenario">The scenario<a class="headerlink" href="#the-scenario" title="Permanent link">&para;</a></h2>
-<p>When ground-truth labels are available for a test set, per-sample prediction errors provide a
-direct measure of model accuracy on each row. Two standard choices are the <strong>Brier score</strong> and
+<p>When ground-truth labels are available for a test set, prediction errors for each row provide a
+direct measure of model accuracy. Two standard choices are the <strong>Brier score</strong> and
 <strong>log-loss</strong>.</p>
 <p>For a predicted probability <span class="arithmatex">\(\hat{p}\)</span> and true label <span class="arithmatex">\(y \in \{0, 1\}\)</span>:</p>
 <ul>
@@ -1202,7 +1202,7 @@ direct measure of model accuracy on each row. Two standard choices are the <stro
   predictions more heavily than the Brier score.</li>
 </ul>
 <p>For both scores, larger values mean worse predictions. They can therefore serve directly as the
-per-sample adversity score that `test_adverse_shift(...)` expects.</p>
+the adversity score for each row that <code>test_adverse_shift(...)</code> expects.</p>
 <p>Note that these scores require labels. They are not available during production monitoring when
 outcomes are delayed, but they are appropriate for evaluating a held-out test set or a labelled
 historical batch.</p>
@@ -1210,7 +1210,7 @@ historical batch.</p>
 <ul>
 <li>Use <a href="../monitor-credit-risk/">Monitor a credit risk model</a> when you need a label-free business-risk signal.</li>
 <li>Use <a href="../monitor-confidence-ood/">Monitor model confidence</a> when you need a label-free confidence signal.</li>
-<li>Use this guide when labels are available and you want direct per-sample error measures.</li>
+<li>Use this guide when labels are available and you want a direct error measure for each row.</li>
 </ul>
 <hr />
 <h2 id="setup">Setup<a class="headerlink" href="#setup" title="Permanent link">&para;</a></h2>
@@ -1261,7 +1261,7 @@ artificially low error scores and bias the comparison.</p>
 <span class="n">p_test</span>  <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_test</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>   <span class="c1"># standard predictions for test</span>
 </code></pre></div>
 <hr />
-<h2 id="step-2-compute-per-sample-prediction-errors">Step 2 — Compute per-sample prediction errors<a class="headerlink" href="#step-2-compute-per-sample-prediction-errors" title="Permanent link">&para;</a></h2>
+<h2 id="step-2-compute-prediction-errors-for-each-row">Step 2 — Compute prediction errors for each row<a class="headerlink" href="#step-2-compute-prediction-errors-for-each-row" title="Permanent link">&para;</a></h2>
 <p>Each row receives one error score. Both Brier score and log-loss are computed from the true label
 and the predicted probability for that row.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Brier score: squared difference between predicted probability and true label</span>
@@ -1379,8 +1379,8 @@ confirm or revise the earlier assessment.</p>
 <hr />
 <h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Per-sample prediction errors</strong> require ground-truth labels but directly measure how wrong the
-  model was on each row.</li>
+<li><strong>Prediction errors for each row</strong> require ground-truth labels but directly measure how wrong the
+  model was on that row.</li>
 <li>Use <strong>OOB predictions</strong> for the training set to avoid evaluating the model on data it was
   trained on, which would produce artificially low error scores.</li>
 <li>For this stratified random split, neither score shows significant adverse shift (p ≈ 0.27) —

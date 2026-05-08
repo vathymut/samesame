@@ -1365,7 +1365,7 @@ the model for the new population.</p>
   and <code>test_adverse_shift(...)</code> tells you <em>whether it matters</em>.</li>
 <li>In this example, <strong>predicted risk increased</strong>, but in the companion <a href="../monitor-confidence-ood/">how-to guide</a>, <strong>model
   confidence did not worsen</strong>. Those are different signals and both are worth monitoring.</li>
-<li>If labels are available for the test set, per-sample prediction errors (Brier score, log-loss) provide a direct measure of model accuracy; see <a href="../monitor-prediction-errors/">Monitor prediction errors</a>.</li>
+<li>If labels are available for the test set, prediction errors for each row (Brier score, log-loss) provide a direct measure of model accuracy; see <a href="../monitor-prediction-errors/">Monitor prediction errors when labels are available</a>.</li>
 <li>If your model output is not itself a meaningful risk value, use a confidence score instead; see
   <a href="../monitor-confidence-ood/">Monitor model confidence</a>.</li>
 </ul>

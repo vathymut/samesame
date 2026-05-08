@@ -1228,7 +1228,7 @@ Bayesian evidence is available separately via <code>adverse_shift_posterior</cod
     <span class="n">alternative</span><span class="o">=</span><span class="s2">&quot;greater&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="c1"># Explicit per-sample weights wrapped in ContextualWeights</span>
+<span class="c1"># Sample weights wrapped in ContextualWeights</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">samesame</span><span class="o">.</span><span class="n">test_shift</span><span class="p">(</span>
     <span class="n">source</span><span class="o">=</span><span class="n">source_scores</span><span class="p">,</span>
     <span class="n">target</span><span class="o">=</span><span class="n">target_scores</span><span class="p">,</span>
@@ -1774,26 +1774,7 @@ hypothesis that source and target are from the same distribution.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/samesame/_api.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">248</span>
-<span class="normal">249</span>
-<span class="normal">250</span>
-<span class="normal">251</span>
-<span class="normal">252</span>
-<span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span>
-<span class="normal">256</span>
-<span class="normal">257</span>
-<span class="normal">258</span>
-<span class="normal">259</span>
-<span class="normal">260</span>
-<span class="normal">261</span>
-<span class="normal">262</span>
-<span class="normal">263</span>
-<span class="normal">264</span>
-<span class="normal">265</span>
-<span class="normal">266</span>
-<span class="normal">267</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">267</span>
 <span class="normal">268</span>
 <span class="normal">269</span>
 <span class="normal">270</span>
@@ -1847,7 +1828,23 @@ hypothesis that source and target are from the same distribution.</p>
 <span class="normal">318</span>
 <span class="normal">319</span>
 <span class="normal">320</span>
-<span class="normal">321</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">adverse_shift_posterior</span><span class="p">(</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">adverse_shift_posterior</span><span class="p">(</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">source</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
     <span class="n">target</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
@@ -1899,12 +1896,9 @@ hypothesis that source and target are from the same distribution.</p>
 <span class="sd">    --------</span>
 <span class="sd">    test_adverse_shift : Run the permutation test for adverse shift.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">dataset</span> <span class="o">=</span> <span class="n">build_two_sample_dataset</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-    <span class="n">actual</span><span class="p">,</span> <span class="n">predicted</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">scores</span>
-    <span class="n">validated_direction</span> <span class="o">=</span> <span class="n">validate_direction</span><span class="p">(</span><span class="n">direction</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">validated_direction</span> <span class="o">==</span> <span class="s2">&quot;higher-is-better&quot;</span><span class="p">:</span>
-        <span class="n">predicted</span> <span class="o">=</span> <span class="o">-</span><span class="n">predicted</span>
-    <span class="n">effective_weight</span> <span class="o">=</span> <span class="n">_resolve_weights</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">n_source</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">n_target</span><span class="p">)</span>
+    <span class="n">actual</span><span class="p">,</span> <span class="n">predicted</span><span class="p">,</span> <span class="n">_direction</span><span class="p">,</span> <span class="n">effective_weight</span> <span class="o">=</span> <span class="n">_prepare_adverse_shift</span><span class="p">(</span>
+        <span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">direction</span><span class="p">,</span> <span class="n">weights</span>
+    <span class="p">)</span>
     <span class="n">posterior</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
         <span class="n">bayesian_posterior</span><span class="p">(</span>
             <span class="n">actual</span><span class="p">,</span>
@@ -2118,29 +2112,7 @@ and <code>null_distribution</code>.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/samesame/_api.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">176</span>
-<span class="normal">177</span>
-<span class="normal">178</span>
-<span class="normal">179</span>
-<span class="normal">180</span>
-<span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span>
-<span class="normal">184</span>
-<span class="normal">185</span>
-<span class="normal">186</span>
-<span class="normal">187</span>
-<span class="normal">188</span>
-<span class="normal">189</span>
-<span class="normal">190</span>
-<span class="normal">191</span>
-<span class="normal">192</span>
-<span class="normal">193</span>
-<span class="normal">194</span>
-<span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span>
-<span class="normal">198</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">198</span>
 <span class="normal">199</span>
 <span class="normal">200</span>
 <span class="normal">201</span>
@@ -2187,7 +2159,26 @@ and <code>null_distribution</code>.</p>
 <span class="normal">242</span>
 <span class="normal">243</span>
 <span class="normal">244</span>
-<span class="normal">245</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_adverse_shift</span><span class="p">(</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_adverse_shift</span><span class="p">(</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">source</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
     <span class="n">target</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
@@ -2235,12 +2226,9 @@ and <code>null_distribution</code>.</p>
 <span class="sd">    --------</span>
 <span class="sd">    adverse_shift_posterior : Compute Bayesian evidence on top of this result.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">dataset</span> <span class="o">=</span> <span class="n">build_two_sample_dataset</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-    <span class="n">actual</span><span class="p">,</span> <span class="n">predicted</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">scores</span>
-    <span class="n">validated_direction</span> <span class="o">=</span> <span class="n">validate_direction</span><span class="p">(</span><span class="n">direction</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">validated_direction</span> <span class="o">==</span> <span class="s2">&quot;higher-is-better&quot;</span><span class="p">:</span>
-        <span class="n">predicted</span> <span class="o">=</span> <span class="o">-</span><span class="n">predicted</span>
-    <span class="n">effective_weight</span> <span class="o">=</span> <span class="n">_resolve_weights</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">n_source</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">n_target</span><span class="p">)</span>
+    <span class="n">actual</span><span class="p">,</span> <span class="n">predicted</span><span class="p">,</span> <span class="n">validated_direction</span><span class="p">,</span> <span class="n">effective_weight</span> <span class="o">=</span> <span class="n">_prepare_adverse_shift</span><span class="p">(</span>
+        <span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">direction</span><span class="p">,</span> <span class="n">weights</span>
+    <span class="p">)</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">_run_permutation_test</span><span class="p">(</span>
         <span class="n">actual</span><span class="p">,</span>
         <span class="n">predicted</span><span class="p">,</span>
@@ -2464,29 +2452,7 @@ and <code>null_distribution</code>.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/samesame/_api.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">107</span>
-<span class="normal">108</span>
-<span class="normal">109</span>
-<span class="normal">110</span>
-<span class="normal">111</span>
-<span class="normal">112</span>
-<span class="normal">113</span>
-<span class="normal">114</span>
-<span class="normal">115</span>
-<span class="normal">116</span>
-<span class="normal">117</span>
-<span class="normal">118</span>
-<span class="normal">119</span>
-<span class="normal">120</span>
-<span class="normal">121</span>
-<span class="normal">122</span>
-<span class="normal">123</span>
-<span class="normal">124</span>
-<span class="normal">125</span>
-<span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
-<span class="normal">129</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">129</span>
 <span class="normal">130</span>
 <span class="normal">131</span>
 <span class="normal">132</span>
@@ -2530,7 +2496,29 @@ and <code>null_distribution</code>.</p>
 <span class="normal">170</span>
 <span class="normal">171</span>
 <span class="normal">172</span>
-<span class="normal">173</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_shift</span><span class="p">(</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_shift</span><span class="p">(</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">source</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
     <span class="n">target</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>

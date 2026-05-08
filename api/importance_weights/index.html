@@ -1151,7 +1151,7 @@ always receive unit weights.</p>
 <p>For guidance on which mode fits your scenario, see
 <a href="../../explanation/importance-weights-rationale/">Why importance weights stabilise shift detection</a>.</p>
 <h2 id="connecting-weights-to-a-shift-test">Connecting weights to a shift test<a class="headerlink" href="#connecting-weights-to-a-shift-test" title="Permanent link">&para;</a></h2>
-<p>Call <code>contextual_weights</code> to build per-sample weights, then pass the result as <code>weights=</code>
+<p>Call <code>contextual_weights</code> to build sample weights, then pass the result as <code>weights=</code>
 to <code>test_shift</code> or <code>test_adverse_shift</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">samesame</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">samesame.weights</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextual_weights</span>

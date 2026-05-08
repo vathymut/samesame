@@ -1042,7 +1042,7 @@ and target groups.</p>
 <td>Omit <code>weights</code></td>
 </tr>
 <tr>
-<td>You have explicit per-sample weights</td>
+<td>You have sample weights</td>
 <td>Wrap in <code>ContextualWeights(source=..., target=...)</code>, then pass <code>weights=</code></td>
 </tr>
 <tr>
@@ -1058,7 +1058,7 @@ and target groups.</p>
 <span class="c1"># No weighting (default)</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">samesame</span><span class="o">.</span><span class="n">test_shift</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_scores</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_scores</span><span class="p">)</span>
 
-<span class="c1"># Explicit per-sample weights you computed yourself</span>
+<span class="c1"># Sample weights computed yourself</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">samesame</span><span class="o">.</span><span class="n">test_shift</span><span class="p">(</span>
     <span class="n">source</span><span class="o">=</span><span class="n">source_scores</span><span class="p">,</span>
     <span class="n">target</span><span class="o">=</span><span class="n">target_scores</span><span class="p">,</span>
