@@ -18,7 +18,7 @@ but focuses on confidence rather than business risk. In the credit-risk guide, p
 probability has direct business meaning. Here, we use an **out-of-distribution (OOD) outlier score** to
 monitor whether predictions become less certain.
 
-If ground-truth labels are available for the test set, per-sample prediction errors (Brier score, log-loss) provide a more direct measure of model accuracy; see [Monitor prediction errors](monitor-prediction-errors.md).
+If ground-truth labels are available for the test set, prediction errors for each row (Brier score, log-loss) provide a more direct measure of model accuracy; see [Monitor prediction errors when labels are available](monitor-prediction-errors.md).
 
 ## Two kinds of monitoring signals
 

@@ -27,7 +27,7 @@ For guidance on which mode fits your scenario, see
 
 ## Connecting weights to a shift test
 
-Call `contextual_weights` to build per-sample weights, then pass the result as `weights=`
+Call `contextual_weights` to build sample weights, then pass the result as `weights=`
 to `test_shift` or `test_adverse_shift`:
 
 ```python

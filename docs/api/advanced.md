@@ -27,7 +27,7 @@ result = samesame.test_shift(
     alternative="greater",
 )
 
-# Explicit per-sample weights wrapped in ContextualWeights
+# Sample weights wrapped in ContextualWeights
 result = samesame.test_shift(
     source=source_scores,
     target=target_scores,

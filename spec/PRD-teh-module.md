@@ -1,6 +1,6 @@
 ---
-title: "PRD: Subgroup Testing Module — samesame.subgroup"
-version: 1.1
+title: "PRD: RCT Validation Modules — samesame.subgroup + samesame.model_selection"
+version: 1.2
 date_created: 2026-05-01
 date_revised: 2026-05-07
 owner: Research Team
@@ -8,7 +8,7 @@ reference: "Watson & Holmes (2020): Machine learning analysis plans for randomis
 tags: [prd, subgroup, rct, ab-test, feature-expansion, statistical-validation]
 ---
 
-# PRD: Subgroup Testing Module
+# PRD: RCT Validation Modules
 
 ## 1. Executive Summary
 
@@ -31,7 +31,7 @@ When teams run two-arm experiments, data scientists often build ML models to fin
 Implement a `samesame.subgroup` module — part of samesame's broader mission of *rigorous statistical comparison of groups for ML engineers and analysts* — that answers two concrete questions:
 
 1. **Are there real subgroups with different responses to the two arms?** (Not just random noise)
-2. **Does an ML model capture more of that heterogeneity than a reference model?** (With statistical proof)
+2. **Does an estimator predict who benefits from the superior arm better than a reference estimator?** (With statistical proof)
 
 The module uses a peer-reviewed statistical framework (Watson & Holmes 2020) that controls false positives by design. The API is simple: provide experiment data and an unfitted model spec; receive a p-value.
 
@@ -67,7 +67,7 @@ This module answers exactly **two** questions:
 
 You give the module:
 - Experiment data (subject features, treatment arm, binary outcome)
-- An unfitted ML model spec (Random Forest, XGBoost, whatever)
+- An unfitted estimator spec (Random Forest, logistic regression, XGBoost, whatever)
 
 The module returns:
 - A p-value: "This result would happen by random chance ~X% of the time"
@@ -76,18 +76,22 @@ The module returns:
 
 ---
 
-#### **Question 2: Does the ML model capture more heterogeneity than a reference model?**
-*Not just "this model fits the data," but "this model detects more signal than a simple baseline"?*
+#### **Question 2: Does the estimator predict who benefits from the superior arm better than a reference estimator?**
+*Not just "this model fits the data," but "this estimator identifies variation in treatment benefit more precisely than a simple baseline"?*
 
 You give the module:
 - Experiment data
-- An unfitted ML model spec
-- An unfitted reference model spec (e.g., logistic regression)
+- An unfitted estimator spec
+- An unfitted reference estimator spec (e.g., logistic regression)
 
 The module returns:
 - A p-value: "This difference would happen by random chance ~X% of the time"
-- If p < 0.05: Your ML model detects more heterogeneity than the reference. It earns its complexity.
-- If p ≥ 0.05: You don't have evidence yet. Collect more data or try a different model.
+- If p < 0.05: Your estimator predicts treatment benefit better than the reference. It earns its complexity.
+- If p ≥ 0.05: You don't have evidence yet. Collect more data or try a different estimator.
+
+---
+
+> **On test ordering**: For most experiments where one arm is expected to win, running `test_model_lift` first (weaker claim: does the estimator predict degree of benefit better than a reference?) and `test_subgroup_effect` second (stronger claim: do genuine crossover subgroups exist?) is the natural sequence. Watson & Holmes (2020) may provide a specific recommended order — confirm against the paper before prescribing this in documentation.
 
 ---
 
@@ -95,11 +99,11 @@ The module returns:
 
 #### **Story 1: Test for real subgroup effects**
 
-> As a data scientist, I want to validate that my ML model found actual subgroups with different treatment responses — not just patterns from random noise — so that I can confidently recommend a subgroup-based strategy to leadership.
+> As a data scientist, I want to validate that my estimator found actual subgroups with different treatment responses — not just patterns from random noise — so that I can confidently recommend a subgroup-based strategy to leadership.
 
 **Acceptance Criteria:**
 
-- `samesame.subgroup.test_subgroup_effect(y, treatment, features, ml_model)` runs without error
+- `samesame.subgroup.test_subgroup_effect(y, treatment, features, estimator)` runs without error
 - Returns a `SubgroupResult` with `.pvalue`
 - If I pass null (random) data, the p-value is ≥ 0.05 most of the time (prevents false alarms)
 - If I pass data with a real crossover subgroup, the p-value is < 0.05 (catches real signals)
@@ -111,32 +115,30 @@ The module returns:
 
 ---
 
-#### **Story 2: Validate an ML model against a reference model**
+#### **Story 2: Validate an estimator against a reference estimator**
 
-> As a product manager, I want a statistical test that proves our ML model would actually detect more heterogeneity than a simple reference model in a fresh experiment — not just that it looks better on the data we used — so I can confidently approve the engineering effort to deploy it.
+> As a product manager, I want a statistical test that proves our estimator would actually predict who benefits from the superior arm better than a simple reference estimator in a fresh experiment — not just that it looks better on the data we used — so I can confidently approve the engineering effort to deploy it.
 
 **Acceptance Criteria:**
 
-- `samesame.subgroup.test_model_lift(y, treatment, features, ml_model, reference_model)` runs without error
+- `samesame.model_selection.test_model_lift(y, treatment, features, estimator, reference_estimator)` runs without error
 - Returns a `SubgroupResult` with `.pvalue`
-- If both models are equivalent, the p-value is ≥ 0.05 (no false alarm)
-- If the ML model is genuinely better, the p-value is < 0.05 (detects improvement)
+- If both estimators are equivalent, the p-value is ≥ 0.05 (no false alarm)
+- If the estimator is genuinely better, the p-value is < 0.05 (detects improvement)
 - Same input + same `random_state` always gives the same p-value
-- Raises a clear `ValueError` if either model doesn't support `.predict_proba()`
-- Both `ml_model` and `reference_model` are user-supplied unfitted estimators
+- Raises a clear `ValueError` if either estimator doesn't support `.predict_proba()`
+- Both `estimator` and `reference_estimator` are user-supplied unfitted estimators
 
 ---
 
-#### **Story 3: Understand what the p-value means**
+#### **Story 3: Communicate results to a non-technical stakeholder**
 
-> As a business stakeholder, I want clear documentation on what this number means and how to interpret it, so I can make yes/no decisions with confidence.
+> As a data scientist, I want a worked example with real numbers that I can share with a business stakeholder, so that they can make a yes/no decision without needing to understand the statistical machinery.
 
 **Acceptance Criteria:**
 
-- Documentation explains: "p < 0.05 means we have strong evidence of a real effect. A lower p-value is more convincing."
-- Documentation explains: "p ≥ 0.05 means this could easily be random noise. Don't act yet."
-- Documentation includes a worked example with actual numbers (pricing experiment as the motivating case)
-- A data scientist can read the docstring and explain the result to a non-technical stakeholder in one sentence
+- Documentation includes a worked example with actual numbers (pricing experiment as the motivating case) showing inputs, the returned p-value, and a one-sentence conclusion a stakeholder can act on
+- A data scientist can read the docstring and relay the result to a non-technical stakeholder in one sentence
 - No jargon in user-facing API docs or docstring summary lines (paper terms such as "crossover TEH" and "Meinshausen" are confined to docstring `Notes` sections for researchers)
 
 ---
@@ -169,9 +171,11 @@ For full technical details see [Watson & Holmes (2020)](https://doi.org/10.1186/
 
 ```
 src/samesame/
-  subgroup.py             ← new module: public API + all private helpers
+  subgroup.py             ← test_subgroup_effect: public API + private helpers
+  model_selection.py      ← test_model_lift: public API + private helpers
 tests/
-  test_subgroup.py        ← unit + integration tests
+  test_subgroup.py        ← unit + integration tests for samesame.subgroup
+  test_model_selection.py ← unit + integration tests for samesame.model_selection
 notebooks/
   seaquamat_replication.ipynb  ← reproducibility check (not in CI)
 ```
@@ -182,14 +186,14 @@ notebooks/
 
 ### Public API
 
-**Function 1: Test for real subgroup effects**
+**`samesame.subgroup` — Test for real subgroup effects**
 
 ```python
 samesame.subgroup.test_subgroup_effect(
     y,                    # binary outcome: 1 (event) or 0 (no event)
     treatment,            # binary arm assignment: 1 or 0 (must be fully randomised)
     features,             # subject features, 2D array of shape (n_subjects, n_features)
-    ml_model,             # unfitted sklearn-compatible estimator with .predict_proba()
+    estimator,            # unfitted sklearn-compatible estimator with .predict_proba()
     *,                    # keyword-only after this point
     n_splits=200,         # number of balanced two-fold splits
     random_state=None,    # int | np.random.RandomState | None — for reproducibility
@@ -203,15 +207,15 @@ samesame.subgroup.test_subgroup_effect(
 
 ---
 
-**Function 2: Validate ML model lift over a reference model**
+**`samesame.model_selection` — Validate estimator lift over a reference estimator**
 
 ```python
-samesame.subgroup.test_model_lift(
+samesame.model_selection.test_model_lift(
     y,                    # binary outcome: 1 (event) or 0 (no event)
     treatment,            # binary arm assignment: 1 or 0
     features,             # subject features, 2D array
-    ml_model,             # unfitted sklearn-compatible estimator
-    reference_model,      # unfitted sklearn-compatible reference estimator
+    estimator,            # unfitted sklearn-compatible estimator
+    reference_estimator,  # unfitted sklearn-compatible reference estimator
     *,
     n_splits=200,
     random_state=None,
@@ -219,7 +223,7 @@ samesame.subgroup.test_model_lift(
 ```
 
 **Returns** a `SubgroupResult`:
-- `.pvalue` — if < 0.05, the ML model captures significantly more heterogeneity than the reference.
+- `.pvalue` — if < 0.05, the estimator predicts treatment benefit significantly better than the reference estimator.
 
 ---
 
@@ -230,12 +234,12 @@ samesame.subgroup.test_model_lift(
 | `y` | array-like | Binary (0 or 1) | `[0, 1, 1, 0, 1, ...]` |
 | `treatment` | array-like | Binary (0 or 1); fully randomised, independent of features | `[0, 1, 1, 0, 1, ...]` |
 | `features` | array-like | 2D, shape `(n_subjects, n_features)` | `[[age, income], ...]` |
-| `ml_model` | object | **Unfitted** sklearn estimator with `.predict_proba()` | `RandomForestClassifier(n_estimators=100)` |
-| `reference_model` | object | **Unfitted** sklearn estimator with `.predict_proba()` | `LogisticRegression()` |
+| `estimator` | object | **Unfitted** sklearn-compatible estimator with `.predict_proba()` | `RandomForestClassifier(n_estimators=100)` |
+| `reference_estimator` | object | **Unfitted** sklearn-compatible estimator with `.predict_proba()` | `LogisticRegression()` |
 
 **Critical constraint:** `treatment` must be **fully randomised and independent of `features`** — i.e., `P(treatment=1 | features) = 0.5` for all subjects. If arms were assigned based on subject characteristics (e.g., contextual bandits, non-random targeting), this module cannot be validly applied without IPS correction.
 
-**Why unfitted?** Both `ml_model` and `reference_model` must be unfitted estimator specs. The function fits and refits them internally across all `n_splits` splits using `sklearn.base.clone()`. Passing a pre-fitted model would leak training data into held-out test splits and invalidate the p-value.
+**Why unfitted?** Both `estimator` and `reference_estimator` must be unfitted estimator specs. The function fits and refits them internally across all `n_splits` splits using `sklearn.base.clone()`. Passing a pre-fitted model would leak training data into held-out test splits and invalidate the p-value.
 
 ---
 
@@ -265,19 +269,19 @@ This is consistent with `ShiftDetails` and `AdverseShiftDetails` in shape. `Test
 ### Integration Points
 
 - **New dependencies**: None. Uses `numpy`, `scipy.stats`, `scikit-learn` — all already in samesame's dependency tree.
-- **`__init__.py`**: `from . import subgroup` — exposed as `samesame.subgroup.*`. Functions are **not** hoisted to the `samesame.*` top-level namespace.
+- **`__init__.py`**: `from . import subgroup` and `from . import model_selection` — exposed as `samesame.subgroup.*` and `samesame.model_selection.*`. Functions are **not** hoisted to the `samesame.*` top-level namespace.
 - **`pyproject.toml`**: No changes.
 - **`samesame._types`**: Add `SubgroupResult` alongside existing result types.
 - **Existing modules**: `test_shift`, `test_adverse_shift`, `importance_weights`, `weights` — completely untouched.
-- **Docs nav**: New Tutorial page (*"Validate a pricing experiment"*) and new API reference page (`api/subgroup.md`). Update `site_description` in `mkdocs.yml`.
+- **Docs nav**: New Tutorial page (*"Validate a pricing experiment"*) and two new API reference pages (`api/subgroup.md`, `api/model_selection.md`). Update `site_description` in `mkdocs.yml`.
 
 ---
 
 ### What "Real Evidence" Means
 
-- **p < 0.05**: Strong evidence. Less than 5% chance this happened by random noise.
-- **p < 0.01**: Very strong evidence. Less than 1% chance.
-- **p ≥ 0.05**: No convincing evidence. Could easily be random noise. Don't act yet.
+- **p < 0.05**: Strong evidence of a real effect.
+- **p < 0.01**: Very strong evidence.
+- **p ≥ 0.05**: No convincing evidence; do not act yet.
 
 ---
 
@@ -298,7 +302,7 @@ Same data + same `random_state` → always the same p-value (bit-for-bit identic
 
 ### Experimental Status
 
-`samesame.subgroup` is marked **experimental** in the module-level docstring and in the API reference page. This means the API may change before a v2.0 stability guarantee. It does not imply correctness concerns. No runtime warning is emitted at import — a docstring note is sufficient for v1.
+Both `samesame.subgroup` and `samesame.model_selection` are marked **experimental** in their module-level docstrings and in their respective API reference pages. This means the API may change before a v2.0 stability guarantee. It does not imply correctness concerns. No runtime warning is emitted at import — a docstring note is sufficient for v1.
 
 ---
 
@@ -319,7 +323,7 @@ Same data + same `random_state` → always the same p-value (bit-for-bit identic
 
 | Risk | Likelihood | Impact | Mitigation |
 |------|-----------|--------|------------|
-| Analysts distrust p-values / need more context | High | Medium | Provide clear, non-technical interpretation. Use "strong evidence" vs. "no evidence," not "statistically significant." |
+| Analysts need to relay results to non-technical stakeholders | Medium | Medium | Provide a worked example (see Story 3) that data scientists can share directly. |
 | Over-adoption without understanding the randomisation assumption | Medium | Medium | Docstrings must front-load the requirement. Raise errors on detectable violations. |
 
 ---
@@ -328,9 +332,9 @@ Same data + same `random_state` → always the same p-value (bit-for-bit identic
 
 #### **v1.0 (This PRD)**
 
-**Public API (under `samesame.subgroup`):**
-- `test_subgroup_effect()` — test for crossover subgroup effects
-- `test_model_lift()` — test whether the ML model captures more heterogeneity than a reference
+**Public API:**
+- `samesame.subgroup.test_subgroup_effect()` — test for crossover subgroup effects
+- `samesame.model_selection.test_model_lift()` — test whether the estimator predicts treatment benefit better than a reference estimator
 
 **What's included:**
 - Unit tests (≥ 90% code coverage)
@@ -339,7 +343,7 @@ Same data + same `random_state` → always the same p-value (bit-for-bit identic
 - Clear docstrings with plain-language p-value interpretation; paper terms in `Notes` only
 - Module marked **experimental** in docstring and API reference page
 - Tutorial doc page: *"Validate a pricing experiment"*
-- API reference doc page: `api/subgroup.md`
+- API reference pages: `api/subgroup.md`, `api/model_selection.md`
 
 **What's internal only (no public API):**
 - Balanced data splitting logic
@@ -369,7 +373,9 @@ Same data + same `random_state` → always the same p-value (bit-for-bit identic
 
 ## 5. Test Automation & Validation
 
-### Unit Tests (in `tests/test_subgroup.py`)
+### Unit Tests
+
+**`tests/test_subgroup.py`** (`samesame.subgroup`):
 
 | Test | What It Verifies | Pass Condition |
 |------|-----------------|----------------|
@@ -377,9 +383,14 @@ Same data + same `random_state` → always the same p-value (bit-for-bit identic
 | `test_subgroup_effect_reproducible` | Same `random_state` → identical p-value | Bit-for-bit match |
 | `test_subgroup_effect_rejects_non_binary_y` | Non-binary outcome raises `ValueError` | Informative error message |
 | `test_subgroup_effect_rejects_non_binary_treatment` | Non-binary treatment raises `ValueError` | Informative error message |
-| `test_model_lift_runs` | Works with two different sklearn estimators | Returns `SubgroupResult` with `.pvalue` |
-| `test_model_lift_reproducible` | Same `random_state` → identical p-value | Bit-for-bit match |
 | `test_null_calibration` | 200 null datasets; p-values not concentrated near 0 | ≤ 10% of p-values < 0.05 (see AC-05 for rationale) |
+
+**`tests/test_model_selection.py`** (`samesame.model_selection`):
+
+| Test | What It Verifies | Pass Condition |
+|------|-----------------|----------------|
+| `test_model_lift_runs` | Works with two different sklearn-compatible estimators | Returns `SubgroupResult` with `.pvalue` |
+| `test_model_lift_reproducible` | Same `random_state` → identical p-value | Bit-for-bit match |
 
 ### Integration Tests (Reproducibility)
 
@@ -403,7 +414,7 @@ All existing `test_api.py`, `test_iw.py`, `test_bayes.py`, `test_ood.py` pass �
 | **AC-04** | Model flexibility | Works with any sklearn-compatible unfitted estimator (LogisticRegression, RandomForest, XGBoost, etc.) |
 | **AC-05** | False positive control | On 200 null datasets, ≤ 10% of p-values are < 0.05. Note: testing at 10% not 5% — a ≤ 5% bound at n=200 would fail ~50% of the time on a correctly calibrated test by pure chance. Do not tighten. |
 | **AC-06** | Power (subgroup detection) | On 100 datasets with a planted crossover subgroup effect, ≥ 80% detect it (p < 0.05) |
-| **AC-07** | Power (model lift) | On 100 datasets where ML model outperforms reference, ≥ 70% detect it (p < 0.05) |
+| **AC-07** | Power (model lift) | On 100 datasets where the estimator outperforms the reference estimator, ≥ 70% detect it (p < 0.05) |
 | **AC-08** | No regressions | All existing samesame tests pass |
 | **AC-09** | Performance | `n_splits=200`, n=500, `RandomForestClassifier(n_estimators=100)` completes in ≤ 60 seconds |
 | **AC-10** | Documentation | Docstring summary lines use plain language; paper jargon ("crossover TEH", "Meinshausen") confined to `Notes` sections |

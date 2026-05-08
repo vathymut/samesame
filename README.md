@@ -16,6 +16,8 @@
 > Same, same but different ...
 
 `samesame` helps you compare a source sample with a target sample.
+The **source** is your reference — typically training data or an earlier time period.
+The **target** is what you're comparing against — typically production data or a later period.
 
 It answers two practical questions:
 
@@ -78,7 +80,7 @@ If the first is small and the second is large, the data changed but not in a cle
 Both tests are **permutation-based**, so no distributional assumptions are required.
 
 When you know that source and target have different feature distributions — covariate shift —
-you can supply per-sample importance weights to focus the test on the region where both groups
+you can supply sample importance weights to focus the test on the region where both groups
 overlap. See [Adjust for covariate shift with importance weights](examples/tutorials/adjust-for-covariate-shift.md).
 
 ## Where to go next
@@ -93,7 +95,7 @@ Step-by-step examples are available in the [documentation](https://vathymut.gith
 **How-to guides**
 
 - [Monitor a credit risk model](https://vathymut.github.io/samesame/examples/credit/monitor-credit-risk/)
-- [Monitor prediction errors with per-sample scores](https://vathymut.github.io/samesame/examples/credit/monitor-prediction-errors/)
+- [Monitor prediction errors when labels are available](https://vathymut.github.io/samesame/examples/credit/monitor-prediction-errors/)
 - [Monitor model confidence](https://vathymut.github.io/samesame/examples/credit/monitor-confidence-ood/)
 
 ## Dependencies

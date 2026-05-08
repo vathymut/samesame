@@ -1,13 +1,13 @@
-# How to: Monitor prediction errors with per-sample scores
+# How to: Monitor prediction errors when labels are available
 
 **Use this guide when:** ground-truth labels are available for both the training and test sets,
-and you want to test whether the model’s per-sample prediction errors are systematically higher
+and you want to test whether the model's prediction errors are systematically higher for each row
 on the test set.
 
-**What you’ll do:**
+**What you'll do:**
 
 - Fit a credit risk model on a random training split using out-of-bag predictions
-- Compute per-sample Brier scores and log-losses
+- Compute a Brier score and log-loss for each row
 - Test whether either score is adversely shifted between training and test
 
 !!! note "Before you start"
@@ -22,8 +22,8 @@ on the test set.
 
 ## The scenario
 
-When ground-truth labels are available for a test set, per-sample prediction errors provide a
-direct measure of model accuracy on each row. Two standard choices are the **Brier score** and
+When ground-truth labels are available for a test set, prediction errors for each row provide a
+direct measure of model accuracy. Two standard choices are the **Brier score** and
 **log-loss**.
 
 For a predicted probability $\hat{p}$ and true label $y \in \{0, 1\}$:
@@ -34,7 +34,7 @@ For a predicted probability $\hat{p}$ and true label $y \in \{0, 1\}$:
   predictions more heavily than the Brier score.
 
 For both scores, larger values mean worse predictions. They can therefore serve directly as the
-per-sample adversity score that \`test_adverse_shift(...)\` expects.
+the adversity score for each row that `test_adverse_shift(...)` expects.
 
 Note that these scores require labels. They are not available during production monitoring when
 outcomes are delayed, but they are appropriate for evaluating a held-out test set or a labelled
@@ -44,7 +44,7 @@ This guide complements the other monitoring guides:
 
 - Use [Monitor a credit risk model](monitor-credit-risk.md) when you need a label-free business-risk signal.
 - Use [Monitor model confidence](monitor-confidence-ood.md) when you need a label-free confidence signal.
-- Use this guide when labels are available and you want direct per-sample error measures.
+- Use this guide when labels are available and you want a direct error measure for each row.
 
 ---
 
@@ -110,7 +110,7 @@ p_test  = rf.predict_proba(X_test)[:, 1]   # standard predictions for test
 
 ---
 
-## Step 2 — Compute per-sample prediction errors
+## Step 2 — Compute prediction errors for each row
 
 Each row receives one error score. Both Brier score and log-loss are computed from the true label
 and the predicted probability for that row.
@@ -223,8 +223,8 @@ confirm or revise the earlier assessment.
 
 ## Summary
 
-- **Per-sample prediction errors** require ground-truth labels but directly measure how wrong the
-  model was on each row.
+- **Prediction errors for each row** require ground-truth labels but directly measure how wrong the
+  model was on that row.
 - Use **OOB predictions** for the training set to avoid evaluating the model on data it was
   trained on, which would produce artificially low error scores.
 - For this stratified random split, neither score shows significant adverse shift (p ≈ 0.27) —

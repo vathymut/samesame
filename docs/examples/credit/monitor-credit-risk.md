@@ -245,6 +245,6 @@ the model for the new population.
   and `test_adverse_shift(...)` tells you *whether it matters*.
 - In this example, **predicted risk increased**, but in the companion [how-to guide](monitor-confidence-ood.md), **model
   confidence did not worsen**. Those are different signals and both are worth monitoring.
-- If labels are available for the test set, per-sample prediction errors (Brier score, log-loss) provide a direct measure of model accuracy; see [Monitor prediction errors](monitor-prediction-errors.md).
+- If labels are available for the test set, prediction errors for each row (Brier score, log-loss) provide a direct measure of model accuracy; see [Monitor prediction errors when labels are available](monitor-prediction-errors.md).
 - If your model output is not itself a meaningful risk value, use a confidence score instead; see
   [Monitor model confidence](monitor-confidence-ood.md).
