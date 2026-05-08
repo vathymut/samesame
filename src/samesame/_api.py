@@ -41,6 +41,28 @@ from samesame.weights import ContextualWeights
 # ---------------------------------------------------------------------------
 
 
+def _prepare_adverse_shift(
+    source: ArrayLike,
+    target: ArrayLike,
+    direction: Direction,
+    weights: ContextualWeights | None,
+) -> tuple[NDArray[np.int_], NDArray, Direction, NDArray | None]:
+    """Shared setup for adverse-shift test and Bayesian posterior.
+
+    Builds the two-sample dataset, validates and orients scores for the
+    declared direction, and resolves importance weights.  Both
+    ``test_adverse_shift`` and ``adverse_shift_posterior`` call this first
+    and then diverge into their respective permutation / bootstrap runners.
+    """
+    dataset = build_two_sample_dataset(source, target)
+    actual, predicted = dataset.labels, dataset.scores
+    validated_direction = validate_direction(direction)
+    if validated_direction == "higher-is-better":
+        predicted = -predicted
+    effective_weight = _resolve_weights(weights, dataset.n_source, dataset.n_target)
+    return actual, predicted, validated_direction, effective_weight
+
+
 def _resolve_weights(
     weights: ContextualWeights | None,
     n_source: int,
@@ -221,12 +243,9 @@ def test_adverse_shift(
     --------
     adverse_shift_posterior : Compute Bayesian evidence on top of this result.
     """
-    dataset = build_two_sample_dataset(source, target)
-    actual, predicted = dataset.labels, dataset.scores
-    validated_direction = validate_direction(direction)
-    if validated_direction == "higher-is-better":
-        predicted = -predicted
-    effective_weight = _resolve_weights(weights, dataset.n_source, dataset.n_target)
+    actual, predicted, validated_direction, effective_weight = _prepare_adverse_shift(
+        source, target, direction, weights
+    )
     result = _run_permutation_test(
         actual,
         predicted,
@@ -297,12 +316,9 @@ def adverse_shift_posterior(
     --------
     test_adverse_shift : Run the permutation test for adverse shift.
     """
-    dataset = build_two_sample_dataset(source, target)
-    actual, predicted = dataset.labels, dataset.scores
-    validated_direction = validate_direction(direction)
-    if validated_direction == "higher-is-better":
-        predicted = -predicted
-    effective_weight = _resolve_weights(weights, dataset.n_source, dataset.n_target)
+    actual, predicted, _direction, effective_weight = _prepare_adverse_shift(
+        source, target, direction, weights
+    )
     posterior = np.asarray(
         bayesian_posterior(
             actual,

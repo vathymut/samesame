@@ -14,7 +14,7 @@ https://www.statsmodels.org/dev/_modules/statsmodels/distributions/empirical_dis
 import numpy as np
 
 
-class StepFunction:
+class _StepFunction:
     """
     A basic step function.
 
@@ -67,7 +67,7 @@ class StepFunction:
         return self.y[tind]
 
 
-class ECDFDiscrete(StepFunction):
+class ECDFDiscrete(_StepFunction):
     """
     Return the Empirical Weighted CDF of an array as a step function.
 

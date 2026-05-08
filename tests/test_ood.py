@@ -17,6 +17,9 @@ import numpy as np
 import pytest
 
 from samesame.logit_scores import logit_gap, max_logit
+from samesame import test_shift as run_shift_test
+from samesame import test_adverse_shift as run_adverse_shift_test
+from samesame._types import AdverseShiftDetails, ShiftDetails
 
 
 @pytest.fixture
@@ -272,6 +275,84 @@ class TestNumericalStability:
             scores_float64 = func(logits_float64)
             assert scores_int.dtype == np.float32
             assert scores_float64.dtype == np.float32
+
+
+class TestLogitScoreShiftIntegration:
+    """Integration tests: logit score output feeds into shift tests.
+
+    These tests exercise the natural composition seam — the contract that
+    ``max_logit`` / ``logit_gap`` output satisfies ``test_shift`` and
+    ``test_adverse_shift`` input requirements (shape, dtype, finite values).
+    """
+
+    @pytest.fixture
+    def source_logits(self) -> np.ndarray:
+        rng = np.random.default_rng(0)
+        # ID-like: peaked distributions
+        base = rng.normal(size=(200, 5))
+        base[:, 0] += 4.0
+        return base
+
+    @pytest.fixture
+    def target_logits(self) -> np.ndarray:
+        rng = np.random.default_rng(1)
+        # OOD-like: flatter distributions — reduced gap/max
+        return rng.normal(size=(200, 5))
+
+    @pytest.mark.parametrize("scorer", [max_logit, logit_gap])
+    def test_test_shift_accepts_logit_scores(
+        self, source_logits, target_logits, scorer
+    ) -> None:
+        """test_shift runs without error on logit-derived scores."""
+        source_scores = scorer(source_logits)
+        target_scores = scorer(target_logits)
+        result = run_shift_test(
+            source=source_scores,
+            target=target_scores,
+            n_resamples=99,
+            rng=np.random.default_rng(42),
+        )
+        assert isinstance(result, ShiftDetails)
+        assert 0.0 <= result.pvalue <= 1.0
+        assert np.isfinite(result.statistic)
+        assert result.null_distribution.shape == (99,)
+
+    @pytest.mark.parametrize("scorer", [max_logit, logit_gap])
+    def test_test_adverse_shift_accepts_logit_scores(
+        self, source_logits, target_logits, scorer
+    ) -> None:
+        """test_adverse_shift runs without error on logit-derived scores."""
+        source_scores = scorer(source_logits)
+        target_scores = scorer(target_logits)
+        result = run_adverse_shift_test(
+            source=source_scores,
+            target=target_scores,
+            direction="higher-is-better",
+            n_resamples=99,
+            rng=np.random.default_rng(42),
+        )
+        assert isinstance(result, AdverseShiftDetails)
+        assert 0.0 <= result.pvalue <= 1.0
+        assert np.isfinite(result.statistic)
+
+    @pytest.mark.parametrize("scorer", [max_logit, logit_gap])
+    def test_shifted_distribution_produces_low_pvalue(
+        self, source_logits, target_logits, scorer
+    ) -> None:
+        """Logit scores from a shifted distribution yield a detectable shift."""
+        source_scores = scorer(source_logits)
+        target_scores = scorer(target_logits)
+        result = run_adverse_shift_test(
+            source=source_scores,
+            target=target_scores,
+            direction="higher-is-better",
+            n_resamples=499,
+            rng=np.random.default_rng(42),
+        )
+        # source has higher scores (peaked ID distributions); shifting to
+        # flatter OOD logits reduces scores, which is adverse for
+        # "higher-is-better"
+        assert result.pvalue < 0.05
 
     def test_large_finite_float64_logits_do_not_overflow(self) -> None:
         """Large finite float64 logits should remain valid and finite."""

@@ -18,6 +18,7 @@ from ._api import (
     test_adverse_shift,
     test_shift,
 )
+from ._bayesboot import as_bf, as_pvalue, bayes_factor
 from ._types import TestResult
 from .weights import ContextualWeights
 
@@ -28,6 +29,9 @@ __all__ = [
     "ShiftDetails",
     "TestResult",
     "adverse_shift_posterior",
+    "as_bf",
+    "as_pvalue",
+    "bayes_factor",
     "test_adverse_shift",
     "test_shift",
     "weights",

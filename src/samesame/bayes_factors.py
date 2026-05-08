@@ -5,22 +5,16 @@
 # LICENSE file in the root directory of this source tree.
 #
 
-"""Utilities for one-sided p-values and Bayes factors.
+"""Re-export shim for Bayesian utilities.
 
-The functions in this module provide numerically stable conversions between
-one-sided p-values and Bayes factors for directional hypotheses, and direct
-Bayes factor estimation from posterior draws.
+Implementations live in :mod:`samesame._bayesboot`.  This module exists so
+that existing import paths (``from samesame.bayes_factors import as_bf``)
+keep working.
 """
 
-from __future__ import annotations
+from samesame._bayesboot import as_bf, as_pvalue, bayes_factor
 
-from typing import Literal
-
-import numpy as np
-from numpy.typing import NDArray
-from scipy.special import expit, logit
-
-from samesame._bayesboot import _bayes_factor
+__all__ = ["as_bf", "as_pvalue", "bayes_factor"]
 
 
 def as_bf(

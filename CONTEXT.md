@@ -5,24 +5,58 @@ This context defines the domain language for implementing paper-aligned weightin
 ## Language
 
 **Subgroup Testing Module**:
-A new top-level submodule (`samesame.subgroup`) that implements price-sensitivity heterogeneity testing for two-arm randomized pricing experiments, based on the Watson & Holmes (2020) statistical framework, taking `(y, treatment, X)` inputs where `y` is the binary purchase decision and `treatment` is the binary pricing arm assignment. Architecturally separate from the distribution-shift API.
-_Avoid_: Extending test_shift, repurposing WeightingStrategy for this; applying to adaptive/bandit pricing logs without IPS correction
+A new top-level submodule (`samesame.subgroup`) that implements treatment effect heterogeneity (TEH) testing for two-arm randomised experiments, based on the Watson & Holmes (2020) statistical framework, taking `(y, treatment, X)` inputs where `y` is the binary outcome and `treatment` is the binary arm assignment. Domain-agnostic: works for pricing, credit, clinical, or any two-arm RCT. Architecturally separate from the distribution-shift API.
+_Avoid_: Extending test_shift, repurposing WeightingStrategy for this; applying to adaptive/bandit logs without IPS correction; hardcoding pricing vocabulary in public parameter names
 
-**Crossover price-sensitivity segment**:
-A customer segment in a two-arm pricing experiment where the optimal pricing arm allocation differs; tested via a two-sample hypothesis test on held-out subgroup predictions. The pricing analogue of crossover TEH in Watson & Holmes (2020).
-_Avoid_: Qualitative interaction (Gail-Simon framing)
+**Crossover Subgroup**:
+A subgroup in a two-arm experiment where the optimal arm allocation differs across members; the effect of `test_subgroup_effect()`. The general analogue of crossover TEH in Watson & Holmes (2020) — that paper term is acceptable in docstrings and internal comments as a reference, but must not appear in public-facing API names or user documentation.
+_Avoid_: Qualitative interaction (Gail-Simon framing), price-sensitive segment (domain-specific)
 
-**Non-crossover price-sensitivity**:
-A type of price-sensitivity heterogeneity where one pricing arm is everywhere superior but the conversion lift varies systematically across customers; tested by stacking ML predictions against a baseline GLM. The pricing analogue of non-crossover TEH in Watson & Holmes (2020).
-_Avoid_: Quantitative interaction
+**Non-crossover Heterogeneity**:
+A type of treatment effect heterogeneity where one arm is everywhere superior but the outcome lift varies systematically across subjects; the effect detected by `test_model_lift()`. The general analogue of non-crossover TEH in Watson & Holmes (2020) — that paper term is acceptable in docstrings and internal comments as a reference, but must not appear in public-facing names or user documentation.
+_Avoid_: Quantitative interaction, non-crossover price-sensitivity (domain-specific)
 
-**Pricing Arm**:
-The binary experimental assignment `treatment ∈ {0, 1}` indicating which price policy a customer was randomly allocated to in a two-arm pricing experiment. The module is policy-agnostic — arm semantics are the user's responsibility. Must be fully randomized: `P(treatment=1 | X) = 0.5` for all customers.
-_Avoid_: Treatment group, ad arm, intervention arm
+**Public API function names (samesame.subgroup)**:
+`test_subgroup_effect(y, treatment, features, ml_model, ...)` — tests for crossover heterogeneity (real subgroups where arms differ in direction). `test_model_lift(y, treatment, features, ml_model, reference_model, ...)` — tests for non-crossover heterogeneity (ML model captures more lift than the reference model). Both return a `SubgroupResult` with `.pvalue`. The `test_*` prefix is consistent with `test_shift` / `test_adverse_shift` in the parent package.
+_Avoid_: `test_segments`, `test_model_improvement`, `test_heterogeneity` (all superseded); surface paper terms `crossover TEH` / `non-crossover TEH` only in docstring `Notes` sections
 
-**Purchase Decision**:
-The binary outcome variable `y ∈ {0, 1}` representing whether a customer completed a purchase (1) or not (0) in a pricing experiment. This is the only supported outcome type in v1 of `samesame.subgroup`.
-_Avoid_: Revenue, conversion rate (use as aggregate statistic only), click
+**Unfitted Estimator**:
+The `ml_model` and `reference_model` parameters of `test_subgroup_effect()` and `test_model_lift()` accept **unfitted** sklearn-compatible estimators (e.g., `RandomForestClassifier(n_estimators=100)`). The function owns all fitting internally across K splits using `sklearn.base.clone()` to prevent data leakage. Passing a pre-fitted model would leak the training data into the held-out test splits and invalidate the p-value.
+_Avoid_: Fitted estimator as input, "trained model" language in user-facing docs; do not use `clone()` only on some splits
+
+**Subgroup module docs placement**:
+`samesame.subgroup` gets two doc entries: (1) a Tutorial page — *"Validate a pricing experiment"* — in the Tutorials nav section, following the same story-driven voice as the existing shift tutorials; (2) an API reference page `api/subgroup.md` mirroring `api/testing.md` in structure. No How-to guide in v1 (those are for users who already know what they want; the Tutorial handles first contact). The `site_description` in `mkdocs.yml` must be updated to cover RCT validation alongside distribution shift.
+_Avoid_: Adding subgroup to How-to guides only; skipping the Tutorial; leaving the site_description shift-only
+
+**Subgroup module experimental status**:
+The module is marked "experimental" via a note in the module-level docstring of `subgroup.py` and in the API reference page — not via `warnings.warn` at import time. A runtime warning on every import is noisy and gets suppressed immediately. "Experimental" here means "API may change before v2.0 stability guarantee," not "may corrupt data." Revisit at v1.1.
+_Avoid_: `warnings.warn` at import; silently omitting the experimental caveat from docs
+
+**Subgroup module namespace**:
+`samesame.subgroup` is exposed via `from . import subgroup` in `__init__.py`. Functions are **not** hoisted to `samesame.*`. Users call `samesame.subgroup.test_subgroup_effect(...)` — consistent with how `samesame.weights` is exposed. The subgroup module solves a structurally different problem (RCT validation) from the shift module (distribution monitoring); keeping it namespaced makes the distinction explicit and lets the module stay "experimental" without contaminating the stable top-level API.
+_Avoid_: Hoisting `test_subgroup_effect` / `test_model_lift` into the `samesame.*` top-level namespace
+
+**Null calibration test threshold**:
+The null calibration test in `tests/test_subgroup.py` uses 200 null datasets and a threshold of ≤ 10% false positives (p < 0.05). At n=200, a 10% bound corresponds to p < 0.001 under the null binomial — making a false alarm extremely unlikely if the implementation is correctly calibrated. The PRD's AC-05 value of "≤ 5%" is incorrect: it would cause the test to fail ~50% of the time on a correctly calibrated implementation by pure chance. Do not re-tighten to 5%.
+_Avoid_: 100 null datasets with ≤ 5% threshold (AC-05 value, superseded); setting threshold equal to the nominal alpha
+
+**Subgroup module parameters**:
+The `n_splits` (default 200) and `random_state` (default `None`) parameters follow sklearn conventions throughout `samesame.subgroup`. `random_state` accepts `int | np.random.RandomState | None` — identical to sklearn's contract. Using sklearn conventions prevents silent `TypeError`s for users who already know the sklearn vocabulary.
+_Avoid_: `num_splits` (PRD name, superseded), `random_seed` (PRD name, superseded); accepting only `int` for `random_state`
+
+**Subgroup module file layout**:
+The entire `samesame.subgroup` implementation lives in a single file: `src/samesame/subgroup.py`. Both public functions (`test_subgroup_effect`, `test_model_lift`) and all private helpers (the shared K-split loop, per-split statistics, p-value aggregation) coexist in one file — mirroring how `_api.py` works for the shift-test module. No `_subgroup_internals.py` file.
+_Avoid_: Splitting internals into a separate `_subgroup_internals.py`; one file per public function
+`samesame.subgroup` (via `_subgroup_internals.py`) may import from `samesame._utils` (e.g., `as_numeric_vector`, binary validation via `type_of_target`) and from `samesame._types` (e.g., `TestResult`, `SubgroupResult`). "Standalone" means no dependency on shift-test logic (`_api.py`, `_data.py`, `_metrics.py`, `_wecdf.py`) or weighting strategies (`weights.py`). Shared validation infrastructure in `_utils.py` and shared result types in `_types.py` are fair game.
+_Avoid_: Duplicating binary-validation logic already in `_utils.py`; importing from `_api.py`, `_data.py`, `_metrics.py`, or `weights.py`
+
+**Treatment Arm**:
+The binary experimental assignment `treatment ∈ {0, 1}` indicating which arm a subject was randomly allocated to in a two-arm experiment. The parameter is named `treatment` in the public API. The module is domain-agnostic — arm semantics are the user's responsibility. Must be fully randomised: `P(treatment=1 | X) = 0.5` for all subjects.
+_Avoid_: `pricing_arm` (domain-specific parameter name), treatment group, intervention arm
+
+**Binary Outcome**:
+The outcome variable `y ∈ {0, 1}` passed as the first argument to `samesame.subgroup` functions. Domain-agnostic: could represent a purchase, default, conversion, or any binary event. This is the only supported outcome type in v1. In the pricing motivating example this is a purchase decision.
+_Avoid_: `purchase_decision` (domain-specific parameter name), revenue, conversion rate (use as aggregate statistic only)
 
 **Aggregate p-value**:
 A single p-value combining split-wise evidence from K balanced two-fold data splits, computed as `min(1, Q_alpha({2*p_i}))` where Q_alpha is the alpha-quantile (default alpha=0.5, the median).
@@ -42,11 +76,16 @@ _Avoid_: Context Membership Probability (superseded), logit score, raw classifie
 A named policy (`'source'`, `'target'`, `'both'`) that controls which group's samples are reweighted by `contextual_weights`. Passed as the `mode` parameter.
 _Avoid_: Ad hoc weighting, custom formula
 
+**SubgroupResult**:
+The return type of `test_subgroup_effect()` and `test_model_lift()`. Extends `TestResult` (inherits `.statistic: float` and `.pvalue: float`) and adds `.null_distribution: NDArray[np.float64]`. The `.statistic` field holds the aggregate test statistic value (the combined evidence before p-value conversion). Consistent with `ShiftDetails` and `AdverseShiftDetails` in shape; defined in `samesame._types` alongside the existing result types.
+_Avoid_: Standalone result type with no `TestResult` inheritance; naming it `Result` (too generic)
+
 ## Relationships
 
 - A **Feature Expansion Milestone** may include one or more **Paper-Aligned Methods**.
 - A **Paper-Aligned Method** can require one or more **Context-Aware Weighting Modes**.
 - A **Context-Aware Weighting Mode** consumes **Domain Probabilities**.
+- `test_subgroup_effect()` and `test_model_lift()` both return a **SubgroupResult**, which extends **TestResult**.
 
 ## Example dialogue
 
