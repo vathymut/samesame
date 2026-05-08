@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal, TypeAlias
+from typing import Literal
 
 import numpy as np
 from numpy.typing import NDArray
 
 from samesame._utils import Direction
 
-ShiftStatistic: TypeAlias = Literal[
+type ShiftStatistic = Literal[
     "roc_auc",
     "balanced_accuracy",
     "matthews_corrcoef",

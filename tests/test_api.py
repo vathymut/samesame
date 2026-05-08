@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import FrozenInstanceError
 import inspect
+from dataclasses import FrozenInstanceError
 
 import numpy as np
 import pytest
@@ -12,7 +12,11 @@ from samesame import (
     BayesianEvidence,
     ShiftDetails,
     adverse_shift_posterior,
+)
+from samesame import (
     test_adverse_shift as run_adverse_shift_test,
+)
+from samesame import (
     test_shift as run_shift_test,
 )
 from samesame.weights import ContextualWeights, contextual_weights

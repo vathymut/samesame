@@ -11,7 +11,6 @@ import pytest
 
 from samesame.weights import contextual_weights
 
-
 # ---------------------------------------------------------------------------
 # Numerical correctness — source mode
 # ---------------------------------------------------------------------------

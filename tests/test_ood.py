@@ -16,10 +16,10 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from samesame.logit_scores import logit_gap, max_logit
-from samesame import test_shift as run_shift_test
 from samesame import test_adverse_shift as run_adverse_shift_test
+from samesame import test_shift as run_shift_test
 from samesame._types import AdverseShiftDetails, ShiftDetails
+from samesame.logit_scores import logit_gap, max_logit
 
 
 @pytest.fixture
