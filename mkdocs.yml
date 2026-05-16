@@ -16,7 +16,7 @@ nav:
     - Monitor a credit risk model: examples/credit/monitor-credit-risk.md
     - Monitor prediction errors: examples/credit/monitor-prediction-errors.md
     - Monitor model confidence: examples/credit/monitor-confidence-ood.md
-    - Use source reweighting for adverse-shift testing: examples/weighting/source-reweighting.md
+    - Use source reweighting for harmful-shift testing: examples/weighting/source-reweighting.md
     - Use double-weighting for covariate-shift adaptation: examples/weighting/double-weighting.md
   - Explanation:
     - Why importance weights stabilise shift detection: explanation/importance-weights-rationale.md

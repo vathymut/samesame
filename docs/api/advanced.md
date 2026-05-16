@@ -27,6 +27,14 @@ result = ss.shift.detect_shift(
     alternative="greater",
 )
 
+# Batched resampling to cap peak memory (batch=None processes all resamples at once)
+result = ss.shift.detect_shift(
+    source_scores,
+    target_scores,
+    n_resamples=9999,
+    batch=500,
+)
+
 # Sample weights wrapped in ImportanceWeights
 result = ss.shift.detect_shift(
     source_scores,
@@ -79,7 +87,16 @@ result = ss.shift.detect_shift(
 )
 ```
 
-::: samesame.shift
+## Bayesian inference
+
+`shift.infer_harm` draws a Bayesian bootstrap posterior for the harmfulness
+statistic. The `threshold` parameter sets the effect-size threshold against
+which the posterior is compared when computing the Bayes factor (default
+`1/12`). `infer_harm` does not accept a `batch` argument.
+
+::: samesame.shift.infer_harm
+
+::: samesame.shift.HarmInference
 
 ## Bayes factor utilities
 

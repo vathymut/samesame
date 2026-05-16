@@ -11,4 +11,16 @@ Start here if you are new to the package or want the simplest API surface.
 
 For Bayesian output or advanced controls, see the [advanced page](advanced.md).
 
-::: samesame.shift
+## Functions
+
+::: samesame.shift.detect_shift
+
+::: samesame.shift.detect_harm
+
+## Return types
+
+::: samesame.shift.ShiftResult
+
+::: samesame.shift.HarmResult
+
+::: samesame.shift.TestResult
