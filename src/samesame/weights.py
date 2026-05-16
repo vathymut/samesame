@@ -1,20 +1,24 @@
-"""Sample weight builders for covariate shift adaptation."""
+"""Public importance-weight seam."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal
 
 import numpy as np
 from numpy.typing import NDArray
 
-WeightingMode = Literal["source", "target", "both"]
+from samesame._internals.weighting import (
+    WeightingMode,
+    density_ratio,
+    inverse_riw,
+    riw,
+    validate_mode,
+)
 
 
 @dataclass(frozen=True)
-class ContextualWeights:
-    """Importance weights for source and target groups, used to
-    correct for covariate shift between source and target during a shift test.
+class ImportanceWeights:
+    """Importance weights for Source and Target groups.
 
     Attributes
     ----------
@@ -30,43 +34,14 @@ class ContextualWeights:
     target: NDArray[np.float64]
 
 
-def _density_ratio(
-    membership_prob: NDArray,
-    *,
-    group_balance: float,
-) -> NDArray[np.float64]:
-    probs = np.asarray(membership_prob, dtype=np.float64)
-    if np.any(probs <= 0.0) or np.any(probs >= 1.0):
-        raise ValueError("domain probabilities must be in the open interval (0, 1).")
-    if not np.isfinite(group_balance) or group_balance <= 0.0:
-        raise ValueError("group_balance must be finite and > 0.")
-    return (probs / (1.0 - probs)) * group_balance
-
-
-def _riw(density_ratio: NDArray, *, lam: float) -> NDArray[np.float64]:
-    return density_ratio / ((1.0 - lam) + lam * density_ratio)
-
-
-def _inverse_riw(density_ratio: NDArray, *, lam: float) -> NDArray[np.float64]:
-    return 1.0 / (lam + (1.0 - lam) * density_ratio)
-
-
-def _validate_mode(mode: str) -> WeightingMode:
-    valid: tuple[WeightingMode, ...] = ("source", "target", "both")
-    if mode not in valid:
-        listed = ", ".join(repr(m) for m in valid)
-        raise ValueError(f"mode must be one of {listed}.")
-    return mode  # type: ignore[return-value]
-
-
-def contextual_weights(
+def from_domain_probabilities(
     *,
     source_prob: NDArray,
     target_prob: NDArray,
     mode: WeightingMode = "source",
     lambda_: float = 0.5,
-) -> ContextualWeights:
-    """Build context-aware sample weights for shift testing.
+) -> ImportanceWeights:
+    """Build Importance weights from Domain probabilities.
 
     Computes RIW weights from domain probabilities.
     The prior ratio is always inferred from the lengths of ``source_prob``
@@ -83,7 +58,7 @@ def contextual_weights(
         domain classifier, that each target observation belongs to the target
         group. Must be in the open interval (0, 1).
     mode : {'source', 'target', 'both'}, optional
-        Context-aware weighting mode — controls which group's samples are
+        Importance-weighting mode — controls which group's samples are
         reweighted:
 
         - ``'source'``: reweight source samples only (default). Use when
@@ -102,7 +77,7 @@ def contextual_weights(
 
     Returns
     -------
-    ContextualWeights
+    ImportanceWeights
         A frozen dataclass with ``.source`` and ``.target`` weight arrays.
         Weights for each active group are normalized so they sum to that
         group's sample size. Samples not targeted by ``mode`` receive weight 1.
@@ -121,15 +96,15 @@ def contextual_weights(
     Examples
     --------
     >>> import numpy as np
-    >>> from samesame.weights import contextual_weights
+    >>> from samesame.weights import from_domain_probabilities
     >>> source_prob = np.array([0.25, 0.4])
     >>> target_prob = np.array([0.6, 0.75])
-    >>> w = contextual_weights(source_prob=source_prob, target_prob=target_prob)
+    >>> w = from_domain_probabilities(source_prob=source_prob, target_prob=target_prob)
     >>> np.round(w.source, 4)
     array([0.7692, 1.2308])
     >>> np.round(w.target, 4)
     array([1., 1.])
-    >>> w2 = contextual_weights(source_prob=source_prob, target_prob=target_prob, mode="both")
+    >>> w2 = from_domain_probabilities(source_prob=source_prob, target_prob=target_prob, mode="both")
     >>> np.round(w2.source, 4)
     array([0.7692, 1.2308])
     >>> np.round(w2.target, 4)
@@ -143,7 +118,7 @@ def contextual_weights(
         raise ValueError("source_prob and target_prob must both be non-empty.")
     if lambda_ < 0.0 or lambda_ > 1.0:
         raise ValueError("lambda_ must be in [0, 1].")
-    _validate_mode(mode)
+    validate_mode(mode)
 
     # Prior ratio: how much more likely a random draw is from source vs target.
     # Inferred from sample sizes rather than supplied explicitly.
@@ -151,8 +126,8 @@ def contextual_weights(
 
     # Density ratio r(x) = p(target|x) / p(source|x), derived from the domain
     # classifier probability via Bayes' theorem with the inferred prior ratio.
-    source_dr = _density_ratio(source_prob, group_balance=group_balance)
-    target_dr = _density_ratio(target_prob, group_balance=group_balance)
+    source_dr = density_ratio(source_prob, group_balance=group_balance)
+    target_dr = density_ratio(target_prob, group_balance=group_balance)
 
     # Default: leave each group with unit weights (no reweighting).
     out_source = np.ones(n_source, dtype=np.float64)
@@ -160,17 +135,17 @@ def contextual_weights(
 
     if mode in ("source", "both"):
         # RIW formula: r / ((1-λ) + λ·r) blends toward uniform as λ→1.
-        out_source = _riw(source_dr, lam=lambda_)
+        out_source = riw(source_dr, lam=lambda_)
         # Normalize so source weights sum to n_source (preserves expected value).
         out_source = out_source * (n_source / out_source.sum())
 
     if mode in ("target", "both"):
         # Inverse RIW: 1 / (λ + (1-λ)·r) — maps target back to source density.
-        out_target = _inverse_riw(target_dr, lam=lambda_)
+        out_target = inverse_riw(target_dr, lam=lambda_)
         # Normalize so target weights sum to n_target.
         out_target = out_target * (n_target / out_target.sum())
 
-    return ContextualWeights(source=out_source, target=out_target)
+    return ImportanceWeights(source=out_source, target=out_target)
 
 
-__all__ = ["ContextualWeights", "WeightingMode", "contextual_weights"]
+__all__ = ["ImportanceWeights", "WeightingMode", "from_domain_probabilities"]

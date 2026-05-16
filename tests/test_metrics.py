@@ -4,10 +4,10 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 #
-"""Direct unit tests for the wauc metric through its public interface.
+"""Direct unit tests for the WAUC implementation.
 
 These tests target the wauc() seam directly rather than through the
-test_adverse_shift() integration path, so that weight-propagation bugs
+detect_harm() integration path, so that weight-propagation bugs
 and integration-edge-case failures surface here rather than in the API
 test suite.
 """
@@ -17,7 +17,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from samesame._metrics import wauc
+from samesame._internals.statistics import wauc
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -69,21 +69,21 @@ def test_wauc_result_bounded_with_weights(mixed: dict[str, np.ndarray]) -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_wauc_adverse_shift_exceeds_reverse_shift(
+def test_wauc_harmful_shift_exceeds_reverse_shift(
     separated: dict[str, np.ndarray],
 ) -> None:
-    """WAUC is higher when target scores exceed source scores (adverse shift)
+    """WAUC is higher when target scores exceed source scores (harmful shift)
     than when source scores exceed target scores (reverse)."""
-    result_adverse = wauc(**separated)
+    result_harm = wauc(**separated)
     result_reverse = wauc(separated["actual"], 1.0 - separated["predicted"])
-    assert result_adverse > result_reverse
+    assert result_harm > result_reverse
 
 
 def test_wauc_sensitive_to_shift_direction(mixed: dict[str, np.ndarray]) -> None:
-    """Adversely shifted data (target higher) yields higher WAUC than reversed."""
-    result_adverse = wauc(**mixed)
+    """Harmfully shifted data (target higher) yields higher WAUC than reversed."""
+    result_harm = wauc(**mixed)
     result_reverse = wauc(mixed["actual"], 1.0 - mixed["predicted"])
-    assert result_adverse > result_reverse
+    assert result_harm > result_reverse
 
 
 # ---------------------------------------------------------------------------

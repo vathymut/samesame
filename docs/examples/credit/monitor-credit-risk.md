@@ -35,7 +35,7 @@ Two questions arise:
   generalise. The more relevant question is whether it is now assigning higher default risk
   to the deployment population.
 
-We answer both questions with `test_shift(...)` (question 1) and `test_adverse_shift(...)` (question 2).
+We answer both questions with `ss.shift.detect_shift(...)` (question 1) and `ss.shift.detect_harm(...)` (question 2).
 If you want to monitor **model confidence** instead of **predicted risk**, continue to
 [Monitor model confidence](monitor-confidence-ood.md) after completing this guide.
 
@@ -55,7 +55,7 @@ import re
 import pandas as pd
 from sklearn.datasets import fetch_openml
 from sklearn.ensemble import RandomForestClassifier
-from samesame import test_adverse_shift, test_shift
+import samesame as ss
 
 # Download the HELOC dataset (requires internet access on first run)
 fico = fetch_openml(data_id=45554, as_frame=True)
@@ -108,7 +108,7 @@ rf_domain.fit(X_concat, split)
 oob_scores = rf_domain.oob_decision_function_[:, 1]  # P(deployment)
 
 # Run the shift test
-shift = test_shift(
+shift = ss.shift.detect_shift(
     source=oob_scores[split.values == 0],
     target=oob_scores[split.values == 1],
 )
@@ -184,7 +184,7 @@ rf_bad.fit(X_train, loan_status)
 bad_train = rf_bad.oob_decision_function_[:, 1].ravel()
 bad_test  = rf_bad.predict_proba(X_test)[:, 1].ravel()
 
-harm = test_adverse_shift(
+harm = ss.shift.detect_harm(
     source=bad_train,
     target=bad_test,
     direction="higher-is-worse",
@@ -224,9 +224,9 @@ Running both tests together gives a richer picture than either test alone:
 
 | Scenario                         | Recommended action                                   |
 |----------------------------------|------------------------------------------------------|
-| Both shift and adverse-shift significant   | Data and outcomes have shifted. Retrain or recalibrate the model. |
+| Both shift and harmful-shift significant   | Data and outcomes have shifted. Retrain or recalibrate the model. |
 | Only shift significant            | Data looks different, but outcomes haven't shifted. Monitor closely. |
-| Only adverse-shift significant            | Outcome shift without feature change (concept drift). Investigate root causes. |
+| Only harmful-shift significant            | Outcome shift without feature change (concept drift). Investigate root causes. |
 | Neither significant              | No evidence of a problem. Continue as normal.        |
 
 In this example, **both tests are significant** — the deployment population is different
@@ -241,8 +241,8 @@ the model for the new population.
   Feature importances help identify *which* features are responsible.
 - **Adverse-shift testing** detects whether the model's predictions have shifted adversely. It does not require
   ground truth labels, making it practical for production monitoring before labels arrive.
-- Use **both tests together** for a complete picture: `test_shift(...)` tells you *what* changed,
-  and `test_adverse_shift(...)` tells you *whether it matters*.
+- Use **both tests together** for a complete picture: `ss.shift.detect_shift(...)` tells you *what* changed,
+  and `ss.shift.detect_harm(...)` tells you *whether it matters*.
 - In this example, **predicted risk increased**, but in the companion [how-to guide](monitor-confidence-ood.md), **model
   confidence did not worsen**. Those are different signals and both are worth monitoring.
 - If labels are available for the test set, prediction errors for each row (Brier score, log-loss) provide a direct measure of model accuracy; see [Monitor prediction errors when labels are available](monitor-prediction-errors.md).

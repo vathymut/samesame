@@ -1,19 +1,19 @@
-# How-to: Use source reweighting for adverse-shift testing
+# How-to: Use source reweighting for harmful-shift testing
 
 **Use this guide when:** you have a model trained on one population and deployed on another
-that partially overlaps with training. You want adverse-shift testing to emphasise the shared
+that partially overlaps with training. You want harmful-shift testing to emphasise the shared
 region and de-emphasise training samples that are completely foreign to the deployment population.
 
 **What you'll do:**
 
-- Reproduce an unweighted adverse-shift test as a baseline
+- Reproduce an unweighted harmful-shift test as a baseline
 - Obtain domain probabilities from a domain classifier
 - Apply `mode="source"` reweighting and compare results
 
 !!! note "Before you start"
     This guide assumes you have completed the tutorial
     [Adjust for covariate shift with importance weights](../tutorials/adjust-for-covariate-shift.md),
-    which introduces `contextual_weights` and the two-step weighting pattern.
+    which introduces `from_domain_probabilities` and the two-step weighting pattern.
 
 ---
 
@@ -30,13 +30,13 @@ first — the data loading and split are identical.
 
 ---
 
-## Step 1 — Reproduce the unweighted adverse-shift test
+## Step 1 — Reproduce the unweighted harmful-shift test
 
 Starting from the HELOC split (training on `ExternalRiskEstimate > 63`, deployment on
 `ExternalRiskEstimate <= 63`), build two score streams:
 
 - `membership_prob` from a domain classifier — used for weighting only
-- `bad_train` / `bad_test` from a credit model — the adverse-shift scores
+- `bad_train` / `bad_test` from a credit model — the harmful-shift scores
 
 ```python
 import re
@@ -44,7 +44,7 @@ import numpy as np
 import pandas as pd
 from sklearn.datasets import fetch_openml
 from sklearn.ensemble import RandomForestClassifier
-from samesame import test_adverse_shift
+import samesame as ss
 
 fico = fetch_openml(data_id=45554, as_frame=True)
 X, y = fico.data, fico.target
@@ -80,50 +80,50 @@ rf_bad.fit(X_train, loan_status)
 bad_train = rf_bad.oob_decision_function_[:, 1].ravel()
 bad_test = rf_bad.predict_proba(X_test)[:, 1].ravel()
 
-unweighted = test_adverse_shift(
+unweighted = ss.shift.detect_harm(
     source=bad_train,
     target=bad_test,
     direction="higher-is-worse",
-    rng=np.random.default_rng(12345),
+    random_state=12345,
 )
 print(f"Unweighted statistic: {unweighted.statistic:.4f}, p-value: {unweighted.pvalue:.4f}")
 ```
 
 The OOB probabilities from `rf_domain` are out-of-sample estimates of `P(deployment | x)`
-and go directly into `membership_prob`. They are never used as adverse-shift scores.
+and go directly into `membership_prob`. They are never used as harmful-shift scores.
 
 ---
 
 ## Step 2 — Apply source reweighting
 
 Split `membership_prob` into source and target arrays (in the order the pooled dataset was
-built), compute weights with `contextual_weights`, then pass them to `test_adverse_shift`:
+built), compute weights with `from_domain_probabilities`, then pass them to `ss.shift.detect_harm`:
 
 ```python
-from samesame.weights import contextual_weights
+from samesame.weights import from_domain_probabilities
 
 source_prob = membership_prob[split.values == 0]
 target_prob = membership_prob[split.values == 1]
 
-weights = contextual_weights(
+weights = from_domain_probabilities(
     source_prob=source_prob,
     target_prob=target_prob,
     mode="source",
     lambda_=0.5,
 )
 
-weighted = test_adverse_shift(
+weighted = ss.shift.detect_harm(
     source=bad_train,
     target=bad_test,
     direction="higher-is-worse",
     weights=weights,
-    rng=np.random.default_rng(12345),
+    random_state=12345,
 )
 print(f"Weighted   statistic: {weighted.statistic:.4f}, p-value: {weighted.pvalue:.4f}")
 ```
 
 Source samples that look unlike any deployment sample receive lower weights, so the
-adverse-shift test focuses on overlap.
+harmful-shift test focuses on overlap.
 
 ---
 
@@ -134,8 +134,8 @@ adverse-shift test focuses on overlap.
 | Unweighted | Harm signal across both populations, including source-only outliers. |
 | Source-reweighted | Harm signal restricted to common support; source outliers down-weighted. |
 
-If unweighted is significant but weighted is not, adverse shift may be concentrated in
-low-overlap source regions. If both are significant, the adverse shift persists in common support.
+If unweighted is significant but weighted is not, harmful shift may be concentrated in
+low-overlap source regions. If both are significant, the harmful shift persists in common support.
 
 ---
 
@@ -143,7 +143,7 @@ low-overlap source regions. If both are significant, the adverse shift persists 
 
 - Common support between training and deployment is narrow.
 - Training contains many samples with feature values never seen in deployment.
-- You want adverse-shift testing to focus on the subpopulation the model actually encounters.
+- You want harmful-shift testing to focus on the subpopulation the model actually encounters.
 
 ---
 
@@ -153,4 +153,4 @@ low-overlap source regions. If both are significant, the adverse shift persists 
   — when deployment also contains outliers foreign to training.
 - [Why importance weights stabilise shift detection](../../explanation/importance-weights-rationale.md)
   — conceptual background on RIW and `lambda_`.
-- [Weighting strategies](../../api/weighting.md) — full API reference for `contextual_weights`.
+- [Weighting strategies](../../api/weighting.md) — full API reference for `from_domain_probabilities`.

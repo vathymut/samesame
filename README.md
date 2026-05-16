@@ -21,8 +21,8 @@ The **target** is what you're comparing against — typically production data or
 
 It answers two practical questions:
 
-- Did anything change? Use `test_shift(...)`.
-- Did things get worse? Use `test_adverse_shift(...)`.
+- Did anything change? Use `ss.shift.detect_shift(...)`.
+- Did things get worse? Use `ss.shift.detect_harm(...)`.
 
 Use it for model monitoring, data validation, drift assessment, or any workflow where you need to compare two groups and determine whether the difference is practically important.
 
@@ -49,25 +49,25 @@ The score usually comes from a (pre-trained) model. For example, you might train
 
 ```python
 import numpy as np
-from samesame import test_adverse_shift, test_shift
+import samesame as ss
 
 rng = np.random.default_rng(123_456)
 source_scores = rng.normal(size=600)
 target_scores = rng.normal(size=600)
 
-shift = test_shift(source=source_scores, target=target_scores)
+shift = ss.shift.detect_shift(source_scores, target_scores)
 print(f"Did anything change?  p-value = {shift.pvalue:.4f}")
 
-harm = test_adverse_shift(
-    source=source_scores,
-    target=target_scores,
+harm = ss.shift.detect_harm(
+    source_scores,
+    target_scores,
     direction="higher-is-worse",
 )
 print(f"Did things get worse? p-value = {harm.pvalue:.4f}")
 ```
 
-**How to read this:** a small p-value from `test_shift(...)` indicates evidence that the target sample differs from the source sample.
-A small p-value from `test_adverse_shift(...)` indicates evidence that it has also shifted in a worse direction.
+**How to read this:** a small p-value from `ss.shift.detect_shift(...)` indicates evidence that the target sample differs from the source sample.
+A small p-value from `ss.shift.detect_harm(...)` indicates evidence that it has also shifted in a worse direction.
 If the first is small and the second is large, the data changed but not in a clearly harmful way.
 
 ## How it works
@@ -75,7 +75,7 @@ If the first is small and the second is large, the data changed but not in a cle
 `samesame` does not compare raw tables directly. The usual workflow is:
 
 1. Turn each row into one score — typically from a classifier trained to distinguish the two groups.
-2. Compare those scores with `test_shift(...)` (did anything change?) and `test_adverse_shift(...)` (did it get worse?).
+2. Compare those scores with `ss.shift.detect_shift(...)` (did anything change?) and `ss.shift.detect_harm(...)` (did it get worse?).
 
 Both tests are **permutation-based**, so no distributional assumptions are required.
 

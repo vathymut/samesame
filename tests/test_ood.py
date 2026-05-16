@@ -16,10 +16,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from samesame import test_adverse_shift as run_adverse_shift_test
-from samesame import test_shift as run_shift_test
-from samesame._types import AdverseShiftDetails, ShiftDetails
-from samesame.logit_scores import logit_gap, max_logit
+from samesame import scores, shift
+from samesame.shift import HarmResult, ShiftResult
 
 
 @pytest.fixture
@@ -45,9 +43,9 @@ class TestMaxLogit:
 
     def test_basic(self, basic_logits: np.ndarray) -> None:
         """Test basic functionality."""
-        scores = max_logit(basic_logits)
+        outlier_scores = scores.max_logit(basic_logits)
         expected = np.array([5.0, 2.1])
-        np.testing.assert_array_almost_equal(scores, expected)
+        np.testing.assert_array_almost_equal(outlier_scores, expected)
 
     @pytest.mark.parametrize(
         "logits,expected",
@@ -63,18 +61,18 @@ class TestMaxLogit:
     )
     def test_various_inputs(self, logits: np.ndarray, expected) -> None:
         """Test max_logit with various input types."""
-        scores = max_logit(logits)
+        outlier_scores = scores.max_logit(logits)
         if np.isscalar(expected):
-            np.testing.assert_almost_equal(scores[0], expected)
+            np.testing.assert_almost_equal(outlier_scores[0], expected)
         else:
-            np.testing.assert_array_almost_equal(scores, expected)
+            np.testing.assert_array_almost_equal(outlier_scores, expected)
 
     def test_output_properties(self) -> None:
         """Test output dtype and shape."""
         logits = np.random.randn(5, 10).astype(np.float32)
-        scores = max_logit(logits)
-        assert scores.dtype == np.float32
-        assert scores.shape == (5,)
+        outlier_scores = scores.max_logit(logits)
+        assert outlier_scores.dtype == np.float32
+        assert outlier_scores.shape == (5,)
 
     @pytest.mark.parametrize(
         "invalid_input",
@@ -86,17 +84,17 @@ class TestMaxLogit:
     def test_invalid_shapes(self, invalid_input: np.ndarray) -> None:
         """Test error handling for invalid shapes."""
         with pytest.raises(ValueError, match="must be 2D array"):
-            max_logit(invalid_input)
+            scores.max_logit(invalid_input)
 
     def test_single_class_error(self) -> None:
         """Test error for insufficient classes."""
         with pytest.raises(ValueError, match="at least 2 classes"):
-            max_logit(np.array([[5.0], [3.0]]))
+            scores.max_logit(np.array([[5.0], [3.0]]))
 
     def test_empty_classes_error(self) -> None:
         """Test error for zero classes."""
         with pytest.raises(ValueError, match="at least 2 classes"):
-            max_logit(np.empty((2, 0), dtype=np.float32))
+            scores.max_logit(np.empty((2, 0), dtype=np.float32))
 
     @pytest.mark.parametrize(
         "invalid_input",
@@ -108,7 +106,7 @@ class TestMaxLogit:
     def test_non_finite_values_error(self, invalid_input: np.ndarray) -> None:
         """Test error for NaN or infinite logits."""
         with pytest.raises(ValueError, match="NaN or infinite"):
-            max_logit(invalid_input)
+            scores.max_logit(invalid_input)
 
 
 class TestLogitGap:
@@ -116,24 +114,26 @@ class TestLogitGap:
 
     def test_basic(self, basic_logits: np.ndarray) -> None:
         """Test basic functionality with known values."""
-        scores = logit_gap(basic_logits)
+        outlier_scores = scores.logit_gap(basic_logits)
         # Sample 1: 5.0 - (1.0 + 0.5) / 2 = 4.25
         # Sample 2: 2.1 - (2.0 + 1.9) / 2 = 0.15
-        np.testing.assert_array_almost_equal(scores, [4.25, 0.15])
+        np.testing.assert_array_almost_equal(outlier_scores, [4.25, 0.15])
 
     def test_invariance_to_sorting(self) -> None:
         """Test that input order doesn't affect output."""
         logits_unsorted = np.array([[1.0, 5.0, 0.5]])
         logits_sorted = np.array([[5.0, 1.0, 0.5]])
         np.testing.assert_almost_equal(
-            logit_gap(logits_unsorted)[0], logit_gap(logits_sorted)[0]
+            scores.logit_gap(logits_unsorted)[0], scores.logit_gap(logits_sorted)[0]
         )
 
     def test_invariance_to_constant_shift(self) -> None:
         """Test that adding constant to all logits preserves gap."""
         logits1 = np.array([[5.0, 1.0, 0.5]])
         logits2 = np.array([[10.0, 6.0, 5.5]])
-        np.testing.assert_almost_equal(logit_gap(logits1)[0], logit_gap(logits2)[0])
+        np.testing.assert_almost_equal(
+            scores.logit_gap(logits1)[0], scores.logit_gap(logits2)[0]
+        )
 
     @pytest.mark.parametrize(
         "logits,expected",
@@ -144,22 +144,22 @@ class TestLogitGap:
     )
     def test_edge_cases(self, logits: np.ndarray, expected: float) -> None:
         """Test logit_gap with edge cases."""
-        np.testing.assert_almost_equal(logit_gap(logits)[0], expected)
+        np.testing.assert_almost_equal(scores.logit_gap(logits)[0], expected)
 
     def test_extreme_values(self) -> None:
         """Test numerical stability with extreme values."""
         logits_large = np.array([[1e6, 1e5, 1e4]])
         logits_small = np.array([[1e-6, 1e-7, 1e-8]])
         for logits in [logits_large, logits_small]:
-            scores = logit_gap(logits)
-            assert np.all(np.isfinite(scores))
+            outlier_scores = scores.logit_gap(logits)
+            assert np.all(np.isfinite(outlier_scores))
 
     def test_output_properties(self) -> None:
         """Test output dtype and shape."""
         logits = np.random.randn(5, 10).astype(np.float32)
-        scores = logit_gap(logits)
-        assert scores.dtype == np.float32
-        assert scores.shape == (5,)
+        outlier_scores = scores.logit_gap(logits)
+        assert outlier_scores.dtype == np.float32
+        assert outlier_scores.shape == (5,)
 
     @pytest.mark.parametrize(
         "invalid_input",
@@ -171,12 +171,12 @@ class TestLogitGap:
     def test_invalid_shapes(self, invalid_input: np.ndarray) -> None:
         """Test error handling for invalid shapes."""
         with pytest.raises(ValueError, match="must be 2D array"):
-            logit_gap(invalid_input)
+            scores.logit_gap(invalid_input)
 
     def test_insufficient_classes_error(self) -> None:
         """Test error for single class."""
         with pytest.raises(ValueError, match="at least 2 classes"):
-            logit_gap(np.array([[5.0], [3.0]]))
+            scores.logit_gap(np.array([[5.0], [3.0]]))
 
     @pytest.mark.parametrize(
         "invalid_input",
@@ -188,27 +188,27 @@ class TestLogitGap:
     def test_non_finite_values_error(self, invalid_input: np.ndarray) -> None:
         """Test error for NaN or infinite logits."""
         with pytest.raises(ValueError, match="NaN or infinite"):
-            logit_gap(invalid_input)
+            scores.logit_gap(invalid_input)
 
     def test_empty_batch(self) -> None:
         """Test with empty batch."""
         logits = np.empty((0, 10), dtype=np.float32)
-        scores = logit_gap(logits)
-        assert scores.shape == (0,)
+        outlier_scores = scores.logit_gap(logits)
+        assert outlier_scores.shape == (0,)
 
     def test_large_class_count(self) -> None:
         """Test with many classes."""
         logits = np.array([np.concatenate([[5.0], np.random.randn(999) * 0.1 + 0.5])])
-        scores = logit_gap(logits)
-        assert scores[0] > 4.0
+        outlier_scores = scores.logit_gap(logits)
+        assert outlier_scores[0] > 4.0
 
     def test_type_conversion(self) -> None:
         """Test automatic type conversion to float32."""
         logits_int = np.array([[5, 1, 0]], dtype=np.int32)
         logits_float64 = np.array([[5.0, 1.0, 0.5]], dtype=np.float64)
         for logits in [logits_int, logits_float64]:
-            scores = logit_gap(logits)
-            assert scores.dtype == np.float32
+            outlier_scores = scores.logit_gap(logits)
+            assert outlier_scores.dtype == np.float32
 
 
 class TestSeparationQuality:
@@ -218,16 +218,20 @@ class TestSeparationQuality:
         self, id_samples: np.ndarray, ood_samples: np.ndarray
     ) -> None:
         """Test that LogitGap provides ID-OOD separation."""
-        id_scores = logit_gap(id_samples)
-        ood_scores = logit_gap(ood_samples)
+        id_scores = scores.logit_gap(id_samples)
+        ood_scores = scores.logit_gap(ood_samples)
         assert np.mean(id_scores) > np.mean(ood_scores)
 
     def test_logit_gap_better_than_max_logit(
         self, id_samples: np.ndarray, ood_samples: np.ndarray
     ) -> None:
         """Test that LogitGap outperforms MaxLogit in separation."""
-        gap_sep = np.mean(logit_gap(id_samples)) - np.mean(logit_gap(ood_samples))
-        max_sep = np.mean(max_logit(id_samples)) - np.mean(max_logit(ood_samples))
+        gap_sep = np.mean(scores.logit_gap(id_samples)) - np.mean(
+            scores.logit_gap(ood_samples)
+        )
+        max_sep = np.mean(scores.max_logit(id_samples)) - np.mean(
+            scores.max_logit(ood_samples)
+        )
         assert gap_sep > max_sep
 
     def test_same_max_different_gaps(self) -> None:
@@ -237,12 +241,12 @@ class TestSeparationQuality:
 
         # MaxLogit cannot distinguish
         np.testing.assert_almost_equal(
-            max_logit(logits_peaked)[0], max_logit(logits_flat)[0]
+            scores.max_logit(logits_peaked)[0], scores.max_logit(logits_flat)[0]
         )
 
         # LogitGap distinguishes
-        gap_peaked = logit_gap(logits_peaked)[0]
-        gap_flat = logit_gap(logits_flat)[0]
+        gap_peaked = scores.logit_gap(logits_peaked)[0]
+        gap_flat = scores.logit_gap(logits_flat)[0]
         assert gap_peaked > gap_flat
 
 
@@ -259,9 +263,9 @@ class TestNumericalStability:
     )
     def test_all_functions_stable(self, logits: np.ndarray) -> None:
         """Test numerical stability for all functions."""
-        for func in [max_logit, logit_gap]:
-            scores = func(logits)
-            assert np.all(np.isfinite(scores)), (
+        for func in [scores.max_logit, scores.logit_gap]:
+            outlier_scores = func(logits)
+            assert np.all(np.isfinite(outlier_scores)), (
                 f"{func.__name__} produced non-finite values"
             )
 
@@ -270,7 +274,7 @@ class TestNumericalStability:
         logits_int = np.array([[5, 1, 0], [2, 2, 1]], dtype=np.int32)
         logits_float64 = np.array([[5.0, 1.0, 0.5]], dtype=np.float64)
 
-        for func in [max_logit, logit_gap]:
+        for func in [scores.max_logit, scores.logit_gap]:
             scores_int = func(logits_int)
             scores_float64 = func(logits_float64)
             assert scores_int.dtype == np.float32
@@ -281,8 +285,8 @@ class TestLogitScoreShiftIntegration:
     """Integration tests: logit score output feeds into shift tests.
 
     These tests exercise the natural composition seam — the contract that
-    ``max_logit`` / ``logit_gap`` output satisfies ``test_shift`` and
-    ``test_adverse_shift`` input requirements (shape, dtype, finite values).
+    ``max_logit`` / ``logit_gap`` output satisfies ``detect_shift`` and
+    ``detect_harm`` input requirements (shape, dtype, finite values).
     """
 
     @pytest.fixture
@@ -299,55 +303,55 @@ class TestLogitScoreShiftIntegration:
         # OOD-like: flatter distributions — reduced gap/max
         return rng.normal(size=(200, 5))
 
-    @pytest.mark.parametrize("scorer", [max_logit, logit_gap])
-    def test_test_shift_accepts_logit_scores(
+    @pytest.mark.parametrize("scorer", [scores.max_logit, scores.logit_gap])
+    def test_detect_shift_accepts_logit_scores(
         self, source_logits, target_logits, scorer
     ) -> None:
-        """test_shift runs without error on logit-derived scores."""
+        """detect_shift runs without error on logit-derived scores."""
         source_scores = scorer(source_logits)
         target_scores = scorer(target_logits)
-        result = run_shift_test(
-            source=source_scores,
-            target=target_scores,
+        result = shift.detect_shift(
+            source_scores,
+            target_scores,
             n_resamples=99,
-            rng=np.random.default_rng(42),
+            random_state=42,
         )
-        assert isinstance(result, ShiftDetails)
+        assert isinstance(result, ShiftResult)
         assert 0.0 <= result.pvalue <= 1.0
         assert np.isfinite(result.statistic)
         assert result.null_distribution.shape == (99,)
 
-    @pytest.mark.parametrize("scorer", [max_logit, logit_gap])
-    def test_test_adverse_shift_accepts_logit_scores(
+    @pytest.mark.parametrize("scorer", [scores.max_logit, scores.logit_gap])
+    def test_detect_harm_accepts_logit_scores(
         self, source_logits, target_logits, scorer
     ) -> None:
-        """test_adverse_shift runs without error on logit-derived scores."""
+        """detect_harm runs without error on logit-derived scores."""
         source_scores = scorer(source_logits)
         target_scores = scorer(target_logits)
-        result = run_adverse_shift_test(
-            source=source_scores,
-            target=target_scores,
+        result = shift.detect_harm(
+            source_scores,
+            target_scores,
             direction="higher-is-better",
             n_resamples=99,
-            rng=np.random.default_rng(42),
+            random_state=42,
         )
-        assert isinstance(result, AdverseShiftDetails)
+        assert isinstance(result, HarmResult)
         assert 0.0 <= result.pvalue <= 1.0
         assert np.isfinite(result.statistic)
 
-    @pytest.mark.parametrize("scorer", [max_logit, logit_gap])
+    @pytest.mark.parametrize("scorer", [scores.max_logit, scores.logit_gap])
     def test_shifted_distribution_produces_low_pvalue(
         self, source_logits, target_logits, scorer
     ) -> None:
         """Logit scores from a shifted distribution yield a detectable shift."""
         source_scores = scorer(source_logits)
         target_scores = scorer(target_logits)
-        result = run_adverse_shift_test(
-            source=source_scores,
-            target=target_scores,
+        result = shift.detect_harm(
+            source_scores,
+            target_scores,
             direction="higher-is-better",
             n_resamples=499,
-            rng=np.random.default_rng(42),
+            random_state=42,
         )
         # source has higher scores (peaked ID distributions); shifting to
         # flatter OOD logits reduces scores, which is adverse for
@@ -357,6 +361,6 @@ class TestLogitScoreShiftIntegration:
     def test_large_finite_float64_logits_do_not_overflow(self) -> None:
         """Large finite float64 logits should remain valid and finite."""
         logits = np.array([[1e39, 1.0, 0.0]], dtype=np.float64)
-        for func in [max_logit, logit_gap]:
-            scores = func(logits)
-            assert np.all(np.isfinite(scores))
+        for func in [scores.max_logit, scores.logit_gap]:
+            outlier_scores = func(logits)
+            assert np.all(np.isfinite(outlier_scores))

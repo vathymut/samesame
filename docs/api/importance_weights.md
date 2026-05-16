@@ -27,21 +27,21 @@ For guidance on which mode fits your scenario, see
 
 ## Connecting weights to a shift test
 
-Call `contextual_weights` to build sample weights, then pass the result as `weights=`
-to `test_shift` or `test_adverse_shift`:
+Call `from_domain_probabilities` to build sample weights, then pass the result as
+`weights=` to `shift.detect_shift` or `shift.detect_harm`:
 
 ```python
-import samesame
-from samesame.weights import contextual_weights
+import samesame as ss
+from samesame.weights import from_domain_probabilities
 
-weights = contextual_weights(
+weights = from_domain_probabilities(
     source_prob=source_domain_probs,
     target_prob=target_domain_probs,
     mode="source",
 )
-result = samesame.test_shift(
-    source=source_scores,
-    target=target_scores,
+result = ss.shift.detect_shift(
+    source_scores,
+    target_scores,
     weights=weights,
 )
 ```

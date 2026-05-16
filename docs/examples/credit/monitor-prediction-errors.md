@@ -34,7 +34,7 @@ For a predicted probability $\hat{p}$ and true label $y \in \{0, 1\}$:
   predictions more heavily than the Brier score.
 
 For both scores, larger values mean worse predictions. They can therefore serve directly as the
-the adversity score for each row that `test_adverse_shift(...)` expects.
+the adversity score for each row that `ss.shift.detect_harm(...)` expects.
 
 Note that these scores require labels. They are not available during production monitoring when
 outcomes are delayed, but they are appropriate for evaluating a held-out test set or a labelled
@@ -60,7 +60,7 @@ import numpy as np
 from sklearn.datasets import fetch_openml
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from samesame import test_adverse_shift
+import samesame as ss
 
 fico = fetch_openml(data_id=45554, as_frame=True)
 X, y = fico.data, fico.target
@@ -148,13 +148,13 @@ this difference is consistent with random variation or reflects a systematic pat
 Both scores are "higher is worse", so we pass `direction="higher-is-worse"`.
 
 ```python
-harm_brier = test_adverse_shift(
+harm_brier = ss.shift.detect_harm(
     source=brier_train,
     target=brier_test,
     direction="higher-is-worse",
 )
 
-harm_logloss = test_adverse_shift(
+harm_logloss = ss.shift.detect_harm(
     source=logloss_train,
     target=logloss_test,
     direction="higher-is-worse",
@@ -192,7 +192,7 @@ sets are comparable, and the test correctly finds no evidence of adverse shift.
 
 ## Why both scores give the same test statistic
 
-`test_adverse_shift` uses a **rank-based statistic**: it compares how the two samples rank
+`ss.shift.detect_harm` uses a **rank-based statistic**: it compares how the two samples rank
 together, not their raw values. For a given label $y$, both Brier score and log-loss are monotone
 functions of the predicted probability $\hat{p}$, so their rankings across rows are identical.
 The test statistic is therefore the same.

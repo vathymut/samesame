@@ -12,9 +12,9 @@ from sklearn.metrics import (
     roc_curve,
 )
 
-from samesame._wecdf import ECDFDiscrete
+from samesame._internals.ecdf import ECDFDiscrete
 
-SHIFT_STATISTICS: dict[str, Callable] = {
+SHIFT_STATISTICS: dict[str, Callable[..., float]] = {
     "roc_auc": roc_auc_score,
     "balanced_accuracy": balanced_accuracy_score,
     "matthews_corrcoef": matthews_corrcoef,
@@ -29,7 +29,7 @@ def wauc(
     *,
     sample_weight: NDArray | None = None,
 ) -> float:
-    """Compute the weighted area under the ROC curve (WAUC)."""
+    """Compute the weighted area under the ROC curve."""
     fpr, tpr, thresholds = roc_curve(
         actual,
         predicted,
@@ -47,23 +47,17 @@ def wauc(
     return float(trapezoid(y=tpr * weights, x=fpr))
 
 
-def get_shift_metric(name: str) -> tuple[str, Callable]:
-    """Return a built-in shift metric by stable public name."""
-    metric = SHIFT_STATISTICS.get(name)
-    if metric is None:
+def get_shift_statistic(name: str) -> tuple[str, Callable[..., float]]:
+    statistic = SHIFT_STATISTICS.get(name)
+    if statistic is None:
         allowed = ", ".join(sorted(SHIFT_STATISTICS))
         raise ValueError(f"statistic must be one of {allowed}; got {name!r}.")
-    return name, metric
+    return name, statistic
 
 
 def requires_binary_scores(name: str) -> bool:
-    """Return whether the named metric requires binary outlier scores."""
     return name in _BINARY_ONLY_STATISTICS
 
 
-__all__ = [
-    "SHIFT_STATISTICS",
-    "get_shift_metric",
-    "requires_binary_scores",
-    "wauc",
-]
+__all__ = ["SHIFT_STATISTICS", "get_shift_statistic", "requires_binary_scores", "wauc"]
+

@@ -67,7 +67,7 @@ confident the overlap region is large and the domain classifier is well-calibrat
 ---
 ## Normalization
 
-After computing the raw RIW values, `contextual_weights` normalizes the weights for each
+After computing the raw RIW values, `from_domain_probabilities` normalizes the weights for each
 active group so they sum to that group's sample size:
 
 $$
@@ -86,7 +86,7 @@ sizes are unequal.
 ---
 ## Three weighting modes
 
-`contextual_weights` supports three modes that differ in which group receives non-unit weights:
+`from_domain_probabilities` supports three modes that differ in which group receives non-unit weights:
 
 ### source — source reweighting
 
@@ -114,7 +114,7 @@ groups.
 ## Prior ratio and group sizes
 
 When source and target group sizes differ, the raw density ratio is biased.
-\`contextual_weights\` always corrects for this automatically by multiplying the
+\`from_domain_probabilities\` always corrects for this automatically by multiplying the
 density ratio by $n_{\text{source}} / n_{\text{target}}$, inferred from the lengths
 of \`source_prob\` and \`target_prob\`. No manual flag is needed.
 

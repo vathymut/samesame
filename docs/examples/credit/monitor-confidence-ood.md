@@ -72,8 +72,8 @@ import matplotlib.pyplot as plt
 from scipy.special import logit
 from sklearn.datasets import fetch_openml
 from sklearn.ensemble import RandomForestClassifier
-from samesame import test_adverse_shift
-from samesame.logit_scores import logit_gap, max_logit
+import samesame as ss
+from samesame.scores import logit_gap, max_logit
 
 # Load the HELOC dataset
 fico = fetch_openml(data_id=45554, as_frame=True)
@@ -188,7 +188,7 @@ Interpretation:
 For this HELOC split, the deployment histogram should shift **right**, not left, because the
 observed LogitGap values are higher in deployment than in training.
 
-## Step 4 — Test the shift with `test_adverse_shift(...)`
+## Step 4 — Test the shift with `ss.shift.detect_harm(...)`
 
 We now turn that confidence shift into a formal hypothesis test.
 
@@ -196,13 +196,13 @@ Higher LogitGap means **higher confidence**, which is better. We express that di
 `direction="higher-is-better"` instead of negating the values manually.
 
 ```python
-harm = test_adverse_shift(
+harm = ss.shift.detect_harm(
     source=ood_train,
     target=ood_test,
     direction="higher-is-better",
 )
 
-print("Confidence outlier-score adverse-shift test on LogitGap")
+print("Confidence outlier-score harmful-shift test on LogitGap")
 print(f"  statistic: {harm.statistic:.4f}")
 print(f"  p-value:   {harm.pvalue:.4f}")
 ```
@@ -210,7 +210,7 @@ print(f"  p-value:   {harm.pvalue:.4f}")
 **Output:**
 
 ```text
-Confidence outlier-score adverse-shift test on LogitGap
+Confidence outlier-score harmful-shift test on LogitGap
     statistic: 0.0409
     p-value:   1.0000
 ```
@@ -264,7 +264,7 @@ This guide uses **LogitGap** as a practical confidence score for first-pass moni
 - It is easy to compute from model outputs
 - It is more informative than MaxLogit in most cases
 - It works even when the model prediction itself is not an interpretable "worse outcome" score
-- Combined with `test_adverse_shift(...)`, it gives you a principled way to test whether deployment confidence degrades relative to training
+- Combined with `ss.shift.detect_harm(...)`, it gives you a principled way to test whether deployment confidence degrades relative to training
 
 For a direct business-risk signal, use [Monitor a credit risk model](monitor-credit-risk.md).
 For label-based monitoring, use [Monitor prediction errors](monitor-prediction-errors.md).

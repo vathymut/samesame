@@ -1,13 +1,13 @@
 # Tutorial: Detect a distribution shift
 
-This tutorial is a guided first run of `test_shift(...)`.
+This tutorial is a guided first run of `ss.shift.detect_shift(...)`.
 You will generate one score per row, run the test, and interpret the result.
 
 **By the end, you will be able to:**
 
 - Check whether two datasets come from the same distribution
 - Create one score per row without leaking training data
-- Run `test_shift(...)` and read the result
+- Run `ss.shift.detect_shift(...)` and read the result
 
 You can use the same workflow when comparing training vs production data, or one batch vs another.
 
@@ -55,7 +55,7 @@ on the remaining folds. This is the safest default for most users:
 ```python
 from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.model_selection import cross_val_predict
-from samesame import test_shift
+import samesame as ss
 
 # Each sample is scored by a model that never saw it during training
 y_hat = cross_val_predict(
@@ -70,17 +70,14 @@ y_hat = cross_val_predict(
 ## Step 3 — Run the test
 
 Split those model outputs back into source and target groups, then pass those scores to
-`test_shift`. The default statistic is ROC AUC. You can think of it as a separation measure:
+`ss.shift.detect_shift`. The default statistic is ROC AUC. You can think of it as a separation measure:
 0.5 means the classifier cannot tell the groups apart, and 1.0 means it separates them perfectly:
 
 ```python
 source_scores = y_hat[y == 0]
 target_scores = y_hat[y == 1]
 
-shift = test_shift(
-    source=source_scores,
-    target=target_scores,
-)
+shift = ss.shift.detect_shift(source_scores, target_scores)
 print(f"  statistic (AUC): {shift.statistic:.2f}")
 print(f"  p-value:         {shift.pvalue:.4f}")
 ```
@@ -102,7 +99,7 @@ print(f"  p-value:         {shift.pvalue:.4f}")
 Here, p = 0.0002 is very small — the classifier can easily tell the two groups apart,
 which is strong evidence against the null hypothesis of no distributional difference.
 
-> **Important:** `test_shift` tells you *whether* distributions differ, not *how bad* the difference is
+> **Important:** `ss.shift.detect_shift` tells you *whether* distributions differ, not *how bad* the difference is
 > or whether it will hurt your model. For that, see
 > [Check whether a shift is harmful](check-shift-harm.md).
 

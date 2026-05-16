@@ -2,7 +2,7 @@ site_name: samesame
 repo_url: https://github.com/vathymut/samesame
 repo_name: vathymut/samesame
 site_url: https://vathymut.github.io/samesame/
-site_description: Statistical tests for distribution shift — detect and evaluate whether a target sample has drifted from a source sample.
+site_description: Namespace-first statistical tests for shift detection, harmful-shift assessment, and importance weighting.
 site_author: Vathy M. Kamulete
 copyright: Copyright &copy; Vathy M. Kamulete
 
@@ -25,7 +25,7 @@ nav:
       - Advanced controls: api/advanced.md
       - Weighting strategies: api/weighting.md
       - Importance weights: api/importance_weights.md
-      - Logit scores: api/logit_scores.md
+      - Outlier scores: api/logit_scores.md
 plugins:
   - search
   - autorefs

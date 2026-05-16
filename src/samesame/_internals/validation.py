@@ -1,12 +1,6 @@
-# Copyright (c) 2025-present, Royal Bank of Canada.
-# All rights reserved.
-#
-# This source code is licensed under the license found in the
-# LICENSE file in the root directory of this source tree.
-#
-
 from __future__ import annotations
 
+from numbers import Integral
 from typing import Literal
 
 import numpy as np
@@ -15,23 +9,11 @@ from sklearn.utils import check_consistent_length, column_or_1d
 from sklearn.utils.multiclass import type_of_target
 
 Direction = Literal["higher-is-worse", "higher-is-better"]
+RandomState = int | np.random.RandomState | np.random.Generator | None
 
 
 def as_numeric_vector(values: ArrayLike, *, name: str) -> NDArray:
-    """Return a validated 1D numeric array.
-
-    Parameters
-    ----------
-    values : ArrayLike
-            Input values expected to represent outlier scores.
-    name : str
-        Public parameter name used in validation messages.
-
-    Returns
-    -------
-    NDArray
-        One-dimensional numeric array.
-    """
+    """Return a validated 1D numeric array."""
     vector = column_or_1d(values)
     if vector.size == 0:
         raise ValueError(f"{name} must not be empty.")
@@ -43,10 +25,8 @@ def as_numeric_vector(values: ArrayLike, *, name: str) -> NDArray:
 
 
 def validate_binary_actual_with_predicted(
-    actual: NDArray,
-    predicted: NDArray,
+    actual: NDArray, predicted: NDArray
 ) -> tuple[NDArray, NDArray]:
-    """Validate binary labels against aligned outlier scores."""
     actual = column_or_1d(actual)
     predicted = as_numeric_vector(predicted, name="predicted")
     check_consistent_length(actual, predicted)
@@ -56,7 +36,6 @@ def validate_binary_actual_with_predicted(
 
 
 def validate_direction(direction: str) -> Direction:
-    """Validate the score direction for adverse-shift testing."""
     if direction not in ("higher-is-worse", "higher-is-better"):
         raise ValueError(
             "direction must be one of 'higher-is-worse' or 'higher-is-better'."
@@ -68,26 +47,6 @@ def validate_and_normalise_weights(
     sample_weight: NDArray | None,
     n: int,
 ) -> NDArray | None:
-    """Validate and normalise sample weights to sum to n.
-
-    Parameters
-    ----------
-    sample_weight : NDArray or None
-        Sample weights to validate. If None, returns None (equal weights).
-    n : int
-        Expected length of the weight array.
-
-    Returns
-    -------
-    NDArray or None
-        Normalised weights summing to n, or None if input is None.
-
-    Raises
-    ------
-    ValueError
-        If weights have wrong length, contain negative values, are all zero,
-        or contain non-finite values (NaN or inf).
-    """
     if sample_weight is None:
         return None
     w = np.asarray(sample_weight, dtype=float)
@@ -105,9 +64,26 @@ def validate_and_normalise_weights(
     return w / total * n
 
 
+def resolve_random_state(
+    random_state: RandomState,
+) -> np.random.Generator | np.random.RandomState:
+    if random_state is None:
+        return np.random.default_rng()
+    if isinstance(random_state, np.random.Generator | np.random.RandomState):
+        return random_state
+    if isinstance(random_state, Integral):
+        return np.random.default_rng(int(random_state))
+    raise TypeError(
+        "random_state must be an int, numpy.random.Generator, "
+        "numpy.random.RandomState, or None."
+    )
+
+
 __all__ = [
     "Direction",
+    "RandomState",
     "as_numeric_vector",
+    "resolve_random_state",
     "validate_and_normalise_weights",
     "validate_binary_actual_with_predicted",
     "validate_direction",

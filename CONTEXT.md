@@ -6,7 +6,7 @@ This context defines the domain language for implementing paper-aligned weightin
 
 **RCT Validation Modules**:
 Two new top-level submodules for validating two-arm randomised experiments, based on the Watson & Holmes (2020) statistical framework: `samesame.subgroup` (`test_subgroup_effect`) tests for crossover heterogeneity; `samesame.model_selection` (`test_model_lift`) tests whether an estimator captures more heterogeneity than a reference estimator. Both take `(y, treatment, features)` inputs where `y` is the binary outcome and `treatment` is the binary arm assignment. Domain-agnostic and architecturally separate from the distribution-shift API.
-_Avoid_: Collapsing both into a single `samesame.subgroup` module; extending test_shift; repurposing WeightingStrategy for this; applying to adaptive/bandit logs without IPS correction; hardcoding pricing vocabulary in public parameter names
+_Avoid_: Collapsing both into a single `samesame.subgroup` module; extending `shift.detect_shift`; repurposing WeightingStrategy for this; applying to adaptive/bandit logs without IPS correction; hardcoding pricing vocabulary in public parameter names
 
 **Crossover Subgroup**:
 A subgroup in a two-arm experiment where the optimal arm allocation differs across members; the effect of `test_subgroup_effect()`. The general analogue of crossover TEH in Watson & Holmes (2020) — that paper term is acceptable in docstrings and internal comments as a reference, but must not appear in public-facing API names or user documentation.
@@ -17,7 +17,7 @@ A type of treatment effect heterogeneity where one arm is everywhere superior bu
 _Avoid_: "captures more heterogeneity" (ambiguous — implies general predictive quality, not treatment-benefit prediction); quantitative interaction; non-crossover price-sensitivity (domain-specific)
 
 **Public API: samesame.subgroup**:
-`samesame.subgroup.test_subgroup_effect(y, treatment, features, estimator, ...)` — tests for crossover heterogeneity (real subgroups where arms differ in direction). Returns a `SubgroupResult` with `.pvalue`. The `test_*` prefix is consistent with `test_shift` / `test_adverse_shift` in the parent package.
+`samesame.subgroup.test_subgroup_effect(y, treatment, features, estimator, ...)` — tests for crossover heterogeneity (real subgroups where arms differ in direction). Returns a `SubgroupResult` with `.pvalue`. The `test_*` prefix is consistent with `shift.detect_shift` / `shift.detect_harm` in the parent package.
 _Avoid_: `test_segments`, `test_heterogeneity` (superseded); `ml_model` as parameter name (superseded by `estimator`); surface paper term `crossover TEH` only in docstring `Notes` sections
 
 **Public API: samesame.model_selection**:
@@ -75,11 +75,11 @@ A method whose mathematical form and usage semantics are traceable to the target
 _Avoid_: Paper-inspired tweak, approximate variant
 
 **Domain Probability**:
-The probability for each observation that it belongs to the target group, constrained to the open interval (0, 1). Produced by a **Domain Classifier** and passed to `contextual_weights` as two separate arrays: `source_prob` (probabilities for source samples) and `target_prob` (probabilities for target samples). The prior ratio is always inferred from `len(source_prob) / len(target_prob)` — never supplied explicitly.
+The probability for each observation that it belongs to the target group, constrained to the open interval (0, 1). Produced by a **Domain Classifier** and passed to `from_domain_probabilities` as two separate arrays: `source_prob` (probabilities for source samples) and `target_prob` (probabilities for target samples). The prior ratio is always inferred from `len(source_prob) / len(target_prob)` — never supplied explicitly.
 _Avoid_: Context Membership Probability (superseded), logit score, raw classifier margin, pooled flat array passed with a hidden ordering invariant
 
 **Context-Aware Weighting Mode**:
-A named policy (`'source'`, `'target'`, `'both'`) that controls which group's samples are reweighted by `contextual_weights`. Passed as the `mode` parameter.
+A named policy (`'source'`, `'target'`, `'both'`) that controls which group's samples are reweighted by `from_domain_probabilities`. Passed as the `mode` parameter.
 _Avoid_: Ad hoc weighting, custom formula
 
 **Primary Audience**:
@@ -87,7 +87,7 @@ The primary audience of `samesame` is **ML engineers and data scientists with a 
 _Avoid_: Spoon-feeding p-value definitions in API docstrings or primary docs; writing tutorials at a level that assumes no statistical background
 
 **SubgroupResult**:
-The return type of `test_subgroup_effect()` and `test_model_lift()`. Extends `TestResult` (inherits `.statistic: float` and `.pvalue: float`) and adds `.null_distribution: NDArray[np.float64]`. The `.statistic` field holds the aggregate test statistic value (the combined evidence before p-value conversion). Consistent with `ShiftDetails` and `AdverseShiftDetails` in shape; defined in `samesame._types` alongside the existing result types.
+The return type of `test_subgroup_effect()` and `test_model_lift()`. Extends `TestResult` (inherits `.statistic: float` and `.pvalue: float`) and adds `.null_distribution: NDArray[np.float64]`. The `.statistic` field holds the aggregate test statistic value (the combined evidence before p-value conversion). Consistent with `ShiftResult` and `HarmResult` in shape.
 _Avoid_: Standalone result type with no `TestResult` inheritance; naming it `Result` (too generic)
 
 ## Relationships
@@ -109,7 +109,7 @@ _Avoid_: Standalone result type with no `TestResult` inheritance; naming it `Res
 - "sample weight" was used loosely for both user-supplied weights and computed importance weights — resolved: `SampleWeighting` is the explicit user-supplied strategy; importance weights are always derived from domain probabilities via RIW.
 - "statistic" appears both as the test statistic name (a string like `"roc_auc"`) and as the computed numeric value — context distinguishes them; `statistic_name` and `statistic` (float) are the canonical field names.
 - "pricing experiment" could mean a fully randomized A/B test or an adaptive/contextual bandit; resolved: `samesame.subgroup` is only valid for **fully randomized two-arm experiments** where `P(treatment=1 | X) = 0.5`. Logs from adaptive or contextual pricing policies require IPS correction before use and are explicitly out of scope for v1.
-- `alpha_blend` was the original parameter name for the RIW blending coefficient; resolved: renamed to `lambda_` (public-facing) to align with domain notation. `balance: bool` was a toggle for prior-ratio inference; resolved: always inferred from group sizes — removed entirely. `group`/`membership_prob` positional parameters for `contextual_weights` replaced by keyword-only `source_prob`/`target_prob` to make the source-first ordering invariant structural rather than documented.
+- `alpha_blend` was the original parameter name for the RIW blending coefficient; resolved: renamed to `lambda_` (public-facing) to align with domain notation. `balance: bool` was a toggle for prior-ratio inference; resolved: always inferred from group sizes — removed entirely. `group`/`membership_prob` positional parameters for `from_domain_probabilities` replaced by keyword-only `source_prob`/`target_prob` to make the source-first ordering invariant structural rather than documented.
 
 ## Core API language (distribution shift)
 
@@ -129,12 +129,12 @@ _Avoid_: test set, deployment data
 Any detectable difference between source and target score distributions.
 _Avoid_: drift (implies temporal), covariate shift (implies specific mechanism)
 
-**Adverse shift**:
+**Harmful shift**:
 A shift in the harmful direction — scores moving toward higher risk or lower confidence. Requires a declared direction.
-_Avoid_: bad shift, harmful drift
+_Avoid_: adverse shift, bad shift, harmful drift
 
 **Direction**:
-Whether higher outlier scores indicate worse outcomes (`higher-is-worse`) or better outcomes (`higher-is-better`). Required for adverse shift testing.
+Whether higher outlier scores indicate worse outcomes (`higher-is-worse`) or better outcomes (`higher-is-better`). Required for harmful shift testing.
 _Avoid_: polarity, orientation
 
 **Importance weight**:
@@ -150,5 +150,5 @@ A tagged choice among: no weighting, explicit sample weights (`SampleWeighting`)
 _Avoid_: weight mode, weighting method
 
 **Domain classifier**:
-A binary probabilistic classifier trained to distinguish source from target samples. Its out-of-bag or held-out predicted probabilities are the **Domain Probabilities** consumed by `contextual_weights`. Any calibrated binary classifier (e.g. random forest with OOB scores, logistic regression) may serve as the domain classifier; `samesame` is agnostic to the choice.
+A binary probabilistic classifier trained to distinguish source from target samples. Its out-of-bag or held-out predicted probabilities are the **Domain Probabilities** consumed by `from_domain_probabilities`. Any calibrated binary classifier (e.g. random forest with OOB scores, logistic regression) may serve as the domain classifier; `samesame` is agnostic to the choice.
 _Avoid_: membership classifier (superseded), two-sample discriminator
