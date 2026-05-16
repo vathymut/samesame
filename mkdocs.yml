@@ -24,7 +24,6 @@ nav:
       - Testing functions: api/testing.md
       - Advanced controls: api/advanced.md
       - Weighting strategies: api/weighting.md
-      - Bayes factors: api/bayes_factors.md
       - Importance weights: api/importance_weights.md
       - Logit scores: api/logit_scores.md
 plugins:

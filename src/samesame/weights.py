@@ -144,17 +144,32 @@ def contextual_weights(
     if lambda_ < 0.0 or lambda_ > 1.0:
         raise ValueError("lambda_ must be in [0, 1].")
     _validate_mode(mode)
+
+    # Prior ratio: how much more likely a random draw is from source vs target.
+    # Inferred from sample sizes rather than supplied explicitly.
     group_balance = n_source / n_target
+
+    # Density ratio r(x) = p(target|x) / p(source|x), derived from the domain
+    # classifier probability via Bayes' theorem with the inferred prior ratio.
     source_dr = _density_ratio(source_prob, group_balance=group_balance)
     target_dr = _density_ratio(target_prob, group_balance=group_balance)
+
+    # Default: leave each group with unit weights (no reweighting).
     out_source = np.ones(n_source, dtype=np.float64)
     out_target = np.ones(n_target, dtype=np.float64)
+
     if mode in ("source", "both"):
+        # RIW formula: r / ((1-λ) + λ·r) blends toward uniform as λ→1.
         out_source = _riw(source_dr, lam=lambda_)
+        # Normalize so source weights sum to n_source (preserves expected value).
         out_source = out_source * (n_source / out_source.sum())
+
     if mode in ("target", "both"):
+        # Inverse RIW: 1 / (λ + (1-λ)·r) — maps target back to source density.
         out_target = _inverse_riw(target_dr, lam=lambda_)
+        # Normalize so target weights sum to n_target.
         out_target = out_target * (n_target / out_target.sum())
+
     return ContextualWeights(source=out_source, target=out_target)
 
 

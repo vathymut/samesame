@@ -78,3 +78,15 @@ result = samesame.test_shift(
 
 ::: samesame._api
 
+## Bayes factor utilities
+
+Use these functions to convert between p-values and Bayes factors, or to
+compute Bayes factors directly from posterior draws returned by
+`adverse_shift_posterior`.
+
+::: samesame.as_bf
+
+::: samesame.as_pvalue
+
+::: samesame.bayes_factor
+

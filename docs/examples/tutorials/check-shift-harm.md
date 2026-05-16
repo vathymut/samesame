@@ -86,7 +86,7 @@ Adverse-shift p-value: 0.1215
 
 Here, p = 0.1215 is large. We do not have sufficient evidence to conclude that Bowl is meaningfully worse than Armanaleg.
 
-> **Advanced:** For Bayesian evidence alongside the standard p-value, see [`samesame.advanced.test_adverse_shift`](../../api/advanced.md) and `samesame.bayes_factors`.
+> **Advanced:** For Bayesian evidence alongside the standard p-value, see [`adverse_shift_posterior`](../../api/advanced.md). Use `samesame.as_bf` and `samesame.as_pvalue` to convert between Bayes factors and p-values.
 
 ## Tips
 

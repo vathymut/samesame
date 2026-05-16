@@ -7,8 +7,10 @@
 """
 Empirical weighted CDF Functions
 
-Copied/Adapted from:
+Vendored from statsmodels (empirical_distribution.py, ECDFDiscrete class):
 https://www.statsmodels.org/dev/_modules/statsmodels/distributions/empirical_distribution.html#ECDFDiscrete
+
+If updating this file, diff against the upstream source at the URL above.
 """
 
 import numpy as np
