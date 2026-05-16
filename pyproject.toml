@@ -31,13 +31,13 @@ classifiers = [
 ]
 
 [build-system]
-requires = ["uv_build>=0.8.11,<0.9.0"]
+requires = ["uv_build>=0.11.14,<0.12.0"]
 build-backend = "uv_build"
 
 
 [project.optional-dependencies]
 dev = ["samesame[docs,test]"]
-test = ["uv", "pytest", "pytest-cov", "ruff"]
+test = ["uv>=0.11.14", "pytest", "pytest-cov", "ruff"]
 docs = ["mkdocs-material", "mkdocstrings-python", "numpydoc", "pandas"]
 
 [tool.pytest.ini_options]
