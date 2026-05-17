@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Statistical tests for distribution shift — detect and evaluate whether a target sample has drifted from a source sample.">
+        <meta name="description" content="Statistical tests for deciding whether a new population differs from a reference population, and whether the change is harmful.">
       
       
         <meta name="author" content="Vathy M. Kamulete">
@@ -26,7 +26,7 @@
     
     
       
-        <title>Why importance weights stabilise shift detection - samesame</title>
+        <title>When Importance Weights Help - samesame</title>
       
     
     
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#why-importance-weights-stabilise-shift-detection" class="md-skip">
+        <a href="#when-importance-weights-help" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Why importance weights stabilise shift detection
+              When Importance Weights Help
             
           </span>
         </div>
@@ -420,7 +420,7 @@
   
   
   <span class="md-ellipsis">
-    Detect a distribution shift
+    Detect Whether Two Datasets Differ
     
   </span>
   
@@ -443,7 +443,7 @@
   
   
   <span class="md-ellipsis">
-    Check whether a shift is harmful
+    Check Whether a Change Points in a Worse Direction
     
   </span>
   
@@ -466,7 +466,7 @@
   
   
   <span class="md-ellipsis">
-    Adjust for covariate shift with importance weights
+    Focus on Shared Support with Importance Weights
     
   </span>
   
@@ -541,7 +541,30 @@
   
   
   <span class="md-ellipsis">
-    Monitor a credit risk model
+    Monitor Predicted Credit Risk
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/credit/monitor-model-confidence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Monitor Model Confidence
     
   </span>
   
@@ -564,30 +587,7 @@
   
   
   <span class="md-ellipsis">
-    Monitor prediction errors
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../examples/credit/monitor-confidence-ood/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Monitor model confidence
+    Monitor Prediction Errors Once Labels Arrive
     
   </span>
   
@@ -610,7 +610,7 @@
   
   
   <span class="md-ellipsis">
-    Use source reweighting for adverse-shift testing
+    Focus Harmful-Shift Testing on Shared Support
     
   </span>
   
@@ -633,7 +633,7 @@
   
   
   <span class="md-ellipsis">
-    Use double-weighting for covariate-shift adaptation
+    Restrict Testing to Common Support on Both Sides
     
   </span>
   
@@ -720,7 +720,7 @@
   
   
   <span class="md-ellipsis">
-    Why importance weights stabilise shift detection
+    When Importance Weights Help
     
   </span>
   
@@ -733,7 +733,7 @@
   
   
   <span class="md-ellipsis">
-    Why importance weights stabilise shift detection
+    When Importance Weights Help
     
   </span>
   
@@ -756,87 +756,45 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-density-ratio-problem" class="md-nav__link">
+  <a href="#the-basic-problem" class="md-nav__link">
     <span class="md-ellipsis">
-      The density-ratio problem
+      The basic problem
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#taming-the-ratio-with-riw-blending" class="md-nav__link">
+  <a href="#how-samesame-stabilises-the-weights" class="md-nav__link">
     <span class="md-ellipsis">
-      Taming the ratio with RIW blending
+      How samesame stabilises the weights
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#normalization" class="md-nav__link">
+  <a href="#what-lambda_-changes" class="md-nav__link">
     <span class="md-ellipsis">
-      Normalization
+      What lambda_ changes
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#three-weighting-modes" class="md-nav__link">
+  <a href="#choosing-a-mode" class="md-nav__link">
     <span class="md-ellipsis">
-      Three weighting modes
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Three weighting modes">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#source-source-reweighting" class="md-nav__link">
-    <span class="md-ellipsis">
-      source — source reweighting
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#target-target-reweighting" class="md-nav__link">
-    <span class="md-ellipsis">
-      target — target reweighting
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#both-double-weighting" class="md-nav__link">
-    <span class="md-ellipsis">
-      both — double-weighting
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#prior-ratio-and-group-sizes" class="md-nav__link">
-    <span class="md-ellipsis">
-      Prior ratio and group sizes
+      Choosing a mode
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#decision-guide" class="md-nav__link">
+  <a href="#when-to-skip-weighting" class="md-nav__link">
     <span class="md-ellipsis">
-      Decision guide
+      When to skip weighting
     </span>
   </a>
   
@@ -924,30 +882,7 @@
   
   
   <span class="md-ellipsis">
-    Testing functions
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/advanced/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Advanced controls
+    Shift Testing
     
   </span>
   
@@ -970,76 +905,7 @@
   
   
   <span class="md-ellipsis">
-    Weighting strategies
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/bayes_factors/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Bayes factors
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/importance_weights/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Importance weights
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/logit_scores/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Logit scores
+    Importance Weights
     
   </span>
   
@@ -1084,87 +950,45 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-density-ratio-problem" class="md-nav__link">
+  <a href="#the-basic-problem" class="md-nav__link">
     <span class="md-ellipsis">
-      The density-ratio problem
+      The basic problem
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#taming-the-ratio-with-riw-blending" class="md-nav__link">
+  <a href="#how-samesame-stabilises-the-weights" class="md-nav__link">
     <span class="md-ellipsis">
-      Taming the ratio with RIW blending
+      How samesame stabilises the weights
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#normalization" class="md-nav__link">
+  <a href="#what-lambda_-changes" class="md-nav__link">
     <span class="md-ellipsis">
-      Normalization
+      What lambda_ changes
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#three-weighting-modes" class="md-nav__link">
+  <a href="#choosing-a-mode" class="md-nav__link">
     <span class="md-ellipsis">
-      Three weighting modes
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Three weighting modes">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#source-source-reweighting" class="md-nav__link">
-    <span class="md-ellipsis">
-      source — source reweighting
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#target-target-reweighting" class="md-nav__link">
-    <span class="md-ellipsis">
-      target — target reweighting
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#both-double-weighting" class="md-nav__link">
-    <span class="md-ellipsis">
-      both — double-weighting
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#prior-ratio-and-group-sizes" class="md-nav__link">
-    <span class="md-ellipsis">
-      Prior ratio and group sizes
+      Choosing a mode
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#decision-guide" class="md-nav__link">
+  <a href="#when-to-skip-weighting" class="md-nav__link">
     <span class="md-ellipsis">
-      Decision guide
+      When to skip weighting
     </span>
   </a>
   
@@ -1198,144 +1022,102 @@
   
 
 
-<h1 id="why-importance-weights-stabilise-shift-detection">Why importance weights stabilise shift detection<a class="headerlink" href="#why-importance-weights-stabilise-shift-detection" title="Permanent link">&para;</a></h1>
-<p>This page explains the conceptual landscape behind importance weighting in `samesame`.
-It covers why plain density-ratio weights can become extreme, what <code>lambda_</code> trades off,
-and when each of the three weighting modes is appropriate.</p>
-<p>There are no code examples here. For worked code, see the tutorial
-<a href="../../examples/tutorials/adjust-for-covariate-shift/">Adjust for covariate shift with importance weights</a>.</p>
-<hr />
-<h2 id="the-density-ratio-problem">The density-ratio problem<a class="headerlink" href="#the-density-ratio-problem" title="Permanent link">&para;</a></h2>
-<p>A classifier two-sample test trains a classifier to distinguish source from target samples and
-uses its predicted probabilities as shift scores. When covariate shift is present — source and
-target differ in their feature distributions — the ideal correction is to reweight source samples
-by the <strong>density ratio</strong>:</p>
+<h1 id="when-importance-weights-help">When importance weights help<a class="headerlink" href="#when-importance-weights-help" title="Permanent link">&para;</a></h1>
+<p>Importance weights help when source and target differ for two reasons at once:</p>
+<ul>
+<li>there is a real change in the region you care about</li>
+<li>one or both groups also contain observations that sit in parts of feature space the other group
+  almost never visits</li>
+</ul>
+<p>Without weighting, those low-overlap observations can dominate the comparison.</p>
+<p>For code, see
+<a href="../../examples/tutorials/adjust-for-covariate-shift/">Focus on shared support with importance weights</a>.</p>
+<h2 id="the-basic-problem">The basic problem<a class="headerlink" href="#the-basic-problem" title="Permanent link">&para;</a></h2>
+<p>Suppose a domain classifier estimates the probability that an observation belongs to target.
+Call that probability <span class="arithmatex">\(\hat{p}(x)\)</span>.</p>
+<p>The standard density-ratio correction is:</p>
 <div class="arithmatex">\[
-w(x) = \frac{p_{\text{target}}(x)}{p_{\text{source}}(x)}
+\hat{r}(x) = \frac{\hat{p}(x)}{1 - \hat{p}(x)} \cdot \frac{n_{\text{source}}}{n_{\text{target}}}
 \]</div>
-<p>In practice, this ratio is estimated from a domain classifier. Let <span class="arithmatex">\(\hat{p}(x)\)</span> be the
-predicted probability that sample <span class="arithmatex">\(x\)</span> belongs to the target group. Then the estimated density
-ratio is:</p>
+<p>This is useful, but it can become unstable. When the groups are easy to separate, a small number
+of observations can receive very large weights and dominate the test.</p>
+<h2 id="how-samesame-stabilises-the-weights">How <code>samesame</code> stabilises the weights<a class="headerlink" href="#how-samesame-stabilises-the-weights" title="Permanent link">&para;</a></h2>
+<p><code>samesame</code> uses relative importance weighting (RIW), which blends the plain density ratio toward
+uniform weighting.</p>
+<p>For source weighting:</p>
 <div class="arithmatex">\[
-\hat{w}(x) = \frac{\hat{p}(x)}{1 - \hat{p}(x)} \cdot \frac{n_{\text{source}}}{n_{\text{target}}}
+w_{\text{source}}(x) = \frac{\hat{r}(x)}{(1 - \lambda) + \lambda \hat{r}(x)}
 \]</div>
-<p>The problem is that when the classifier separates groups well — exactly the situation where you
-need weighting — the estimated <span class="arithmatex">\(\hat{p}(x)\)</span> for source samples in the overlap region can
-approach 0.5 while for isolated outliers it approaches 0. Division by a near-zero denominator
-then produces extreme weight values. One or a handful of source outliers can dominate the entire
-weighted test, masking real signal in the shared region.</p>
-<hr />
-<h2 id="taming-the-ratio-with-riw-blending">Taming the ratio with RIW blending<a class="headerlink" href="#taming-the-ratio-with-riw-blending" title="Permanent link">&para;</a></h2>
-<p>`samesame` uses <strong>Relative Importance Weighting (RIW)</strong> to stabilise the density ratio.
-The RIW weight for a source sample is:</p>
+<p>For target weighting:</p>
 <div class="arithmatex">\[
-w_{\text{source}}(x) = \frac{\hat{w}(x)}{(1 - \lambda) + \lambda \cdot \hat{w}(x)}
+w_{\text{target}}(x) = \frac{1}{\lambda + (1 - \lambda) \hat{r}(x)}
 \]</div>
-<p>where <span class="arithmatex">\(\lambda\)</span> is `lambda_`. For target samples receiving inverse weights:</p>
-<div class="arithmatex">\[
-w_{\text{target}}(x) = \frac{1}{\lambda + (1 - \lambda) \cdot \hat{w}(x)}
-\]</div>
-<p>The blended denominator in both formulas prevents any single weight from growing without bound.
-The parameter `lambda_` controls the trade-off:</p>
+<p>You do not need to compute these by hand. <code>from_domain_probabilities(...)</code> does it for you.</p>
+<h2 id="what-lambda_-changes">What <code>lambda_</code> changes<a class="headerlink" href="#what-lambda_-changes" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>`lambda_`</th>
+<th><code>lambda_</code></th>
 <th>Effect</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>`0.0`</td>
-<td>Plain density ratio; equivalent to IWERM. Maximum variance.</td>
+<td><code>0.0</code></td>
+<td>Plain density ratio. Strongest correction, highest variance.</td>
 </tr>
 <tr>
-<td>`0.5` (default)</td>
-<td>Balanced blend; practical default for most applications.</td>
+<td><code>0.5</code></td>
+<td>Practical default. Good balance between correction and stability.</td>
 </tr>
 <tr>
-<td>`1.0`</td>
-<td>All weights become uniform (no correction at all).</td>
+<td><code>1.0</code></td>
+<td>Uniform weights. No correction.</td>
 </tr>
 </tbody>
 </table>
-<p>Lower values apply more aggressive correction but increase variance. Higher values are more
-conservative. The default `lambda_=0.5` is a good starting point; reduce it if you are
-confident the overlap region is large and the domain classifier is well-calibrated.</p>
-<hr />
-<h2 id="normalization">Normalization<a class="headerlink" href="#normalization" title="Permanent link">&para;</a></h2>
-<p>After computing the raw RIW values, <code>contextual_weights</code> normalizes the weights for each
-active group so they sum to that group's sample size:</p>
-<div class="arithmatex">\[
-w_i^{\text{norm}} = w_i \cdot \frac{n}{\sum_j w_j}
-\]</div>
-<p>This normalization is applied independently per group. Source weights sum to <span class="arithmatex">\(n_{\text{source}}\)</span>,
-target weights sum to <span class="arithmatex">\(n_{\text{target}}\)</span>. Samples not targeted by <code>mode</code> keep weight 1 and
-are not renormalized — their sum is already equal to their group size by construction.</p>
-<p>The effect is to preserve the effective sample size interpretation of each group: weighted
-averages computed over the group behave like unweighted averages over a representative
-sample of that size. It also prevents the overall scale of weights from drifting when group
-sizes are unequal.</p>
-<hr />
-<h2 id="three-weighting-modes">Three weighting modes<a class="headerlink" href="#three-weighting-modes" title="Permanent link">&para;</a></h2>
-<p><code>contextual_weights</code> supports three modes that differ in which group receives non-unit weights:</p>
-<h3 id="source-source-reweighting">source — source reweighting<a class="headerlink" href="#source-source-reweighting" title="Permanent link">&para;</a></h3>
-<p>Source samples that look unlike any target sample receive downweighted importance.
-Target samples all receive weight 1. Use this when the source group contains outliers
-that are foreign to the target population and you want the test to focus on the overlap region
-from the source side.</p>
-<h3 id="target-target-reweighting">target — target reweighting<a class="headerlink" href="#target-target-reweighting" title="Permanent link">&para;</a></h3>
-<p>Target samples that look unlike any source sample receive downweighted importance.
-Source samples all receive weight 1. Use this when the target group contains outliers
-foreign to the source population.</p>
-<h3 id="both-double-weighting">both — double-weighting<a class="headerlink" href="#both-double-weighting" title="Permanent link">&para;</a></h3>
-<p>Both source and target outliers are downweighted simultaneously. Both sides of the density
-ratio are corrected. Use this when both groups contain outliers foreign to the other group
-and you want the test to focus exclusively on the common support region. This is the most
-aggressive correction and should be chosen only when outliers are genuinely present in both
-groups.</p>
-<hr />
-<h2 id="prior-ratio-and-group-sizes">Prior ratio and group sizes<a class="headerlink" href="#prior-ratio-and-group-sizes" title="Permanent link">&para;</a></h2>
-<p>When source and target group sizes differ, the raw density ratio is biased.
-`contextual_weights` always corrects for this automatically by multiplying the
-density ratio by <span class="arithmatex">\(n_{\text{source}} / n_{\text{target}}\)</span>, inferred from the lengths
-of `source_prob` and `target_prob`. No manual flag is needed.</p>
-<hr />
-<h2 id="decision-guide">Decision guide<a class="headerlink" href="#decision-guide" title="Permanent link">&para;</a></h2>
+<p>Lower values correct more aggressively. Higher values are more conservative.</p>
+<h2 id="choosing-a-mode">Choosing a mode<a class="headerlink" href="#choosing-a-mode" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Scenario</th>
-<th>Recommended mode</th>
-<th>Key parameter</th>
+<th>Mode</th>
+<th>Use it when</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>First-pass check; source contains outliers foreign to target</td>
-<td>`mode="source"` with `lambda_=0.5`</td>
-<td>`lambda_`</td>
+<td><code>mode="source"</code></td>
+<td>source contains observations that are foreign to target</td>
 </tr>
 <tr>
-<td>Target contains outliers foreign to source</td>
-<td>`mode="target"` with `lambda_=0.5`</td>
-<td>`lambda_`</td>
+<td><code>mode="target"</code></td>
+<td>target contains observations that are foreign to source</td>
 </tr>
 <tr>
-<td>Both groups contain outliers foreign to the other</td>
-<td>`mode="both"` with `lambda_=0.5`</td>
-<td>`mode`, `lambda_`</td>
+<td><code>mode="both"</code></td>
+<td>both groups contain low-overlap observations and you want to focus on common support only</td>
 </tr>
 </tbody>
 </table>
-<hr />
+<p>In all three cases, <code>from_domain_probabilities(...)</code> normalizes each active group so the weights
+sum to that group's sample size.</p>
+<h2 id="when-to-skip-weighting">When to skip weighting<a class="headerlink" href="#when-to-skip-weighting" title="Permanent link">&para;</a></h2>
+<p>Start unweighted when:</p>
+<ul>
+<li>source and target already overlap well</li>
+<li>you do not have a reliable domain classifier</li>
+<li>you want the first-pass answer before narrowing attention to common support</li>
+</ul>
+<p>Weights are most useful when you already know that overlap is the issue, not as a reflex for every
+comparison.</p>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Shimodaira, H. (2000). Improving predictive inference under covariate shift by weighting the
-  log-likelihood function. <em>Journal of Statistical Planning and Inference</em>, 90(2), 227–244.</li>
+  log-likelihood function. <em>Journal of Statistical Planning and Inference</em>, 90(2), 227-244.</li>
 <li>Yamada, M., Suzuki, T., Kanamori, T., Hachiya, H., &amp; Sugiyama, M. (2013). Relative
   density-ratio estimation for robust distribution comparison. <em>Neural Computation</em>, 25(5),
-  1324–1370.</li>
+  1324-1370.</li>
 </ul>
 
 
@@ -1372,7 +1154,7 @@ of `source_prob` and `target_prob`. No manual flag is needed.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../../examples/weighting/double-weighting/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Use double-weighting for covariate-shift adaptation">
+          <a href="../../examples/weighting/double-weighting/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Restrict Testing to Common Support on Both Sides">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1382,20 +1164,20 @@ of `source_prob` and `target_prob`. No manual flag is needed.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Use double-weighting for covariate-shift adaptation
+                Restrict Testing to Common Support on Both Sides
               </div>
             </div>
           </a>
         
         
           
-          <a href="../../api/testing/" class="md-footer__link md-footer__link--next" aria-label="Next: Testing functions">
+          <a href="../../api/testing/" class="md-footer__link md-footer__link--next" aria-label="Next: Shift Testing">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Testing functions
+                Shift Testing
               </div>
             </div>
             <div class="md-footer__button md-icon">

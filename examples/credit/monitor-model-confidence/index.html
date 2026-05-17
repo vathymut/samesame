@@ -6,19 +6,19 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Statistical tests for distribution shift — detect and evaluate whether a target sample has drifted from a source sample.">
+        <meta name="description" content="Statistical tests for deciding whether a new population differs from a reference population, and whether the change is harmful.">
       
       
         <meta name="author" content="Vathy M. Kamulete">
       
       
-        <link rel="canonical" href="https://vathymut.github.io/samesame/examples/credit/monitor-confidence-ood/">
+        <link rel="canonical" href="https://vathymut.github.io/samesame/examples/credit/monitor-model-confidence/">
       
       
-        <link rel="prev" href="../monitor-prediction-errors/">
+        <link rel="prev" href="../monitor-credit-risk/">
       
       
-        <link rel="next" href="../../weighting/source-reweighting/">
+        <link rel="next" href="../monitor-prediction-errors/">
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
@@ -26,7 +26,7 @@
     
     
       
-        <title>Monitor model confidence - samesame</title>
+        <title>Monitor Model Confidence - samesame</title>
       
     
     
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Monitor model confidence
+              Monitor Model Confidence
             
           </span>
         </div>
@@ -420,7 +420,7 @@
   
   
   <span class="md-ellipsis">
-    Detect a distribution shift
+    Detect Whether Two Datasets Differ
     
   </span>
   
@@ -443,7 +443,7 @@
   
   
   <span class="md-ellipsis">
-    Check whether a shift is harmful
+    Check Whether a Change Points in a Worse Direction
     
   </span>
   
@@ -466,7 +466,7 @@
   
   
   <span class="md-ellipsis">
-    Adjust for covariate shift with importance weights
+    Focus on Shared Support with Importance Weights
     
   </span>
   
@@ -544,30 +544,7 @@
   
   
   <span class="md-ellipsis">
-    Monitor a credit risk model
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../monitor-prediction-errors/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Monitor prediction errors
+    Monitor Predicted Credit Risk
     
   </span>
   
@@ -599,7 +576,7 @@
   
   
   <span class="md-ellipsis">
-    Monitor model confidence
+    Monitor Model Confidence
     
   </span>
   
@@ -612,7 +589,7 @@
   
   
   <span class="md-ellipsis">
-    Monitor model confidence
+    Monitor Model Confidence
     
   </span>
   
@@ -635,18 +612,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#two-kinds-of-monitoring-signals" class="md-nav__link">
+  <a href="#why-confidence-is-a-separate-signal" class="md-nav__link">
     <span class="md-ellipsis">
-      Two kinds of monitoring signals
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#why-logitgap" class="md-nav__link">
-    <span class="md-ellipsis">
-      Why LogitGap?
+      Why confidence is a separate signal
     </span>
   </a>
   
@@ -662,84 +630,36 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-1-train-the-same-credit-model" class="md-nav__link">
+  <a href="#step-1-train-the-model" class="md-nav__link">
     <span class="md-ellipsis">
-      Step 1 — Train the same credit model
+      Step 1 - Train the model
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-2-convert-model-outputs-into-a-confidence-score" class="md-nav__link">
+  <a href="#step-2-build-a-confidence-score-from-class-probabilities" class="md-nav__link">
     <span class="md-ellipsis">
-      Step 2 — Convert model outputs into a confidence score
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Step 2 — Convert model outputs into a confidence score">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#how-to-read-these-outlier-scores" class="md-nav__link">
-    <span class="md-ellipsis">
-      How to read these outlier scores
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-3-plot-the-outlier-score-distributions" class="md-nav__link">
-    <span class="md-ellipsis">
-      Step 3 — Plot the outlier score distributions
+      Step 2 - Build a confidence score from class probabilities
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-4-test-the-shift-with-test_adverse_shift" class="md-nav__link">
+  <a href="#step-3-test-whether-confidence-dropped" class="md-nav__link">
     <span class="md-ellipsis">
-      Step 4 — Test the shift with test_adverse_shift(...)
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Step 4 — Test the shift with test_adverse_shift(...)">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#how-to-interpret-the-result" class="md-nav__link">
-    <span class="md-ellipsis">
-      How to interpret the result
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#when-should-you-use-this-instead-of-default-probability" class="md-nav__link">
-    <span class="md-ellipsis">
-      When should you use this instead of default probability?
+      Step 3 - Test whether confidence dropped
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#summary" class="md-nav__link">
+  <a href="#what-this-tells-you" class="md-nav__link">
     <span class="md-ellipsis">
-      Summary
+      What this tells you
     </span>
   </a>
   
@@ -761,12 +681,35 @@
   
   
     <li class="md-nav__item">
+      <a href="../monitor-prediction-errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Monitor Prediction Errors Once Labels Arrive
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../weighting/source-reweighting/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Use source reweighting for adverse-shift testing
+    Focus Harmful-Shift Testing on Shared Support
     
   </span>
   
@@ -789,7 +732,7 @@
   
   
   <span class="md-ellipsis">
-    Use double-weighting for covariate-shift adaptation
+    Restrict Testing to Common Support on Both Sides
     
   </span>
   
@@ -864,7 +807,7 @@
   
   
   <span class="md-ellipsis">
-    Why importance weights stabilise shift detection
+    When Importance Weights Help
     
   </span>
   
@@ -939,30 +882,7 @@
   
   
   <span class="md-ellipsis">
-    Testing functions
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/advanced/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Advanced controls
+    Shift Testing
     
   </span>
   
@@ -985,76 +905,7 @@
   
   
   <span class="md-ellipsis">
-    Weighting strategies
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/bayes_factors/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Bayes factors
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/importance_weights/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Importance weights
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/logit_scores/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Logit scores
+    Importance Weights
     
   </span>
   
@@ -1099,18 +950,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#two-kinds-of-monitoring-signals" class="md-nav__link">
+  <a href="#why-confidence-is-a-separate-signal" class="md-nav__link">
     <span class="md-ellipsis">
-      Two kinds of monitoring signals
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#why-logitgap" class="md-nav__link">
-    <span class="md-ellipsis">
-      Why LogitGap?
+      Why confidence is a separate signal
     </span>
   </a>
   
@@ -1126,84 +968,36 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-1-train-the-same-credit-model" class="md-nav__link">
+  <a href="#step-1-train-the-model" class="md-nav__link">
     <span class="md-ellipsis">
-      Step 1 — Train the same credit model
+      Step 1 - Train the model
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-2-convert-model-outputs-into-a-confidence-score" class="md-nav__link">
+  <a href="#step-2-build-a-confidence-score-from-class-probabilities" class="md-nav__link">
     <span class="md-ellipsis">
-      Step 2 — Convert model outputs into a confidence score
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Step 2 — Convert model outputs into a confidence score">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#how-to-read-these-outlier-scores" class="md-nav__link">
-    <span class="md-ellipsis">
-      How to read these outlier scores
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-3-plot-the-outlier-score-distributions" class="md-nav__link">
-    <span class="md-ellipsis">
-      Step 3 — Plot the outlier score distributions
+      Step 2 - Build a confidence score from class probabilities
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-4-test-the-shift-with-test_adverse_shift" class="md-nav__link">
+  <a href="#step-3-test-whether-confidence-dropped" class="md-nav__link">
     <span class="md-ellipsis">
-      Step 4 — Test the shift with test_adverse_shift(...)
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Step 4 — Test the shift with test_adverse_shift(...)">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#how-to-interpret-the-result" class="md-nav__link">
-    <span class="md-ellipsis">
-      How to interpret the result
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#when-should-you-use-this-instead-of-default-probability" class="md-nav__link">
-    <span class="md-ellipsis">
-      When should you use this instead of default probability?
+      Step 3 - Test whether confidence dropped
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#summary" class="md-nav__link">
+  <a href="#what-this-tells-you" class="md-nav__link">
     <span class="md-ellipsis">
-      Summary
+      What this tells you
     </span>
   </a>
   
@@ -1229,105 +1023,40 @@
 
 
 <h1 id="how-to-monitor-model-confidence">How to: Monitor model confidence<a class="headerlink" href="#how-to-monitor-model-confidence" title="Permanent link">&para;</a></h1>
-<p><strong>Use this guide when:</strong> your model output is not itself a directly interpretable risk signal and you want to
-monitor whether deployment predictions appear less certain than training predictions.</p>
-<p><strong>What you'll do:</strong></p>
+<p>Use this guide when you want a confidence signal alongside business risk, or when the model output
+itself is not the main thing you want to monitor.</p>
+<p>This guide uses the same HELOC setup as <a href="../monitor-credit-risk/">Monitor predicted credit risk</a>,
+but asks a different question.</p>
+<h2 id="why-confidence-is-a-separate-signal">Why confidence is a separate signal<a class="headerlink" href="#why-confidence-is-a-separate-signal" title="Permanent link">&para;</a></h2>
+<p>Predicted risk and model confidence are not the same thing.</p>
 <ul>
-<li>Turn model outputs into a confidence score</li>
-<li>Compare training and deployment outlier scores</li>
-<li>Test whether deployment predictions look less certain</li>
+<li><strong>Predicted risk</strong> asks whether the model thinks outcomes are worse.</li>
+<li><strong>Confidence</strong> asks whether the model looks more or less certain about its predictions.</li>
 </ul>
-<div class="admonition note">
-<p class="admonition-title">Before you start</p>
-<p>This guide builds directly on the <a href="../monitor-credit-risk/">credit risk how-to</a>.
-Complete that guide first — it introduces the HELOC dataset and the credit model used here.</p>
-</div>
-<p>This guide uses the same data and model as the <a href="../monitor-credit-risk/">credit risk how-to</a>,
-but focuses on confidence rather than business risk. In the credit-risk guide, predicted default
-probability has direct business meaning. Here, we use an <strong>out-of-distribution (OOD) outlier score</strong> to
-monitor whether predictions become less certain.</p>
-<p>If ground-truth labels are available for the test set, prediction errors for each row (Brier score, log-loss) provide a more direct measure of model accuracy; see <a href="../monitor-prediction-errors/">Monitor prediction errors when labels are available</a>.</p>
-<h2 id="two-kinds-of-monitoring-signals">Two kinds of monitoring signals<a class="headerlink" href="#two-kinds-of-monitoring-signals" title="Permanent link">&para;</a></h2>
-<p>The key distinction is:</p>
-<table>
-<thead>
-<tr>
-<th>Signal</th>
-<th>What it measures</th>
-<th>When to use it</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Predicted default probability</strong></td>
-<td>How likely the model thinks default is</td>
-<td>Use when higher predictions already mean worse business outcomes</td>
-</tr>
-<tr>
-<td><strong>Confidence outlier score (often called an OOD outlier score)</strong></td>
-<td>How confident the model is in its prediction</td>
-<td>Use when the model output is not itself a meaningful risk signal</td>
-</tr>
-</tbody>
-</table>
-<p>In this credit example, default probability and a confidence score are both available, but they answer
-different questions:</p>
-<ul>
-<li><strong>Default probability:</strong> "Does this customer look risky?"</li>
-<li><strong>Confidence outlier score:</strong> "How confident is the model in this prediction?"</li>
-</ul>
-<p>These are related, but not the same. A sample can receive a high-confidence prediction without
-necessarily having the highest predicted default probability.</p>
-<p>In this guide, LogitGap is used to compare confidence behavior between training and test
-predictions, not to directly measure business harm.</p>
-<p>That difference matters in practice. A confidence score can move in a reassuring direction because the
-model is becoming <strong>more confident</strong>, while the business outcome moves in a harmful direction because
-the model is becoming <strong>more confidently wrong</strong> or <strong>more confidently harmful</strong> for the business.
-So confidence scores should not be read as a direct measure of business safety.</p>
-<h2 id="why-logitgap">Why LogitGap?<a class="headerlink" href="#why-logitgap" title="Permanent link">&para;</a></h2>
-<p>We use <strong>LogitGap</strong> as the confidence score in this guide.</p>
-<ul>
-<li><strong>LogitGap</strong> looks at the gap between the model's strongest class logit and the remaining class logits.</li>
-<li>A <strong>large</strong> gap means the model is confident in its class decision.</li>
-<li>A <strong>small</strong> gap means the model is uncertain and the sample may be out-of-distribution.</li>
-</ul>
-<p>You may also see <strong>MaxLogit</strong> in the literature. It uses only the single largest logit. That is a
-reasonable baseline, but LogitGap usually carries more information because it uses the separation
-between classes, not just the top score.</p>
-<p>As a default workflow, use <strong>LogitGap first</strong> and treat MaxLogit as a simpler baseline worth knowing about.</p>
+<p>Those signals can move together, but they do not have to. A model can become more confident while
+still producing riskier outcomes.</p>
 <h2 id="setup">Setup<a class="headerlink" href="#setup" title="Permanent link">&para;</a></h2>
-<p>This guide uses the same HELOC dataset and split as the <a href="../monitor-credit-risk/">credit risk how-to</a> — see that guide for a full walkthrough of the setup.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">logit</span>
+
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">fetch_openml</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestClassifier</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="kn">import</span> <span class="n">test_adverse_shift</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">samesame.logit_scores</span><span class="w"> </span><span class="kn">import</span> <span class="n">logit_gap</span><span class="p">,</span> <span class="n">max_logit</span>
 
-<span class="c1"># Load the HELOC dataset</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ss</span>
+
 <span class="n">fico</span> <span class="o">=</span> <span class="n">fetch_openml</span><span class="p">(</span><span class="n">data_id</span><span class="o">=</span><span class="mi">45554</span><span class="p">,</span> <span class="n">as_frame</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">fico</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">fico</span><span class="o">.</span><span class="n">target</span>
 
-<span class="c1"># Split into training and deployment populations</span>
 <span class="n">re_obj</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;external.*risk.*estimate&quot;</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">)</span>
 <span class="n">col_split</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">X</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">re_obj</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">c</span><span class="p">)),</span> <span class="kc">None</span><span class="p">)</span>
 <span class="n">mask_high</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">col_split</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">63</span>
 
 <span class="n">X_train</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">mask_high</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">y_train</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">mask_high</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">X_test</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="o">~</span><span class="n">mask_high</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Training set:   </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Deployment set: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples&quot;</span><span class="p">)</span>
+<span class="n">X_deployment</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="o">~</span><span class="n">mask_high</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
-<h2 id="step-1-train-the-same-credit-model">Step 1 — Train the same credit model<a class="headerlink" href="#step-1-train-the-same-credit-model" title="Permanent link">&para;</a></h2>
-<p>Reuse the credit risk model from the <a href="../monitor-credit-risk/">credit risk how-to</a>. Here we extract its internal outputs to measure <strong>confidence patterns</strong>, not risk.</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Train a default-prediction model on the training population</span>
-<span class="n">bad_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Good&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;Bad&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
-<span class="n">bad_train</span> <span class="o">=</span> <span class="n">y_train</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">bad_mapping</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+<h2 id="step-1-train-the-model">Step 1 - Train the model<a class="headerlink" href="#step-1-train-the-model" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="n">bad_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Good&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Bad&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+<span class="n">y_train_binary</span> <span class="o">=</span> <span class="n">y_train</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">bad_mapping</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
 
 <span class="n">rf_bad</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span>
     <span class="n">n_estimators</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
@@ -1335,140 +1064,50 @@ between classes, not just the top score.</p>
     <span class="n">random_state</span><span class="o">=</span><span class="mi">12345</span><span class="p">,</span>
     <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="n">rf_bad</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">bad_train</span><span class="p">)</span>
+<span class="n">rf_bad</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train_binary</span><span class="p">)</span>
 </code></pre></div>
-<h2 id="step-2-convert-model-outputs-into-a-confidence-score">Step 2 — Convert model outputs into a confidence score<a class="headerlink" href="#step-2-convert-model-outputs-into-a-confidence-score" title="Permanent link">&para;</a></h2>
-<p><code>RandomForestClassifier</code> gives class probabilities. To compute LogitGap, we first convert these
-probabilities into <strong>logits</strong>. A logit is the same information written on an open-ended scale
-instead of the 0 to 1 probability scale. We then apply <code>logit_gap</code>.</p>
-<p>We use:</p>
-<ul>
-<li><strong>OOB predictions</strong> for the training set, so each training point is evaluated by trees that did not train on it</li>
-<li><strong>Standard predictions</strong> for the deployment set</li>
-</ul>
-<div class="highlight"><pre><span></span><code><span class="c1"># Clip probabilities to avoid infinite logits at 0 or 1</span>
-<span class="n">train_probs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">rf_bad</span><span class="o">.</span><span class="n">oob_decision_function_</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="mf">1e-6</span><span class="p">)</span>
-<span class="n">test_probs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">rf_bad</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_test</span><span class="p">),</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="mf">1e-6</span><span class="p">)</span>
+<h2 id="step-2-build-a-confidence-score-from-class-probabilities">Step 2 - Build a confidence score from class probabilities<a class="headerlink" href="#step-2-build-a-confidence-score-from-class-probabilities" title="Permanent link">&para;</a></h2>
+<p>This example uses <code>LogitGap</code>, a small helper built from logit-transformed class probabilities.
+Higher values mean the model separates the classes more strongly, which we treat as higher
+confidence.</p>
+<div class="highlight"><pre><span></span><code><span class="n">train_probabilities</span> <span class="o">=</span> <span class="n">rf_bad</span><span class="o">.</span><span class="n">oob_decision_function_</span>
+<span class="n">deployment_probabilities</span> <span class="o">=</span> <span class="n">rf_bad</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_deployment</span><span class="p">)</span>
 
-<span class="n">logits_train</span> <span class="o">=</span> <span class="n">logit</span><span class="p">(</span><span class="n">train_probs</span><span class="p">)</span>
-<span class="n">logits_test</span> <span class="o">=</span> <span class="n">logit</span><span class="p">(</span><span class="n">test_probs</span><span class="p">)</span>
+<span class="n">train_confidence</span> <span class="o">=</span> <span class="n">outlier_scores_from_probabilities</span><span class="p">(</span><span class="n">train_probabilities</span><span class="p">)</span>
+<span class="n">deployment_confidence</span> <span class="o">=</span> <span class="n">outlier_scores_from_probabilities</span><span class="p">(</span><span class="n">deployment_probabilities</span><span class="p">)</span>
 
-<span class="n">ood_train</span> <span class="o">=</span> <span class="n">logit_gap</span><span class="p">(</span><span class="n">logits_train</span><span class="p">)</span>
-<span class="n">ood_test</span> <span class="o">=</span> <span class="n">logit_gap</span><span class="p">(</span><span class="n">logits_test</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Training mean LogitGap:   </span><span class="si">{</span><span class="n">ood_train</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Deployment mean LogitGap: </span><span class="si">{</span><span class="n">ood_test</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-<span class="c1"># Optional baseline: MaxLogit (uses only the top logit)</span>
-<span class="n">max_train</span> <span class="o">=</span> <span class="n">max_logit</span><span class="p">(</span><span class="n">logits_train</span><span class="p">)</span>
-<span class="n">max_test</span> <span class="o">=</span> <span class="n">max_logit</span><span class="p">(</span><span class="n">logits_test</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Training mean MaxLogit:   </span><span class="si">{</span><span class="n">max_train</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Deployment mean MaxLogit: </span><span class="si">{</span><span class="n">max_test</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Training mean confidence:   </span><span class="si">{</span><span class="n">train_confidence</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Deployment mean confidence: </span><span class="si">{</span><span class="n">deployment_confidence</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
-<h3 id="how-to-read-these-outlier-scores">How to read these outlier scores<a class="headerlink" href="#how-to-read-these-outlier-scores" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>Higher LogitGap</strong>: the model has a larger margin between classes, so it is more confident in its prediction</li>
-<li><strong>Lower LogitGap</strong>: the model has a smaller margin between classes, so it is less confident in its prediction</li>
-</ul>
-<p>This outlier score is primarily about confidence, not direct business harm.
-If the deployment distribution shifts downward relative to training, it indicates lower-confidence
-predictions in deployment.</p>
-<p>For the HELOC split used here, the observed values are:</p>
-<div class="highlight"><pre><span></span><code>Training mean LogitGap:   1.8105
-Deployment mean LogitGap: 2.1363
-Training median LogitGap: 1.5824
-Deployment median LogitGap: 2.1617
-</code></pre></div>
-<p>That means the deployment population has <strong>higher</strong>, not lower, LogitGap outlier scores in this example.
-So the model appears <strong>more</strong> confident on the deployment population according to this outlier score.</p>
-<h2 id="step-3-plot-the-outlier-score-distributions">Step 3 — Plot the outlier score distributions<a class="headerlink" href="#step-3-plot-the-outlier-score-distributions" title="Permanent link">&para;</a></h2>
-<p>Before running a formal test, it helps to inspect the outlier score distributions directly.</p>
-<div class="highlight"><pre><span></span><code><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">ood_train</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Training&quot;</span><span class="p">,</span> <span class="n">density</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">ood_test</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Deployment&quot;</span><span class="p">,</span> <span class="n">density</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;LogitGap outlier score&quot;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Density&quot;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Training vs deployment outlier scores&quot;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</code></pre></div>
-<p>Interpretation:</p>
-<ul>
-<li>If the <strong>deployment</strong> histogram sits noticeably <strong>left</strong> of the training histogram, deployment
-    predictions are made with lower confidence.</li>
-<li>If the two histograms largely overlap, there is less evidence of a confidence shift.</li>
-</ul>
-<p>For this HELOC split, the deployment histogram should shift <strong>right</strong>, not left, because the
-observed LogitGap values are higher in deployment than in training.</p>
-<h2 id="step-4-test-the-shift-with-test_adverse_shift">Step 4 — Test the shift with <code>test_adverse_shift(...)</code><a class="headerlink" href="#step-4-test-the-shift-with-test_adverse_shift" title="Permanent link">&para;</a></h2>
-<p>We now turn that confidence shift into a formal hypothesis test.</p>
-<p>Higher LogitGap means <strong>higher confidence</strong>, which is better. We express that directly with
-<code>direction="higher-is-better"</code> instead of negating the values manually.</p>
-<div class="highlight"><pre><span></span><code><span class="n">harm</span> <span class="o">=</span> <span class="n">test_adverse_shift</span><span class="p">(</span>
-    <span class="n">source</span><span class="o">=</span><span class="n">ood_train</span><span class="p">,</span>
-    <span class="n">target</span><span class="o">=</span><span class="n">ood_test</span><span class="p">,</span>
+<p>On this HELOC split, deployment confidence is higher on average than training confidence.</p>
+<h2 id="step-3-test-whether-confidence-dropped">Step 3 - Test whether confidence dropped<a class="headerlink" href="#step-3-test-whether-confidence-dropped" title="Permanent link">&para;</a></h2>
+<p>Higher confidence is better, so use <code>direction="higher-is-better"</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="n">source_scores</span> <span class="o">=</span> <span class="n">train_confidence</span>
+<span class="n">target_scores</span> <span class="o">=</span> <span class="n">deployment_confidence</span>
+
+<span class="n">harm</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">shift</span><span class="o">.</span><span class="n">detect_harm</span><span class="p">(</span>
+    <span class="n">source</span><span class="o">=</span><span class="n">source_scores</span><span class="p">,</span>
+    <span class="n">target</span><span class="o">=</span><span class="n">target_scores</span><span class="p">,</span>
     <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;higher-is-better&quot;</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">12345</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Confidence outlier-score adverse-shift test on LogitGap&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  statistic: </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  p-value:   </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Statistic: </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;p-value:   </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
-<p><strong>Output:</strong></p>
-<div class="highlight"><pre><span></span><code>Confidence outlier-score adverse-shift test on LogitGap
-    statistic: 0.0409
-    p-value:   1.0000
-</code></pre></div>
-<h3 id="how-to-interpret-the-result">How to interpret the result<a class="headerlink" href="#how-to-interpret-the-result" title="Permanent link">&para;</a></h3>
+<p>This workflow should not flag a harmful confidence shift on the HELOC split, because deployment
+confidence moves up rather than down.</p>
+<h2 id="what-this-tells-you">What this tells you<a class="headerlink" href="#what-this-tells-you" title="Permanent link">&para;</a></h2>
+<p>This does not contradict the credit-risk guide. It answers a different question.</p>
 <ul>
-<li><strong>Small p-value</strong>: strong evidence that deployment contains more low-confidence predictions than training</li>
-<li><strong>Large p-value</strong>: not enough evidence to claim a confidence drop in deployment</li>
+<li>In <a href="../monitor-credit-risk/">Monitor predicted credit risk</a>, predicted default risk rises.</li>
+<li>Here, confidence also rises, so the model does not look less certain on deployment.</li>
 </ul>
-<p>Here the p-value is <code>1.0000</code>, so there is <strong>no evidence</strong> that deployment contains more
-low-confidence predictions than training. In fact, the LogitGap outlier scores move in the opposite direction:
-the deployment customers look <em>more</em> confidently classified by this model.</p>
-<p>This contrast with the <a href="../monitor-credit-risk/">credit risk how-to</a> is the main lesson:</p>
-<ul>
-<li><strong>Default probability</strong> increased sharply in deployment, so the model predicts worse business outcomes.</li>
-<li><strong>LogitGap</strong> also increased, so the model does <strong>not</strong> look less confident on deployment data.</li>
-</ul>
-<p>Those two findings are not contradictory. They answer different questions. A customer can look
-high-risk to the model while still being predicted with high confidence.</p>
-<p>This is also the main warning for production monitoring: a confidence score can be
-misleading if you treat it as a business-risk score. The model can become <strong>more confident</strong> while
-its predictions become <strong>more harmful</strong>. Use confidence scores to monitor confidence patterns, not to replace a
-business outcome metric when such a metric is available.</p>
-<h2 id="when-should-you-use-this-instead-of-default-probability">When should you use this instead of default probability?<a class="headerlink" href="#when-should-you-use-this-instead-of-default-probability" title="Permanent link">&para;</a></h2>
-<p>Use <strong>predicted default probability</strong> when the model output already has a clear business meaning,
-as it does in the <a href="../monitor-credit-risk/">credit risk how-to</a>.</p>
-<p>Use a <strong>confidence score</strong> when:</p>
-<ul>
-<li>the model output is not itself a risk score</li>
-<li>you want to detect lower-confidence or unusual inputs, not just high-risk predictions</li>
-<li>you need a generic monitoring signal that works across many classification tasks</li>
-</ul>
-<p>In practice, the two approaches complement each other:</p>
-<ul>
-<li><strong>Default probability</strong> tells you whether the model predicts bad outcomes</li>
-<li><strong>Confidence score</strong> tells you how confidence behavior changes across populations</li>
-</ul>
-<p>This HELOC example shows why it is worth monitoring both. Here, default probability detects a clear
-adverse shift, while LogitGap does not detect a confidence drop. If you had watched only the confidence
-score, you could have missed a harmful business change.</p>
-<h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
-<p>This guide uses <strong>LogitGap</strong> as a practical confidence score for first-pass monitoring.</p>
-<ul>
-<li>It is easy to compute from model outputs</li>
-<li>It is more informative than MaxLogit in most cases</li>
-<li>It works even when the model prediction itself is not an interpretable "worse outcome" score</li>
-<li>Combined with <code>test_adverse_shift(...)</code>, it gives you a principled way to test whether deployment confidence degrades relative to training</li>
-</ul>
-<p>For a direct business-risk signal, use <a href="../monitor-credit-risk/">Monitor a credit risk model</a>.
-For label-based monitoring, use <a href="../monitor-prediction-errors/">Monitor prediction errors</a>.</p>
-<p>In this specific credit example, LogitGap does <strong>not</strong> flag deployment as lower confidence. That is a
-useful result, not a failure: it shows that confidence and business risk are different concepts and
-should be monitored separately. When a business-risk score exists, do not let a confidence score override it.</p>
+<p>That combination is entirely possible. A model can look confidently wrong, confidently risky, or
+confidently stable. Confidence is useful context, but it is not a substitute for a business signal
+when a business signal already exists.</p>
+<p>If labels are available, the next step is often
+<a href="../monitor-prediction-errors/">Monitor prediction errors once labels arrive</a>.</p>
 
 
 
@@ -1504,7 +1143,7 @@ should be monitored separately. When a business-risk score exists, do not let a 
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../monitor-prediction-errors/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Monitor prediction errors">
+          <a href="../monitor-credit-risk/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Monitor Predicted Credit Risk">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1514,20 +1153,20 @@ should be monitored separately. When a business-risk score exists, do not let a 
                 Previous
               </span>
               <div class="md-ellipsis">
-                Monitor prediction errors
+                Monitor Predicted Credit Risk
               </div>
             </div>
           </a>
         
         
           
-          <a href="../../weighting/source-reweighting/" class="md-footer__link md-footer__link--next" aria-label="Next: Use source reweighting for adverse-shift testing">
+          <a href="../monitor-prediction-errors/" class="md-footer__link md-footer__link--next" aria-label="Next: Monitor Prediction Errors Once Labels Arrive">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Use source reweighting for adverse-shift testing
+                Monitor Prediction Errors Once Labels Arrive
               </div>
             </div>
             <div class="md-footer__button md-icon">

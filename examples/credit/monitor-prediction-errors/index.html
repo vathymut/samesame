@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Statistical tests for distribution shift — detect and evaluate whether a target sample has drifted from a source sample.">
+        <meta name="description" content="Statistical tests for deciding whether a new population differs from a reference population, and whether the change is harmful.">
       
       
         <meta name="author" content="Vathy M. Kamulete">
@@ -15,10 +15,10 @@
         <link rel="canonical" href="https://vathymut.github.io/samesame/examples/credit/monitor-prediction-errors/">
       
       
-        <link rel="prev" href="../monitor-credit-risk/">
+        <link rel="prev" href="../monitor-model-confidence/">
       
       
-        <link rel="next" href="../monitor-confidence-ood/">
+        <link rel="next" href="../../weighting/source-reweighting/">
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
@@ -26,7 +26,7 @@
     
     
       
-        <title>Monitor prediction errors - samesame</title>
+        <title>Monitor Prediction Errors Once Labels Arrive - samesame</title>
       
     
     
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#how-to-monitor-prediction-errors-when-labels-are-available" class="md-skip">
+        <a href="#how-to-monitor-prediction-errors-once-labels-arrive" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Monitor prediction errors
+              Monitor Prediction Errors Once Labels Arrive
             
           </span>
         </div>
@@ -420,7 +420,7 @@
   
   
   <span class="md-ellipsis">
-    Detect a distribution shift
+    Detect Whether Two Datasets Differ
     
   </span>
   
@@ -443,7 +443,7 @@
   
   
   <span class="md-ellipsis">
-    Check whether a shift is harmful
+    Check Whether a Change Points in a Worse Direction
     
   </span>
   
@@ -466,7 +466,7 @@
   
   
   <span class="md-ellipsis">
-    Adjust for covariate shift with importance weights
+    Focus on Shared Support with Importance Weights
     
   </span>
   
@@ -544,7 +544,30 @@
   
   
   <span class="md-ellipsis">
-    Monitor a credit risk model
+    Monitor Predicted Credit Risk
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../monitor-model-confidence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Monitor Model Confidence
     
   </span>
   
@@ -576,7 +599,7 @@
   
   
   <span class="md-ellipsis">
-    Monitor prediction errors
+    Monitor Prediction Errors Once Labels Arrive
     
   </span>
   
@@ -589,7 +612,7 @@
   
   
   <span class="md-ellipsis">
-    Monitor prediction errors
+    Monitor Prediction Errors Once Labels Arrive
     
   </span>
   
@@ -612,9 +635,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-scenario" class="md-nav__link">
+  <a href="#why-this-signal-works-well" class="md-nav__link">
     <span class="md-ellipsis">
-      The scenario
+      Why this signal works well
     </span>
   </a>
   
@@ -630,63 +653,36 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-1-fit-the-model" class="md-nav__link">
+  <a href="#step-1-fit-the-model-and-get-honest-predictions" class="md-nav__link">
     <span class="md-ellipsis">
-      Step 1 — Fit the model
+      Step 1 - Fit the model and get honest predictions
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-2-compute-prediction-errors-for-each-row" class="md-nav__link">
+  <a href="#step-2-turn-predictions-into-error-signals" class="md-nav__link">
     <span class="md-ellipsis">
-      Step 2 — Compute prediction errors for each row
+      Step 2 - Turn predictions into error signals
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-3-test-for-adverse-shift" class="md-nav__link">
+  <a href="#step-3-test-whether-errors-are-worse-on-the-test-set" class="md-nav__link">
     <span class="md-ellipsis">
-      Step 3 — Test for adverse shift
+      Step 3 - Test whether errors are worse on the test set
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#reading-the-results" class="md-nav__link">
+  <a href="#interpreting-the-outcome" class="md-nav__link">
     <span class="md-ellipsis">
-      Reading the results
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#why-both-scores-give-the-same-test-statistic" class="md-nav__link">
-    <span class="md-ellipsis">
-      Why both scores give the same test statistic
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#when-to-use-each-monitoring-signal" class="md-nav__link">
-    <span class="md-ellipsis">
-      When to use each monitoring signal
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#summary" class="md-nav__link">
-    <span class="md-ellipsis">
-      Summary
+      Interpreting the outcome
     </span>
   </a>
   
@@ -708,35 +704,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../monitor-confidence-ood/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Monitor model confidence
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../weighting/source-reweighting/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Use source reweighting for adverse-shift testing
+    Focus Harmful-Shift Testing on Shared Support
     
   </span>
   
@@ -759,7 +732,7 @@
   
   
   <span class="md-ellipsis">
-    Use double-weighting for covariate-shift adaptation
+    Restrict Testing to Common Support on Both Sides
     
   </span>
   
@@ -834,7 +807,7 @@
   
   
   <span class="md-ellipsis">
-    Why importance weights stabilise shift detection
+    When Importance Weights Help
     
   </span>
   
@@ -909,30 +882,7 @@
   
   
   <span class="md-ellipsis">
-    Testing functions
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/advanced/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Advanced controls
+    Shift Testing
     
   </span>
   
@@ -955,76 +905,7 @@
   
   
   <span class="md-ellipsis">
-    Weighting strategies
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/bayes_factors/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Bayes factors
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/importance_weights/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Importance weights
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../api/logit_scores/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Logit scores
+    Importance Weights
     
   </span>
   
@@ -1069,9 +950,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-scenario" class="md-nav__link">
+  <a href="#why-this-signal-works-well" class="md-nav__link">
     <span class="md-ellipsis">
-      The scenario
+      Why this signal works well
     </span>
   </a>
   
@@ -1087,63 +968,36 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-1-fit-the-model" class="md-nav__link">
+  <a href="#step-1-fit-the-model-and-get-honest-predictions" class="md-nav__link">
     <span class="md-ellipsis">
-      Step 1 — Fit the model
+      Step 1 - Fit the model and get honest predictions
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-2-compute-prediction-errors-for-each-row" class="md-nav__link">
+  <a href="#step-2-turn-predictions-into-error-signals" class="md-nav__link">
     <span class="md-ellipsis">
-      Step 2 — Compute prediction errors for each row
+      Step 2 - Turn predictions into error signals
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-3-test-for-adverse-shift" class="md-nav__link">
+  <a href="#step-3-test-whether-errors-are-worse-on-the-test-set" class="md-nav__link">
     <span class="md-ellipsis">
-      Step 3 — Test for adverse shift
+      Step 3 - Test whether errors are worse on the test set
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#reading-the-results" class="md-nav__link">
+  <a href="#interpreting-the-outcome" class="md-nav__link">
     <span class="md-ellipsis">
-      Reading the results
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#why-both-scores-give-the-same-test-statistic" class="md-nav__link">
-    <span class="md-ellipsis">
-      Why both scores give the same test statistic
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#when-to-use-each-monitoring-signal" class="md-nav__link">
-    <span class="md-ellipsis">
-      When to use each monitoring signal
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#summary" class="md-nav__link">
-    <span class="md-ellipsis">
-      Summary
+      Interpreting the outcome
     </span>
   </a>
   
@@ -1168,61 +1022,27 @@
   
 
 
-<h1 id="how-to-monitor-prediction-errors-when-labels-are-available">How to: Monitor prediction errors when labels are available<a class="headerlink" href="#how-to-monitor-prediction-errors-when-labels-are-available" title="Permanent link">&para;</a></h1>
-<p><strong>Use this guide when:</strong> ground-truth labels are available for both the training and test sets,
-and you want to test whether the model's prediction errors are systematically higher for each row
-on the test set.</p>
-<p><strong>What you'll do:</strong></p>
+<h1 id="how-to-monitor-prediction-errors-once-labels-arrive">How to: Monitor prediction errors once labels arrive<a class="headerlink" href="#how-to-monitor-prediction-errors-once-labels-arrive" title="Permanent link">&para;</a></h1>
+<p>Use this guide when you have ground-truth labels for both groups and want a direct answer about
+whether the model is performing worse.</p>
+<p>When labels are available, prediction error is often the cleanest signal you can compare.</p>
+<h2 id="why-this-signal-works-well">Why this signal works well<a class="headerlink" href="#why-this-signal-works-well" title="Permanent link">&para;</a></h2>
+<p>Prediction errors turn model quality into a numeric signal:</p>
 <ul>
-<li>Fit a credit risk model on a random training split using out-of-bag predictions</li>
-<li>Compute a Brier score and log-loss for each row</li>
-<li>Test whether either score is adversely shifted between training and test</li>
+<li><strong>Brier score</strong> measures squared error on the predicted probability</li>
+<li><strong>Log-loss</strong> penalizes confident mistakes more heavily</li>
 </ul>
-<div class="admonition note">
-<p class="admonition-title">Before you start</p>
-<p>This guide assumes you have completed both tutorials:</p>
-</div>
-<ul>
-<li><a href="../../tutorials/detect-distribution-shift/">Detect a distribution shift</a></li>
-<li>
-<p><a href="../../tutorials/check-shift-harm/">Check whether a shift is harmful</a></p>
-<p>You also need basic familiarity with scikit-learn — fitting a model and calling `predict_proba`.</p>
-</li>
-</ul>
-<hr />
-<h2 id="the-scenario">The scenario<a class="headerlink" href="#the-scenario" title="Permanent link">&para;</a></h2>
-<p>When ground-truth labels are available for a test set, prediction errors for each row provide a
-direct measure of model accuracy. Two standard choices are the <strong>Brier score</strong> and
-<strong>log-loss</strong>.</p>
-<p>For a predicted probability <span class="arithmatex">\(\hat{p}\)</span> and true label <span class="arithmatex">\(y \in \{0, 1\}\)</span>:</p>
-<ul>
-<li><strong>Brier score:</strong> <span class="arithmatex">\((y - \hat{p})^2\)</span> — the squared difference between the true label and the
-  predicted probability.</li>
-<li><strong>Log-loss:</strong> <span class="arithmatex">\(-[y \log \hat{p} + (1-y)\log(1-\hat{p})]\)</span> — penalises overconfident wrong
-  predictions more heavily than the Brier score.</li>
-</ul>
-<p>For both scores, larger values mean worse predictions. They can therefore serve directly as the
-the adversity score for each row that <code>test_adverse_shift(...)</code> expects.</p>
-<p>Note that these scores require labels. They are not available during production monitoring when
-outcomes are delayed, but they are appropriate for evaluating a held-out test set or a labelled
-historical batch.</p>
-<p>This guide complements the other monitoring guides:</p>
-<ul>
-<li>Use <a href="../monitor-credit-risk/">Monitor a credit risk model</a> when you need a label-free business-risk signal.</li>
-<li>Use <a href="../monitor-confidence-ood/">Monitor model confidence</a> when you need a label-free confidence signal.</li>
-<li>Use this guide when labels are available and you want a direct error measure for each row.</li>
-</ul>
-<hr />
+<p>For both, larger values mean worse predictions, so they work naturally with
+<code>ss.shift.detect_harm(...)</code>.</p>
 <h2 id="setup">Setup<a class="headerlink" href="#setup" title="Permanent link">&para;</a></h2>
-<p>We use the <strong>HELOC dataset</strong> (FICO Explainable AI Challenge), split randomly into training and
-test sets. Unlike the <a href="../monitor-credit-risk/">credit risk how-to</a>, this split is not based on a
-feature threshold — it is a stratified random split, so both sets are drawn from the same
-population.</p>
+<p>This guide uses the HELOC dataset again, but with a stratified random split. Unlike the credit-risk
+guide, the two groups here come from the same overall population.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">fetch_openml</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestClassifier</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="kn">import</span> <span class="n">test_adverse_shift</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ss</span>
 
 <span class="n">fico</span> <span class="o">=</span> <span class="n">fetch_openml</span><span class="p">(</span><span class="n">data_id</span><span class="o">=</span><span class="mi">45554</span><span class="p">,</span> <span class="n">as_frame</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">fico</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">fico</span><span class="o">.</span><span class="n">target</span>
@@ -1230,25 +1050,15 @@ population.</p>
 <span class="n">y_binary</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span> <span class="o">==</span> <span class="s2">&quot;Bad&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
 
 <span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
-    <span class="n">X</span><span class="p">,</span> <span class="n">y_binary</span><span class="p">,</span>
+    <span class="n">X</span><span class="p">,</span>
+    <span class="n">y_binary</span><span class="p">,</span>
     <span class="n">test_size</span><span class="o">=</span><span class="mf">0.30</span><span class="p">,</span>
     <span class="n">stratify</span><span class="o">=</span><span class="n">y_binary</span><span class="p">,</span>
     <span class="n">random_state</span><span class="o">=</span><span class="mi">12345</span><span class="p">,</span>
 <span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Training set: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples,  default rate: </span><span class="si">{</span><span class="n">y_train</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Test set:     </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples,  default rate: </span><span class="si">{</span><span class="n">y_test</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
-<p><strong>Output:</strong></p>
-<div class="highlight"><pre><span></span><code>Training set: 6909 samples,  default rate: 0.5203
-Test set:     2962 samples,  default rate: 0.5203
-</code></pre></div>
-<p>The default rate is equal in both sets because <code>stratify=y_binary</code> preserves it.</p>
-<hr />
-<h2 id="step-1-fit-the-model">Step 1 — Fit the model<a class="headerlink" href="#step-1-fit-the-model" title="Permanent link">&para;</a></h2>
-<p>Fit a Random Forest with <code>oob_score=True</code>. Out-of-bag (OOB) predictions will be used for the
-training set to avoid evaluating the model on data it was trained on — doing so would produce
-artificially low error scores and bias the comparison.</p>
+<h2 id="step-1-fit-the-model-and-get-honest-predictions">Step 1 - Fit the model and get honest predictions<a class="headerlink" href="#step-1-fit-the-model-and-get-honest-predictions" title="Permanent link">&para;</a></h2>
+<p>Use out-of-bag predictions for training so the training-side errors are not artificially optimistic.</p>
 <div class="highlight"><pre><span></span><code><span class="n">rf</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span>
     <span class="n">n_estimators</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
     <span class="n">oob_score</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -1257,138 +1067,54 @@ artificially low error scores and bias the comparison.</p>
 <span class="p">)</span>
 <span class="n">rf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
 
-<span class="n">p_train</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">oob_decision_function_</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># OOB predictions for training</span>
-<span class="n">p_test</span>  <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_test</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>   <span class="c1"># standard predictions for test</span>
+<span class="n">train_prob</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">oob_decision_function_</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="n">test_prob</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_test</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>
 </code></pre></div>
-<hr />
-<h2 id="step-2-compute-prediction-errors-for-each-row">Step 2 — Compute prediction errors for each row<a class="headerlink" href="#step-2-compute-prediction-errors-for-each-row" title="Permanent link">&para;</a></h2>
-<p>Each row receives one error score. Both Brier score and log-loss are computed from the true label
-and the predicted probability for that row.</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Brier score: squared difference between predicted probability and true label</span>
-<span class="n">brier_train</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_train</span> <span class="o">-</span> <span class="n">p_train</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
-<span class="n">brier_test</span>  <span class="o">=</span> <span class="p">(</span><span class="n">y_test</span>  <span class="o">-</span> <span class="n">p_test</span><span class="p">)</span>  <span class="o">**</span> <span class="mi">2</span>
+<h2 id="step-2-turn-predictions-into-error-signals">Step 2 - Turn predictions into error signals<a class="headerlink" href="#step-2-turn-predictions-into-error-signals" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="n">brier_train</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_train</span> <span class="o">-</span> <span class="n">train_prob</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+<span class="n">brier_test</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_test</span> <span class="o">-</span> <span class="n">test_prob</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
 
-<span class="c1"># Log-loss: log-probability assigned to the correct label (clipped for numerical safety)</span>
 <span class="n">eps</span> <span class="o">=</span> <span class="mf">1e-10</span>
-<span class="n">p_tr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">p_train</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">eps</span><span class="p">)</span>
-<span class="n">p_te</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">p_test</span><span class="p">,</span>  <span class="n">eps</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">eps</span><span class="p">)</span>
-<span class="n">logloss_train</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">y_train</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">p_tr</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">y_train</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">p_tr</span><span class="p">))</span>
-<span class="n">logloss_test</span>  <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">y_test</span>  <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">p_te</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">y_test</span><span class="p">)</span>  <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">p_te</span><span class="p">))</span>
+<span class="n">train_prob_clipped</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">train_prob</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">eps</span><span class="p">)</span>
+<span class="n">test_prob_clipped</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">test_prob</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">eps</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mean Brier score — training: </span><span class="si">{</span><span class="n">brier_train</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">,  test: </span><span class="si">{</span><span class="n">brier_test</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mean log-loss    — training: </span><span class="si">{</span><span class="n">logloss_train</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">,  test: </span><span class="si">{</span><span class="n">logloss_test</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">logloss_train</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span>
+    <span class="n">y_train</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">train_prob_clipped</span><span class="p">)</span>
+    <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">y_train</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">train_prob_clipped</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">logloss_test</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span>
+    <span class="n">y_test</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">test_prob_clipped</span><span class="p">)</span>
+    <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">y_test</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">test_prob_clipped</span><span class="p">)</span>
+<span class="p">)</span>
 </code></pre></div>
-<p><strong>Output:</strong></p>
-<div class="highlight"><pre><span></span><code>Mean Brier score — training: 0.1806,  test: 0.1830
-Mean log-loss    — training: 0.5412,  test: 0.5463
-</code></pre></div>
-<p>Both scores are slightly higher on the test set, but the means are close. The question is whether
-this difference is consistent with random variation or reflects a systematic pattern.</p>
-<hr />
-<h2 id="step-3-test-for-adverse-shift">Step 3 — Test for adverse shift<a class="headerlink" href="#step-3-test-for-adverse-shift" title="Permanent link">&para;</a></h2>
-<p>Both scores are "higher is worse", so we pass <code>direction="higher-is-worse"</code>.</p>
-<div class="highlight"><pre><span></span><code><span class="n">harm_brier</span> <span class="o">=</span> <span class="n">test_adverse_shift</span><span class="p">(</span>
+<h2 id="step-3-test-whether-errors-are-worse-on-the-test-set">Step 3 - Test whether errors are worse on the test set<a class="headerlink" href="#step-3-test-whether-errors-are-worse-on-the-test-set" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="n">harm_brier</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">shift</span><span class="o">.</span><span class="n">detect_harm</span><span class="p">(</span>
     <span class="n">source</span><span class="o">=</span><span class="n">brier_train</span><span class="p">,</span>
     <span class="n">target</span><span class="o">=</span><span class="n">brier_test</span><span class="p">,</span>
     <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;higher-is-worse&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">harm_logloss</span> <span class="o">=</span> <span class="n">test_adverse_shift</span><span class="p">(</span>
+<span class="n">harm_logloss</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">shift</span><span class="o">.</span><span class="n">detect_harm</span><span class="p">(</span>
     <span class="n">source</span><span class="o">=</span><span class="n">logloss_train</span><span class="p">,</span>
     <span class="n">target</span><span class="o">=</span><span class="n">logloss_test</span><span class="p">,</span>
     <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;higher-is-worse&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Brier score — statistic: </span><span class="si">{</span><span class="n">harm_brier</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">,  p-value: </span><span class="si">{</span><span class="n">harm_brier</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Log-loss    — statistic: </span><span class="si">{</span><span class="n">harm_logloss</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">,  p-value: </span><span class="si">{</span><span class="n">harm_logloss</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Brier p-value:   </span><span class="si">{</span><span class="n">harm_brier</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Log-loss p-value:</span><span class="si">{</span><span class="n">harm_logloss</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
-<p><strong>Output:</strong></p>
-<div class="highlight"><pre><span></span><code>Brier score — statistic: 0.0846,  p-value: 0.2728
-Log-loss    — statistic: 0.0846,  p-value: 0.2744
-</code></pre></div>
-<hr />
-<h2 id="reading-the-results">Reading the results<a class="headerlink" href="#reading-the-results" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>p-value</th>
-<th>What it means</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Small (&lt; 0.05)</td>
-<td>Evidence that the test set contains a disproportionate share of high-error predictions</td>
-</tr>
-<tr>
-<td>Large (≥ 0.05)</td>
-<td>Not enough evidence to conclude the model performs worse on the test set</td>
-</tr>
-</tbody>
-</table>
-<p>Here, p ≈ 0.27 for both scores. This is expected: both sets were drawn from the same population,
-so there is no reason to expect the model to perform systematically worse on the test set.</p>
-<p>Contrast this with the <a href="../monitor-credit-risk/">credit risk how-to</a>, where a deliberate population
-split produces a highly significant result (p = 0.0001). In that guide, the test set contains
-structurally different, higher-risk customers. Here, stratified random splitting ensures the two
-sets are comparable, and the test correctly finds no evidence of adverse shift.</p>
-<hr />
-<h2 id="why-both-scores-give-the-same-test-statistic">Why both scores give the same test statistic<a class="headerlink" href="#why-both-scores-give-the-same-test-statistic" title="Permanent link">&para;</a></h2>
-<p><code>test_adverse_shift</code> uses a <strong>rank-based statistic</strong>: it compares how the two samples rank
-together, not their raw values. For a given label <span class="arithmatex">\(y\)</span>, both Brier score and log-loss are monotone
-functions of the predicted probability <span class="arithmatex">\(\hat{p}\)</span>, so their rankings across rows are identical.
-The test statistic is therefore the same.</p>
-<p>The choice between the two scores is a matter of interpretation:</p>
+<p>On this stratified random split, the p-values should not be especially small. That is the expected
+result when training and test come from the same population.</p>
+<h2 id="interpreting-the-outcome">Interpreting the outcome<a class="headerlink" href="#interpreting-the-outcome" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Brier score</strong> is bounded between 0 and 1 and penalises all errors quadratically.</li>
-<li><strong>Log-loss</strong> is unbounded and penalises overconfident wrong predictions more heavily.</li>
+<li>Small p-values mean the test set contains a disproportionate share of higher-error predictions.</li>
+<li>Large p-values mean there is not enough evidence that the model performs worse on the test set.</li>
 </ul>
-<p>From a testing standpoint, either score is sufficient for binary labels. Report both if you want
-to communicate the result to audiences familiar with different conventions.</p>
-<hr />
-<h2 id="when-to-use-each-monitoring-signal">When to use each monitoring signal<a class="headerlink" href="#when-to-use-each-monitoring-signal" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Signal</th>
-<th>Labels required?</th>
-<th>Best used when</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Predicted default probability</td>
-<td>No</td>
-<td>Labels are unavailable; the model output has direct business meaning</td>
-</tr>
-<tr>
-<td>Brier score / log-loss</td>
-<td>Yes</td>
-<td>A labelled test set is available; you want a direct measure of prediction accuracy</td>
-</tr>
-<tr>
-<td>LogitGap (confidence score)</td>
-<td>No</td>
-<td>The model output is not a meaningful risk score; you want to monitor prediction confidence</td>
-</tr>
-</tbody>
-</table>
-<p>For production monitoring before labels arrive, use predicted probability or a confidence score.
-When labels become available, Brier score or log-loss provides a direct measurement and can
-confirm or revise the earlier assessment.</p>
-<hr />
-<h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
-<ul>
-<li><strong>Prediction errors for each row</strong> require ground-truth labels but directly measure how wrong the
-  model was on that row.</li>
-<li>Use <strong>OOB predictions</strong> for the training set to avoid evaluating the model on data it was
-  trained on, which would produce artificially low error scores.</li>
-<li>For this stratified random split, neither score shows significant adverse shift (p ≈ 0.27) —
-  the expected result when both sets are drawn from the same population.</li>
-<li>For an example where adverse shift is detected, see <a href="../monitor-credit-risk/">Monitor a credit risk model</a>.</li>
-<li>For label-free monitoring, see <a href="../monitor-credit-risk/">Monitor a credit risk model</a> (predicted
-  probability) or <a href="../monitor-confidence-ood/">Monitor model confidence</a> (confidence scores).</li>
-</ul>
+<p>It is common for Brier score and log-loss to tell a similar story here. <code>ss.shift.detect_harm(...)</code>
+is rank-based, so signals that order observations in a similar way often produce similar results.</p>
+<p>Use this guide when labels are available. If they are not, use
+<a href="../monitor-credit-risk/">Monitor predicted credit risk</a> or
+<a href="../monitor-model-confidence/">Monitor model confidence</a> instead.</p>
 
 
 
@@ -1424,7 +1150,7 @@ confirm or revise the earlier assessment.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../monitor-credit-risk/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Monitor a credit risk model">
+          <a href="../monitor-model-confidence/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Monitor Model Confidence">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1434,20 +1160,20 @@ confirm or revise the earlier assessment.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Monitor a credit risk model
+                Monitor Model Confidence
               </div>
             </div>
           </a>
         
         
           
-          <a href="../monitor-confidence-ood/" class="md-footer__link md-footer__link--next" aria-label="Next: Monitor model confidence">
+          <a href="../../weighting/source-reweighting/" class="md-footer__link md-footer__link--next" aria-label="Next: Focus Harmful-Shift Testing on Shared Support">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Monitor model confidence
+                Focus Harmful-Shift Testing on Shared Support
               </div>
             </div>
             <div class="md-footer__button md-icon">
