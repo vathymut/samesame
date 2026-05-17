@@ -35,7 +35,7 @@ first — the data loading and split are identical.
 Starting from the HELOC split (training on `ExternalRiskEstimate > 63`, deployment on
 `ExternalRiskEstimate <= 63`), build two score streams:
 
-- `membership_prob` from a domain classifier — used for weighting only
+- `domain_prob` from a domain classifier - used for weighting only
 - `bad_train` / `bad_test` from a credit model — the harmful-shift scores
 
 ```python
@@ -66,7 +66,7 @@ rf_domain = RandomForestClassifier(
     min_samples_leaf=10,
 )
 rf_domain.fit(X_concat, split)
-membership_prob = rf_domain.oob_decision_function_[:, 1]
+domain_prob = rf_domain.oob_decision_function_[:, 1]
 
 # Separate harmfulness scores: predicted default risk
 loan_status = y[mask_high].reset_index(drop=True).map({"Good": 0, "Bad": 1}).values
@@ -90,20 +90,20 @@ print(f"Unweighted statistic: {unweighted.statistic:.4f}, p-value: {unweighted.p
 ```
 
 The OOB probabilities from `rf_domain` are out-of-sample estimates of `P(deployment | x)`
-and go directly into `membership_prob`. They are never used as harmful-shift scores.
+and go directly into `domain_prob`. They are never used as harmful-shift scores.
 
 ---
 
 ## Step 2 — Apply source reweighting
 
-Split `membership_prob` into source and target arrays (in the order the pooled dataset was
+Split `domain_prob` into source and target arrays (in the order the pooled dataset was
 built), compute weights with `from_domain_probabilities`, then pass them to `ss.shift.detect_harm`:
 
 ```python
 from samesame.weights import from_domain_probabilities
 
-source_prob = membership_prob[split.values == 0]
-target_prob = membership_prob[split.values == 1]
+source_prob = domain_prob[split.values == 0]
+target_prob = domain_prob[split.values == 1]
 
 weights = from_domain_probabilities(
     source_prob=source_prob,

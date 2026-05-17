@@ -62,7 +62,9 @@ class _TwoSampleDataset:
 
 
 class _ECDFDiscrete:
-    def __init__(self, x: NDArray, freq_weights: NDArray | None = None, side: str = "right"):
+    def __init__(
+        self, x: NDArray, freq_weights: NDArray | None = None, side: str = "right"
+    ):
         if side.lower() not in ["right", "left"]:
             raise ValueError(f"side can take the values 'right' or 'left', got {side}")
         x = np.asarray(x)
@@ -115,7 +117,9 @@ def _as_numeric_vector(values: ArrayLike, *, name: str) -> NDArray:
     return np.asarray(vector)
 
 
-def _build_two_sample_dataset(source: ArrayLike, target: ArrayLike) -> _TwoSampleDataset:
+def _build_two_sample_dataset(
+    source: ArrayLike, target: ArrayLike
+) -> _TwoSampleDataset:
     source_scores = _as_numeric_vector(source, name="source")
     target_scores = _as_numeric_vector(target, name="target")
     labels = np.concatenate(
@@ -141,14 +145,20 @@ def _validate_direction(direction: str) -> Direction:
     return direction
 
 
-def _validate_and_normalise_weights(sample_weight: NDArray | None, n: int) -> NDArray | None:
+def _validate_and_normalise_weights(
+    sample_weight: NDArray | None, n: int
+) -> NDArray | None:
     if sample_weight is None:
         return None
     weight = np.asarray(sample_weight, dtype=float)
     if len(weight) != n:
-        raise ValueError(f"sample_weight has wrong length: expected {n}, got {len(weight)}.")
+        raise ValueError(
+            f"sample_weight has wrong length: expected {n}, got {len(weight)}."
+        )
     if not np.all(np.isfinite(weight)):
-        raise ValueError("sample_weight must contain only finite values (no NaN or inf).")
+        raise ValueError(
+            "sample_weight must contain only finite values (no NaN or inf)."
+        )
     if np.any(weight < 0):
         raise ValueError("sample_weight must not contain negative values.")
     total = weight.sum()

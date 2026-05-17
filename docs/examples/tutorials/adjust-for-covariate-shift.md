@@ -41,7 +41,7 @@ X, group = make_classification(
     random_state=123_456,
 )
 
-membership_prob = cross_val_predict(
+domain_prob = cross_val_predict(
     HistGradientBoostingClassifier(random_state=123_456),
     X,
     group,
@@ -56,13 +56,13 @@ These probabilities are for contextual weighting only.
 
 ## Step 2 — Build a separate harmfulness score stream
 
-Do not reuse `membership_prob` as harmful-shift scores. Instead, create or compute a separate
+Do not reuse `domain_prob` as harmful-shift scores. Instead, create or compute a separate
 score where larger means worse.
 
 ```python
 rng = np.random.default_rng(123_456)
 
-# Separate harmfulness score, independent of membership_prob
+# Separate harmfulness score, independent of domain_prob
 risk_score = (
     0.9 * X[:, 0]
     - 0.6 * X[:, 1]
@@ -78,15 +78,15 @@ target_scores = risk_score[group == 1]
 
 ## Step 3 — Run weighted harmful-shift testing
 
-Split `membership_prob` by group label to get separate source and target arrays, build
+Split `domain_prob` by group label to get separate source and target arrays, build
 weights with `from_domain_probabilities`, then pass them to `ss.shift.detect_harm`.
 
 ```python
 import samesame as ss
 from samesame.weights import from_domain_probabilities
 
-source_prob = membership_prob[group == 0]
-target_prob = membership_prob[group == 1]
+source_prob = domain_prob[group == 0]
+target_prob = domain_prob[group == 1]
 
 weights = from_domain_probabilities(
     source_prob=source_prob,

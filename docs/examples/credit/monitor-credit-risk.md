@@ -36,8 +36,8 @@ Two questions arise:
   to the deployment population.
 
 We answer both questions with `ss.shift.detect_shift(...)` (question 1) and `ss.shift.detect_harm(...)` (question 2).
-If you want to monitor **model confidence** instead of **predicted risk**, continue to
-[Monitor model confidence](monitor-confidence-ood.md) after completing this guide.
+If you want to monitor **model confidence** instead of **predicted risk**, see the companion
+[Monitor model confidence](monitor-model-confidence.md) guide.
 
 ---
 
@@ -209,7 +209,7 @@ but that the shift is adverse with respect to the score being monitored.
 This is a good example of when the model output itself is already meaningful. A higher predicted
 default probability is directly interpretable as higher business risk, so it is a natural score to
 monitor. When a model output is *not* directly interpretable as "worse", you need a different
-score, such as a confidence score. See [Monitor model confidence](monitor-confidence-ood.md).
+score, such as an Outlier score used for confidence monitoring. See [Monitor model confidence](monitor-model-confidence.md).
 
 The important limitation is the reverse: a confidence score is **not** a substitute for business impact.
 A model can become more confident in its predictions while those predictions become more harmful to
@@ -243,8 +243,8 @@ the model for the new population.
   ground truth labels, making it practical for production monitoring before labels arrive.
 - Use **both tests together** for a complete picture: `ss.shift.detect_shift(...)` tells you *what* changed,
   and `ss.shift.detect_harm(...)` tells you *whether it matters*.
-- In this example, **predicted risk increased**, but in the companion [how-to guide](monitor-confidence-ood.md), **model
+- In this example, **predicted risk increased**, but in the companion [how-to guide](monitor-model-confidence.md), **model
   confidence did not worsen**. Those are different signals and both are worth monitoring.
 - If labels are available for the test set, prediction errors for each row (Brier score, log-loss) provide a direct measure of model accuracy; see [Monitor prediction errors when labels are available](monitor-prediction-errors.md).
 - If your model output is not itself a meaningful risk value, use a confidence score instead; see
-  [Monitor model confidence](monitor-confidence-ood.md).
+  [Monitor model confidence](monitor-model-confidence.md).

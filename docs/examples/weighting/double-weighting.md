@@ -38,7 +38,7 @@ Use the same HELOC setup as
 [Use source reweighting for harmful-shift testing](source-reweighting.md).
 After completing that guide, you have three variables in scope:
 
-- `membership_prob` — OOB probabilities from `rf_domain` (for weighting)
+- `domain_prob` - OOB probabilities from `rf_domain` (for weighting)
 - `bad_train` / `bad_test` — predicted default-risk scores (for harmful-shift testing)
 
 If you are starting fresh, run the full setup from Step 1 of that guide before continuing.
@@ -54,8 +54,8 @@ forward density ratio; target outliers receive lower weights via the inverse den
 import samesame as ss
 from samesame.weights import from_domain_probabilities
 
-source_prob = membership_prob[split.values == 0]
-target_prob = membership_prob[split.values == 1]
+source_prob = domain_prob[split.values == 0]
+target_prob = domain_prob[split.values == 1]
 
 weights_both = from_domain_probabilities(
     source_prob=source_prob,

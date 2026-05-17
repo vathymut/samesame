@@ -43,7 +43,7 @@ historical batch.
 This guide complements the other monitoring guides:
 
 - Use [Monitor a credit risk model](monitor-credit-risk.md) when you need a label-free business-risk signal.
-- Use [Monitor model confidence](monitor-confidence-ood.md) when you need a label-free confidence signal.
+- Use [Monitor model confidence](monitor-model-confidence.md) when you need a label-free confidence signal.
 - Use this guide when labels are available and you want a direct error measure for each row.
 
 ---
@@ -231,4 +231,4 @@ confirm or revise the earlier assessment.
   the expected result when both sets are drawn from the same population.
 - For an example where adverse shift is detected, see [Monitor a credit risk model](monitor-credit-risk.md).
 - For label-free monitoring, see [Monitor a credit risk model](monitor-credit-risk.md) (predicted
-  probability) or [Monitor model confidence](monitor-confidence-ood.md) (confidence scores).
+  probability) or [Monitor model confidence](monitor-model-confidence.md) (confidence monitoring).

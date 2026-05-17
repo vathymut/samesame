@@ -40,7 +40,7 @@ def bayes_factors(size: int = 30) -> np.ndarray:
 
 
 @pytest.fixture
-def membership_probs() -> dict[str, np.ndarray]:
+def domain_probabilities() -> dict[str, np.ndarray]:
     return {
         "source_prob": np.array([0.25, 0.4]),
         "target_prob": np.array([0.6, 0.75]),

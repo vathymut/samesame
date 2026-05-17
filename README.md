@@ -16,24 +16,24 @@
 > Same, same but different ...
 
 `samesame` helps you compare a source sample with a target sample.
-The **source** is your reference — typically training data or an earlier time period.
-The **target** is what you're comparing against — typically production data or a later period.
+The **source** is your reference - typically training data or an earlier time period.
+The **target** is what you're comparing against - typically production data or a later period.
 
 It answers two practical questions:
 
 - Did anything change? Use `ss.shift.detect_shift(...)`.
 - Did things get worse? Use `ss.shift.detect_harm(...)`.
 
-Use it for model monitoring, data validation, drift assessment, or any workflow where you need to compare two groups and determine whether the difference is practically important.
+Use it for model monitoring, data validation, shift assessment, or any workflow where you need to compare two groups and determine whether the difference is practically important.
 
 ## Who is this for?
 
 `samesame` is useful whenever you need to compare a source group and a target group, for example:
 
-- **Model monitoring** — Does production data still look like training data?
-- **Data validation** — Does this new batch look like the data I expect?
-- **Drift detection** — Did something change between last month and this month?
-- **Group comparison** — Do two customer groups, regions, or experiments look meaningfully different?
+- **Model monitoring** - Does production data still look like training data?
+- **Data validation** - Does this new batch look like the data I expect?
+- **Shift detection** - Did something change between last month and this month?
+- **Group comparison** - Do two customer groups, regions, or experiments look meaningfully different?
 
 ## Installation
 
@@ -59,9 +59,9 @@ shift = ss.shift.detect_shift(source_scores, target_scores)
 print(f"Did anything change?  p-value = {shift.pvalue:.4f}")
 
 harm = ss.shift.detect_harm(
-    source_scores,
-    target_scores,
-    direction="higher-is-worse",
+	source_scores,
+	target_scores,
+	direction="higher-is-worse",
 )
 print(f"Did things get worse? p-value = {harm.pvalue:.4f}")
 ```
@@ -74,12 +74,12 @@ If the first is small and the second is large, the data changed but not in a cle
 
 `samesame` does not compare raw tables directly. The usual workflow is:
 
-1. Turn each row into one score — typically from a classifier trained to distinguish the two groups.
+1. Turn each row into one score - typically from a classifier trained to distinguish the two groups.
 2. Compare those scores with `ss.shift.detect_shift(...)` (did anything change?) and `ss.shift.detect_harm(...)` (did it get worse?).
 
 Both tests are **permutation-based**, so no distributional assumptions are required.
 
-When you know that source and target have different feature distributions — covariate shift —
+When you know that source and target have different feature distributions - covariate shift -
 you can supply sample importance weights to focus the test on the region where both groups
 overlap. See [Adjust for covariate shift with importance weights](examples/tutorials/adjust-for-covariate-shift.md).
 
@@ -96,7 +96,7 @@ Step-by-step examples are available in the [documentation](https://vathymut.gith
 
 - [Monitor a credit risk model](https://vathymut.github.io/samesame/examples/credit/monitor-credit-risk/)
 - [Monitor prediction errors when labels are available](https://vathymut.github.io/samesame/examples/credit/monitor-prediction-errors/)
-- [Monitor model confidence](https://vathymut.github.io/samesame/examples/credit/monitor-confidence-ood/)
+- [Monitor model confidence](https://vathymut.github.io/samesame/examples/credit/monitor-model-confidence/)
 
 ## Dependencies
 

@@ -2,7 +2,14 @@
 
 This context defines the domain language for implementing paper-aligned weighting methods in samesame and translating them into product requirements.
 
-## Language
+This file covers two time horizons:
+
+- **Shipped package language** for the current distribution-shift package surface: `samesame.shift` and `samesame.weights`. Outlier score construction belongs to examples, not to the supported package Interface.
+- **Planned RCT Validation language** for future modules that are not yet present in `src/samesame/`.
+
+Read the shipped package language first when working on current code.
+
+## Planned RCT Validation language (future, not yet shipped)
 
 **RCT Validation Modules**:
 Two new top-level submodules for validating two-arm randomised experiments, based on the Watson & Holmes (2020) statistical framework: `samesame.subgroup` (`test_subgroup_effect`) tests for crossover heterogeneity; `samesame.model_selection` (`test_model_lift`) tests whether an estimator captures more heterogeneity than a reference estimator. Both take `(y, treatment, features)` inputs where `y` is the binary outcome and `treatment` is the binary arm assignment. Domain-agnostic and architecturally separate from the distribution-shift API.
@@ -90,14 +97,14 @@ _Avoid_: Spoon-feeding p-value definitions in API docstrings or primary docs; wr
 The return type of `test_subgroup_effect()` and `test_model_lift()`. Extends `TestResult` (inherits `.statistic: float` and `.pvalue: float`) and adds `.null_distribution: NDArray[np.float64]`. The `.statistic` field holds the aggregate test statistic value (the combined evidence before p-value conversion). Consistent with `ShiftResult` and `HarmResult` in shape.
 _Avoid_: Standalone result type with no `TestResult` inheritance; naming it `Result` (too generic)
 
-## Relationships
+## Relationships (future RCT work)
 
 - A **Feature Expansion Milestone** may include one or more **Paper-Aligned Methods**.
 - A **Paper-Aligned Method** can require one or more **Context-Aware Weighting Modes**.
 - A **Context-Aware Weighting Mode** consumes **Domain Probabilities**.
 - `samesame.subgroup.test_subgroup_effect()` and `samesame.model_selection.test_model_lift()` both return a **SubgroupResult**, which extends **TestResult**.
 
-## Example dialogue
+## Example dialogue (future RCT work)
 
 > **Dev:** "For this release, are we only cleaning docs and tests?"
 > **Domain expert:** "No, this is a **Feature Expansion Milestone** and must deliver additional **Paper-Aligned Methods**."
@@ -106,20 +113,42 @@ _Avoid_: Standalone result type with no `TestResult` inheritance; naming it `Res
 
 - "Implement the paper" could mean hardening existing code or adding new methods; resolved: this work is a **Feature Expansion Milestone**.
 - Scope of "implement the paper" resolved: all three method components are in-scope: (1) crossover TEH test via repeated balanced two-fold data-splitting, (2) non-crossover TEH test via ML-stacking against a baseline model, (3) aggregate p-value construction from split-wise p-values for strict type I error control.
-- "sample weight" was used loosely for both user-supplied weights and computed importance weights — resolved: `SampleWeighting` is the explicit user-supplied strategy; importance weights are always derived from domain probabilities via RIW.
+- "sample weight" was used loosely for both user-supplied weights and computed importance weights — resolved: the shipped package carries weighting through `ImportanceWeights`, and those importance weights are derived from domain probabilities via RIW.
 - "statistic" appears both as the test statistic name (a string like `"roc_auc"`) and as the computed numeric value — context distinguishes them; `statistic_name` and `statistic` (float) are the canonical field names.
 - "pricing experiment" could mean a fully randomized A/B test or an adaptive/contextual bandit; resolved: `samesame.subgroup` is only valid for **fully randomized two-arm experiments** where `P(treatment=1 | X) = 0.5`. Logs from adaptive or contextual pricing policies require IPS correction before use and are explicitly out of scope for v1.
 - `alpha_blend` was the original parameter name for the RIW blending coefficient; resolved: renamed to `lambda_` (public-facing) to align with domain notation. `balance: bool` was a toggle for prior-ratio inference; resolved: always inferred from group sizes — removed entirely. `group`/`membership_prob` positional parameters for `from_domain_probabilities` replaced by keyword-only `source_prob`/`target_prob` to make the source-first ordering invariant structural rather than documented.
 - "change" is acceptable explanatory language for the generic **Shift** question in docs and tutorials (for example, "did anything change?"). Public API names remain `shift.detect_shift(...)` and `ShiftResult`, not `detect_change(...)` or `ChangeResult`.
+- `LogitGap` is the primary example recipe for building a **Logit-derived Outlier score**. `MaxLogit` may appear only as brief explanatory text, not as a runnable workflow.
+- Confidence monitoring remains a supported example workflow. The confidence-monitoring guide should own its inline `LogitGap` recipe rather than importing it from the supported package Interface, and guide naming should avoid `OOD` in favor of **Outlier score** language.
+- The confidence-monitoring guide keeps the user-facing title "Monitor model confidence" but should use a glossary-safe artifact name such as `monitor-model-confidence.md` rather than `monitor-confidence-ood.md`.
+- Within the confidence-monitoring guide, rename internal example language away from `OOD`, including variable names such as `ood_train` / `ood_test`, in favor of glossary-aligned **Outlier score** language.
+- Renaming the confidence-monitoring guide should be a clean break with no legacy alias page or redirect. Update the maintained link surface and let the old `monitor-confidence-ood.md` URL disappear.
+- The renamed confidence-monitoring guide remains a credit-specific how-to guide, not a generic tutorial. Keep it in the credit guides because its leverage comes from reusing the same HELOC scenario, split, and model as the credit-risk workflow.
+- The renamed confidence-monitoring guide should be standalone-runnable within the credit guide family. It may reference the credit-risk guide for contrast, but should not require users to complete that guide first.
+- `samesame.scores` should be deleted rather than kept as a compatibility adapter. Once deleted, any remaining `LogitGap` checks belong to example-owned verification, not to the supported package Interface.
+- Keep one small example-owned regression test after `samesame.scores` is deleted. It should protect the inline `LogitGap` recipe with one fixed-logit value check and one composition smoke test with the Shift module.
+- That replacement regression test should live in a dedicated guide-owned test file rather than in a generic examples test module. The test file should make its ownership by the confidence-monitoring guide obvious.
+- The dedicated guide-owned test file should use a tiny local `logit_gap` helper. This keeps executable ownership local to the example without recreating a supported score module.
+- The dedicated guide-owned test file should use tiny synthetic fixtures only. Do not mirror the full HELOC walkthrough in executable verification; the Markdown guide keeps that teaching narrative, while the test protects the example seam cheaply and deterministically.
+- The confidence-monitoring guide snippet should also define a tiny local `logit_gap` helper rather than repeating the raw NumPy expression at each call site. Keep the example readable without recreating a supported score seam.
+- The guide-owned regression test should exercise only the composition seam the confidence guide actually teaches: `LogitGap` feeding `shift.detect_harm(...)` with `direction="higher-is-better"`. Do not widen it to `shift.detect_shift(...)`.
+- The guide-owned regression test should assert directional behavior of the confidence workflow on a tiny synthetic case, not merely successful execution. Protect the example's semantics, not generic API plumbing.
+- The guide-owned regression test should assert statistic-direction behavior only, not a required p-value threshold. Tiny synthetic fixtures are the right size for semantic direction checks, not for stable significance guarantees.
+- The confidence-monitoring guide should not promise exact numeric outputs from the HELOC walkthrough. Keep the teaching point qualitative: deployment `LogitGap` is higher in this scenario, so the confidence workflow does not indicate a harmful shift even though the credit-risk workflow does.
+- In the confidence-monitoring guide, keep training/deployment names while explaining the HELOC scenario, then translate to `source_scores` and `target_scores` only at the `shift.detect_harm(...)` seam.
+- Make that translation explicit in the guide code with a small handoff block before the `shift.detect_harm(...)` call. The guide should show where scenario language ends and package-interface language begins.
+- The confidence-monitoring guide should pass a fixed `random_state` to `shift.detect_harm(...)` for reproducibility, even though the guide's interpretation stays qualitative rather than numerically exact.
+- The confidence-monitoring guide should state plainly that its `LogitGap` workflow is built from logit-transformed class probabilities in this example, not from native model logits exposed by the fitted estimator.
+- The renamed confidence-monitoring guide should replace the hard prerequisite note with a short companion-reference note. Keep the cross-link to the credit-risk guide for business-risk contrast, but do not require readers to complete it first.
 
-## Core API language (distribution shift)
+## Shipped package language (distribution shift)
 
 **Outlier score**:
 A scalar signal from a model indicating how anomalous an input is.
 _Avoid_: anomaly score (ambiguous), OOD score (too specific)
 
 **Logit-derived Outlier score**:
-An **Outlier score** computed directly from classifier logits; the only public score type in the narrowed score module. `LogitGap` and `MaxLogit` are the canonical examples.
+An **Outlier score** computed directly from classifier logits. `LogitGap` is the primary example recipe. `MaxLogit` is an alternative note only. Score construction belongs to examples and tutorials rather than to the supported package Interface.
 _Avoid_: generic score array, confidence score (too vague)
 
 **Source**:
@@ -151,7 +180,7 @@ The primary importance weighting strategy. Stabilises plain density-ratio weight
 _Avoid_: RIWERM (internal paper term, not user-facing), `alpha_blend` (superseded name)
 
 **Weighting strategy**:
-A tagged choice among: no weighting, explicit sample weights (`SampleWeighting`), or contextual RIW (`ContextualRIWWeighting`). Represented as a frozen dataclass union.
+In the shipped package, weighting enters shift tests through `ImportanceWeights`, a frozen dataclass with `.source` and `.target` arrays passed as the `weights` parameter. `from_domain_probabilities` is the standard adapter that builds this object from Domain Probabilities.
 _Avoid_: weight mode, weighting method
 
 **Domain classifier**:

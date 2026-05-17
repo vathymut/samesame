@@ -12,11 +12,11 @@ WeightingMode = Literal["source", "target", "both"]
 
 
 def density_ratio(
-    membership_prob: NDArray,
+    domain_prob: NDArray,
     *,
     group_balance: float,
 ) -> NDArray[np.float64]:
-    probs = np.asarray(membership_prob, dtype=np.float64)
+    probs = np.asarray(domain_prob, dtype=np.float64)
     if np.any(probs <= 0.0) or np.any(probs >= 1.0):
         raise ValueError("domain probabilities must be in the open interval (0, 1).")
     if not np.isfinite(group_balance) or group_balance <= 0.0:

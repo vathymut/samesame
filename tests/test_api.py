@@ -15,7 +15,9 @@ from samesame.weights import ImportanceWeights, from_domain_probabilities
 def test_root_exports() -> None:
     assert hasattr(ss, "shift")
     assert hasattr(ss, "weights")
-    assert hasattr(ss, "scores")
+    assert "shift" in ss.__all__
+    assert "weights" in ss.__all__
+    assert "scores" not in ss.__all__
     assert not hasattr(ss, "stats")
     assert not hasattr(ss, "test_shift")
     assert not hasattr(ss, "test_adverse_shift")

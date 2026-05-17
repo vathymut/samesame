@@ -15,7 +15,7 @@ nav:
   - How-to guides:
     - Monitor a credit risk model: examples/credit/monitor-credit-risk.md
     - Monitor prediction errors: examples/credit/monitor-prediction-errors.md
-    - Monitor model confidence: examples/credit/monitor-confidence-ood.md
+    - Monitor model confidence: examples/credit/monitor-model-confidence.md
     - Use source reweighting for harmful-shift testing: examples/weighting/source-reweighting.md
     - Use double-weighting for covariate-shift adaptation: examples/weighting/double-weighting.md
   - Explanation:
@@ -24,7 +24,6 @@ nav:
       - Testing functions: api/testing.md
       - Weighting strategies: api/weighting.md
       - Importance weights: api/importance_weights.md
-      - Outlier scores: api/logit_scores.md
 plugins:
   - search
   - autorefs
