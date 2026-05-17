@@ -22,7 +22,6 @@ nav:
     - Why importance weights stabilise shift detection: explanation/importance-weights-rationale.md
   - API reference:
       - Testing functions: api/testing.md
-      - Advanced controls: api/advanced.md
       - Weighting strategies: api/weighting.md
       - Importance weights: api/importance_weights.md
       - Outlier scores: api/logit_scores.md

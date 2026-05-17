@@ -12,10 +12,10 @@ and interpret whether the target sample is meaningfully worse.
 
 In practice, this test complements `ss.shift.detect_shift(...)`: first detect change, then assess harm.
 
-| Test  | Question it answers                          | When to use it                              |
-|-------|----------------------------------------------|---------------------------------------------|
-| `shift.detect_shift` | Are the two distributions different?         | Any time you want to detect *any* change |
-| `shift.detect_harm` | Is the target data *worse* than the source?  | When you care about *harmful* shifts only |
+| Test                 | Question it answers                          | When to use it                             |
+| -------------------- | -------------------------------------------- | ------------------------------------------ |
+| `shift.detect_shift` | Are the two distributions different?         | Any time you want to detect *any* change   |
+| `shift.detect_harm`  | Is the target data *worse* than the source?  | When you care about *harmful* shifts only  |
 
 Like the shift test, this procedure works on one score per sample rather than the full table.
 
@@ -86,7 +86,7 @@ Harmful-shift p-value: 0.1215
 
 Here, p = 0.1215 is large. We do not have sufficient evidence to conclude that Bowl is meaningfully worse than Armanaleg.
 
-> **Advanced:** For Bayesian evidence alongside the standard p-value, see [`shift.infer_harm`](../../api/advanced.md). Use `samesame.stats.as_bf` and `samesame.stats.as_pvalue` to convert between Bayes factors and p-values.
+> **Advanced:** For Bayesian evidence alongside the standard p-value, call `ss.shift.detect_harm(..., include_posterior=True)`. See the API notes on the [testing functions page](../../api/testing.md).
 
 ## Tips
 

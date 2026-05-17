@@ -53,7 +53,7 @@ The `n_splits` (default 200) and `random_state` (default `None`) parameters foll
 _Avoid_: `num_splits` (PRD name, superseded), `random_seed` (PRD name, superseded); accepting only `int` for `random_state`
 
 **RCT Validation modules file layout**:
-Each module lives in its own single file: `src/samesame/subgroup.py` (contains `test_subgroup_effect` and its private helpers) and `src/samesame/model_selection.py` (contains `test_model_lift` and its private helpers) — mirroring how `_api.py` works for the shift-test module. No separate internals file for either. Both modules may import from `samesame._utils` (e.g., `as_numeric_vector`, binary validation via `type_of_target`) and from `samesame._types` (e.g., `TestResult`, `SubgroupResult`). "Standalone" means no dependency on shift-test logic (`_api.py`, `_data.py`, `_metrics.py`, `_wecdf.py`), on weighting strategies (`weights.py`), or on each other.
+Each module lives in its own single file: `src/samesame/subgroup.py` (contains `test_subgroup_effect` and its private helpers) and `src/samesame/model_selection.py` (contains `test_model_lift` and its private helpers). No separate internals file for either. Both modules may import from `samesame._utils` (e.g., `as_numeric_vector`, binary validation via `type_of_target`) and may reuse public result types already owned by public seams (for example `TestResult` from `samesame.shift`). If a shared `SubgroupResult` becomes necessary once both modules exist, extract it then rather than relying on a pre-emptive `_types` module. "Standalone" means no dependency on distribution-shift logic in `shift.py`, on weighting strategies (`weights.py`), or on each other.
 _Avoid_: Putting both public functions in a single `subgroup.py`; creating a separate `_subgroup_internals.py`; importing from `_api.py`, `_data.py`, `_metrics.py`, or `weights.py`; duplicating binary-validation logic already in `_utils.py`; cross-importing between `subgroup.py` and `model_selection.py`
 
 **Treatment Arm**:
@@ -110,12 +110,17 @@ _Avoid_: Standalone result type with no `TestResult` inheritance; naming it `Res
 - "statistic" appears both as the test statistic name (a string like `"roc_auc"`) and as the computed numeric value — context distinguishes them; `statistic_name` and `statistic` (float) are the canonical field names.
 - "pricing experiment" could mean a fully randomized A/B test or an adaptive/contextual bandit; resolved: `samesame.subgroup` is only valid for **fully randomized two-arm experiments** where `P(treatment=1 | X) = 0.5`. Logs from adaptive or contextual pricing policies require IPS correction before use and are explicitly out of scope for v1.
 - `alpha_blend` was the original parameter name for the RIW blending coefficient; resolved: renamed to `lambda_` (public-facing) to align with domain notation. `balance: bool` was a toggle for prior-ratio inference; resolved: always inferred from group sizes — removed entirely. `group`/`membership_prob` positional parameters for `from_domain_probabilities` replaced by keyword-only `source_prob`/`target_prob` to make the source-first ordering invariant structural rather than documented.
+- "change" is acceptable explanatory language for the generic **Shift** question in docs and tutorials (for example, "did anything change?"). Public API names remain `shift.detect_shift(...)` and `ShiftResult`, not `detect_change(...)` or `ChangeResult`.
 
 ## Core API language (distribution shift)
 
 **Outlier score**:
 A scalar signal from a model indicating how anomalous an input is.
 _Avoid_: anomaly score (ambiguous), OOD score (too specific)
+
+**Logit-derived Outlier score**:
+An **Outlier score** computed directly from classifier logits; the only public score type in the narrowed score module. `LogitGap` and `MaxLogit` are the canonical examples.
+_Avoid_: generic score array, confidence score (too vague)
 
 **Source**:
 The baseline distribution of outlier scores, typically from training or reference data.

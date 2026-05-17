@@ -130,7 +130,7 @@ tests/
   test_model_selection.py
 ```
 
-`samesame.model_selection` imports from `samesame._utils` (binary validation) and `samesame._types` (`SubgroupResult`). No dependency on distribution-shift logic (`_api.py`, `_data.py`, `_metrics.py`, `_wecdf.py`), weighting strategies (`weights.py`), or `samesame.subgroup`.
+`samesame.model_selection` imports from `samesame._utils` (binary validation) and may reuse `TestResult` from an owning public seam such as `samesame.shift`. If a shared `SubgroupResult` becomes necessary once both RCT validation modules exist, extract it then rather than depending on a pre-emptive `_types` module. No dependency on distribution-shift logic in `shift.py`, weighting strategies (`weights.py`), or `samesame.subgroup`.
 
 ---
 
@@ -174,7 +174,7 @@ samesame.model_selection.test_model_lift(
 
 ### Result Type
 
-`SubgroupResult` (defined in `samesame._types`, extends `TestResult`):
+`SubgroupResult` (extends `TestResult`):
 
 ```python
 @dataclass(frozen=True)
@@ -182,7 +182,7 @@ class SubgroupResult(TestResult):
     null_distribution: NDArray[np.float64]
 ```
 
-`TestResult` provides `.statistic: float` and `.pvalue: float`. `SubgroupResult` is shared with `samesame.subgroup` and defined once in `_types.py`.
+`TestResult` provides `.statistic: float` and `.pvalue: float`. `SubgroupResult` is shared with `samesame.subgroup`, but its final home should be chosen only once both modules exist as real callers.
 
 ---
 
@@ -198,7 +198,7 @@ class SubgroupResult(TestResult):
 ### Integration Points
 
 - **`__init__.py`**: `from . import model_selection` — exposed as `samesame.model_selection.*`. Functions are **not** hoisted to the `samesame.*` top-level namespace.
-- **`samesame._types`**: Add `SubgroupResult` alongside existing result types. Shared with `samesame.subgroup` — defined once.
+- **Shared result type**: Reuse `TestResult` from an owning public seam such as `samesame.shift`. Introduce a shared `SubgroupResult` only when both RCT validation modules exist and genuinely need the same public type.
 - **`pyproject.toml`**: No changes. Uses `numpy`, `scipy.stats`, `scikit-learn` — already in the dependency tree.
 - **Existing modules**: `test_shift`, `test_adverse_shift`, `importance_weights`, `weights` — completely untouched.
 - **Docs nav**: New Tutorial page (*"Validate a pricing experiment"*) and API reference page (`api/model_selection.md`). Update `site_description` in `mkdocs.yml`.
@@ -256,7 +256,7 @@ Same data + same `random_state` → always the same p-value (bit-for-bit identic
 - Unit tests (≥ 90% code coverage)
 - Integration tests (null calibration, power checks)
 - SEAQUAMAT reproducibility notebook (not in CI)
-- `SubgroupResult` type in `samesame._types` (shared with v1.1 `samesame.subgroup`)
+- Shared `SubgroupResult` only if both RCT validation modules exist and genuinely need the same public type
 - Clear docstrings with plain-language p-value interpretation; paper terms in `Notes` only
 - Module marked **experimental**
 - Tutorial: *"Validate a pricing experiment"*

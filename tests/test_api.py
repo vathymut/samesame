@@ -8,7 +8,7 @@ import pytest
 
 import samesame as ss
 from samesame import shift
-from samesame.shift import HarmInference, HarmResult, ShiftResult
+from samesame.shift import HarmResult, ShiftResult
 from samesame.weights import ImportanceWeights, from_domain_probabilities
 
 
@@ -16,11 +16,12 @@ def test_root_exports() -> None:
     assert hasattr(ss, "shift")
     assert hasattr(ss, "weights")
     assert hasattr(ss, "scores")
-    assert hasattr(ss, "stats")
+    assert not hasattr(ss, "stats")
     assert not hasattr(ss, "test_shift")
     assert not hasattr(ss, "test_adverse_shift")
     assert not hasattr(ss, "adverse_shift_posterior")
     assert not hasattr(shift, "as_bf")
+    assert not hasattr(shift, "infer_harm")
 
 
 def test_signatures_take_positional_source_target() -> None:
@@ -156,7 +157,7 @@ def test_shift_supports_contextual_weights(
     assert base.statistic != contextual.statistic
 
 
-def test_harm_inference_returns_posterior(
+def test_detect_harm_omits_posterior_by_default(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
     result = shift.detect_harm(
@@ -165,16 +166,58 @@ def test_harm_inference_returns_posterior(
         n_resamples=64,
         random_state=0,
     )
-    evidence = shift.infer_harm(
+    assert isinstance(result, HarmResult)
+    assert result.posterior is None
+    assert result.bayes_factor is None
+
+
+def test_detect_harm_can_include_posterior(
+    confidence_samples: dict[str, np.ndarray],
+) -> None:
+    result = shift.detect_harm(
+        **confidence_samples,
+        direction="higher-is-better",
+        n_resamples=64,
+        random_state=42,
+        include_posterior=True,
+    )
+    assert isinstance(result, HarmResult)
+    assert result.posterior is not None
+    assert result.posterior.shape == (64,)
+    assert isinstance(result.bayes_factor, float)
+
+
+def test_detect_harm_standard_fields_match_when_posterior_enabled(
+    confidence_samples: dict[str, np.ndarray],
+) -> None:
+    base = shift.detect_harm(
         **confidence_samples,
         direction="higher-is-better",
         n_resamples=64,
         random_state=42,
     )
-    assert isinstance(result, HarmResult)
-    assert isinstance(evidence, HarmInference)
-    assert evidence.posterior.shape == (64,)
-    assert isinstance(evidence.bayes_factor, float)
+    enriched = shift.detect_harm(
+        **confidence_samples,
+        direction="higher-is-better",
+        n_resamples=64,
+        random_state=42,
+        include_posterior=True,
+    )
+    assert np.isclose(base.statistic, enriched.statistic)
+    assert np.isclose(base.pvalue, enriched.pvalue)
+    assert base.direction == enriched.direction
+    assert np.allclose(base.null_distribution, enriched.null_distribution)
+
+
+def test_detect_harm_rejects_threshold_without_posterior(
+    confidence_samples: dict[str, np.ndarray],
+) -> None:
+    with pytest.raises(ValueError, match="include_posterior=True"):
+        shift.detect_harm(
+            **confidence_samples,
+            direction="higher-is-better",
+            threshold=0.2,
+        )
 
 
 def test_harm_detection_supports_importance_weights(
