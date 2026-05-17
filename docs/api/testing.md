@@ -1,29 +1,49 @@
-# Shift detection
+# Shift testing
 
-Use this page for the two primary user-facing calls:
-`shift.detect_shift(...)` and `shift.detect_harm(...)`.
-This is the low-level testing Module: it assumes you already have one score array for Source and one
-for Target. Score construction, domain classifiers, and end-to-end monitoring adapters live in the
-examples, not in this Module.
+Use this page when you already have a numeric signal for a source group and a target group.
+
+## Choose the function
+
+| Function | What it answers | Use it when |
+|----------|------------------|-------------|
+| `shift.detect_shift(...)` | Did anything change? | you want to detect any difference between source and target |
+| `shift.detect_harm(...)` | Did the target group move in a worse direction? | you know what "worse" means for your signal |
+
+Examples of useful signals include predicted risk, prediction error, model confidence, and domain
+classifier probabilities.
+
+## Common controls
+
+Both functions accept:
+
+- `n_resamples` to control the number of permutation resamples
+- `batch` to limit memory use during the permutation test
+- `random_state` for reproducibility
+- `weights` for weighted testing with `ImportanceWeights`
+
+`shift.detect_harm(...)` also requires `direction`, which must be one of:
+
+- `"higher-is-worse"`
+- `"higher-is-better"`
 
 ## What you get back
 
-- `shift.detect_shift(...)` returns `ShiftResult` with `.statistic`, `.pvalue`, `.statistic_name`, and `.null_distribution`
-- `shift.detect_harm(...)` returns `HarmResult` with `.statistic`, `.pvalue`, `.direction`, and `.null_distribution`
-- `shift.detect_harm(..., include_posterior=True)` additionally returns `.posterior` and `.bayes_factor`
+- `shift.detect_shift(...)` returns `ShiftResult`
+- `shift.detect_harm(...)` returns `HarmResult`
 
-## Additional controls
+In both cases, the fields most users look at first are:
 
-Both functions accept direct keyword arguments for resampling, weighting, and reproducibility.
+- `.statistic`
+- `.pvalue`
 
-- `n_resamples` controls the number of permutation resamples. When `include_posterior=True`, the same value also controls the number of posterior draws.
-- `batch` caps peak memory for the permutation path. It applies to the permutation result only.
-- `random_state` accepts a seed or NumPy RNG for reproducibility.
-- `weights` accepts `ImportanceWeights` for weighted shift or harmful-shift testing.
+`ShiftResult` also includes `.statistic_name`.
+`HarmResult` also includes `.direction`.
+Both results include `.null_distribution` when you need the full permutation output.
 
-## Advanced harmful-shift evidence
+## Posterior evidence for harmful shift
 
-Use `include_posterior=True` when you want posterior draws and a Bayes factor alongside the standard harmful-shift p-value.
+If you want posterior draws and a Bayes factor alongside the p-value, set
+`include_posterior=True`.
 
 ```python
 import samesame as ss
@@ -39,15 +59,16 @@ print(f"p-value:      {result.pvalue:.4f}")
 print(f"Bayes factor: {result.bayes_factor:.2f}")
 ```
 
-`threshold` sets the effect-size threshold used for the Bayes factor. It is only valid when `include_posterior=True`; otherwise `detect_harm(...)` raises a `ValueError`. When posterior evidence is not requested, `HarmResult.posterior` and `HarmResult.bayes_factor` are `None`.
+`threshold` is only valid when `include_posterior=True`. Otherwise `detect_harm(...)` raises a
+`ValueError`.
 
-## Functions
+## API
 
 ::: samesame.shift.detect_shift
 
 ::: samesame.shift.detect_harm
 
-## Return types
+## Result types
 
 ::: samesame.shift.ShiftResult
 

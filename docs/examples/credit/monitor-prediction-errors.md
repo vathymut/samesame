@@ -1,65 +1,31 @@
-# How to: Monitor prediction errors when labels are available
+# How to: Monitor prediction errors once labels arrive
 
-**Use this guide when:** ground-truth labels are available for both the training and test sets,
-and you want to test whether the model's prediction errors are systematically higher for each row
-on the test set.
+Use this guide when you have ground-truth labels for both groups and want a direct answer about
+whether the model is performing worse.
 
-**What you'll do:**
+When labels are available, prediction error is often the cleanest signal you can compare.
 
-- Fit a credit risk model on a random training split using out-of-bag predictions
-- Compute a Brier score and log-loss for each row
-- Test whether either score is adversely shifted between training and test
+## Why this signal works well
 
-!!! note "Before you start"
-    This guide assumes you have completed both tutorials:
+Prediction errors turn model quality into a numeric signal:
 
-  - [Detect a distribution shift](../tutorials/detect-distribution-shift.md)
-  - [Check whether a shift is harmful](../tutorials/check-shift-harm.md)
+- **Brier score** measures squared error on the predicted probability
+- **Log-loss** penalizes confident mistakes more heavily
 
-    You also need basic familiarity with scikit-learn — fitting a model and calling \`predict_proba\`.
-
----
-
-## The scenario
-
-When ground-truth labels are available for a test set, prediction errors for each row provide a
-direct measure of model accuracy. Two standard choices are the **Brier score** and
-**log-loss**.
-
-For a predicted probability $\hat{p}$ and true label $y \in \{0, 1\}$:
-
-- **Brier score:** $(y - \hat{p})^2$ — the squared difference between the true label and the
-  predicted probability.
-- **Log-loss:** $-[y \log \hat{p} + (1-y)\log(1-\hat{p})]$ — penalises overconfident wrong
-  predictions more heavily than the Brier score.
-
-For both scores, larger values mean worse predictions. They can therefore serve directly as the
-the adversity score for each row that `ss.shift.detect_harm(...)` expects.
-
-Note that these scores require labels. They are not available during production monitoring when
-outcomes are delayed, but they are appropriate for evaluating a held-out test set or a labelled
-historical batch.
-
-This guide complements the other monitoring guides:
-
-- Use [Monitor a credit risk model](monitor-credit-risk.md) when you need a label-free business-risk signal.
-- Use [Monitor model confidence](monitor-model-confidence.md) when you need a label-free confidence signal.
-- Use this guide when labels are available and you want a direct error measure for each row.
-
----
+For both, larger values mean worse predictions, so they work naturally with
+`ss.shift.detect_harm(...)`.
 
 ## Setup
 
-We use the **HELOC dataset** (FICO Explainable AI Challenge), split randomly into training and
-test sets. Unlike the [credit risk how-to](monitor-credit-risk.md), this split is not based on a
-feature threshold — it is a stratified random split, so both sets are drawn from the same
-population.
+This guide uses the HELOC dataset again, but with a stratified random split. Unlike the credit-risk
+guide, the two groups here come from the same overall population.
 
 ```python
 import numpy as np
 from sklearn.datasets import fetch_openml
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
+
 import samesame as ss
 
 fico = fetch_openml(data_id=45554, as_frame=True)
@@ -68,32 +34,17 @@ X, y = fico.data, fico.target
 y_binary = (y == "Bad").astype(int).values
 
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y_binary,
+    X,
+    y_binary,
     test_size=0.30,
     stratify=y_binary,
     random_state=12345,
 )
-
-print(f"Training set: {len(X_train)} samples,  default rate: {y_train.mean():.4f}")
-print(f"Test set:     {len(X_test)} samples,  default rate: {y_test.mean():.4f}")
 ```
 
-**Output:**
+## Step 1 - Fit the model and get honest predictions
 
-```text
-Training set: 6909 samples,  default rate: 0.5203
-Test set:     2962 samples,  default rate: 0.5203
-```
-
-The default rate is equal in both sets because `stratify=y_binary` preserves it.
-
----
-
-## Step 1 — Fit the model
-
-Fit a Random Forest with `oob_score=True`. Out-of-bag (OOB) predictions will be used for the
-training set to avoid evaluating the model on data it was trained on — doing so would produce
-artificially low error scores and bias the comparison.
+Use out-of-bag predictions for training so the training-side errors are not artificially optimistic.
 
 ```python
 rf = RandomForestClassifier(
@@ -104,48 +55,31 @@ rf = RandomForestClassifier(
 )
 rf.fit(X_train, y_train)
 
-p_train = rf.oob_decision_function_[:, 1]  # OOB predictions for training
-p_test  = rf.predict_proba(X_test)[:, 1]   # standard predictions for test
+train_prob = rf.oob_decision_function_[:, 1]
+test_prob = rf.predict_proba(X_test)[:, 1]
 ```
 
----
-
-## Step 2 — Compute prediction errors for each row
-
-Each row receives one error score. Both Brier score and log-loss are computed from the true label
-and the predicted probability for that row.
+## Step 2 - Turn predictions into error signals
 
 ```python
-# Brier score: squared difference between predicted probability and true label
-brier_train = (y_train - p_train) ** 2
-brier_test  = (y_test  - p_test)  ** 2
+brier_train = (y_train - train_prob) ** 2
+brier_test = (y_test - test_prob) ** 2
 
-# Log-loss: log-probability assigned to the correct label (clipped for numerical safety)
 eps = 1e-10
-p_tr = np.clip(p_train, eps, 1 - eps)
-p_te = np.clip(p_test,  eps, 1 - eps)
-logloss_train = -(y_train * np.log(p_tr) + (1 - y_train) * np.log(1 - p_tr))
-logloss_test  = -(y_test  * np.log(p_te) + (1 - y_test)  * np.log(1 - p_te))
+train_prob_clipped = np.clip(train_prob, eps, 1 - eps)
+test_prob_clipped = np.clip(test_prob, eps, 1 - eps)
 
-print(f"Mean Brier score — training: {brier_train.mean():.4f},  test: {brier_test.mean():.4f}")
-print(f"Mean log-loss    — training: {logloss_train.mean():.4f},  test: {logloss_test.mean():.4f}")
+logloss_train = -(
+    y_train * np.log(train_prob_clipped)
+    + (1 - y_train) * np.log(1 - train_prob_clipped)
+)
+logloss_test = -(
+    y_test * np.log(test_prob_clipped)
+    + (1 - y_test) * np.log(1 - test_prob_clipped)
+)
 ```
 
-**Output:**
-
-```text
-Mean Brier score — training: 0.1806,  test: 0.1830
-Mean log-loss    — training: 0.5412,  test: 0.5463
-```
-
-Both scores are slightly higher on the test set, but the means are close. The question is whether
-this difference is consistent with random variation or reflects a systematic pattern.
-
----
-
-## Step 3 — Test for adverse shift
-
-Both scores are "higher is worse", so we pass `direction="higher-is-worse"`.
+## Step 3 - Test whether errors are worse on the test set
 
 ```python
 harm_brier = ss.shift.detect_harm(
@@ -160,76 +94,21 @@ harm_logloss = ss.shift.detect_harm(
     direction="higher-is-worse",
 )
 
-print(f"Brier score — statistic: {harm_brier.statistic:.4f},  p-value: {harm_brier.pvalue:.4f}")
-print(f"Log-loss    — statistic: {harm_logloss.statistic:.4f},  p-value: {harm_logloss.pvalue:.4f}")
+print(f"Brier p-value:   {harm_brier.pvalue:.4f}")
+print(f"Log-loss p-value:{harm_logloss.pvalue:.4f}")
 ```
 
-**Output:**
+On this stratified random split, the p-values should not be especially small. That is the expected
+result when training and test come from the same population.
 
-```text
-Brier score — statistic: 0.0846,  p-value: 0.2728
-Log-loss    — statistic: 0.0846,  p-value: 0.2744
-```
+## Interpreting the outcome
 
----
+- Small p-values mean the test set contains a disproportionate share of higher-error predictions.
+- Large p-values mean there is not enough evidence that the model performs worse on the test set.
 
-## Reading the results
+It is common for Brier score and log-loss to tell a similar story here. `ss.shift.detect_harm(...)`
+is rank-based, so signals that order observations in a similar way often produce similar results.
 
-| p-value        | What it means |
-|----------------|---------------|
-| Small (< 0.05) | Evidence that the test set contains a disproportionate share of high-error predictions |
-| Large (≥ 0.05) | Not enough evidence to conclude the model performs worse on the test set |
-
-Here, p ≈ 0.27 for both scores. This is expected: both sets were drawn from the same population,
-so there is no reason to expect the model to perform systematically worse on the test set.
-
-Contrast this with the [credit risk how-to](monitor-credit-risk.md), where a deliberate population
-split produces a highly significant result (p = 0.0001). In that guide, the test set contains
-structurally different, higher-risk customers. Here, stratified random splitting ensures the two
-sets are comparable, and the test correctly finds no evidence of adverse shift.
-
----
-
-## Why both scores give the same test statistic
-
-`ss.shift.detect_harm` uses a **rank-based statistic**: it compares how the two samples rank
-together, not their raw values. For a fixed label $y$, both Brier score and log-loss are monotone
-functions of the predicted probability $\hat{p}$, so they induce the same ordering within that label.
-On this HELOC split, that is enough to make the reported test statistic the same. On a different
-mixture of labels or with more ties, the two statistics can diverge slightly.
-
-The choice between the two scores is a matter of interpretation:
-
-- **Brier score** is bounded between 0 and 1 and penalises all errors quadratically.
-- **Log-loss** is unbounded and penalises overconfident wrong predictions more heavily.
-
-From a testing standpoint, either score is sufficient for binary labels. Report both if you want
-to communicate the result to audiences familiar with different conventions.
-
----
-
-## When to use each monitoring signal
-
-| Signal | Labels required? | Best used when |
-|--------|------------------|----------------|
-| Predicted default probability | No | Labels are unavailable; the model output has direct business meaning |
-| Brier score / log-loss | Yes | A labelled test set is available; you want a direct measure of prediction accuracy |
-| LogitGap (confidence score) | No | The model output is not a meaningful risk score; you want to monitor prediction confidence |
-
-For production monitoring before labels arrive, use predicted probability or a confidence score.
-When labels become available, Brier score or log-loss provides a direct measurement and can
-confirm or revise the earlier assessment.
-
----
-
-## Summary
-
-- **Prediction errors for each row** require ground-truth labels but directly measure how wrong the
-  model was on that row.
-- Use **OOB predictions** for the training set to avoid evaluating the model on data it was
-  trained on, which would produce artificially low error scores.
-- For this stratified random split, neither score shows significant adverse shift (p ≈ 0.27) —
-  the expected result when both sets are drawn from the same population.
-- For an example where adverse shift is detected, see [Monitor a credit risk model](monitor-credit-risk.md).
-- For label-free monitoring, see [Monitor a credit risk model](monitor-credit-risk.md) (predicted
-  probability) or [Monitor model confidence](monitor-model-confidence.md) (confidence monitoring).
+Use this guide when labels are available. If they are not, use
+[Monitor predicted credit risk](monitor-credit-risk.md) or
+[Monitor model confidence](monitor-model-confidence.md) instead.

@@ -1,114 +1,88 @@
-# Tutorial: Detect a distribution shift
+# Tutorial: Detect whether two datasets differ
 
-This tutorial is a guided first run of `ss.shift.detect_shift(...)`.
-You will generate one score per row, run the test, and interpret the result.
+Use this tutorial when you want a first end-to-end shift test between a reference dataset and a
+new dataset.
 
-**By the end, you will be able to:**
+By the end, you will know how to:
 
-- Check whether two datasets come from the same distribution
-- Create one score per row without leaking training data
-- Run `ss.shift.detect_shift(...)` and read the result
+- turn two datasets into a comparison signal
+- keep that signal honest with out-of-sample predictions
+- run `ss.shift.detect_shift(...)` and interpret the result
 
-You can use the same workflow when comparing training vs production data, or one batch vs another.
-
-You do not compare the raw feature table directly. Instead, a classifier turns each row into one
-score that reflects how strongly it resembles the target dataset rather than the source dataset.
-If those scores separate the groups too well, that is evidence that the datasets differ. This
-procedure is a **classifier two-sample test**; statistical significance is assessed via a
-permutation test on the group labels.
+The idea is straightforward: train a classifier to tell **source** from **target** apart. If its
+out-of-sample probabilities separate the two groups more than chance, the datasets differ.
 
 ## What you need
 
-- Two datasets to compare (e.g., training data vs. production data)
-- A classifier from scikit-learn
-- Classifier outputs for rows it did not train on (explained below)
+- a source dataset and a target dataset
+- any scikit-learn classifier with `predict_proba`
+- out-of-sample predictions for that classifier
 
-## Step 1 — Prepare the data
+## Step 1 - Create a simple source and target example
 
-Label one dataset as `0` (source) and the other as `1` (target). Combine them.
-`make_classification` is used here just to create a quick synthetic example with two groups:
+Here we make a synthetic target group that is slightly shifted away from the source group.
 
 ```python
-from sklearn.datasets import make_classification
+import numpy as np
 
-# X contains features; y is the group label (0 = source, 1 = target)
-X, y = make_classification(
-    n_samples=100,
-    n_features=4,
-    n_classes=2,
-    random_state=123_456,
-)
+rng = np.random.default_rng(123_456)
+
+source = rng.normal(loc=0.0, scale=1.0, size=(400, 4))
+target = rng.normal(loc=[0.7, 0.0, 0.0, 0.0], scale=1.0, size=(400, 4))
+
+X = np.vstack([source, target])
+group = np.r_[np.zeros(len(source), dtype=int), np.ones(len(target), dtype=int)]
 ```
 
-## Step 2 — Create one score per row
+In a real workflow, `source` might be training data and `target` might be production data.
 
-This step is important. If you train a classifier on the full dataset and then evaluate the same
-rows, the classifier can appear artificially strong because it is being tested on data it has already seen.
-For a valid comparison, each row must be evaluated by a model that did *not* train on it. These values are
-often called **out-of-sample predictions**.
+## Step 2 - Estimate how much each observation looks like target
 
-**Recommended: use `cross_val_predict`**
-
-`cross_val_predict` splits the data into folds. Each row is then evaluated by a model trained
-on the remaining folds. This is the safest default for most users:
+Each observation must be scored by a model that did not train on it. `cross_val_predict(...)` is a
+good default because it handles that for you.
 
 ```python
 from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.model_selection import cross_val_predict
-import samesame as ss
 
-# Each sample is scored by a model that never saw it during training
-y_hat = cross_val_predict(
+prob_target = cross_val_predict(
     HistGradientBoostingClassifier(random_state=123_456),
     X,
-    y,
+    group,
     cv=10,
     method="predict_proba",
-)[:, 1]  # probability of belonging to group 1 (target)
+)[:, 1]
 ```
 
-## Step 3 — Run the test
+`prob_target` is the model's estimated probability that each observation belongs to the target
+group.
 
-Split those model outputs back into source and target groups, then pass those scores to
-`ss.shift.detect_shift`. The default statistic is ROC AUC. You can think of it as a separation measure:
-0.5 means the classifier cannot tell the groups apart, and 1.0 means it separates them perfectly:
+## Step 3 - Run the shift test
 
 ```python
-source_scores = y_hat[y == 0]
-target_scores = y_hat[y == 1]
+import samesame as ss
+
+source_scores = prob_target[group == 0]
+target_scores = prob_target[group == 1]
 
 shift = ss.shift.detect_shift(source_scores, target_scores)
-print(f"  statistic (AUC): {shift.statistic:.2f}")
-print(f"  p-value:         {shift.pvalue:.4f}")
+
+print(f"AUC statistic: {shift.statistic:.3f}")
+print(f"p-value:       {shift.pvalue:.4f}")
 ```
 
-**Output:**
+On this example, you should see a large AUC and a very small p-value, which is what we expect from
+a deliberately shifted target group.
 
-```text
-    statistic (AUC): 0.93
-    p-value:         0.0002
-```
+## How to read the result
 
-## Reading the results
+- A small p-value means the target group looks different from the source group.
+- A large p-value means there is not enough evidence to say the groups differ.
+- The default statistic is ROC AUC: `0.5` means the classifier cannot separate the groups, and
+  larger values mean stronger separation.
 
-| p-value         | What it means                                                  |
-|-----------------|----------------------------------------------------------------|
-| Small (< 0.05)  | Strong evidence that the two datasets come from different distributions |
-| Large (≥ 0.05)  | Not enough evidence to conclude the distributions differ       |
+`ss.shift.detect_shift(...)` answers only the question "did anything change?" It does not tell you
+whether the change is worse for your application.
 
-Here, p = 0.0002 is very small — the classifier can easily tell the two groups apart,
-which is strong evidence against the null hypothesis of no distributional difference.
-
-> **Important:** `ss.shift.detect_shift` tells you *whether* distributions differ, not *how bad* the difference is
-> or whether it will hurt your model. For that, see
-> [Check whether a shift is harmful](check-shift-harm.md).
-
-## Tips
-
-- **Which option should you use?** Most users can keep the default `roc_auc`. Use `balanced_accuracy`
-    or `matthews_corrcoef` only when your model output is already binary 0/1 values.
-- **Investigate drivers:** If a shift is detected, inspect your classifier's feature importances
-    to find which features are most different between the two groups.
-- **Shift detected — now what?** A significant shift result means the distributions differ.
-    To check whether that difference is actually *harmful*, continue to
-    [Check whether a shift is harmful](check-shift-harm.md).
+If direction matters, continue to
+[Check whether a change points in a worse direction](check-shift-harm.md).

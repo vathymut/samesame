@@ -15,30 +15,36 @@
 
 > Same, same but different ...
 
-`samesame` is a low-level Python package for comparing a source sample with a target sample.
-The package starts at the score-comparison seam: you bring one numeric score per row, and
-`samesame` owns the statistical testing and weighting.
+`samesame` is a Python package for comparing a reference population with a new population.
+It helps answer two practical questions:
 
-The **source** is your reference - typically training data or an earlier time period.
-The **target** is what you're comparing against - typically production data or a later period.
+- Did anything change?
+- Did the change move in a worse direction?
 
-It answers two practical questions:
+In the package, the reference group is called **source** and the new group is called **target**.
+Typical examples are training vs production data, last month's batch vs this month's batch, or one
+customer segment vs another.
 
-- Did anything change? Use `ss.shift.detect_shift(...)`.
-- Did things get worse? Use `ss.shift.detect_harm(...)`.
+You bring a numeric signal for each observation, and `samesame` handles the statistical testing.
+That signal can be whatever best matches your use case: predicted risk, model confidence,
+prediction error once labels arrive, or a classifier score used to compare two datasets.
 
-End-to-end workflows such as model monitoring, data validation, and shift assessment live in the
-tutorials and how-to guides as example-owned adapters around this low-level seam.
+The API stays small on purpose:
+
+- Use `ss.shift.detect_shift(...)` to test whether source and target differ.
+- Use `ss.shift.detect_harm(...)` to test whether target moved in a worse direction.
+- Use `ss.weights.from_domain_probabilities(...)` when you want weighting that focuses the test on
+  the region where source and target overlap.
 
 ## Who is this for?
 
-`samesame` is a good fit when you already have one score per row for a source group and a target
-group, for example:
+`samesame` is a good fit when you already know what signal you want to monitor for each
+observation, for example:
 
-- **Model monitoring** - Does production data still look like training data?
-- **Data validation** - Does this new batch look like the data I expect?
-- **Shift detection** - Did something change between last month and this month?
-- **Group comparison** - Do two customer groups, regions, or experiments look meaningfully different?
+- **Model monitoring** - Does production still look like training, and are predictions getting worse?
+- **Data validation** - Does this new batch still look like the data I expect?
+- **Population comparison** - Do two customer groups, regions, or experiments behave differently?
+- **Covariate-shift adjustment** - Can I focus on the region where both groups are genuinely comparable?
 
 ## Installation
 
@@ -48,12 +54,9 @@ python -m pip install samesame
 
 ## Quick Start
 
-Suppose you already have one score per row for a source sample and a target sample.
-Larger scores should indicate either worse outcomes or unusual ones.
-The score usually comes from your own adapter. For example, you might train a classifier to
-distinguish Source from Target and use the predicted probabilities as scores, or use a model's
-confidence or prediction errors as scores. The choice of score depends on your application and what
-kind of shift you want to detect.
+Suppose you already have a numeric signal for a source group and a target group.
+Larger values can mean more unusual cases, more risk, less confidence, or any other notion that is
+relevant to the question you are asking.
 
 ```python
 import numpy as np
@@ -67,33 +70,39 @@ shift = ss.shift.detect_shift(source_scores, target_scores)
 print(f"Did anything change?  p-value = {shift.pvalue:.4f}")
 
 harm = ss.shift.detect_harm(
-	source_scores,
-	target_scores,
-	direction="higher-is-worse",
+    source_scores,
+    target_scores,
+    direction="higher-is-worse",
 )
 print(f"Did things get worse? p-value = {harm.pvalue:.4f}")
 ```
 
-**How to read this:** a small p-value from `ss.shift.detect_shift(...)` indicates evidence that the target sample differs from the source sample.
-A small p-value from `ss.shift.detect_harm(...)` indicates evidence that it has also shifted in a worse direction.
-If the first is small and the second is large, the data changed but not in a clearly harmful way.
+How to read this:
 
-## How it works
+- A small p-value from `ss.shift.detect_shift(...)` means the target group looks different from the source group.
+- A small p-value from `ss.shift.detect_harm(...)` means it also moved in the declared worse direction.
+- If the first is small and the second is large, something changed, but not in a clearly harmful way.
 
-`samesame` does not compare raw tables directly and does not fit a domain classifier for you.
-The usual workflow is:
+## Choosing the signal
 
-1. Build one score per row in your own adapter.
-2. Compare those scores with `ss.shift.detect_shift(...)` (did anything change?) and `ss.shift.detect_harm(...)` (did it get worse?).
+`samesame` does not decide for you what should count as "worse". That depends on your workflow.
+Common choices are:
 
-Both tests are **permutation-based**, so no distributional assumptions are required.
+- **Predicted risk** when the model output already has business meaning.
+- **Prediction error** when labels are available and you want a direct accuracy signal.
+- **Confidence score** when you want to track how certain the model looks.
+- **Domain-classifier probability** when your goal is to detect distribution shift between datasets.
 
-When you know that source and target have different feature distributions - covariate shift -
-you can supply sample importance weights to focus the test on the region where both groups
-overlap. See [Adjust for covariate shift with importance weights](examples/tutorials/adjust-for-covariate-shift.md).
+The tutorials and how-to guides show how to choose and build these signals in practice.
 
-If you want end-to-end monitoring workflows, use the tutorials and how-to guides. They are examples
-built on top of the low-level `shift` and `weights` Modules rather than extra package layers.
+## Why users reach for it
+
+The methods in `samesame` are statistically grounded, but day-to-day usage stays simple: you pick a
+signal, compare source with target, and read the result in terms of change and harm.
+
+Both tests are permutation-based, so they do not depend on fragile parametric assumptions. When you
+know that source and target differ in feature coverage, you can add importance weights to focus the
+test on the region where the two groups overlap.
 
 ## Where to go next
 
@@ -101,19 +110,21 @@ Step-by-step examples are available in the [documentation](https://vathymut.gith
 
 **Tutorials**
 
-- [Detect a distribution shift](https://vathymut.github.io/samesame/examples/tutorials/detect-distribution-shift/)
-- [Check whether a shift is harmful](https://vathymut.github.io/samesame/examples/tutorials/check-shift-harm/)
+- [Detect whether two datasets differ](https://vathymut.github.io/samesame/examples/tutorials/detect-distribution-shift/)
+- [Check whether a change points in a worse direction](https://vathymut.github.io/samesame/examples/tutorials/check-shift-harm/)
+- [Focus on shared support with importance weights](https://vathymut.github.io/samesame/examples/tutorials/adjust-for-covariate-shift/)
 
 **How-to guides**
 
-- [Monitor a credit risk model](https://vathymut.github.io/samesame/examples/credit/monitor-credit-risk/)
-- [Monitor prediction errors when labels are available](https://vathymut.github.io/samesame/examples/credit/monitor-prediction-errors/)
+- [Monitor predicted credit risk](https://vathymut.github.io/samesame/examples/credit/monitor-credit-risk/)
 - [Monitor model confidence](https://vathymut.github.io/samesame/examples/credit/monitor-model-confidence/)
+- [Monitor prediction errors once labels arrive](https://vathymut.github.io/samesame/examples/credit/monitor-prediction-errors/)
+- [Focus harmful-shift testing on shared support](https://vathymut.github.io/samesame/examples/weighting/source-reweighting/)
+- [Restrict testing to common support on both sides](https://vathymut.github.io/samesame/examples/weighting/double-weighting/)
 
 ## Dependencies
 
-`samesame` has minimal dependencies. It is built on top of, and fully compatible with,
-[scikit-learn][scikit-learn] and [numpy][numpy].
+`samesame` has minimal dependencies and fits naturally into a NumPy and scikit-learn workflow.
 
 [numpy]: https://numpy.org/
 [scikit-learn]: https://scikit-learn.org/stable

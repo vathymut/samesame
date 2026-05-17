@@ -1,49 +1,23 @@
-# How-to: Use source reweighting for harmful-shift testing
+# How to: Focus harmful-shift testing on shared support
 
-**Use this guide when:** you have a model trained on one population and deployed on another
-that partially overlaps with training. You want harmful-shift testing to emphasise the shared
-region and de-emphasise training samples that are completely foreign to the deployment population.
+Use this guide when the source group contains observations that deployment will rarely or never see,
+and you want the harmful-shift test to focus on comparable cases instead.
 
-**What you'll do:**
+This is the practical version of source reweighting: keep deployment unchanged, and down-weight the
+source observations that look foreign to it.
 
-- Reproduce an unweighted harmful-shift test as a baseline
-- Obtain domain probabilities from a domain classifier
-- Apply `mode="source"` reweighting and compare results
+## Step 1 - Recreate the baseline workflow
 
-!!! note "Before you start"
-    This guide assumes you have completed the tutorial
-    [Adjust for covariate shift with importance weights](../tutorials/adjust-for-covariate-shift.md),
-    which introduces `from_domain_probabilities` and the two-step weighting pattern.
-
----
-
-## The scenario
-
-You have trained a credit risk model on low-risk customers. The model is now deployed on a
-broader population that includes some high-risk customers very unlike anything in training.
-You want to test whether predicted default risk shifted adversely, but focus the test on
-common support rather than outliers unique to training.
-
-This guide builds on the HELOC dataset setup from
-[Monitor a credit risk model](../credit/monitor-credit-risk.md). Complete that guide
-first — the data loading and split are identical.
-
----
-
-## Step 1 — Reproduce the unweighted harmful-shift test
-
-Starting from the HELOC split (training on `ExternalRiskEstimate > 63`, deployment on
-`ExternalRiskEstimate <= 63`), build two score streams:
-
-- `domain_prob` from a domain classifier - used for weighting only
-- `bad_train` / `bad_test` from a credit model — the harmful-shift scores
+This example uses the same HELOC split as
+[Monitor predicted credit risk](../credit/monitor-credit-risk.md).
 
 ```python
 import re
-import numpy as np
+
 import pandas as pd
 from sklearn.datasets import fetch_openml
 from sklearn.ensemble import RandomForestClassifier
+
 import samesame as ss
 
 fico = fetch_openml(data_id=45554, as_frame=True)
@@ -54,10 +28,10 @@ col_split = next((c for c in X.columns if re_obj.search(c)), None)
 mask_high = X[col_split].astype(float) > 63
 
 X_train = X[mask_high].reset_index(drop=True)
-X_test  = X[~mask_high].reset_index(drop=True)
+X_deployment = X[~mask_high].reset_index(drop=True)
 
-split = pd.Series([0] * len(X_train) + [1] * len(X_test))
-X_concat = pd.concat([X_train, X_test], ignore_index=True)
+split = pd.Series([0] * len(X_train) + [1] * len(X_deployment))
+X_concat = pd.concat([X_train, X_deployment], ignore_index=True)
 
 rf_domain = RandomForestClassifier(
     n_estimators=500,
@@ -68,36 +42,29 @@ rf_domain = RandomForestClassifier(
 rf_domain.fit(X_concat, split)
 domain_prob = rf_domain.oob_decision_function_[:, 1]
 
-# Separate harmfulness scores: predicted default risk
-loan_status = y[mask_high].reset_index(drop=True).map({"Good": 0, "Bad": 1}).values
+y_train_binary = y[mask_high].reset_index(drop=True).map({"Good": 0, "Bad": 1}).values
 rf_bad = RandomForestClassifier(
     n_estimators=500,
     oob_score=True,
     random_state=12345,
     min_samples_leaf=10,
 )
-rf_bad.fit(X_train, loan_status)
-bad_train = rf_bad.oob_decision_function_[:, 1].ravel()
-bad_test = rf_bad.predict_proba(X_test)[:, 1].ravel()
+rf_bad.fit(X_train, y_train_binary)
+
+train_risk = rf_bad.oob_decision_function_[:, 1].ravel()
+deployment_risk = rf_bad.predict_proba(X_deployment)[:, 1].ravel()
 
 unweighted = ss.shift.detect_harm(
-    source=bad_train,
-    target=bad_test,
+    source=train_risk,
+    target=deployment_risk,
     direction="higher-is-worse",
     random_state=12345,
 )
-print(f"Unweighted statistic: {unweighted.statistic:.4f}, p-value: {unweighted.pvalue:.4f}")
 ```
 
-The OOB probabilities from `rf_domain` are out-of-sample estimates of `P(deployment | x)`
-and go directly into `domain_prob`. They are never used as harmful-shift scores.
+`domain_prob` is for weighting only. The harmful-shift signal is still predicted default risk.
 
----
-
-## Step 2 — Apply source reweighting
-
-Split `domain_prob` into source and target arrays (in the order the pooled dataset was
-built), compute weights with `from_domain_probabilities`, then pass them to `ss.shift.detect_harm`:
+## Step 2 - Build source-side importance weights
 
 ```python
 from samesame.weights import from_domain_probabilities
@@ -113,44 +80,27 @@ weights = from_domain_probabilities(
 )
 
 weighted = ss.shift.detect_harm(
-    source=bad_train,
-    target=bad_test,
+    source=train_risk,
+    target=deployment_risk,
     direction="higher-is-worse",
     weights=weights,
     random_state=12345,
 )
-print(f"Weighted   statistic: {weighted.statistic:.4f}, p-value: {weighted.pvalue:.4f}")
+
+print(f"Unweighted p-value: {unweighted.pvalue:.4f}")
+print(f"Weighted   p-value: {weighted.pvalue:.4f}")
 ```
 
-Source samples that look unlike any deployment sample receive lower weights, so the
-harmful-shift test focuses on overlap.
+## Step 3 - Interpret the difference
 
----
+- The unweighted test uses every observation at full strength.
+- The weighted test reduces the influence of source observations that do not look like deployment.
+- If the result weakens substantially, the original signal was being driven by parts of training
+  that are not very relevant for deployment.
+- If the result stays strong, the problem persists in the region the two groups share.
 
-## Step 3 — Compare weighted vs unweighted results
+Use this mode when training contains outliers or edge cases that are not representative of the
+population you now care about.
 
-| Test | Interpretation |
-|------|----------------|
-| Unweighted | Harm signal across both populations, including source-only outliers. |
-| Source-reweighted | Harm signal restricted to common support; source outliers down-weighted. |
-
-If unweighted is significant but weighted is not, harmful shift may be concentrated in
-low-overlap source regions. If both are significant, the harmful shift persists in common support.
-
----
-
-## When to use source reweighting
-
-- Common support between training and deployment is narrow.
-- Training contains many samples with feature values never seen in deployment.
-- You want harmful-shift testing to focus on the subpopulation the model actually encounters.
-
----
-
-## See also
-
-- [Use double-weighting for covariate-shift adaptation](double-weighting.md)
-  — when deployment also contains outliers foreign to training.
-- [Why importance weights stabilise shift detection](../../explanation/importance-weights-rationale.md)
-  — conceptual background on RIW and `lambda_`.
-- [Weights](../../api/weighting.md) — full API reference for `from_domain_probabilities`.
+If deployment also contains many low-overlap cases, continue to
+[Restrict testing to common support on both sides](double-weighting.md).

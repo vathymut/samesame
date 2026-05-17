@@ -1,144 +1,84 @@
-# How-to: Use double-weighting for covariate-shift adaptation
+# How to: Restrict testing to common support on both sides
 
-**Use this guide when:** both your source and target groups contain outliers that are foreign
-to the other group, and you want harmful-shift testing to focus exclusively on the region of
-feature space they share.
+Use this guide when both source and target contain low-overlap observations and source-only
+reweighting is not enough.
 
-**What you'll do:**
+This is the most aggressive weighting mode. Use it only when you have a real reason to believe the
+problem sits on both sides of the comparison.
 
-- Understand when source-only reweighting is insufficient
-- Apply `mode="both"` to reweight source and target simultaneously
-- Run a weighted harmful-shift test and compare all three weighting approaches
+## Step 1 - Start from the source-reweighting setup
 
-!!! note "Before you start"
-    This guide assumes you have completed:
+This guide continues from
+[Focus harmful-shift testing on shared support](source-reweighting.md).
+At that point you already have:
 
-    - [Adjust for covariate shift with importance weights](../tutorials/adjust-for-covariate-shift.md)
-    - [Use source reweighting for harmful-shift testing](source-reweighting.md)
+- `source_prob` and `target_prob` from the domain classifier
+- `train_risk` and `deployment_risk` as the harmful-shift signal
 
----
-
-## When single-group reweighting is not enough
-
-Source reweighting (`mode="source"`) down-weights training samples that are foreign to
-deployment. But if the deployment population also contains samples with feature values that
-never appeared in training, those target outliers remain at unit weight and can inflate the
-test statistic in the same way. Double-weighting corrects both sides simultaneously.
-
-!!! warning
-    Double-weighting is the most aggressive correction mode. Use it only when you have
-    evidence that outliers are present in both groups. If the target group is well-contained
-    within the source distribution, source reweighting is sufficient.
-
----
-
-## Step 1 — Set up two score streams
-
-Use the same HELOC setup as
-[Use source reweighting for harmful-shift testing](source-reweighting.md).
-After completing that guide, you have three variables in scope:
-
-- `domain_prob` - OOB probabilities from `rf_domain` (for weighting)
-- `bad_train` / `bad_test` — predicted default-risk scores (for harmful-shift testing)
-
-If you are starting fresh, run the full setup from Step 1 of that guide before continuing.
-
----
-
-## Step 2 — Apply double-weighting
-
-Change `mode` from `"source"` to `"both"`. Source outliers receive lower weights via the
-forward density ratio; target outliers receive lower weights via the inverse density ratio:
+## Step 2 - Weight both groups
 
 ```python
-import samesame as ss
 from samesame.weights import from_domain_probabilities
 
-source_prob = domain_prob[split.values == 0]
-target_prob = domain_prob[split.values == 1]
-
 weights_both = from_domain_probabilities(
-    source_prob=source_prob,
-    target_prob=target_prob,
-    mode="both",
-    lambda_=0.5,
+  source_prob=source_prob,
+  target_prob=target_prob,
+  mode="both",
+  lambda_=0.5,
 )
 
-double = ss.shift.detect_harm(
-    source=bad_train,
-    target=bad_test,
-    direction="higher-is-worse",
-    weights=weights_both,
-    random_state=12345,
+double_weighted = ss.shift.detect_harm(
+  source=train_risk,
+  target=deployment_risk,
+  direction="higher-is-worse",
+  weights=weights_both,
+  random_state=12345,
 )
-print(f"Double-weighted — statistic: {double.statistic:.4f}, p-value: {double.pvalue:.4f}")
+
+print(f"Double-weighted p-value: {double_weighted.pvalue:.4f}")
 ```
 
----
-
-## Step 3 — Compare all three weighting modes
-
-Run all three tests side by side to see how the statistic changes as each mode narrows focus:
+## Step 3 - Compare the three views
 
 ```python
-import samesame as ss
-import numpy as np
-
-unweighted = ss.shift.detect_harm(
-    source=bad_train,
-    target=bad_test,
-    direction="higher-is-worse",
-    random_state=12345,
-)
-
 weights_source = from_domain_probabilities(
-    source_prob=source_prob,
-    target_prob=target_prob,
-    mode="source",
-    lambda_=0.5,
+  source_prob=source_prob,
+  target_prob=target_prob,
+  mode="source",
+  lambda_=0.5,
 )
-source_rw = ss.shift.detect_harm(
-    source=bad_train,
-    target=bad_test,
-    direction="higher-is-worse",
-    weights=weights_source,
-    random_state=12345,
+
+source_weighted = ss.shift.detect_harm(
+  source=train_risk,
+  target=deployment_risk,
+  direction="higher-is-worse",
+  weights=weights_source,
+  random_state=12345,
 )
-print(f"Unweighted    — statistic: {unweighted.statistic:.4f}, p-value: {unweighted.pvalue:.4f}")
-print(f"Source only   — statistic: {source_rw.statistic:.4f}, p-value: {source_rw.pvalue:.4f}")
-print(f"Double        — statistic: {double.statistic:.4f}, p-value: {double.pvalue:.4f}")
+
+print(f"Unweighted      p-value: {unweighted.pvalue:.4f}")
+print(f"Source-weighted p-value: {source_weighted.pvalue:.4f}")
+print(f"Double-weighted p-value: {double_weighted.pvalue:.4f}")
 ```
 
-| Weighting | Focus |
-|-----------|-------|
-| None | Full populations, all outliers included. |
-| `mode="source"` | Overlap from the source side; target outliers still at unit weight. |
-| `mode="both"` | Common support only — outliers in both groups down-weighted. |
+Think of the three results this way:
 
-The statistic changes across modes because each mode asks a slightly different question.
-Double-weighting measures harmful shift restricted to common support from both sides.
+- **Unweighted** looks at the full populations.
+- **Source-weighted** focuses on overlap from the source side.
+- **Double-weighted** focuses on common support from both sides.
 
----
+If the signal shrinks only after double-weighting, target-side outliers were still influencing the
+result after source reweighting.
 
 ## Choosing `lambda_`
 
-The default `lambda_=0.5` is a balanced blend between the plain density ratio (`0.0`) and
-uniform weights (`1.0`). For double-weighting:
+`lambda_=0.5` is the safest starting point.
 
-- **Lower `lambda_` (e.g., 0.2):** More aggressive correction; use only with a
-  well-calibrated domain classifier and a large overlap region.
-- **Higher `lambda_` (e.g., 0.8):** More conservative; close to uniform weights.
-  Use when you are uncertain about the quality of domain probabilities.
+- Lower values make the correction stronger and the variance higher.
+- Higher values move closer to uniform weights.
 
-For the mathematical relationship between `lambda_` and weight magnitude, see
-[Why importance weights stabilise shift detection](../../explanation/importance-weights-rationale.md).
+If you are unsure, start at `0.5`, inspect the sensitivity, and only move lower when you trust the
+domain probabilities and the overlap story.
 
----
-
-## See also
-
-- [Use source reweighting for harmful-shift testing](source-reweighting.md)
-  — the simpler alternative when only the source has outliers.
-- [Why importance weights stabilise shift detection](../../explanation/importance-weights-rationale.md)
-  — RIW formulas and the three-mode decision guide.
-- [Weights](../../api/weighting.md) — full `from_domain_probabilities` API reference.
+For the intuition behind the formulas, see
+[When importance weights help](../../explanation/importance-weights-rationale.md).

@@ -1,103 +1,55 @@
-# How to: Monitor a credit risk model
+# How to: Monitor predicted credit risk
 
-**Use this guide when:** you have a model in production and want to check whether the new
-population looks different from the training population, and whether the model is now predicting
-higher risk.
+Use this guide when the model output already has clear business meaning and you want to know two
+things: whether deployment looks different from training, and whether predicted default risk is
+higher in deployment.
 
-**What you'll do:**
+If you are new to `samesame`, start with the two tutorials first. This guide assumes basic
+familiarity with fitting a scikit-learn classifier and calling `predict_proba(...)`.
 
-- Check whether deployment data looks different from training data
-- Find which features drive that difference
-- Check whether predicted default risk is higher in deployment
-- Use both results to decide what action to take
+## Why this signal works well
 
-!!! note "Before you start"
-    This guide assumes you have completed both tutorials:
+Predicted default probability is already meaningful. Larger values are directly worse, so it is a
+natural signal for `ss.shift.detect_harm(...)`.
 
-  - [Detect a distribution shift](../tutorials/detect-distribution-shift.md)
-  - [Check whether a shift is harmful](../tutorials/check-shift-harm.md)
-
-    You also need basic familiarity with scikit-learn — fitting a model and calling `predict_proba`.
-
----
-
-## The scenario
-
-You have trained a credit risk model to predict loan default. Your training data came from
-**low-risk customers** (good credit history). The model is now deployed and scoring a
-**different population** — higher-risk customers.
-
-Two questions arise:
-
-1. **Are the feature distributions different?** If the new customers look nothing like the
-   training data, the model may not be reliable on them.
-2. **Has predicted risk shifted adversely?** Even if features differ, the model might still
-  generalise. The more relevant question is whether it is now assigning higher default risk
-  to the deployment population.
-
-We answer both questions with `ss.shift.detect_shift(...)` (question 1) and `ss.shift.detect_harm(...)` (question 2).
-If you want to monitor **model confidence** instead of **predicted risk**, see the companion
-[Monitor model confidence](monitor-model-confidence.md) guide.
-
----
+This guide uses the HELOC dataset and simulates deployment by training on lower-risk customers and
+testing on higher-risk customers.
 
 ## Setup
 
-We use the **HELOC dataset** (FICO Explainable AI Challenge), which contains credit bureau
-features for real customers. We simulate a production deployment scenario by splitting on
-`ExternalRiskEstimate`:
-
-- **Training set** (`ExternalRiskEstimate > 63`): 7,683 low-risk customers
-- **Deployment set** (`ExternalRiskEstimate ≤ 63`): 2,188 high-risk customers
-
 ```python
 import re
+
 import pandas as pd
 from sklearn.datasets import fetch_openml
 from sklearn.ensemble import RandomForestClassifier
+
 import samesame as ss
 
-# Download the HELOC dataset (requires internet access on first run)
 fico = fetch_openml(data_id=45554, as_frame=True)
 X, y = fico.data, fico.target
 
-# Split into training (low-risk) and deployment (high-risk) populations
 re_obj = re.compile(r"external.*risk.*estimate", flags=re.I)
 col_split = next((c for c in X.columns if re_obj.search(c)), None)
 mask_high = X[col_split].astype(float) > 63
 
 X_train = X[mask_high].reset_index(drop=True)
 y_train = y[mask_high].reset_index(drop=True)
-X_test  = X[~mask_high].reset_index(drop=True)
-y_test  = y[~mask_high].reset_index(drop=True)
+X_deployment = X[~mask_high].reset_index(drop=True)
 
-print(f"Training set:    {len(X_train)} samples")
-print(f"Deployment set:  {len(X_test)} samples")
+print(f"Training set:   {len(X_train)} samples")
+print(f"Deployment set: {len(X_deployment)} samples")
 ```
 
-**Output:**
+## Step 1 - Check whether deployment looks different
 
-```text
-Training set:    7683 samples
-Deployment set:  2188 samples
-```
-
----
-
-## Step 1 — Detect dataset shift
-
-**Question:** Are the feature distributions of the training and deployment sets different?
-
-This is a **classifier two-sample test**: a Random Forest is trained to distinguish training from
-deployment samples, and AUC measures how easily they can be separated. OOB predictions ensure
-each row is scored by trees that did not train on it, preventing optimistic bias:
+Train a domain classifier to distinguish training from deployment. Use out-of-bag predictions so
+each training observation is scored by trees that did not train on it.
 
 ```python
-# Label the two populations: 0 = training, 1 = deployment
-split = pd.Series([0] * len(X_train) + [1] * len(X_test))
-X_concat = pd.concat([X_train, X_test], ignore_index=True)
+split = pd.Series([0] * len(X_train) + [1] * len(X_deployment))
+X_concat = pd.concat([X_train, X_deployment], ignore_index=True)
 
-# Train a classifier to distinguish training from deployment
 rf_domain = RandomForestClassifier(
     n_estimators=500,
     oob_score=True,
@@ -105,73 +57,39 @@ rf_domain = RandomForestClassifier(
     min_samples_leaf=10,
 )
 rf_domain.fit(X_concat, split)
-  oob_scores = rf_domain.oob_decision_function_[:, 1]  # P(deployment)
+domain_scores = rf_domain.oob_decision_function_[:, 1]
 
-# Run the shift test
 shift = ss.shift.detect_shift(
-    source=oob_scores[split.values == 0],
-    target=oob_scores[split.values == 1],
+    source=domain_scores[split.values == 0],
+    target=domain_scores[split.values == 1],
 )
+
 print(f"AUC statistic: {shift.statistic:.4f}")
 print(f"p-value:       {shift.pvalue:.4f}")
 ```
 
-**Output:**
+On this split, you should see an AUC close to `1.0` and a very small p-value, which means the
+deployment population looks clearly different from training.
 
-```text
-AUC statistic: 1.0000
-p-value:       0.0002
-```
-
-AUC is a separation measure. An AUC of 1.0 means the classifier perfectly separates the two populations.
-The p-value of 0.0002 provides strong evidence against the null hypothesis of no shift — **there is strong evidence of
-dataset shift**.
-
-### Which features are driving the shift?
-
-Feature importances from the same classifier tell you which features differ most between
-the two populations:
+If you want a quick diagnostic on what changed, inspect the same classifier's feature importances:
 
 ```python
-print("Top 5 features driving the shift:")
-feat_imp = (
-  pd.Series(rf_domain.feature_importances_, index=X_concat.columns)
-  .sort_values(ascending=False)
+feature_importance = (
+    pd.Series(rf_domain.feature_importances_, index=X_concat.columns)
+    .sort_values(ascending=False)
 )
-print(feat_imp.head(5))
+
+print(feature_importance.head(5))
 ```
 
-**Output:**
+## Step 2 - Check whether predicted risk moved up
 
-```text
-Top 5 features driving the shift:
-ExternalRiskEstimate          0.642400
-MSinceMostRecentDelq          0.069394
-MaxDelq2PublicRecLast12M      0.064526
-NetFractionRevolvingBurden    0.050656
-PercentTradesNeverDelq        0.042478
-```
-
-`ExternalRiskEstimate` dominates because it was used to create the split — that is expected.
-Several other features (`MSinceMostRecentDelq`, `MaxDelq2PublicRecLast12M`) also
-differ between the groups, which suggests correlated structure beyond the variable used to define the split.
-
----
-
-## Step 2 — Test for adverse risk shift
-
-**Question:** Is the model assigning systematically higher default risk to the deployment population?
-
-Even though the feature distributions are different, the model might still generalise.
-We now check whether the model's predicted default probabilities are higher (worse) for
-deployment samples than for training samples.
-
-We train a credit risk model on the training set and compare its predictions on both populations.
-For the training set, we again use out-of-bag predictions so the scores stay fair:
+Now train the actual credit model on the training set. Use out-of-bag predictions for training and
+standard predictions for deployment.
 
 ```python
-# Train a credit risk model to predict loan default
-loan_status = y_train.map({'Good': 0, 'Bad': 1}).values
+loan_status = y_train.map({"Good": 0, "Bad": 1}).values
+
 rf_bad = RandomForestClassifier(
     n_estimators=500,
     oob_score=True,
@@ -180,71 +98,36 @@ rf_bad = RandomForestClassifier(
 )
 rf_bad.fit(X_train, loan_status)
 
-# OOB predictions for training (unbiased); standard predictions for deployment
-bad_train = rf_bad.oob_decision_function_[:, 1].ravel()
-bad_test  = rf_bad.predict_proba(X_test)[:, 1].ravel()
+train_risk = rf_bad.oob_decision_function_[:, 1].ravel()
+deployment_risk = rf_bad.predict_proba(X_deployment)[:, 1].ravel()
 
 harm = ss.shift.detect_harm(
-    source=bad_train,
-    target=bad_test,
+    source=train_risk,
+    target=deployment_risk,
     direction="higher-is-worse",
 )
+
 print(f"Statistic: {harm.statistic:.4f}")
 print(f"p-value:   {harm.pvalue:.4f}")
 ```
 
-**Output:**
+On this split, you should again see a very small p-value. That means deployment is not only
+different, but also riskier according to the model.
 
-```text
-Statistic: 0.2483
-p-value:   0.0001
-```
+## Step 3 - Decide what to do
 
-> A higher statistic means that more of the largest values are concentrated in the deployment set.
+Using both tests together gives a clearer picture than either test alone:
 
-p = 0.0001 — **strong evidence of adverse shift**. The model is assigning substantially
-higher default risk to deployment samples. This confirms not only that the data is different,
-but that the shift is adverse with respect to the score being monitored.
+| Result pattern | What it usually means |
+|----------------|-----------------------|
+| shift small, harm small | the population changed and predicted risk worsened |
+| shift small, harm large | the population changed, but not in a clearly harmful way |
+| shift large, harm small | rare, but worth investigating as a direct outcome issue |
+| shift large, harm large | no clear evidence of a problem |
 
-This is a good example of when the model output itself is already meaningful. A higher predicted
-default probability is directly interpretable as higher business risk, so it is a natural score to
-monitor. When a model output is *not* directly interpretable as "worse", you need a different
-score, such as an Outlier score used for confidence monitoring. See [Monitor model confidence](monitor-model-confidence.md).
+In this HELOC example, both results are strong. That is a good signal to retrain, recalibrate, or
+otherwise revisit the deployment policy for the new population.
 
-The important limitation is the reverse: a confidence score is **not** a substitute for business impact.
-A model can become more confident in its predictions while those predictions become more harmful to
-the business. When you already have a value with direct business meaning, such as default probability,
-that value should remain the primary monitoring signal.
-
----
-
-## Step 3 — Interpret the combined results
-
-Running both tests together gives a richer picture than either test alone:
-
-| Scenario                         | Recommended action                                   |
-|----------------------------------|------------------------------------------------------|
-| Both shift and harmful-shift significant   | Data and outcomes have shifted. Retrain or recalibrate the model. |
-| Only shift significant            | Data looks different, but outcomes haven't shifted. Monitor closely. |
-| Only harmful-shift significant            | Outcome shift without feature change (concept drift). Investigate root causes. |
-| Neither significant              | No evidence of a problem. Continue as normal.        |
-
-In this example, **both tests are significant** — the deployment population is different
-and predicted risk is higher. The recommended action is to retrain or recalibrate
-the model for the new population.
-
----
-
-## Summary
-
-- **Shift testing** detects whether feature distributions differ between training and deployment.
-  Feature importances help identify *which* features are responsible.
-- **Adverse-shift testing** detects whether the model's predictions have shifted adversely. It does not require
-  ground truth labels, making it practical for production monitoring before labels arrive.
-- Use **both tests together** for a complete picture: `ss.shift.detect_shift(...)` tells you *what* changed,
-  and `ss.shift.detect_harm(...)` tells you *whether it matters*.
-- In this example, **predicted risk increased**, but in the companion [how-to guide](monitor-model-confidence.md), **model
-  confidence did not worsen**. Those are different signals and both are worth monitoring.
-- If labels are available for the test set, prediction errors for each row (Brier score, log-loss) provide a direct measure of model accuracy; see [Monitor prediction errors when labels are available](monitor-prediction-errors.md).
-- If your model output is not itself a meaningful risk value, use a confidence score instead; see
-  [Monitor model confidence](monitor-model-confidence.md).
+If you want a separate confidence view, see [Monitor model confidence](monitor-model-confidence.md).
+If labels are available, see
+[Monitor prediction errors once labels arrive](monitor-prediction-errors.md).

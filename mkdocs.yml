@@ -2,27 +2,27 @@ site_name: samesame
 repo_url: https://github.com/vathymut/samesame
 repo_name: vathymut/samesame
 site_url: https://vathymut.github.io/samesame/
-site_description: Low-level statistical tests for comparing source and target score distributions.
+site_description: Statistical tests for deciding whether a new population differs from a reference population, and whether the change is harmful.
 site_author: Vathy M. Kamulete
 copyright: Copyright &copy; Vathy M. Kamulete
 
 nav:
   - Home: index.md
   - Tutorials:
-    - Detect a distribution shift: examples/tutorials/detect-distribution-shift.md
-    - Check whether a shift is harmful: examples/tutorials/check-shift-harm.md
-    - Adjust for covariate shift with importance weights: examples/tutorials/adjust-for-covariate-shift.md
+    - Detect Whether Two Datasets Differ: examples/tutorials/detect-distribution-shift.md
+    - Check Whether a Change Points in a Worse Direction: examples/tutorials/check-shift-harm.md
+    - Focus on Shared Support with Importance Weights: examples/tutorials/adjust-for-covariate-shift.md
   - How-to guides:
-    - Monitor a credit risk model: examples/credit/monitor-credit-risk.md
-    - Monitor prediction errors: examples/credit/monitor-prediction-errors.md
-    - Monitor model confidence: examples/credit/monitor-model-confidence.md
-    - Use source reweighting for harmful-shift testing: examples/weighting/source-reweighting.md
-    - Use double-weighting for covariate-shift adaptation: examples/weighting/double-weighting.md
+    - Monitor Predicted Credit Risk: examples/credit/monitor-credit-risk.md
+    - Monitor Model Confidence: examples/credit/monitor-model-confidence.md
+    - Monitor Prediction Errors Once Labels Arrive: examples/credit/monitor-prediction-errors.md
+    - Focus Harmful-Shift Testing on Shared Support: examples/weighting/source-reweighting.md
+    - Restrict Testing to Common Support on Both Sides: examples/weighting/double-weighting.md
   - Explanation:
-    - Why importance weights stabilise shift detection: explanation/importance-weights-rationale.md
+    - When Importance Weights Help: explanation/importance-weights-rationale.md
   - API reference:
-      - Testing functions: api/testing.md
-      - Weights: api/weighting.md
+      - Shift Testing: api/testing.md
+      - Importance Weights: api/weighting.md
 plugins:
   - search
   - autorefs

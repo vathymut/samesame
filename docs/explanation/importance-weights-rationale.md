@@ -1,139 +1,85 @@
-# Why importance weights stabilise shift detection
+# When importance weights help
 
-This page explains the conceptual landscape behind importance weighting in \`samesame\`.
-It covers why plain density-ratio weights can become extreme, what `lambda_` trades off,
-and when each of the three weighting modes is appropriate.
+Importance weights help when source and target differ for two reasons at once:
 
-There are no code examples here. For worked code, see the tutorial
-[Adjust for covariate shift with importance weights](../examples/tutorials/adjust-for-covariate-shift.md).
+- there is a real change in the region you care about
+- one or both groups also contain observations that sit in parts of feature space the other group
+  almost never visits
 
----
+Without weighting, those low-overlap observations can dominate the comparison.
 
-## The density-ratio problem
+For code, see
+[Focus on shared support with importance weights](../examples/tutorials/adjust-for-covariate-shift.md).
 
-A classifier two-sample test trains a classifier to distinguish source from target samples and
-uses its predicted probabilities as shift scores. When covariate shift is present — source and
-target differ in their feature distributions — the ideal correction is to reweight source samples
-by the **density ratio**:
+## The basic problem
 
-$$
-w(x) = \frac{p_{\text{target}}(x)}{p_{\text{source}}(x)}
-$$
+Suppose a domain classifier estimates the probability that an observation belongs to target.
+Call that probability $\hat{p}(x)$.
 
-In practice, this ratio is estimated from a domain classifier. Let $\hat{p}(x)$ be the
-predicted probability that sample $x$ belongs to the target group. Then the estimated density
-ratio is:
+The standard density-ratio correction is:
 
 $$
-\hat{w}(x) = \frac{\hat{p}(x)}{1 - \hat{p}(x)} \cdot \frac{n_{\text{source}}}{n_{\text{target}}}
+\hat{r}(x) = \frac{\hat{p}(x)}{1 - \hat{p}(x)} \cdot \frac{n_{\text{source}}}{n_{\text{target}}}
 $$
 
-The problem is that when the classifier separates groups well — exactly the situation where you
-need weighting — the estimated $\hat{p}(x)$ for source samples in the overlap region can
-approach 0.5 while for isolated outliers it approaches 0. Division by a near-zero denominator
-then produces extreme weight values. One or a handful of source outliers can dominate the entire
-weighted test, masking real signal in the shared region.
+This is useful, but it can become unstable. When the groups are easy to separate, a small number
+of observations can receive very large weights and dominate the test.
 
----
+## How `samesame` stabilises the weights
 
-## Taming the ratio with RIW blending
+`samesame` uses relative importance weighting (RIW), which blends the plain density ratio toward
+uniform weighting.
 
-\`samesame\` uses **Relative Importance Weighting (RIW)** to stabilise the density ratio.
-The RIW weight for a source sample is:
+For source weighting:
 
 $$
-w_{\text{source}}(x) = \frac{\hat{w}(x)}{(1 - \lambda) + \lambda \cdot \hat{w}(x)}
+w_{\text{source}}(x) = \frac{\hat{r}(x)}{(1 - \lambda) + \lambda \hat{r}(x)}
 $$
 
-where $\lambda$ is \`lambda_\`. For target samples receiving inverse weights:
+For target weighting:
 
 $$
-w_{\text{target}}(x) = \frac{1}{\lambda + (1 - \lambda) \cdot \hat{w}(x)}
+w_{\text{target}}(x) = \frac{1}{\lambda + (1 - \lambda) \hat{r}(x)}
 $$
 
-The blended denominator in both formulas prevents any single weight from growing without bound.
-The parameter \`lambda_\` controls the trade-off:
+You do not need to compute these by hand. `from_domain_probabilities(...)` does it for you.
 
-| \`lambda_\` | Effect |
-|-------------|--------|
-| \`0.0\` | Plain density ratio; equivalent to IWERM. Maximum variance. |
-| \`0.5\` (default) | Balanced blend; practical default for most applications. |
-| \`1.0\` | All weights become uniform (no correction at all). |
+## What `lambda_` changes
 
-Lower values apply more aggressive correction but increase variance. Higher values are more
-conservative. The default \`lambda_=0.5\` is a good starting point; reduce it if you are
-confident the overlap region is large and the domain classifier is well-calibrated.
+| `lambda_` | Effect |
+|-----------|--------|
+| `0.0` | Plain density ratio. Strongest correction, highest variance. |
+| `0.5` | Practical default. Good balance between correction and stability. |
+| `1.0` | Uniform weights. No correction. |
 
----
-## Normalization
+Lower values correct more aggressively. Higher values are more conservative.
 
-After computing the raw RIW values, `from_domain_probabilities` normalizes the weights for each
-active group so they sum to that group's sample size:
+## Choosing a mode
 
-$$
-w_i^{\text{norm}} = w_i \cdot \frac{n}{\sum_j w_j}
-$$
+| Mode | Use it when |
+|------|-------------|
+| `mode="source"` | source contains observations that are foreign to target |
+| `mode="target"` | target contains observations that are foreign to source |
+| `mode="both"` | both groups contain low-overlap observations and you want to focus on common support only |
 
-This normalization is applied independently per group. Source weights sum to $n_{\text{source}}$,
-target weights sum to $n_{\text{target}}$. Samples not targeted by `mode` keep weight 1 and
-are not renormalized — their sum is already equal to their group size by construction.
+In all three cases, `from_domain_probabilities(...)` normalizes each active group so the weights
+sum to that group's sample size.
 
-The effect is to preserve the effective sample size interpretation of each group: weighted
-averages computed over the group behave like unweighted averages over a representative
-sample of that size. It also prevents the overall scale of weights from drifting when group
-sizes are unequal.
+## When to skip weighting
 
----
-## Three weighting modes
+Start unweighted when:
 
-`from_domain_probabilities` supports three modes that differ in which group receives non-unit weights:
+- source and target already overlap well
+- you do not have a reliable domain classifier
+- you want the first-pass answer before narrowing attention to common support
 
-### source — source reweighting
-
-Source samples that look unlike any target sample receive downweighted importance.
-Target samples all receive weight 1. Use this when the source group contains outliers
-that are foreign to the target population and you want the test to focus on the overlap region
-from the source side.
-
-### target — target reweighting
-
-Target samples that look unlike any source sample receive downweighted importance.
-Source samples all receive weight 1. Use this when the target group contains outliers
-foreign to the source population.
-
-### both — double-weighting
-
-Both source and target outliers are downweighted simultaneously. Both sides of the density
-ratio are corrected. Use this when both groups contain outliers foreign to the other group
-and you want the test to focus exclusively on the common support region. This is the most
-aggressive correction and should be chosen only when outliers are genuinely present in both
-groups.
-
----
-
-## Prior ratio and group sizes
-
-When source and target group sizes differ, the raw density ratio is biased.
-\`from_domain_probabilities\` always corrects for this automatically by multiplying the
-density ratio by $n_{\text{source}} / n_{\text{target}}$, inferred from the lengths
-of \`source_prob\` and \`target_prob\`. No manual flag is needed.
-
----
-
-## Decision guide
-
-| Scenario | Recommended mode | Key parameter |
-|----------|-----------------|---------------|
-| First-pass check; source contains outliers foreign to target | \`mode="source"\` with \`lambda_=0.5\` | \`lambda_\` |
-| Target contains outliers foreign to source | \`mode="target"\` with \`lambda_=0.5\` | \`lambda_\` |
-| Both groups contain outliers foreign to the other | \`mode="both"\` with \`lambda_=0.5\` | \`mode\`, \`lambda_\` |
-
----
+Weights are most useful when you already know that overlap is the issue, not as a reflex for every
+comparison.
 
 ## References
 
 - Shimodaira, H. (2000). Improving predictive inference under covariate shift by weighting the
-  log-likelihood function. *Journal of Statistical Planning and Inference*, 90(2), 227–244.
+  log-likelihood function. *Journal of Statistical Planning and Inference*, 90(2), 227-244.
 - Yamada, M., Suzuki, T., Kanamori, T., Hachiya, H., & Sugiyama, M. (2013). Relative
   density-ratio estimation for robust distribution comparison. *Neural Computation*, 25(5),
-  1324–1370.
+  1324-1370.
