@@ -17,20 +17,6 @@ class TwoSampleDataset:
     n_source: int
     n_target: int
 
-    def __post_init__(self) -> None:
-        expected_len = self.n_source + self.n_target
-        if len(self.labels) != expected_len:
-            raise ValueError(
-                f"labels length {len(self.labels)} does not match "
-                f"n_source + n_target = {expected_len}."
-            )
-        if self.n_source > 0 and not np.all(self.labels[: self.n_source] == 0):
-            raise ValueError(
-                "labels[0 : n_source] must all be 0 (source samples first)."
-            )
-        if self.n_target > 0 and not np.all(self.labels[self.n_source :] == 1):
-            raise ValueError("labels[n_source :] must all be 1 (target samples last).")
-
 
 def build_two_sample_dataset(source: ArrayLike, target: ArrayLike) -> TwoSampleDataset:
     """Build the aligned two-sample representation used by the testing seam."""
@@ -52,4 +38,3 @@ def build_two_sample_dataset(source: ArrayLike, target: ArrayLike) -> TwoSampleD
 
 
 __all__ = ["TwoSampleDataset", "build_two_sample_dataset"]
-

@@ -104,8 +104,8 @@ Use these functions to convert between p-values and Bayes factors, or to
 compute Bayes factors directly from posterior draws returned by
 `shift.infer_harm`.
 
-::: samesame.shift.as_bf
+::: samesame.stats.as_bf
 
-::: samesame.shift.as_pvalue
+::: samesame.stats.as_pvalue
 
-::: samesame.shift.bayes_factor
+::: samesame.stats.bayes_factor

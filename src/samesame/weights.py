@@ -7,7 +7,7 @@ from dataclasses import dataclass
 import numpy as np
 from numpy.typing import NDArray
 
-from samesame._internals.weighting import (
+from samesame._internals import (
     WeightingMode,
     density_ratio,
     inverse_riw,

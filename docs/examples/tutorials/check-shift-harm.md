@@ -86,7 +86,7 @@ Harmful-shift p-value: 0.1215
 
 Here, p = 0.1215 is large. We do not have sufficient evidence to conclude that Bowl is meaningfully worse than Armanaleg.
 
-> **Advanced:** For Bayesian evidence alongside the standard p-value, see [`shift.infer_harm`](../../api/advanced.md). Use `samesame.shift.as_bf` and `samesame.shift.as_pvalue` to convert between Bayes factors and p-values.
+> **Advanced:** For Bayesian evidence alongside the standard p-value, see [`shift.infer_harm`](../../api/advanced.md). Use `samesame.stats.as_bf` and `samesame.stats.as_pvalue` to convert between Bayes factors and p-values.
 
 ## Tips
 

@@ -2,69 +2,30 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Literal
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 from sklearn.utils.multiclass import type_of_target
 
-from samesame._internals.bayes import (
-    _bayes_factor,
-    as_bf,
-    as_pvalue,
-    bayes_factor,
-    bayesian_posterior,
-)
-from samesame._internals.permutation import run_permutation_test
-from samesame._internals.statistics import (
-    get_shift_statistic,
-    requires_binary_scores,
-    wauc,
-)
-from samesame._internals.two_sample import build_two_sample_dataset
-from samesame._internals.validation import (
+from samesame._internals import (
     Direction,
     RandomState,
+    _bayes_factor,
+    bayesian_posterior,
+    build_two_sample_dataset,
+    get_shift_statistic,
+    requires_binary_scores,
     resolve_random_state,
+    run_permutation_test,
     validate_and_normalise_weights,
     validate_direction,
+    wauc,
 )
+from samesame._types import HarmInference, HarmResult, ShiftResult, TestResult
 from samesame.weights import ImportanceWeights
 
 type ShiftStatistic = Literal["roc_auc", "balanced_accuracy", "matthews_corrcoef"]
-
-
-@dataclass(frozen=True)
-class TestResult:
-    """Shared fields for all shift results."""
-
-    statistic: float
-    pvalue: float
-
-
-@dataclass(frozen=True)
-class ShiftResult(TestResult):
-    """Result of generic shift detection."""
-
-    statistic_name: str
-    null_distribution: NDArray[np.float64]
-
-
-@dataclass(frozen=True)
-class HarmResult(TestResult):
-    """Result of harmful-shift detection."""
-
-    direction: Direction
-    null_distribution: NDArray[np.float64]
-
-
-@dataclass(frozen=True)
-class HarmInference:
-    """Bayesian evidence layer for harmful shift."""
-
-    posterior: NDArray[np.float64]
-    bayes_factor: float
 
 
 def _combine_importance_weights(
@@ -75,8 +36,12 @@ def _combine_importance_weights(
 ) -> NDArray | None:
     if weights is None:
         return None
-    source_w = validate_and_normalise_weights(np.asarray(weights.source, dtype=float), n_source)
-    target_w = validate_and_normalise_weights(np.asarray(weights.target, dtype=float), n_target)
+    source_w = validate_and_normalise_weights(
+        np.asarray(weights.source, dtype=float), n_source
+    )
+    target_w = validate_and_normalise_weights(
+        np.asarray(weights.target, dtype=float), n_target
+    )
     return np.concatenate([source_w, target_w])
 
 
@@ -217,11 +182,7 @@ __all__ = [
     "ShiftResult",
     "ShiftStatistic",
     "TestResult",
-    "as_bf",
-    "as_pvalue",
-    "bayes_factor",
     "detect_harm",
     "detect_shift",
     "infer_harm",
 ]
-

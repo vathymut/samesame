@@ -16,19 +16,25 @@ def test_root_exports() -> None:
     assert hasattr(ss, "shift")
     assert hasattr(ss, "weights")
     assert hasattr(ss, "scores")
+    assert hasattr(ss, "stats")
     assert not hasattr(ss, "test_shift")
     assert not hasattr(ss, "test_adverse_shift")
     assert not hasattr(ss, "adverse_shift_posterior")
+    assert not hasattr(shift, "as_bf")
 
 
 def test_signatures_take_positional_source_target() -> None:
     shift_sig = inspect.signature(shift.detect_shift)
     harm_sig = inspect.signature(shift.detect_harm)
-    assert shift_sig.parameters["source"].kind is inspect.Parameter.POSITIONAL_OR_KEYWORD
+    assert (
+        shift_sig.parameters["source"].kind is inspect.Parameter.POSITIONAL_OR_KEYWORD
+    )
     assert harm_sig.parameters["source"].kind is inspect.Parameter.POSITIONAL_OR_KEYWORD
 
 
-def test_detect_shift_returns_shift_result(shift_samples: dict[str, np.ndarray]) -> None:
+def test_detect_shift_returns_shift_result(
+    shift_samples: dict[str, np.ndarray],
+) -> None:
     result = shift.detect_shift(**shift_samples, n_resamples=64)
     assert isinstance(result, ShiftResult)
     assert result.statistic_name == "roc_auc"
@@ -38,13 +44,15 @@ def test_detect_shift_returns_shift_result(shift_samples: dict[str, np.ndarray])
 
 
 def test_detect_shift_accepts_positional_source_target(
-    shift_samples: dict[str, np.ndarray]
+    shift_samples: dict[str, np.ndarray],
 ) -> None:
     result = shift.detect_shift(shift_samples["source"], shift_samples["target"])
     assert isinstance(result, ShiftResult)
 
 
-def test_detect_shift_rejects_unknown_statistic(shift_samples: dict[str, np.ndarray]) -> None:
+def test_detect_shift_rejects_unknown_statistic(
+    shift_samples: dict[str, np.ndarray],
+) -> None:
     with pytest.raises(ValueError, match="statistic must be one of"):
         shift.detect_shift(**shift_samples, statistic="f1")  # type: ignore[arg-type]
 
@@ -61,9 +69,7 @@ def test_binary_only_statistics_accept_binary_scores(
     binary_shift_samples: dict[str, np.ndarray],
     statistic: str,
 ) -> None:
-    result = shift.detect_shift(
-        **binary_shift_samples, statistic=statistic
-    )  # type: ignore[arg-type]
+    result = shift.detect_shift(**binary_shift_samples, statistic=statistic)  # type: ignore[arg-type]
     assert isinstance(result, ShiftResult)
     assert result.statistic_name == statistic
 
@@ -74,13 +80,15 @@ def test_results_are_frozen(shift_samples: dict[str, np.ndarray]) -> None:
         result.pvalue = 0.0  # type: ignore[misc]
 
 
-def test_detect_harm_requires_direction(confidence_samples: dict[str, np.ndarray]) -> None:
+def test_detect_harm_requires_direction(
+    confidence_samples: dict[str, np.ndarray],
+) -> None:
     with pytest.raises(TypeError):
         shift.detect_harm(**confidence_samples)
 
 
 def test_detect_harm_rejects_unknown_direction(
-    confidence_samples: dict[str, np.ndarray]
+    confidence_samples: dict[str, np.ndarray],
 ) -> None:
     with pytest.raises(ValueError, match="direction must be one of"):
         shift.detect_harm(
@@ -90,7 +98,7 @@ def test_detect_harm_rejects_unknown_direction(
 
 
 def test_detect_harm_handles_higher_is_better(
-    confidence_samples: dict[str, np.ndarray]
+    confidence_samples: dict[str, np.ndarray],
 ) -> None:
     primary = shift.detect_harm(
         **confidence_samples,
@@ -125,7 +133,9 @@ def test_shift_supports_explicit_weights(
         target=np.linspace(1.0, 3.0, len(target)),
     )
     base = shift.detect_shift(**shift_samples, n_resamples=64)
-    weighted = shift.detect_shift(**shift_samples, n_resamples=64, weights=sample_weight)
+    weighted = shift.detect_shift(
+        **shift_samples, n_resamples=64, weights=sample_weight
+    )
     assert isinstance(weighted, ShiftResult)
     assert base.statistic != weighted.statistic
 
@@ -146,7 +156,9 @@ def test_shift_supports_contextual_weights(
     assert base.statistic != contextual.statistic
 
 
-def test_harm_inference_returns_posterior(confidence_samples: dict[str, np.ndarray]) -> None:
+def test_harm_inference_returns_posterior(
+    confidence_samples: dict[str, np.ndarray],
+) -> None:
     result = shift.detect_harm(
         **confidence_samples,
         direction="higher-is-better",
