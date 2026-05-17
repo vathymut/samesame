@@ -54,11 +54,10 @@ class HarmResult(TestResult):
 
 
 @dataclass(frozen=True)
-class _TwoSampleDataset:
+class _PreparedTwoSampleTest:
     labels: NDArray[np.int_]
     scores: NDArray
-    n_source: int
-    n_target: int
+    sample_weight: NDArray | None
 
 
 class _ECDFDiscrete:
@@ -117,9 +116,13 @@ def _as_numeric_vector(values: ArrayLike, *, name: str) -> NDArray:
     return np.asarray(vector)
 
 
-def _build_two_sample_dataset(
-    source: ArrayLike, target: ArrayLike
-) -> _TwoSampleDataset:
+def _prepare_two_sample_test(
+    source: ArrayLike,
+    target: ArrayLike,
+    *,
+    weights: ImportanceWeights | None,
+    direction: Direction | None = None,
+) -> tuple[_PreparedTwoSampleTest, Direction | None]:
     source_scores = _as_numeric_vector(source, name="source")
     target_scores = _as_numeric_vector(target, name="target")
     labels = np.concatenate(
@@ -129,12 +132,21 @@ def _build_two_sample_dataset(
         )
     )
     scores = np.concatenate((source_scores, target_scores))
-    return _TwoSampleDataset(
-        labels=labels,
-        scores=scores,
+    validated_direction = None
+    if direction is not None:
+        validated_direction = _validate_direction(direction)
+        if validated_direction == "higher-is-better":
+            scores = -scores
+    sample_weight = _combine_importance_weights(
+        weights,
         n_source=int(source_scores.shape[0]),
         n_target=int(target_scores.shape[0]),
     )
+    return _PreparedTwoSampleTest(
+        labels=labels,
+        scores=scores,
+        sample_weight=sample_weight,
+    ), validated_direction
 
 
 def _validate_direction(direction: str) -> Direction:
@@ -330,25 +342,6 @@ def _validate_shift_scores(statistic_name: str, predicted: NDArray) -> None:
         )
 
 
-def _prepare_harm_detection(
-    source: ArrayLike,
-    target: ArrayLike,
-    direction: Direction,
-    weights: ImportanceWeights | None,
-) -> tuple[NDArray[np.int_], NDArray, Direction, NDArray | None]:
-    dataset = _build_two_sample_dataset(source, target)
-    actual, predicted = dataset.labels, dataset.scores
-    validated_direction = _validate_direction(direction)
-    if validated_direction == "higher-is-better":
-        predicted = -predicted
-    combined_weights = _combine_importance_weights(
-        weights,
-        n_source=dataset.n_source,
-        n_target=dataset.n_target,
-    )
-    return actual, predicted, validated_direction, combined_weights
-
-
 def _resolve_posterior_threshold(
     *,
     include_posterior: bool,
@@ -378,22 +371,16 @@ def detect_shift(
     weights: ImportanceWeights | None = None,
 ) -> ShiftResult:
     """Detect whether Source and Target Outlier score distributions differ."""
-    dataset = _build_two_sample_dataset(source, target)
-    actual, predicted = dataset.labels, dataset.scores
+    prepared, _ = _prepare_two_sample_test(source, target, weights=weights)
     statistic_name, metric = _get_shift_statistic(statistic)
-    _validate_shift_scores(statistic_name, predicted)
-    combined_weights = _combine_importance_weights(
-        weights,
-        n_source=dataset.n_source,
-        n_target=dataset.n_target,
-    )
+    _validate_shift_scores(statistic_name, prepared.scores)
     result = _run_permutation_test(
-        actual,
-        predicted,
+        prepared.labels,
+        prepared.scores,
         metric,
         n_resamples=n_resamples,
         alternative=alternative,
-        sample_weight=combined_weights,
+        sample_weight=prepared.sample_weight,
         rng=_resolve_random_state(random_state),
         batch=batch,
     )
@@ -418,20 +405,24 @@ def detect_harm(
     threshold: float | None = None,
 ) -> HarmResult:
     """Detect whether Target is harmfully shifted relative to Source."""
-    actual, predicted, validated_direction, combined_weights = _prepare_harm_detection(
-        source, target, direction, weights
+    prepared, validated_direction = _prepare_two_sample_test(
+        source,
+        target,
+        weights=weights,
+        direction=direction,
     )
+    assert validated_direction is not None
     posterior_threshold = _resolve_posterior_threshold(
         include_posterior=include_posterior,
         threshold=threshold,
     )
     result = _run_permutation_test(
-        actual,
-        predicted,
+        prepared.labels,
+        prepared.scores,
         _wauc,
         n_resamples=n_resamples,
         alternative="greater",
-        sample_weight=combined_weights,
+        sample_weight=prepared.sample_weight,
         rng=_resolve_random_state(random_state),
         batch=batch,
     )
@@ -440,12 +431,12 @@ def detect_harm(
     if include_posterior:
         posterior = np.asarray(
             _bayesian_posterior(
-                actual,
-                predicted,
+                prepared.labels,
+                prepared.scores,
                 _wauc,
                 n_resamples=n_resamples,
                 rng=_resolve_random_state(random_state),
-                base_weight=combined_weights,
+                base_weight=prepared.sample_weight,
             ),
             dtype=np.float64,
         )

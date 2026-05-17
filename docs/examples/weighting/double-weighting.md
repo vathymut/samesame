@@ -141,4 +141,4 @@ For the mathematical relationship between `lambda_` and weight magnitude, see
   — the simpler alternative when only the source has outliers.
 - [Why importance weights stabilise shift detection](../../explanation/importance-weights-rationale.md)
   — RIW formulas and the three-mode decision guide.
-- [Weighting strategies](../../api/weighting.md) — full `from_domain_probabilities` API reference.
+- [Weights](../../api/weighting.md) — full `from_domain_probabilities` API reference.

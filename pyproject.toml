@@ -1,7 +1,7 @@
 [project]
 name = "samesame"
 version = "0.3.1"
-description = "Statistical tests for model monitoring, data validation, and drift detection."
+description = "Low-level statistical tests for comparing source and target score distributions."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = ["numpy >= 1.21", "scipy >= 1.15", "scikit-learn"]

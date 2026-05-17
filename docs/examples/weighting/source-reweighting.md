@@ -153,4 +153,4 @@ low-overlap source regions. If both are significant, the harmful shift persists 
   — when deployment also contains outliers foreign to training.
 - [Why importance weights stabilise shift detection](../../explanation/importance-weights-rationale.md)
   — conceptual background on RIW and `lambda_`.
-- [Weighting strategies](../../api/weighting.md) — full API reference for `from_domain_probabilities`.
+- [Weights](../../api/weighting.md) — full API reference for `from_domain_probabilities`.

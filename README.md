@@ -15,7 +15,10 @@
 
 > Same, same but different ...
 
-`samesame` helps you compare a source sample with a target sample.
+`samesame` is a low-level Python package for comparing a source sample with a target sample.
+The package starts at the score-comparison seam: you bring one numeric score per row, and
+`samesame` owns the statistical testing and weighting.
+
 The **source** is your reference - typically training data or an earlier time period.
 The **target** is what you're comparing against - typically production data or a later period.
 
@@ -24,11 +27,13 @@ It answers two practical questions:
 - Did anything change? Use `ss.shift.detect_shift(...)`.
 - Did things get worse? Use `ss.shift.detect_harm(...)`.
 
-Use it for model monitoring, data validation, shift assessment, or any workflow where you need to compare two groups and determine whether the difference is practically important.
+End-to-end workflows such as model monitoring, data validation, and shift assessment live in the
+tutorials and how-to guides as example-owned adapters around this low-level seam.
 
 ## Who is this for?
 
-`samesame` is useful whenever you need to compare a source group and a target group, for example:
+`samesame` is a good fit when you already have one score per row for a source group and a target
+group, for example:
 
 - **Model monitoring** - Does production data still look like training data?
 - **Data validation** - Does this new batch look like the data I expect?
@@ -45,7 +50,10 @@ python -m pip install samesame
 
 Suppose you already have one score per row for a source sample and a target sample.
 Larger scores should indicate either worse outcomes or unusual ones.
-The score usually comes from a (pre-trained) model. For example, you might train a classifier to distinguish between the source and target data, then use the predicted probabilities as scores. Or you might use a model's confidence or prediction errors as scores. The choice of score depends on your application and what kind of shift you want to detect.
+The score usually comes from your own adapter. For example, you might train a classifier to
+distinguish Source from Target and use the predicted probabilities as scores, or use a model's
+confidence or prediction errors as scores. The choice of score depends on your application and what
+kind of shift you want to detect.
 
 ```python
 import numpy as np
@@ -72,9 +80,10 @@ If the first is small and the second is large, the data changed but not in a cle
 
 ## How it works
 
-`samesame` does not compare raw tables directly. The usual workflow is:
+`samesame` does not compare raw tables directly and does not fit a domain classifier for you.
+The usual workflow is:
 
-1. Turn each row into one score - typically from a classifier trained to distinguish the two groups.
+1. Build one score per row in your own adapter.
 2. Compare those scores with `ss.shift.detect_shift(...)` (did anything change?) and `ss.shift.detect_harm(...)` (did it get worse?).
 
 Both tests are **permutation-based**, so no distributional assumptions are required.
@@ -82,6 +91,9 @@ Both tests are **permutation-based**, so no distributional assumptions are requi
 When you know that source and target have different feature distributions - covariate shift -
 you can supply sample importance weights to focus the test on the region where both groups
 overlap. See [Adjust for covariate shift with importance weights](examples/tutorials/adjust-for-covariate-shift.md).
+
+If you want end-to-end monitoring workflows, use the tutorials and how-to guides. They are examples
+built on top of the low-level `shift` and `weights` Modules rather than extra package layers.
 
 ## Where to go next
 

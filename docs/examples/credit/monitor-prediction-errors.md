@@ -193,9 +193,10 @@ sets are comparable, and the test correctly finds no evidence of adverse shift.
 ## Why both scores give the same test statistic
 
 `ss.shift.detect_harm` uses a **rank-based statistic**: it compares how the two samples rank
-together, not their raw values. For a given label $y$, both Brier score and log-loss are monotone
-functions of the predicted probability $\hat{p}$, so their rankings across rows are identical.
-The test statistic is therefore the same.
+together, not their raw values. For a fixed label $y$, both Brier score and log-loss are monotone
+functions of the predicted probability $\hat{p}$, so they induce the same ordering within that label.
+On this HELOC split, that is enough to make the reported test statistic the same. On a different
+mixture of labels or with more ties, the two statistics can diverge slightly.
 
 The choice between the two scores is a matter of interpretation:
 

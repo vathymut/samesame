@@ -68,7 +68,6 @@ This guide uses the same HELOC dataset and split as the [credit risk how-to](mon
 import re
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.special import logit
 from sklearn.datasets import fetch_openml
 from sklearn.ensemble import RandomForestClassifier
 import samesame as ss
@@ -111,8 +110,8 @@ rf_bad.fit(X_train, bad_train)
 ## Step 2 — Build a Logit-derived Outlier score
 
 `RandomForestClassifier` does not expose native logits. In this example, we build a
-**Logit-derived Outlier score** by applying `scipy.special.logit` to clipped class probabilities,
-then computing `LogitGap` locally.
+**Logit-derived Outlier score** from class probabilities using a guide-owned helper Module.
+This is the exact code path exercised by the regression test for this guide.
 
 We use:
 
@@ -120,22 +119,15 @@ We use:
 - **Standard predictions** for the deployment set
 
 ```python
-def logit_gap(logits: np.ndarray) -> np.ndarray:
-    logits = np.asarray(logits, dtype=float)
-    max_logits = np.max(logits, axis=1)
-    mean_rest = (np.sum(logits, axis=1) - max_logits) / (logits.shape[1] - 1)
-    return max_logits - mean_rest
+--8<-- "_code/monitor_model_confidence_example.py:imports"
+--8<-- "_code/monitor_model_confidence_example.py:logit-gap"
+--8<-- "_code/monitor_model_confidence_example.py:outlier-scores"
 
+train_probs = rf_bad.oob_decision_function_
+deployment_probs = rf_bad.predict_proba(X_deployment)
 
-# Clip probabilities to avoid infinite logits at 0 or 1
-train_probs = np.clip(rf_bad.oob_decision_function_, 1e-6, 1 - 1e-6)
-deployment_probs = np.clip(rf_bad.predict_proba(X_deployment), 1e-6, 1 - 1e-6)
-
-train_logits = logit(train_probs)
-deployment_logits = logit(deployment_probs)
-
-train_outlier_scores = logit_gap(train_logits)
-deployment_outlier_scores = logit_gap(deployment_logits)
+train_outlier_scores = outlier_scores_from_probabilities(train_probs)
+deployment_outlier_scores = outlier_scores_from_probabilities(deployment_probs)
 
 print(f"Training mean LogitGap:   {train_outlier_scores.mean():.3f}")
 print(f"Deployment mean LogitGap: {deployment_outlier_scores.mean():.3f}")
@@ -183,6 +175,9 @@ deployment Outlier scores are higher than the training Outlier scores.
 
 Higher LogitGap means **higher confidence**, which is better. We express that directly with
 `direction="higher-is-better"` instead of negating the values manually.
+
+This is the handoff from the guide's training and deployment language to the package's
+Source and Target seam.
 
 ```python
 source_scores = train_outlier_scores

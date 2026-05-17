@@ -105,7 +105,7 @@ rf_domain = RandomForestClassifier(
     min_samples_leaf=10,
 )
 rf_domain.fit(X_concat, split)
-oob_scores = rf_domain.oob_decision_function_[:, 1]  # P(deployment)
+  oob_scores = rf_domain.oob_decision_function_[:, 1]  # P(deployment)
 
 # Run the shift test
 shift = ss.shift.detect_shift(
@@ -133,11 +133,11 @@ Feature importances from the same classifier tell you which features differ most
 the two populations:
 
 ```python
-feat_imp = (
-    pd.Series(rf_domain.feature_importances_, index=X_concat.columns)
-    .sort_values(ascending=False)
-)
 print("Top 5 features driving the shift:")
+feat_imp = (
+  pd.Series(rf_domain.feature_importances_, index=X_concat.columns)
+  .sort_values(ascending=False)
+)
 print(feat_imp.head(5))
 ```
 

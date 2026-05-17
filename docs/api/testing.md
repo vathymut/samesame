@@ -2,7 +2,9 @@
 
 Use this page for the two primary user-facing calls:
 `shift.detect_shift(...)` and `shift.detect_harm(...)`.
-Start here if you are new to the package or want the simplest API surface.
+This is the low-level testing Module: it assumes you already have one score array for Source and one
+for Target. Score construction, domain classifiers, and end-to-end monitoring adapters live in the
+examples, not in this Module.
 
 ## What you get back
 
