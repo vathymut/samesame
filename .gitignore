@@ -22,7 +22,6 @@ __pycache__/*
 .idea
 .vscode
 .pypirc
-.github
 tags
 
 # Package files
