@@ -9,7 +9,7 @@
 import numpy as np
 import pytest
 
-from samesame.weights import from_domain_probabilities
+from samesame.weights import ImportanceWeights, from_domain_probabilities
 
 # ---------------------------------------------------------------------------
 # Numerical correctness — source mode
@@ -125,6 +125,29 @@ def test_invalid_domain_prob_at_one():
         )
 
 
+@pytest.mark.parametrize(
+    "source_prob",
+    [
+        np.array([0.5, np.nan]),
+        np.array([0.5, np.inf]),
+    ],
+)
+def test_invalid_domain_prob_non_finite(source_prob):
+    with pytest.raises(ValueError, match="finite"):
+        from_domain_probabilities(
+            source_prob=source_prob,
+            target_prob=np.array([0.5, 0.5]),
+        )
+
+
+def test_domain_probabilities_must_be_one_dimensional():
+    with pytest.raises(ValueError, match="source_prob must be one-dimensional"):
+        from_domain_probabilities(
+            source_prob=np.array([[0.25, 0.4]]),
+            target_prob=np.array([0.5, 0.5]),
+        )
+
+
 # ---------------------------------------------------------------------------
 # ValueError: invalid lambda_
 # ---------------------------------------------------------------------------
@@ -138,6 +161,16 @@ def test_invalid_lambda_too_low(domain_probabilities):
 def test_invalid_lambda_too_high(domain_probabilities):
     with pytest.raises(ValueError, match="lambda_ must be in"):
         from_domain_probabilities(**domain_probabilities, lambda_=1.1)
+
+
+def test_invalid_lambda_nan(domain_probabilities):
+    with pytest.raises(ValueError, match="lambda_ must be in"):
+        from_domain_probabilities(**domain_probabilities, lambda_=np.nan)
+
+
+def test_importance_weights_validate_values_on_construction():
+    with pytest.raises(ValueError, match="weights.source must contain only finite"):
+        ImportanceWeights(source=np.array([1.0, np.nan]), target=np.ones(2))
 
 
 # ---------------------------------------------------------------------------
@@ -210,3 +243,90 @@ def test_output_shape_and_dtype(domain_probabilities):
     assert result.target.shape == (2,)
     assert result.source.dtype == np.float64
     assert result.target.dtype == np.float64
+
+
+# ---------------------------------------------------------------------------
+# Effective sample size
+# ---------------------------------------------------------------------------
+
+
+def test_ess_uniform_weights_equals_sample_size():
+    """Uniform weights give ESS equal to sample size for each group."""
+    weights = ImportanceWeights(source=np.ones(5), target=np.ones(3))
+    ess = weights.effective_sample_size()
+    assert np.isclose(ess["source"], 5.0)
+    assert np.isclose(ess["target"], 3.0)
+
+
+def test_ess_concentrated_weights_approaches_one():
+    """Fully concentrated weights give ESS = 1."""
+    weights = ImportanceWeights(source=np.array([2.0, 0.0]), target=np.array([3.0, 0.0, 0.0]))
+    ess = weights.effective_sample_size()
+    assert np.isclose(ess["source"], 1.0)
+    assert np.isclose(ess["target"], 1.0)
+
+
+def test_ess_single_element_is_one():
+    """Single-element arrays have ESS = 1."""
+    weights = ImportanceWeights(source=np.array([1.0]), target=np.array([1.0]))
+    ess = weights.effective_sample_size()
+    assert np.isclose(ess["source"], 1.0)
+    assert np.isclose(ess["target"], 1.0)
+
+
+def test_ess_source_mode_known_values(domain_probabilities):
+    """Source mode with known probabilities gives expected ESS values."""
+    result = from_domain_probabilities(**domain_probabilities, mode="source")
+    ess = result.effective_sample_size()
+    # source weights [10/13, 16/13] -> ESS ≈ 1.8989
+    assert np.isclose(ess["source"], 1.8989, atol=1e-4)
+    # target weights [1, 1] -> ESS = 2
+    assert np.isclose(ess["target"], 2.0)
+
+
+def test_ess_both_mode_known_values(domain_probabilities):
+    """Both mode with known probabilities gives expected ESS values."""
+    result = from_domain_probabilities(**domain_probabilities, mode="both")
+    ess = result.effective_sample_size()
+    # Both groups have weights [10/13, 16/13] and [16/13, 10/13]
+    # Both should have ESS ≈ 1.8989
+    assert np.isclose(ess["source"], 1.8989, atol=1e-4)
+    assert np.isclose(ess["target"], 1.8989, atol=1e-4)
+
+
+def test_ess_lambda_one_gives_sample_size(domain_probabilities):
+    """lambda_=1.0 gives uniform weights, so ESS equals sample size."""
+    result = from_domain_probabilities(**domain_probabilities, mode="both", lambda_=1.0)
+    ess = result.effective_sample_size()
+    assert np.isclose(ess["source"], 2.0)
+    assert np.isclose(ess["target"], 2.0)
+
+
+def test_ess_returns_dict_with_source_and_target_keys(domain_probabilities):
+    """ESS returns dict with exactly 'source' and 'target' keys."""
+    result = from_domain_probabilities(**domain_probabilities)
+    ess = result.effective_sample_size()
+    assert isinstance(ess, dict)
+    assert set(ess.keys()) == {"source", "target"}
+    assert isinstance(ess["source"], float)
+    assert isinstance(ess["target"], float)
+
+
+def test_ess_values_are_positive_and_finite(domain_probabilities):
+    """ESS values are always positive and finite."""
+    result = from_domain_probabilities(**domain_probabilities, mode="both")
+    ess = result.effective_sample_size()
+    assert ess["source"] > 0
+    assert ess["target"] > 0
+    assert np.isfinite(ess["source"])
+    assert np.isfinite(ess["target"])
+
+
+def test_ess_alias_returns_same_as_effective_sample_size(domain_probabilities):
+    """The .ess() alias returns identical values to .effective_sample_size()."""
+    result = from_domain_probabilities(**domain_probabilities, mode="both")
+    ess1 = result.effective_sample_size()
+    ess2 = result.ess()
+    assert ess1 == ess2
+    assert ess1["source"] == ess2["source"]
+    assert ess1["target"] == ess2["target"]

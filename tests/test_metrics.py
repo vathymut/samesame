@@ -4,38 +4,14 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 #
-"""Harmful-shift metric behavior through the public shift seam."""
+"""Harmful-shift statistic behavior."""
 
 from __future__ import annotations
 
 import numpy as np
 import pytest
 
-from samesame import shift
-from samesame.weights import ImportanceWeights
-
-
-def _harmful_shift_statistic(
-    actual: np.ndarray,
-    predicted: np.ndarray,
-    *,
-    sample_weight: np.ndarray | None = None,
-) -> float:
-    weights = None
-    if sample_weight is not None:
-        weights = ImportanceWeights(
-            source=np.asarray(sample_weight[actual == 0], dtype=float),
-            target=np.asarray(sample_weight[actual == 1], dtype=float),
-        )
-    result = shift.detect_harm(
-        predicted[actual == 0],
-        predicted[actual == 1],
-        direction="higher-is-worse",
-        n_resamples=16,
-        random_state=0,
-        weights=weights,
-    )
-    return result.statistic
+from samesame._statistics import harmful_shift_statistic
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -66,19 +42,19 @@ def mixed() -> dict[str, np.ndarray]:
 
 
 def test_wauc_returns_float(mixed: dict[str, np.ndarray]) -> None:
-    result = _harmful_shift_statistic(**mixed)
+    result = harmful_shift_statistic(**mixed)
     assert isinstance(result, float)
 
 
 def test_wauc_result_bounded(mixed: dict[str, np.ndarray]) -> None:
-    result = _harmful_shift_statistic(**mixed)
+    result = harmful_shift_statistic(**mixed)
     assert 0.0 <= result <= 1.0
 
 
 def test_wauc_result_bounded_with_weights(mixed: dict[str, np.ndarray]) -> None:
     rng = np.random.default_rng(33)
     weights = rng.uniform(0.5, 2.0, len(mixed["actual"]))
-    result = _harmful_shift_statistic(**mixed, sample_weight=weights)
+    result = harmful_shift_statistic(**mixed, sample_weight=weights)
     assert 0.0 <= result <= 1.0
 
 
@@ -92,8 +68,8 @@ def test_wauc_harmful_shift_exceeds_reverse_shift(
 ) -> None:
     """WAUC is higher when target scores exceed source scores (harmful shift)
     than when source scores exceed target scores (reverse)."""
-    result_harm = _harmful_shift_statistic(**separated)
-    result_reverse = _harmful_shift_statistic(
+    result_harm = harmful_shift_statistic(**separated)
+    result_reverse = harmful_shift_statistic(
         separated["actual"],
         1.0 - separated["predicted"],
     )
@@ -102,8 +78,8 @@ def test_wauc_harmful_shift_exceeds_reverse_shift(
 
 def test_wauc_sensitive_to_shift_direction(mixed: dict[str, np.ndarray]) -> None:
     """Harmfully shifted data (target higher) yields higher WAUC than reversed."""
-    result_harm = _harmful_shift_statistic(**mixed)
-    result_reverse = _harmful_shift_statistic(mixed["actual"], 1.0 - mixed["predicted"])
+    result_harm = harmful_shift_statistic(**mixed)
+    result_reverse = harmful_shift_statistic(mixed["actual"], 1.0 - mixed["predicted"])
     assert result_harm > result_reverse
 
 
@@ -114,9 +90,9 @@ def test_wauc_sensitive_to_shift_direction(mixed: dict[str, np.ndarray]) -> None
 
 def test_wauc_uniform_weights_match_unweighted(mixed: dict[str, np.ndarray]) -> None:
     """Uniform sample_weight must produce the same result as no weights."""
-    unweighted = _harmful_shift_statistic(**mixed)
+    unweighted = harmful_shift_statistic(**mixed)
     uniform = np.ones(len(mixed["actual"]), dtype=float)
-    weighted = _harmful_shift_statistic(**mixed, sample_weight=uniform)
+    weighted = harmful_shift_statistic(**mixed, sample_weight=uniform)
     assert np.isclose(unweighted, weighted)
 
 
@@ -135,8 +111,8 @@ def test_wauc_asymmetric_negative_weights_change_result(
     weights_b = np.ones(n)
     weights_a[neg_by_score[:half]] = 5.0
     weights_b[neg_by_score[half:]] = 5.0
-    result_a = _harmful_shift_statistic(actual, predicted, sample_weight=weights_a)
-    result_b = _harmful_shift_statistic(actual, predicted, sample_weight=weights_b)
+    result_a = harmful_shift_statistic(actual, predicted, sample_weight=weights_a)
+    result_b = harmful_shift_statistic(actual, predicted, sample_weight=weights_b)
     assert not np.isclose(result_a, result_b)
 
 
@@ -154,6 +130,6 @@ def test_wauc_weights_affect_negative_class_ecdf(
     weights_base = np.ones(len(actual), dtype=float)
     weights_hard = weights_base.copy()
     weights_hard[hardest_neg] = 20.0
-    result_base = _harmful_shift_statistic(actual, predicted, sample_weight=weights_base)
-    result_hard = _harmful_shift_statistic(actual, predicted, sample_weight=weights_hard)
+    result_base = harmful_shift_statistic(actual, predicted, sample_weight=weights_base)
+    result_hard = harmful_shift_statistic(actual, predicted, sample_weight=weights_hard)
     assert not np.isclose(result_base, result_hard)

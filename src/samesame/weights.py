@@ -6,38 +6,28 @@ from dataclasses import dataclass
 from typing import Literal
 
 import numpy as np
-from numpy.typing import NDArray
+from numpy.typing import ArrayLike, NDArray
 
 WeightingMode = Literal["source", "target", "both"]
 
 
-def density_ratio(
-    domain_prob: NDArray,
+def _density_ratio(
+    domain_prob: ArrayLike,
     *,
     group_balance: float,
 ) -> NDArray[np.float64]:
-    probs = np.asarray(domain_prob, dtype=np.float64)
-    if np.any(probs <= 0.0) or np.any(probs >= 1.0):
-        raise ValueError("domain probabilities must be in the open interval (0, 1).")
+    probs = _as_probability_vector(domain_prob, name="domain_prob")
     if not np.isfinite(group_balance) or group_balance <= 0.0:
         raise ValueError("group_balance must be finite and > 0.")
     return (probs / (1.0 - probs)) * group_balance
 
 
-def riw(density_ratio_values: NDArray, *, lam: float) -> NDArray[np.float64]:
+def _riw(density_ratio_values: NDArray, *, lam: float) -> NDArray[np.float64]:
     return density_ratio_values / ((1.0 - lam) + lam * density_ratio_values)
 
 
-def inverse_riw(density_ratio_values: NDArray, *, lam: float) -> NDArray[np.float64]:
+def _inverse_riw(density_ratio_values: NDArray, *, lam: float) -> NDArray[np.float64]:
     return 1.0 / (lam + (1.0 - lam) * density_ratio_values)
-
-
-def validate_mode(mode: str) -> WeightingMode:
-    valid: tuple[WeightingMode, ...] = ("source", "target", "both")
-    if mode not in valid:
-        listed = ", ".join(repr(value) for value in valid)
-        raise ValueError(f"mode must be one of {listed}.")
-    return mode  # type: ignore[return-value]
 
 
 @dataclass(frozen=True)
@@ -57,11 +47,152 @@ class ImportanceWeights:
     source: NDArray[np.float64]
     target: NDArray[np.float64]
 
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "source",
+            _as_group_weight_array(self.source, name="weights.source"),
+        )
+        object.__setattr__(
+            self,
+            "target",
+            _as_group_weight_array(self.target, name="weights.target"),
+        )
+
+    def _as_sample_weight(self, *, n_source: int, n_target: int) -> NDArray[np.float64]:
+        source_weight = _validate_and_normalize_group_weights(
+            self.source,
+            expected_size=n_source,
+            name="weights.source",
+        )
+        target_weight = _validate_and_normalize_group_weights(
+            self.target,
+            expected_size=n_target,
+            name="weights.target",
+        )
+        return np.concatenate([source_weight, target_weight])
+
+    def effective_sample_size(self) -> dict[str, float]:
+        """Compute effective sample size for source and target weights.
+
+        Returns Kish's effective sample size (ESS) for each group, quantifying
+        the degree of weight concentration. Lower ESS indicates that fewer
+        observations dominate the weighted comparison.
+
+        The formula is ``(Σw)² / Σw²``, applied separately to source and target
+        weights. For uniform weights, ESS equals the sample size; for highly
+        concentrated weights, ESS approaches 1.
+
+        Returns
+        -------
+        dict[str, float]
+            Dictionary with keys ``"source"`` and ``"target"``, each containing
+            the effective sample size for that group.
+
+        References
+        ----------
+        Kish, L. (1965). Survey Sampling. John Wiley & Sons.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> from samesame.weights import from_domain_probabilities
+        >>> source_prob = np.array([0.25, 0.4])
+        >>> target_prob = np.array([0.6, 0.75])
+        >>> weights = from_domain_probabilities(
+        ...     source_prob=source_prob,
+        ...     target_prob=target_prob,
+        ...     mode="both"
+        ... )
+        >>> ess = weights.effective_sample_size()
+        >>> round(ess["source"], 4)
+        1.8989
+        >>> round(ess["target"], 4)
+        1.8989
+        """
+        source_sum = self.source.sum()
+        source_sum_sq = (self.source**2).sum()
+        source_ess = float(source_sum**2 / source_sum_sq)
+
+        target_sum = self.target.sum()
+        target_sum_sq = (self.target**2).sum()
+        target_ess = float(target_sum**2 / target_sum_sq)
+
+        return {"source": source_ess, "target": target_ess}
+
+    def ess(self) -> dict[str, float]:
+        """Alias for effective_sample_size().
+
+        See :meth:`effective_sample_size` for full documentation.
+
+        Returns
+        -------
+        dict[str, float]
+            Dictionary with keys ``"source"`` and ``"target"``, each containing
+            the effective sample size for that group.
+        """
+        return self.effective_sample_size()
+
+
+def _validate_and_normalize_group_weights(
+    sample_weight: ArrayLike,
+    *,
+    expected_size: int,
+    name: str,
+) -> NDArray[np.float64]:
+    weight = _as_group_weight_array(sample_weight, name=name)
+    if weight.shape[0] != expected_size:
+        raise ValueError(
+            f"{name} has wrong length: expected {expected_size}, got {weight.shape[0]}."
+        )
+    return weight / weight.sum() * expected_size
+
+
+def _as_group_weight_array(
+    sample_weight: ArrayLike, *, name: str
+) -> NDArray[np.float64]:
+    weight = np.asarray(sample_weight, dtype=np.float64)
+    if weight.ndim != 1:
+        raise ValueError(f"{name} must be one-dimensional.")
+    if not np.all(np.isfinite(weight)):
+        raise ValueError(f"{name} must contain only finite values (no NaN or inf).")
+    if np.any(weight < 0):
+        raise ValueError(f"{name} must not contain negative values.")
+    total = weight.sum()
+    if total == 0:
+        raise ValueError(f"{name} must not be all zero.")
+    return weight
+
+
+def _as_probability_vector(values: ArrayLike, *, name: str) -> NDArray[np.float64]:
+    probabilities = np.asarray(values, dtype=np.float64)
+    if not np.all(np.isfinite(probabilities)):
+        raise ValueError(
+            f"{name} domain probabilities must contain only finite values "
+            "(no NaN or inf)."
+        )
+    if probabilities.ndim != 1:
+        raise ValueError(f"{name} must be one-dimensional.")
+    if probabilities.size == 0:
+        raise ValueError(f"{name} must be non-empty.")
+    if np.any(probabilities <= 0.0) or np.any(probabilities >= 1.0):
+        raise ValueError(
+            f"{name} domain probabilities must be in the open interval (0, 1)."
+        )
+    return probabilities
+
+
+def _validate_lambda(lambda_: float) -> float:
+    lambda_value = float(lambda_)
+    if not np.isfinite(lambda_value) or lambda_value < 0.0 or lambda_value > 1.0:
+        raise ValueError("lambda_ must be in [0, 1] and finite.")
+    return lambda_value
+
 
 def from_domain_probabilities(
     *,
-    source_prob: NDArray,
-    target_prob: NDArray,
+    source_prob: ArrayLike,
+    target_prob: ArrayLike,
     mode: WeightingMode = "source",
     lambda_: float = 0.5,
 ) -> ImportanceWeights:
@@ -134,15 +265,13 @@ def from_domain_probabilities(
     >>> np.round(w2.target, 4)
     array([1.2308, 0.7692])
     """
-    source_prob = np.asarray(source_prob, dtype=np.float64)
-    target_prob = np.asarray(target_prob, dtype=np.float64)
+    source_prob = _as_probability_vector(source_prob, name="source_prob")
+    target_prob = _as_probability_vector(target_prob, name="target_prob")
     n_source = len(source_prob)
     n_target = len(target_prob)
-    if n_source == 0 or n_target == 0:
-        raise ValueError("source_prob and target_prob must both be non-empty.")
-    if lambda_ < 0.0 or lambda_ > 1.0:
-        raise ValueError("lambda_ must be in [0, 1].")
-    validate_mode(mode)
+    lambda_value = _validate_lambda(lambda_)
+    if mode not in ("source", "target", "both"):
+        raise ValueError(f"mode must be one of 'source', 'target', 'both'.")
 
     # Prior ratio: how much more likely a random draw is from source vs target.
     # Inferred from sample sizes rather than supplied explicitly.
@@ -150,8 +279,8 @@ def from_domain_probabilities(
 
     # Density ratio r(x) = p(target|x) / p(source|x), derived from the domain
     # classifier probability via Bayes' theorem with the inferred prior ratio.
-    source_dr = density_ratio(source_prob, group_balance=group_balance)
-    target_dr = density_ratio(target_prob, group_balance=group_balance)
+    source_dr = _density_ratio(source_prob, group_balance=group_balance)
+    target_dr = _density_ratio(target_prob, group_balance=group_balance)
 
     # Default: leave each group with unit weights (no reweighting).
     out_source = np.ones(n_source, dtype=np.float64)
@@ -159,13 +288,13 @@ def from_domain_probabilities(
 
     if mode in ("source", "both"):
         # RIW formula: r / ((1-λ) + λ·r) blends toward uniform as λ→1.
-        out_source = riw(source_dr, lam=lambda_)
+        out_source = _riw(source_dr, lam=lambda_value)
         # Normalize so source weights sum to n_source (preserves expected value).
         out_source = out_source * (n_source / out_source.sum())
 
     if mode in ("target", "both"):
         # Inverse RIW: 1 / (λ + (1-λ)·r) — maps target back to source density.
-        out_target = inverse_riw(target_dr, lam=lambda_)
+        out_target = _inverse_riw(target_dr, lam=lambda_value)
         # Normalize so target weights sum to n_target.
         out_target = out_target * (n_target / out_target.sum())
 

@@ -8,7 +8,7 @@ import pytest
 
 import samesame as ss
 from samesame import shift
-from samesame.shift import HarmResult, ShiftResult
+from samesame.shift import HarmResult, ShiftResult, BayesianHarmResult
 from samesame.weights import ImportanceWeights, from_domain_probabilities
 
 
@@ -143,6 +143,38 @@ def test_shift_supports_explicit_weights(
     assert base.statistic != weighted.statistic
 
 
+def test_shift_rejects_wrong_length_importance_weights(
+    shift_samples: dict[str, np.ndarray],
+) -> None:
+    source, target = shift_samples["source"], shift_samples["target"]
+    sample_weight = ImportanceWeights(
+        source=np.ones(len(source) - 1),
+        target=np.ones(len(target)),
+    )
+    with pytest.raises(ValueError, match="weights.source has wrong length"):
+        shift.detect_shift(**shift_samples, weights=sample_weight)
+
+
+def test_shift_rejects_invalid_importance_weight_values(
+    shift_samples: dict[str, np.ndarray],
+) -> None:
+    source, target = shift_samples["source"], shift_samples["target"]
+    with pytest.raises(ValueError, match="weights.target must contain only finite"):
+        sample_weight = ImportanceWeights(
+            source=np.ones(len(source)),
+            target=np.full(len(target), np.inf),
+        )
+        shift.detect_shift(**shift_samples, weights=sample_weight)
+
+
+def test_shift_rejects_non_finite_scores() -> None:
+    with pytest.raises(ValueError, match="source must contain only finite"):
+        shift.detect_shift(
+            source=np.array([0.1, np.nan, 0.3]),
+            target=np.array([0.4, 0.5, 0.6]),
+        )
+
+
 def test_shift_supports_contextual_weights(
     shift_samples: dict[str, np.ndarray],
 ) -> None:
@@ -159,7 +191,7 @@ def test_shift_supports_contextual_weights(
     assert base.statistic != contextual.statistic
 
 
-def test_detect_harm_omits_posterior_by_default(
+def test_detect_harm_has_no_posterior_fields(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
     result = shift.detect_harm(
@@ -169,27 +201,25 @@ def test_detect_harm_omits_posterior_by_default(
         random_state=0,
     )
     assert isinstance(result, HarmResult)
-    assert result.posterior is None
-    assert result.bayes_factor is None
+    assert not hasattr(result, "posterior")
+    assert not hasattr(result, "bayes_factor")
 
 
-def test_detect_harm_can_include_posterior(
+def test_detect_harm_bayesian_returns_bayesian_harm_result(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
-    result = shift.detect_harm(
+    result = shift.detect_harm_bayesian(
         **confidence_samples,
         direction="higher-is-better",
         n_resamples=64,
         random_state=42,
-        include_posterior=True,
     )
-    assert isinstance(result, HarmResult)
-    assert result.posterior is not None
+    assert isinstance(result, BayesianHarmResult)
     assert result.posterior.shape == (64,)
     assert isinstance(result.bayes_factor, float)
 
 
-def test_detect_harm_standard_fields_match_when_posterior_enabled(
+def test_detect_harm_bayesian_matches_detect_harm_statistic(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
     base = shift.detect_harm(
@@ -198,27 +228,26 @@ def test_detect_harm_standard_fields_match_when_posterior_enabled(
         n_resamples=64,
         random_state=42,
     )
-    enriched = shift.detect_harm(
+    with_bayes = shift.detect_harm_bayesian(
         **confidence_samples,
         direction="higher-is-better",
         n_resamples=64,
         random_state=42,
-        include_posterior=True,
     )
-    assert np.isclose(base.statistic, enriched.statistic)
-    assert np.isclose(base.pvalue, enriched.pvalue)
-    assert base.direction == enriched.direction
-    assert np.allclose(base.null_distribution, enriched.null_distribution)
+    assert np.isclose(base.statistic, with_bayes.statistic)
+    assert np.isclose(base.pvalue, with_bayes.pvalue)
+    assert base.direction == with_bayes.direction
+    assert np.allclose(base.null_distribution, with_bayes.null_distribution)
 
 
-def test_detect_harm_rejects_threshold_without_posterior(
+def test_detect_harm_bayesian_rejects_non_finite_threshold(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
-    with pytest.raises(ValueError, match="include_posterior=True"):
-        shift.detect_harm(
+    with pytest.raises(ValueError, match="threshold must be finite"):
+        shift.detect_harm_bayesian(
             **confidence_samples,
             direction="higher-is-better",
-            threshold=0.2,
+            threshold=float("inf"),
         )
 
 

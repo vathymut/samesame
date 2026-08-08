@@ -73,5 +73,3 @@ print(f"Bayes factor: {result.bayes_factor:.2f}")
 ::: samesame.shift.ShiftResult
 
 ::: samesame.shift.HarmResult
-
-::: samesame.shift.TestResult
