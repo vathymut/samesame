@@ -143,4 +143,4 @@ def _as_numeric_vector(values: ArrayLike, *, name: str) -> NDArray:
         raise ValueError(f"{name} must be a one-dimensional numeric array.")
     if not np.all(np.isfinite(vector)):
         raise ValueError(f"{name} must contain only finite values (no NaN or inf).")
-    return np.asarray(vector)
+    return vector
