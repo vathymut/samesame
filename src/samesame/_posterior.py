@@ -21,14 +21,17 @@ def compute_posterior_evidence(
     base_weight: NDArray[np.float64] | None = None,
 ) -> tuple[NDArray[np.float64], float]:
     """Compute Bayesian posterior and Bayes factor."""
+    def statistic(sample_weight: NDArray[np.float64]) -> float:
+        if base_weight is not None:
+            sample_weight = sample_weight * base_weight
+        return float(metric(actual, predicted, sample_weight=sample_weight))
+
     posterior = np.asarray(
-        _bayesian_posterior(
-            actual,
-            predicted,
-            metric,
+        _bayesian_bootstrap(
+            statistic,
+            len(actual),
             n_resamples=n_resamples,
             rng=rng,
-            base_weight=base_weight,
         ),
         dtype=np.float64,
     )
@@ -53,28 +56,6 @@ def _bayesian_bootstrap(
     for idx in range(n_resamples):
         draws[idx] = statistic(_draw_uniform_dirichlet(n_obs, rng))
     return draws
-
-
-def _bayesian_posterior(
-    actual: NDArray[np.int_],
-    predicted: NDArray,
-    metric: Callable[..., float],
-    *,
-    n_resamples: int,
-    rng: RandomNumberGenerator,
-    base_weight: NDArray[np.float64] | None = None,
-) -> NDArray[np.float64]:
-    def statistic(sample_weight: NDArray[np.float64]) -> float:
-        if base_weight is not None:
-            sample_weight = sample_weight * base_weight
-        return float(metric(actual, predicted, sample_weight=sample_weight))
-
-    return _bayesian_bootstrap(
-        statistic,
-        len(actual),
-        n_resamples=n_resamples,
-        rng=rng,
-    )
 
 
 def _bayes_factor(posterior: NDArray[np.float64], threshold: float) -> float:
