@@ -197,9 +197,10 @@ def _validate_lambda(lambda_: float) -> float:
 
 
 def _validate_mode(mode: str) -> WeightingMode:
-    if mode not in ("source", "target", "both"):
-        raise ValueError("mode must be one of 'source', 'target', 'both'.")
-    return mode
+    match mode:
+        case "source" | "target" | "both":
+            return mode
+    raise ValueError("mode must be one of 'source', 'target', 'both'.")
 
 
 def from_domain_probabilities(

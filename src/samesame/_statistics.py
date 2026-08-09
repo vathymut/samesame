@@ -41,7 +41,7 @@ def _weighted_ecdf(
     ------
     ValueError
         If ``x`` or ``freq_weights`` is not one-dimensional, weights have the
-        wrong length, are negative, or sum to zero.
+        wrong length, are not finite, are negative, or sum to zero.
     """
     x = np.asarray(x)
     if x.ndim != 1:
@@ -50,6 +50,10 @@ def _weighted_ecdf(
         freq_weights = np.asarray(freq_weights)
         if freq_weights.ndim != 1:
             raise ValueError("freq_weights must be one-dimensional.")
+        if not np.all(np.isfinite(freq_weights)):
+            raise ValueError(
+                "freq_weights must contain only finite values (no NaN or inf)."
+            )
         if len(freq_weights) != len(x):
             raise ValueError("freq_weights must have the same length as x.")
         if np.any(freq_weights < 0):

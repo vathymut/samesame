@@ -258,6 +258,15 @@ def test_ess_uniform_weights_equals_sample_size():
     assert np.isclose(ess["target"], 3.0)
 
 
+def test_weights_normalized_to_sample_size_at_construction():
+    """Non-unit-scale weights are normalized at construction."""
+    weights = ImportanceWeights(
+        source=np.array([3.0, 1.0]), target=np.array([2.0, 2.0, 4.0])
+    )
+    assert np.allclose(weights.source, [1.5, 0.5])
+    assert np.allclose(weights.target, [0.75, 0.75, 1.5])
+
+
 def test_ess_concentrated_weights_approaches_one():
     """Fully concentrated weights give ESS = 1."""
     weights = ImportanceWeights(

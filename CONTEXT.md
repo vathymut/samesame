@@ -1,13 +1,9 @@
 # samesame Package Context
 
-This context records the package-facing language and standing decisions for
-`samesame`.
+This context records the package-facing domain language for `samesame`.
 
 Use it when editing code, tests, docs, or examples under the supported package
 surface: `samesame.shift` and `samesame.weights`.
-
-For manuscript work under `research/papers/dw/`, use
-`research/papers/dw/CONTEXT.md`.
 
 ## Scope
 
@@ -25,9 +21,6 @@ distribution changes in ML deployments.
 - Randomized-experiment validation
 - Subgroup discovery or model-lift comparison
 - Sequential monitoring (time-series alarms)
-
-Keep out-of-scope work in sibling packages. Do not add `subgroup`,
-`model_selection`, or `sequential` namespaces to `samesame`.
 
 ## Audience
 
@@ -85,21 +78,13 @@ normalized so each group sums to its sample size.
 from a model. Used in examples (e.g., confidence monitoring). Avoid "anomaly
 score" or "OOD score" in package documentation.
 
-## API conventions
+### Term renames
 
-- **Keyword-only parameters**: All `from_domain_probabilities(...)` parameters
-  are keyword-only (no positional args after `*`).
-- **Return types**: Results are frozen dataclasses (`ShiftResult`, `HarmResult`,
-  `ImportanceWeights`), not dicts or tuples.
-- **Naming pattern**: Test functions use `statistic` for the numeric value and
-  `statistic_name` for the string identifier.
-- **Historical renames**: `alpha_blend` → `lambda_`; `balance` (removed,
-  inferred); `group`/`membership_prob` → `source_prob`/`target_prob`.
+The following terms were renamed; use the current names, not the historical
+ones: `alpha_blend` → `lambda_`; `balance` (removed, inferred from group sizes);
+`group`/`membership_prob` → `source_prob`/`target_prob`.
 
 ## Non-package guidance
 
 **Example-specific decisions** (e.g., `LogitGap` recipe, confidence monitoring
 workflow) live in `docs/how-to/` frontmatter or inline comments, not here.
-
-**Research code conventions** (e.g., `typer` CLIs, `polars` usage, `_dgp.py`
-module structure) belong in `research/papers/dw/CONTEXT.md`, not here.

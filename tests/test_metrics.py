@@ -167,3 +167,17 @@ def test_weighted_ecdf_rejects_wrong_length_freq_weights() -> None:
     x = np.array([0.1, 0.2, 0.3])
     with pytest.raises(ValueError, match="freq_weights must have the same length"):
         _weighted_ecdf(x, query=np.array([0.15]), freq_weights=np.ones(2))
+
+
+def test_weighted_ecdf_rejects_non_finite_freq_weights() -> None:
+    """The weighted ECDF raises on NaN or inf weights instead of returning NaN."""
+    from samesame._statistics import _weighted_ecdf
+
+    x = np.array([0.1, 0.2, 0.3])
+    for bad in (np.nan, np.inf):
+        with pytest.raises(ValueError, match="freq_weights must contain only finite"):
+            _weighted_ecdf(
+                x,
+                query=np.array([0.15]),
+                freq_weights=np.array([bad, 1.0, 1.0]),
+            )

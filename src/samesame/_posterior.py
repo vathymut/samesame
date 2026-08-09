@@ -7,7 +7,7 @@ from collections.abc import Callable
 import numpy as np
 from numpy.typing import NDArray
 
-RandomNumberGenerator = np.random.Generator | np.random.RandomState
+from samesame._comparison import RandomNumberGenerator
 
 
 def compute_posterior_evidence(

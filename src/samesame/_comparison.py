@@ -26,8 +26,8 @@ class PreparedTwoSampleTest:
 
 
 @dataclass(frozen=True)
-class PermutationTestResult:
-    """Raw permutation-test output shared by public result types."""
+class TestResult:
+    """Shared fields for all statistical test results."""
 
     statistic: float
     pvalue: float
@@ -73,7 +73,7 @@ def run_permutation_test(
     alternative: Literal["less", "greater", "two-sided"],
     rng: RandomNumberGenerator,
     sample_weight: NDArray[np.float64] | None = None,
-) -> PermutationTestResult:
+) -> TestResult:
     """Run a weighted two-sample permutation test on prepared arrays.
 
     Parameters
@@ -98,13 +98,16 @@ def run_permutation_test(
 
     Returns
     -------
-    PermutationTestResult
+    TestResult
         Observed statistic, p-value, and permutation null distribution.
 
     Raises
     ------
     ValueError
         If ``n_resamples`` or ``batch`` is not a positive integer.
+    ValueError
+        If ``alternative`` is not one of ``'less'``, ``'greater'``,
+        ``'two-sided'``.
     """
     if n_resamples < 1:
         raise ValueError("n_resamples must be a positive integer.")
@@ -123,7 +126,7 @@ def run_permutation_test(
         alternative=alternative,
         rng=rng,
     )
-    return PermutationTestResult(
+    return TestResult(
         statistic=float(result.statistic),
         pvalue=float(result.pvalue),
         null_distribution=np.asarray(result.null_distribution, dtype=np.float64),

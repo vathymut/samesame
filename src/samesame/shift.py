@@ -16,7 +16,13 @@ from sklearn.metrics import (
 )
 from sklearn.utils.multiclass import type_of_target
 
-from samesame._comparison import prepare_two_sample_test, run_permutation_test
+from samesame._comparison import (
+    PreparedTwoSampleTest,
+    RandomNumberGenerator,
+    TestResult,
+    prepare_two_sample_test,
+    run_permutation_test,
+)
 from samesame._posterior import compute_posterior_evidence
 from samesame._statistics import harmful_shift_statistic
 from samesame.weights import ImportanceWeights
@@ -24,15 +30,6 @@ from samesame.weights import ImportanceWeights
 Direction = Literal["higher-is-worse", "higher-is-better"]
 RandomState = int | np.random.RandomState | np.random.Generator | None
 ShiftStatistic = Literal["roc_auc", "balanced_accuracy", "matthews_corrcoef"]
-
-
-@dataclass(frozen=True)
-class TestResult:
-    """Shared fields for all statistical test results."""
-
-    statistic: float
-    pvalue: float
-    null_distribution: NDArray[np.float64]
 
 
 @dataclass(frozen=True)
@@ -57,6 +54,17 @@ class BayesianHarmResult(HarmResult):
     bayes_factor: float
 
 
+@dataclass(frozen=True)
+class _PreparedHarmTest:
+    """Prepared inputs and raw result for harmful-shift tests."""
+
+    prepared: PreparedTwoSampleTest
+    scores: NDArray
+    direction: Direction
+    result: TestResult
+    rng: RandomNumberGenerator
+
+
 _SHIFT_STATISTICS: dict[str, Callable[..., float]] = {
     "roc_auc": roc_auc_score,
     "balanced_accuracy": balanced_accuracy_score,
@@ -65,16 +73,15 @@ _SHIFT_STATISTICS: dict[str, Callable[..., float]] = {
 
 
 def _validate_direction(direction: str) -> Direction:
-    if direction not in ("higher-is-worse", "higher-is-better"):
-        raise ValueError(
-            "direction must be one of 'higher-is-worse' or 'higher-is-better'."
-        )
-    return direction
+    match direction:
+        case "higher-is-worse" | "higher-is-better":
+            return direction
+    raise ValueError(
+        "direction must be one of 'higher-is-worse' or 'higher-is-better'."
+    )
 
 
-def _resolve_random_state(
-    random_state: RandomState,
-) -> np.random.Generator | np.random.RandomState:
+def _resolve_random_state(random_state: RandomState) -> RandomNumberGenerator:
     if random_state is None:
         return np.random.default_rng()
     if isinstance(random_state, np.random.Generator | np.random.RandomState):
@@ -118,6 +125,40 @@ def _scores_for_direction(scores: NDArray, direction: Direction) -> NDArray:
     if direction == "higher-is-better":
         return -scores
     return scores
+
+
+def _run_harm_test(
+    source: ArrayLike,
+    target: ArrayLike,
+    *,
+    direction: Direction,
+    n_resamples: int,
+    batch: int | None,
+    random_state: RandomState,
+    weights: ImportanceWeights | None,
+) -> _PreparedHarmTest:
+    """Prepare arrays and run the harmful-shift permutation test."""
+    prepared = prepare_two_sample_test(source, target, weights=weights)
+    validated_direction = _validate_direction(direction)
+    scores = _scores_for_direction(prepared.scores, validated_direction)
+    rng = _resolve_random_state(random_state)
+    result = run_permutation_test(
+        prepared.labels,
+        scores,
+        harmful_shift_statistic,
+        n_resamples=n_resamples,
+        batch=batch,
+        alternative="greater",
+        rng=rng,
+        sample_weight=prepared.sample_weight,
+    )
+    return _PreparedHarmTest(
+        prepared=prepared,
+        scores=scores,
+        direction=validated_direction,
+        result=result,
+        rng=rng,
+    )
 
 
 def detect_shift(
@@ -229,24 +270,20 @@ def detect_harm(
     ValueError
         If ``direction`` is not one of the supported directions.
     """
-    prepared = prepare_two_sample_test(source, target, weights=weights)
-    validated_direction = _validate_direction(direction)
-    scores = _scores_for_direction(prepared.scores, validated_direction)
-    result = run_permutation_test(
-        prepared.labels,
-        scores,
-        harmful_shift_statistic,
+    prepared_test = _run_harm_test(
+        source,
+        target,
+        direction=direction,
         n_resamples=n_resamples,
         batch=batch,
-        alternative="greater",
-        rng=_resolve_random_state(random_state),
-        sample_weight=prepared.sample_weight,
+        random_state=random_state,
+        weights=weights,
     )
     return HarmResult(
-        statistic=result.statistic,
-        pvalue=result.pvalue,
-        direction=validated_direction,
-        null_distribution=result.null_distribution,
+        statistic=prepared_test.result.statistic,
+        pvalue=prepared_test.result.pvalue,
+        direction=prepared_test.direction,
+        null_distribution=prepared_test.result.null_distribution,
     )
 
 
@@ -299,35 +336,30 @@ def detect_harm_bayesian(
     ValueError
         If ``threshold`` is not finite.
     """
-    prepared = prepare_two_sample_test(source, target, weights=weights)
-    validated_direction = _validate_direction(direction)
-    scores = _scores_for_direction(prepared.scores, validated_direction)
-    resolved_threshold = _resolve_posterior_threshold(threshold)
-    rng = _resolve_random_state(random_state)
-    result = run_permutation_test(
-        prepared.labels,
-        scores,
-        harmful_shift_statistic,
+    prepared_test = _run_harm_test(
+        source,
+        target,
+        direction=direction,
         n_resamples=n_resamples,
         batch=batch,
-        alternative="greater",
-        rng=rng,
-        sample_weight=prepared.sample_weight,
+        random_state=random_state,
+        weights=weights,
     )
+    resolved_threshold = _resolve_posterior_threshold(threshold)
     posterior, bayes_factor = compute_posterior_evidence(
-        prepared.labels,
-        scores,
+        prepared_test.prepared.labels,
+        prepared_test.scores,
         harmful_shift_statistic,
         threshold=resolved_threshold,
         n_resamples=n_resamples,
-        rng=rng,
-        base_weight=prepared.sample_weight,
+        rng=prepared_test.rng,
+        base_weight=prepared_test.prepared.sample_weight,
     )
     return BayesianHarmResult(
-        statistic=result.statistic,
-        pvalue=result.pvalue,
-        direction=validated_direction,
-        null_distribution=result.null_distribution,
+        statistic=prepared_test.result.statistic,
+        pvalue=prepared_test.result.pvalue,
+        direction=prepared_test.direction,
+        null_distribution=prepared_test.result.null_distribution,
         posterior=posterior,
         bayes_factor=bayes_factor,
     )
