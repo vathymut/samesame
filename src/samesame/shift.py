@@ -127,6 +127,38 @@ def _scores_for_direction(scores: NDArray, direction: Direction) -> NDArray:
     return scores
 
 
+def _run_shift_test(
+    source: ArrayLike,
+    target: ArrayLike,
+    *,
+    metric: Callable[..., float],
+    transform: Callable[[NDArray], NDArray] | None,
+    alternative: Literal["less", "greater", "two-sided"],
+    n_resamples: int,
+    batch: int | None,
+    random_state: RandomState,
+    weights: ImportanceWeights | None,
+    validate: Callable[[PreparedTwoSampleTest], None] | None = None,
+) -> tuple[PreparedTwoSampleTest, NDArray, TestResult, RandomNumberGenerator]:
+    """Prepare arrays, resolve the RNG, and run the permutation test."""
+    prepared = prepare_two_sample_test(source, target, weights=weights)
+    if validate is not None:
+        validate(prepared)
+    scores = prepared.scores if transform is None else transform(prepared.scores)
+    rng = _resolve_random_state(random_state)
+    result = run_permutation_test(
+        prepared.labels,
+        scores,
+        metric,
+        n_resamples=n_resamples,
+        batch=batch,
+        alternative=alternative,
+        rng=rng,
+        sample_weight=prepared.sample_weight,
+    )
+    return prepared, scores, result, rng
+
+
 def _run_harm_test(
     source: ArrayLike,
     target: ArrayLike,
@@ -138,19 +170,17 @@ def _run_harm_test(
     weights: ImportanceWeights | None,
 ) -> _PreparedHarmTest:
     """Prepare arrays and run the harmful-shift permutation test."""
-    prepared = prepare_two_sample_test(source, target, weights=weights)
     validated_direction = _validate_direction(direction)
-    scores = _scores_for_direction(prepared.scores, validated_direction)
-    rng = _resolve_random_state(random_state)
-    result = run_permutation_test(
-        prepared.labels,
-        scores,
-        harmful_shift_statistic,
+    prepared, scores, result, rng = _run_shift_test(
+        source,
+        target,
+        metric=harmful_shift_statistic,
+        transform=lambda values: _scores_for_direction(values, validated_direction),
+        alternative="greater",
         n_resamples=n_resamples,
         batch=batch,
-        alternative="greater",
-        rng=rng,
-        sample_weight=prepared.sample_weight,
+        random_state=random_state,
+        weights=weights,
     )
     return _PreparedHarmTest(
         prepared=prepared,
@@ -207,18 +237,18 @@ def detect_shift(
     ValueError
         If ``statistic`` is not one of the supported statistics.
     """
-    prepared = prepare_two_sample_test(source, target, weights=weights)
     metric = _get_shift_statistic(statistic)
-    _validate_shift_scores(statistic, prepared.scores)
-    result = run_permutation_test(
-        prepared.labels,
-        prepared.scores,
-        metric,
+    _, _, result, _ = _run_shift_test(
+        source,
+        target,
+        metric=metric,
+        transform=None,
+        alternative=alternative,
         n_resamples=n_resamples,
         batch=batch,
-        alternative=alternative,
-        rng=_resolve_random_state(random_state),
-        sample_weight=prepared.sample_weight,
+        random_state=random_state,
+        weights=weights,
+        validate=lambda p: _validate_shift_scores(statistic, p.scores),
     )
     return ShiftResult(
         statistic=result.statistic,
