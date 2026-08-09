@@ -46,30 +46,25 @@ def _weighted_ecdf(
     x = np.asarray(x)
     if x.ndim != 1:
         raise ValueError("x must be one-dimensional.")
-    if freq_weights is not None:
-        freq_weights = np.asarray(freq_weights)
-        if freq_weights.ndim != 1:
-            raise ValueError("freq_weights must be one-dimensional.")
-        if not np.all(np.isfinite(freq_weights)):
-            raise ValueError(
-                "freq_weights must contain only finite values (no NaN or inf)."
-            )
-        if len(freq_weights) != len(x):
-            raise ValueError("freq_weights must have the same length as x.")
-        if np.any(freq_weights < 0):
-            raise ValueError("freq_weights must be non-negative.")
-        if freq_weights.sum() == 0:
-            raise ValueError("freq_weights must not be all zero.")
-        order = np.argsort(x)
-        x_sorted = x[order]
-        w_sorted = freq_weights[order]
-        x_unique, first = np.unique(x_sorted, return_index=True)
-        w_sum = np.add.reduceat(w_sorted, first)
-        y = np.cumsum(w_sum) / np.sum(w_sum)
-        x_nodes = x_unique
-    else:
-        x_nodes = np.sort(x)
-        y = np.linspace(1.0 / len(x_nodes), 1.0, len(x_nodes))
-    xs = np.r_[-np.inf, x_nodes]
+    if freq_weights is None:
+        freq_weights = np.ones(len(x))
+    freq_weights = np.asarray(freq_weights)
+    if freq_weights.ndim != 1:
+        raise ValueError("freq_weights must be one-dimensional.")
+    if not np.all(np.isfinite(freq_weights)):
+        raise ValueError(
+            "freq_weights must contain only finite values (no NaN or inf)."
+        )
+    if len(freq_weights) != len(x):
+        raise ValueError("freq_weights must have the same length as x.")
+    if np.any(freq_weights < 0):
+        raise ValueError("freq_weights must be non-negative.")
+    if freq_weights.sum() == 0:
+        raise ValueError("freq_weights must not be all zero.")
+    order = np.argsort(x)
+    x_unique, first = np.unique(x[order], return_index=True)
+    w_sum = np.add.reduceat(freq_weights[order], first)
+    y = np.cumsum(w_sum) / np.sum(w_sum)
+    xs = np.r_[-np.inf, x_unique]
     ys = np.r_[0.0, y]
     return ys[np.searchsorted(xs, query, "right") - 1]
