@@ -51,21 +51,21 @@ class ImportanceWeights:
         object.__setattr__(
             self,
             "source",
-            _as_group_weight_array(self.source, name="weights.source"),
+            _normalize_group_weights(self.source, name="weights.source"),
         )
         object.__setattr__(
             self,
             "target",
-            _as_group_weight_array(self.target, name="weights.target"),
+            _normalize_group_weights(self.target, name="weights.target"),
         )
 
     def _as_sample_weight(self, *, n_source: int, n_target: int) -> NDArray[np.float64]:
-        source_weight = _validate_and_normalize_group_weights(
+        source_weight = _check_group_weight_length(
             self.source,
             expected_size=n_source,
             name="weights.source",
         )
-        target_weight = _validate_and_normalize_group_weights(
+        target_weight = _check_group_weight_length(
             self.target,
             expected_size=n_target,
             name="weights.target",
@@ -134,18 +134,18 @@ class ImportanceWeights:
         return self.effective_sample_size()
 
 
-def _validate_and_normalize_group_weights(
-    sample_weight: ArrayLike,
+def _check_group_weight_length(
+    sample_weight: NDArray[np.float64],
     *,
     expected_size: int,
     name: str,
 ) -> NDArray[np.float64]:
-    weight = _as_group_weight_array(sample_weight, name=name)
-    if weight.shape[0] != expected_size:
+    if sample_weight.shape[0] != expected_size:
         raise ValueError(
-            f"{name} has wrong length: expected {expected_size}, got {weight.shape[0]}."
+            f"{name} has wrong length: expected {expected_size}, "
+            f"got {sample_weight.shape[0]}."
         )
-    return weight / weight.sum() * expected_size
+    return sample_weight
 
 
 def _as_group_weight_array(
@@ -162,6 +162,13 @@ def _as_group_weight_array(
     if total == 0:
         raise ValueError(f"{name} must not be all zero.")
     return weight
+
+
+def _normalize_group_weights(
+    sample_weight: ArrayLike, *, name: str
+) -> NDArray[np.float64]:
+    weight = _as_group_weight_array(sample_weight, name=name)
+    return weight / weight.sum() * len(weight)
 
 
 def _as_probability_vector(values: ArrayLike, *, name: str) -> NDArray[np.float64]:
@@ -187,6 +194,12 @@ def _validate_lambda(lambda_: float) -> float:
     if not np.isfinite(lambda_value) or lambda_value < 0.0 or lambda_value > 1.0:
         raise ValueError("lambda_ must be in [0, 1] and finite.")
     return lambda_value
+
+
+def _validate_mode(mode: str) -> WeightingMode:
+    if mode not in ("source", "target", "both"):
+        raise ValueError("mode must be one of 'source', 'target', 'both'.")
+    return mode
 
 
 def from_domain_probabilities(
@@ -270,33 +283,20 @@ def from_domain_probabilities(
     n_source = len(source_prob)
     n_target = len(target_prob)
     lambda_value = _validate_lambda(lambda_)
-    if mode not in ("source", "target", "both"):
-        raise ValueError(f"mode must be one of 'source', 'target', 'both'.")
+    validated_mode = _validate_mode(mode)
 
-    # Prior ratio: how much more likely a random draw is from source vs target.
-    # Inferred from sample sizes rather than supplied explicitly.
     group_balance = n_source / n_target
-
-    # Density ratio r(x) = p(target|x) / p(source|x), derived from the domain
-    # classifier probability via Bayes' theorem with the inferred prior ratio.
     source_dr = _density_ratio(source_prob, group_balance=group_balance)
     target_dr = _density_ratio(target_prob, group_balance=group_balance)
 
-    # Default: leave each group with unit weights (no reweighting).
     out_source = np.ones(n_source, dtype=np.float64)
     out_target = np.ones(n_target, dtype=np.float64)
 
-    if mode in ("source", "both"):
-        # RIW formula: r / ((1-λ) + λ·r) blends toward uniform as λ→1.
+    if validated_mode in ("source", "both"):
         out_source = _riw(source_dr, lam=lambda_value)
-        # Normalize so source weights sum to n_source (preserves expected value).
-        out_source = out_source * (n_source / out_source.sum())
 
-    if mode in ("target", "both"):
-        # Inverse RIW: 1 / (λ + (1-λ)·r) — maps target back to source density.
+    if validated_mode in ("target", "both"):
         out_target = _inverse_riw(target_dr, lam=lambda_value)
-        # Normalize so target weights sum to n_target.
-        out_target = out_target * (n_target / out_target.sum())
 
     return ImportanceWeights(source=out_source, target=out_target)
 

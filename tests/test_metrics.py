@@ -133,3 +133,37 @@ def test_wauc_weights_affect_negative_class_ecdf(
     result_base = harmful_shift_statistic(actual, predicted, sample_weight=weights_base)
     result_hard = harmful_shift_statistic(actual, predicted, sample_weight=weights_hard)
     assert not np.isclose(result_base, result_hard)
+
+
+# ---------------------------------------------------------------------------
+# Invalid weights
+# ---------------------------------------------------------------------------
+
+
+def test_wauc_rejects_all_zero_negative_class_weights(
+    mixed: dict[str, np.ndarray],
+) -> None:
+    """All-zero weights for the negative class raise instead of returning NaN."""
+    actual = mixed["actual"]
+    weights = np.ones(len(actual), dtype=float)
+    weights[actual == 0] = 0.0
+    with pytest.raises(ValueError, match="freq_weights must not be all zero"):
+        harmful_shift_statistic(actual, mixed["predicted"], sample_weight=weights)
+
+
+def test_wauc_rejects_negative_freq_weights(mixed: dict[str, np.ndarray]) -> None:
+    """Negative weights for the negative class raise explicitly."""
+    actual = mixed["actual"]
+    weights = np.ones(len(actual), dtype=float)
+    weights[actual == 0] = -1.0
+    with pytest.raises(ValueError, match="freq_weights must be non-negative"):
+        harmful_shift_statistic(actual, mixed["predicted"], sample_weight=weights)
+
+
+def test_weighted_ecdf_rejects_wrong_length_freq_weights() -> None:
+    """The weighted ECDF raises when frequencies do not match the data length."""
+    from samesame._statistics import _weighted_ecdf
+
+    x = np.array([0.1, 0.2, 0.3])
+    with pytest.raises(ValueError, match="freq_weights must have the same length"):
+        _weighted_ecdf(x, query=np.array([0.15]), freq_weights=np.ones(2))

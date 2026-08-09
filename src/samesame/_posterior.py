@@ -64,9 +64,6 @@ def _bayesian_posterior(
     rng: RandomNumberGenerator,
     base_weight: NDArray[np.float64] | None = None,
 ) -> NDArray[np.float64]:
-    if n_resamples < 1:
-        raise ValueError("n_resamples must be a positive integer.")
-
     def statistic(sample_weight: NDArray[np.float64]) -> float:
         if base_weight is not None:
             sample_weight = sample_weight * base_weight

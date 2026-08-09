@@ -260,7 +260,9 @@ def test_ess_uniform_weights_equals_sample_size():
 
 def test_ess_concentrated_weights_approaches_one():
     """Fully concentrated weights give ESS = 1."""
-    weights = ImportanceWeights(source=np.array([2.0, 0.0]), target=np.array([3.0, 0.0, 0.0]))
+    weights = ImportanceWeights(
+        source=np.array([2.0, 0.0]), target=np.array([3.0, 0.0, 0.0])
+    )
     ess = weights.effective_sample_size()
     assert np.isclose(ess["source"], 1.0)
     assert np.isclose(ess["target"], 1.0)

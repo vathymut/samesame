@@ -1,14 +1,19 @@
-"""Internal source-target Outlier score preparation."""
+"""Internal source-target Outlier score comparison machinery."""
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Literal
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
+from scipy.stats import permutation_test
 from sklearn.utils import column_or_1d
 
 from samesame.weights import ImportanceWeights
+
+RandomNumberGenerator = np.random.Generator | np.random.RandomState
 
 
 @dataclass(frozen=True)
@@ -18,6 +23,15 @@ class PreparedTwoSampleTest:
     labels: NDArray[np.int_]
     scores: NDArray
     sample_weight: NDArray[np.float64] | None
+
+
+@dataclass(frozen=True)
+class PermutationTestResult:
+    """Raw permutation-test output shared by public result types."""
+
+    statistic: float
+    pvalue: float
+    null_distribution: NDArray[np.float64]
 
 
 def prepare_two_sample_test(
@@ -46,6 +60,73 @@ def prepare_two_sample_test(
         labels=labels,
         scores=scores,
         sample_weight=sample_weight,
+    )
+
+
+def run_permutation_test(
+    actual: NDArray[np.int_],
+    predicted: NDArray,
+    metric: Callable[..., float],
+    *,
+    n_resamples: int,
+    batch: int | None,
+    alternative: Literal["less", "greater", "two-sided"],
+    rng: RandomNumberGenerator,
+    sample_weight: NDArray[np.float64] | None = None,
+) -> PermutationTestResult:
+    """Run a weighted two-sample permutation test on prepared arrays.
+
+    Parameters
+    ----------
+    actual : NDArray[np.int_]
+        Binary group labels (0 for source, 1 for target).
+    predicted : NDArray
+        Outlier scores to test.
+    metric : Callable[..., float]
+        Two-sample score function accepting ``labels``, ``scores`` and
+        ``sample_weight``.
+    n_resamples : int
+        Number of permutation resamples.
+    batch : int | None
+        Number of permutations to evaluate per batch, or ``None``.
+    alternative : {'less', 'greater', 'two-sided'}
+        Alternative hypothesis for the permutation test.
+    rng : np.random.Generator | np.random.RandomState
+        Random number generator for the permutations.
+    sample_weight : NDArray[np.float64] | None, optional
+        Per-observation weights; ``None`` for unweighted.
+
+    Returns
+    -------
+    PermutationTestResult
+        Observed statistic, p-value, and permutation null distribution.
+
+    Raises
+    ------
+    ValueError
+        If ``n_resamples`` or ``batch`` is not a positive integer.
+    """
+    if n_resamples < 1:
+        raise ValueError("n_resamples must be a positive integer.")
+    if batch is not None and batch < 1:
+        raise ValueError("batch must be a positive integer or None.")
+
+    def statistic(labels: NDArray[np.int_], scores: NDArray) -> float:
+        return float(metric(labels, scores, sample_weight=sample_weight))
+
+    result = permutation_test(
+        data=(actual, predicted),
+        statistic=statistic,
+        permutation_type="pairings",
+        n_resamples=n_resamples,
+        batch=batch,
+        alternative=alternative,
+        rng=rng,
+    )
+    return PermutationTestResult(
+        statistic=float(result.statistic),
+        pvalue=float(result.pvalue),
+        null_distribution=np.asarray(result.null_distribution, dtype=np.float64),
     )
 
 

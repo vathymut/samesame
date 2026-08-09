@@ -8,7 +8,7 @@ import pytest
 
 import samesame as ss
 from samesame import shift
-from samesame.shift import HarmResult, ShiftResult, BayesianHarmResult
+from samesame.shift import BayesianHarmResult, HarmResult, ShiftResult
 from samesame.weights import ImportanceWeights, from_domain_probabilities
 
 

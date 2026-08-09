@@ -9,7 +9,6 @@ from typing import Literal
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
-from scipy.stats import permutation_test
 from sklearn.metrics import (
     balanced_accuracy_score,
     matthews_corrcoef,
@@ -17,7 +16,7 @@ from sklearn.metrics import (
 )
 from sklearn.utils.multiclass import type_of_target
 
-from samesame._comparison import prepare_two_sample_test
+from samesame._comparison import prepare_two_sample_test, run_permutation_test
 from samesame._posterior import compute_posterior_evidence
 from samesame._statistics import harmful_shift_statistic
 from samesame.weights import ImportanceWeights
@@ -28,33 +27,32 @@ ShiftStatistic = Literal["roc_auc", "balanced_accuracy", "matthews_corrcoef"]
 
 
 @dataclass(frozen=True)
-class ShiftResult:
+class TestResult:
+    """Shared fields for all statistical test results."""
+
+    statistic: float
+    pvalue: float
+    null_distribution: NDArray[np.float64]
+
+
+@dataclass(frozen=True)
+class ShiftResult(TestResult):
     """Result of generic shift detection."""
 
-    statistic: float
-    pvalue: float
     statistic_name: str
-    null_distribution: NDArray[np.float64]
 
 
 @dataclass(frozen=True)
-class HarmResult:
+class HarmResult(TestResult):
     """Result of harmful-shift detection."""
 
-    statistic: float
-    pvalue: float
     direction: Direction
-    null_distribution: NDArray[np.float64]
 
 
 @dataclass(frozen=True)
-class BayesianHarmResult:
+class BayesianHarmResult(HarmResult):
     """Result of Bayesian harmful-shift detection."""
 
-    statistic: float
-    pvalue: float
-    direction: Direction
-    null_distribution: NDArray[np.float64]
     posterior: NDArray[np.float64]
     bayes_factor: float
 
@@ -97,13 +95,6 @@ def _get_shift_statistic(name: str) -> Callable[..., float]:
     return statistic
 
 
-def _validate_permutation_params(n_resamples: int, batch: int | None) -> None:
-    if n_resamples < 1:
-        raise ValueError("n_resamples must be a positive integer.")
-    if batch is not None and batch < 1:
-        raise ValueError("batch must be a positive integer or None.")
-
-
 def _resolve_posterior_threshold(threshold: float | None) -> float:
     if threshold is None:
         return 1 / 12
@@ -140,35 +131,59 @@ def detect_shift(
     random_state: RandomState = None,
     weights: ImportanceWeights | None = None,
 ) -> ShiftResult:
-    """Detect whether Source and Target Outlier score distributions differ."""
-    _validate_permutation_params(n_resamples, batch)
+    """Detect whether Source and Target Outlier score distributions differ.
+
+    Parameters
+    ----------
+    source : ArrayLike
+        Outlier scores from the source (reference) group.
+    target : ArrayLike
+        Outlier scores from the target (evaluation) group.
+    statistic : {'roc_auc', 'balanced_accuracy', 'matthews_corrcoef'}, optional
+        Two-sample score statistic. Default is ``'roc_auc'``.
+    alternative : {'less', 'greater', 'two-sided'}, optional
+        Alternative hypothesis for the permutation test. Default is
+        ``'two-sided'``.
+    n_resamples : int, optional
+        Number of permutation resamples. Default is 9999.
+    batch : int | None, optional
+        Number of permutations to evaluate per batch, or ``None`` for no
+        batching.
+    random_state : int | np.random.RandomState | np.random.Generator | None, optional
+        Random seed or generator for the permutation test.
+    weights : ImportanceWeights | None, optional
+        Importance weights for the source and target groups.
+
+    Returns
+    -------
+    ShiftResult
+        Observed statistic, p-value, statistic name, and null distribution.
+
+    Raises
+    ------
+    ValueError
+        If ``n_resamples`` or ``batch`` is not positive.
+    ValueError
+        If ``statistic`` is not one of the supported statistics.
+    """
     prepared = prepare_two_sample_test(source, target, weights=weights)
     metric = _get_shift_statistic(statistic)
     _validate_shift_scores(statistic, prepared.scores)
-    rng = _resolve_random_state(random_state)
-    _perm_weights = (
-        None
-        if prepared.sample_weight is None
-        else np.asarray(prepared.sample_weight, dtype=float)
-    )
-
-    def _statistic(labels: NDArray[np.int_], scores: NDArray) -> float:
-        return float(metric(labels, scores, sample_weight=_perm_weights))
-
-    result = permutation_test(
-        data=(prepared.labels, prepared.scores),
-        statistic=_statistic,
-        permutation_type="pairings",
+    result = run_permutation_test(
+        prepared.labels,
+        prepared.scores,
+        metric,
         n_resamples=n_resamples,
         batch=batch,
         alternative=alternative,
-        rng=rng,
+        rng=_resolve_random_state(random_state),
+        sample_weight=prepared.sample_weight,
     )
     return ShiftResult(
-        statistic=float(result.statistic),
-        pvalue=float(result.pvalue),
+        statistic=result.statistic,
+        pvalue=result.pvalue,
         statistic_name=statistic,
-        null_distribution=np.asarray(result.null_distribution, dtype=np.float64),
+        null_distribution=result.null_distribution,
     )
 
 
@@ -182,37 +197,56 @@ def detect_harm(
     random_state: RandomState = None,
     weights: ImportanceWeights | None = None,
 ) -> HarmResult:
-    """Detect whether Target is harmfully shifted relative to Source."""
-    _validate_permutation_params(n_resamples, batch)
+    """Detect whether Target is harmfully shifted relative to Source.
+
+    Parameters
+    ----------
+    source : ArrayLike
+        Outlier scores from the source (reference) group.
+    target : ArrayLike
+        Outlier scores from the target (evaluation) group.
+    direction : {'higher-is-worse', 'higher-is-better'}
+        Polarity that defines "worse" for the scores.
+    n_resamples : int, optional
+        Number of permutation resamples. Default is 9999.
+    batch : int | None, optional
+        Number of permutations to evaluate per batch, or ``None`` for no
+        batching.
+    random_state : int | np.random.RandomState | np.random.Generator | None, optional
+        Random seed or generator for the permutation test.
+    weights : ImportanceWeights | None, optional
+        Importance weights for the source and target groups.
+
+    Returns
+    -------
+    HarmResult
+        Observed statistic, p-value, direction, and null distribution.
+
+    Raises
+    ------
+    ValueError
+        If ``n_resamples`` or ``batch`` is not positive.
+    ValueError
+        If ``direction`` is not one of the supported directions.
+    """
     prepared = prepare_two_sample_test(source, target, weights=weights)
     validated_direction = _validate_direction(direction)
     scores = _scores_for_direction(prepared.scores, validated_direction)
-    rng = _resolve_random_state(random_state)
-    _perm_weights = (
-        None
-        if prepared.sample_weight is None
-        else np.asarray(prepared.sample_weight, dtype=float)
-    )
-
-    def _statistic(labels: NDArray[np.int_], _scores: NDArray) -> float:
-        return float(
-            harmful_shift_statistic(labels, _scores, sample_weight=_perm_weights)
-        )
-
-    result = permutation_test(
-        data=(prepared.labels, scores),
-        statistic=_statistic,
-        permutation_type="pairings",
+    result = run_permutation_test(
+        prepared.labels,
+        scores,
+        harmful_shift_statistic,
         n_resamples=n_resamples,
         batch=batch,
         alternative="greater",
-        rng=rng,
+        rng=_resolve_random_state(random_state),
+        sample_weight=prepared.sample_weight,
     )
     return HarmResult(
-        statistic=float(result.statistic),
-        pvalue=float(result.pvalue),
+        statistic=result.statistic,
+        pvalue=result.pvalue,
         direction=validated_direction,
-        null_distribution=np.asarray(result.null_distribution, dtype=np.float64),
+        null_distribution=result.null_distribution,
     )
 
 
@@ -227,32 +261,58 @@ def detect_harm_bayesian(
     weights: ImportanceWeights | None = None,
     threshold: float | None = None,
 ) -> BayesianHarmResult:
-    """Detect harmful shift and compute Bayesian posterior evidence."""
-    _validate_permutation_params(n_resamples, batch)
+    """Detect harmful shift and compute Bayesian posterior evidence.
+
+    Parameters
+    ----------
+    source : ArrayLike
+        Outlier scores from the source (reference) group.
+    target : ArrayLike
+        Outlier scores from the target (evaluation) group.
+    direction : {'higher-is-worse', 'higher-is-better'}
+        Polarity that defines "worse" for the scores.
+    n_resamples : int, optional
+        Number of permutation resamples. Default is 9999.
+    batch : int | None, optional
+        Number of permutations to evaluate per batch, or ``None`` for no
+        batching.
+    random_state : int | np.random.RandomState | np.random.Generator | None, optional
+        Random seed or generator for the permutation test.
+    weights : ImportanceWeights | None, optional
+        Importance weights for the source and target groups.
+    threshold : float | None, optional
+        Threshold above which the harmful-shift statistic counts as evidence
+        of harm. Default ``1 / 12``.
+
+    Returns
+    -------
+    BayesianHarmResult
+        Observed statistic, p-value, direction, null distribution, posterior
+        draws, and Bayes factor.
+
+    Raises
+    ------
+    ValueError
+        If ``n_resamples`` or ``batch`` is not positive.
+    ValueError
+        If ``direction`` is not one of the supported directions.
+    ValueError
+        If ``threshold`` is not finite.
+    """
     prepared = prepare_two_sample_test(source, target, weights=weights)
     validated_direction = _validate_direction(direction)
     scores = _scores_for_direction(prepared.scores, validated_direction)
     resolved_threshold = _resolve_posterior_threshold(threshold)
     rng = _resolve_random_state(random_state)
-    _perm_weights = (
-        None
-        if prepared.sample_weight is None
-        else np.asarray(prepared.sample_weight, dtype=float)
-    )
-
-    def _statistic(labels: NDArray[np.int_], _scores: NDArray) -> float:
-        return float(
-            harmful_shift_statistic(labels, _scores, sample_weight=_perm_weights)
-        )
-
-    result = permutation_test(
-        data=(prepared.labels, scores),
-        statistic=_statistic,
-        permutation_type="pairings",
+    result = run_permutation_test(
+        prepared.labels,
+        scores,
+        harmful_shift_statistic,
         n_resamples=n_resamples,
         batch=batch,
         alternative="greater",
         rng=rng,
+        sample_weight=prepared.sample_weight,
     )
     posterior, bayes_factor = compute_posterior_evidence(
         prepared.labels,
@@ -264,10 +324,10 @@ def detect_harm_bayesian(
         base_weight=prepared.sample_weight,
     )
     return BayesianHarmResult(
-        statistic=float(result.statistic),
-        pvalue=float(result.pvalue),
+        statistic=result.statistic,
+        pvalue=result.pvalue,
         direction=validated_direction,
-        null_distribution=np.asarray(result.null_distribution, dtype=np.float64),
+        null_distribution=result.null_distribution,
         posterior=posterior,
         bayes_factor=bayes_factor,
     )
@@ -279,6 +339,7 @@ __all__ = [
     "HarmResult",
     "ShiftResult",
     "ShiftStatistic",
+    "TestResult",
     "detect_harm",
     "detect_harm_bayesian",
     "detect_shift",

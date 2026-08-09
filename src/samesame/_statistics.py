@@ -35,10 +35,27 @@ def _weighted_ecdf(
     query: NDArray,
     freq_weights: NDArray[np.float64] | None = None,
 ) -> NDArray[np.float64]:
-    """Evaluate the (weighted) empirical CDF of x at each point in query."""
+    """Evaluate the (weighted) empirical CDF of x at each point in query.
+
+    Raises
+    ------
+    ValueError
+        If ``x`` or ``freq_weights`` is not one-dimensional, weights have the
+        wrong length, are negative, or sum to zero.
+    """
     x = np.asarray(x)
+    if x.ndim != 1:
+        raise ValueError("x must be one-dimensional.")
     if freq_weights is not None:
         freq_weights = np.asarray(freq_weights)
+        if freq_weights.ndim != 1:
+            raise ValueError("freq_weights must be one-dimensional.")
+        if len(freq_weights) != len(x):
+            raise ValueError("freq_weights must have the same length as x.")
+        if np.any(freq_weights < 0):
+            raise ValueError("freq_weights must be non-negative.")
+        if freq_weights.sum() == 0:
+            raise ValueError("freq_weights must not be all zero.")
         order = np.argsort(x)
         x_sorted = x[order]
         w_sorted = freq_weights[order]
