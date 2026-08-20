@@ -18,8 +18,10 @@ nav:
     - Monitor Prediction Errors Once Labels Arrive: examples/credit/monitor-prediction-errors.md
     - Focus Harmful-Shift Testing on Shared Support: examples/weighting/source-reweighting.md
     - Restrict Testing to Common Support on Both Sides: examples/weighting/double-weighting.md
+    - Diagnose Weight Concentration with Effective Sample Size: examples/weighting/diagnose-weight-concentration.md
   - Explanation:
     - When Importance Weights Help: explanation/importance-weights-rationale.md
+    - Why the Harm Statistic Is Not Just AUC: explanation/harmful-shift-statistic.md
   - API reference:
       - Shift Testing: api/testing.md
       - Importance Weights: api/weighting.md

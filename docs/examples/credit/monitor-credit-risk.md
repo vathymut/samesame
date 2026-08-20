@@ -116,16 +116,17 @@ different, but also riskier according to the model.
 
 ## Step 3 - Decide what to do
 
-Using both tests together gives a clearer picture than either test alone:
+Using both tests together gives a clearer picture than either test alone. Call a result
+**significant** when its p-value is small (typically `<= 0.05`); otherwise call it **not significant**.
 
-| Result pattern | What it usually means |
-|----------------|-----------------------|
-| shift small, harm small | the population changed and predicted risk worsened |
-| shift small, harm large | the population changed, but not in a clearly harmful way |
-| shift large, harm small | rare, but worth investigating as a direct outcome issue |
-| shift large, harm large | no clear evidence of a problem |
+| `detect_shift` | `detect_harm` | What it usually means |
+|----------------|----------------|------------------------|
+| significant | significant | the population changed **and** predicted risk worsened |
+| significant | not significant | the population changed, but not in a clearly harmful way |
+| not significant | significant | rare; the directional signal is strong where the two-sided one is not — investigate directly |
+| not significant | not significant | no clear evidence of a problem |
 
-In this HELOC example, both results are strong. That is a good signal to retrain, recalibrate, or
+In this HELOC example, both tests are significant. That is a good signal to retrain, recalibrate, or
 otherwise revisit the deployment policy for the new population.
 
 If you want a separate confidence view, see [Monitor model confidence](monitor-model-confidence.md).

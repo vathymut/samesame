@@ -62,7 +62,21 @@ It takes three main controls:
 `lambda_=0.5` is a practical default. Lower values correct more aggressively. Higher values move
 closer to uniform weights.
 
+## Effective sample size
+
+Once you have `ImportanceWeights`, call `.effective_sample_size()` to get Kish's ESS for each group.
+ESS is bounded above by the sample size; it drops toward 1 when a few observations carry almost all
+the weight. Use it to decide whether your weights are trustworthy before you pass them to a test.
+
+```python
+ess = weights.effective_sample_size()
+print(ess.source, ess.target)
+```
+
 For a worked example, see
+[Diagnose weight concentration with effective sample size](../examples/weighting/diagnose-weight-concentration.md).
+
+For a worked example on building weights, see
 [Focus on shared support with importance weights](../examples/tutorials/adjust-for-covariate-shift.md).
 For the intuition behind the formulas, see
 [When importance weights help](../explanation/importance-weights-rationale.md).

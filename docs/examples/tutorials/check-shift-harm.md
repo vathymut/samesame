@@ -63,5 +63,6 @@ Because higher values are better here, we use `direction=ss.Direction.HIGHER_IS_
 Typical examples of `higher-is-worse` signals are predicted default risk, error, or anomaly level.
 Typical examples of `higher-is-better` signals are confidence, accuracy, or quality.
 
-For posterior draws and a Bayes factor alongside the p-value, see
-[Shift testing](../../api/testing.md).
+For the full API of both tests, see [Shift testing](../../api/testing.md).
+When source and target do not cover the same feature space, continue to
+[Focus on shared support with importance weights](adjust-for-covariate-shift.md).
