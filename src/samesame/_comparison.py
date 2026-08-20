@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
 from typing import Literal
 
 import numpy as np
@@ -23,41 +23,6 @@ class PreparedTwoSampleTest:
     labels: NDArray[np.int_]
     scores: NDArray
     sample_weight: NDArray[np.float64] | None
-
-
-@dataclass(frozen=True)
-class TestResult:
-    """Shared fields for all statistical test results."""
-
-    statistic: float
-    pvalue: float
-    null_distribution: NDArray[np.float64]
-
-    def significant(self, alpha: float = 0.05) -> bool:
-        """Return whether ``pvalue`` is significant at level ``alpha``.
-
-        Parameters
-        ----------
-        alpha : float, optional
-            Significance level. Default is 0.05.
-
-        Returns
-        -------
-        bool
-            True when ``pvalue <= alpha``.
-        """
-        alpha_value = float(alpha)
-        if not np.isfinite(alpha_value) or not 0.0 < alpha_value < 1.0:
-            raise ValueError("alpha must be in the open interval (0, 1).")
-        return self.pvalue <= alpha_value
-
-    def __repr__(self) -> str:
-        rendered = ", ".join(
-            f"{field.name}={getattr(self, field.name)!r}"
-            for field in fields(self)
-            if field.name != "null_distribution"
-        )
-        return f"{type(self).__name__}({rendered})"
 
 
 def prepare_two_sample_test(
@@ -98,7 +63,7 @@ def run_permutation_test(
     alternative: Literal["less", "greater", "two-sided"],
     rng: RandomNumberGenerator,
     sample_weight: NDArray[np.float64] | None = None,
-) -> TestResult:
+) -> tuple[float, float, NDArray[np.float64]]:
     """Run a weighted two-sample permutation test on prepared arrays.
 
     Parameters
@@ -121,7 +86,7 @@ def run_permutation_test(
 
     Returns
     -------
-    TestResult
+    tuple[float, float, NDArray[np.float64]]
         Observed statistic, p-value, and permutation null distribution.
 
     Raises
@@ -146,10 +111,10 @@ def run_permutation_test(
         alternative=alternative,
         rng=rng,
     )
-    return TestResult(
-        statistic=float(result.statistic),
-        pvalue=float(result.pvalue),
-        null_distribution=np.asarray(result.null_distribution, dtype=np.float64),
+    return (
+        float(result.statistic),
+        float(result.pvalue),
+        np.asarray(result.null_distribution, dtype=np.float64),
     )
 
 

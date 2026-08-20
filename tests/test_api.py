@@ -9,7 +9,7 @@ import pytest
 
 import samesame as ss
 from samesame import shift
-from samesame.shift import BayesianHarmResult, Direction, HarmResult, ShiftResult
+from samesame.shift import Direction, HarmResult, ShiftResult
 from samesame.weights import ImportanceWeights, from_domain_probabilities
 
 
@@ -26,12 +26,14 @@ def test_root_exports() -> None:
     assert ss.detect_harm is shift.detect_harm
     assert ss.Direction is Direction
     assert ss.from_domain_probabilities is from_domain_probabilities
+    assert ss.ImportanceWeights is ImportanceWeights
     assert ss.shift is shift
     assert ss.weights is ss.weights
     assert "detect_shift" in ss.__all__
     assert "detect_harm" in ss.__all__
     assert "Direction" in ss.__all__
     assert "from_domain_probabilities" in ss.__all__
+    assert "ImportanceWeights" in ss.__all__
     assert "shift" in ss.__all__
     assert "weights" in ss.__all__
     assert "scores" not in ss.__all__
@@ -41,6 +43,26 @@ def test_root_exports() -> None:
     assert not hasattr(ss, "adverse_shift_posterior")
     assert not hasattr(shift, "as_bf")
     assert not hasattr(shift, "infer_harm")
+    assert not hasattr(shift, "BayesianHarmResult")
+    assert not hasattr(shift, "detect_harm_bayesian")
+    assert not hasattr(shift, "ShiftStatistic")
+
+
+def test_detect_shift_signature_is_minimal() -> None:
+    params = set(inspect.signature(shift.detect_shift).parameters)
+    assert params == {"source", "target", "n_resamples", "random_state", "weights"}
+
+
+def test_detect_harm_signature_is_minimal() -> None:
+    params = set(inspect.signature(shift.detect_harm).parameters)
+    assert params == {
+        "source",
+        "target",
+        "direction",
+        "n_resamples",
+        "random_state",
+        "weights",
+    }
 
 
 def test_flat_harm_detection_matches_namespace(
@@ -74,7 +96,6 @@ def test_detect_shift_returns_shift_result(
 ) -> None:
     result = shift.detect_shift(**shift_samples, n_resamples=64)
     assert isinstance(result, ShiftResult)
-    assert result.statistic_name == "roc_auc"
     assert isinstance(result.statistic, float)
     assert 0.0 <= result.pvalue <= 1.0
     assert result.null_distribution.shape == (64,)
@@ -85,30 +106,6 @@ def test_detect_shift_accepts_positional_source_target(
 ) -> None:
     result = shift.detect_shift(shift_samples["source"], shift_samples["target"])
     assert isinstance(result, ShiftResult)
-
-
-def test_detect_shift_rejects_unknown_statistic(
-    shift_samples: dict[str, np.ndarray],
-) -> None:
-    with pytest.raises(ValueError, match="statistic must be one of"):
-        shift.detect_shift(**shift_samples, statistic="f1")  # type: ignore[arg-type]
-
-
-def test_binary_only_statistics_require_binary_scores(
-    shift_samples: dict[str, np.ndarray],
-) -> None:
-    with pytest.raises(ValueError, match="requires binary outlier scores"):
-        shift.detect_shift(**shift_samples, statistic="balanced_accuracy")
-
-
-@pytest.mark.parametrize("statistic", ["balanced_accuracy", "matthews_corrcoef"])
-def test_binary_only_statistics_accept_binary_scores(
-    binary_shift_samples: dict[str, np.ndarray],
-    statistic: str,
-) -> None:
-    result = shift.detect_shift(**binary_shift_samples, statistic=statistic)  # type: ignore[arg-type]
-    assert isinstance(result, ShiftResult)
-    assert result.statistic_name == statistic
 
 
 def test_results_are_frozen(shift_samples: dict[str, np.ndarray]) -> None:
@@ -255,67 +252,6 @@ def test_detect_harm_has_no_posterior_fields(
     assert not hasattr(result, "bayes_factor")
 
 
-def test_detect_harm_bayesian_flag_returns_bayesian_harm_result(
-    confidence_samples: dict[str, np.ndarray],
-) -> None:
-    result = shift.detect_harm(
-        **confidence_samples,
-        direction=Direction.HIGHER_IS_BETTER,
-        bayesian=True,
-        n_resamples=64,
-        random_state=42,
-    )
-    assert isinstance(result, BayesianHarmResult)
-    assert isinstance(result, HarmResult)
-    assert result.posterior.shape == (64,)
-    assert isinstance(result.bayes_factor, float)
-
-
-def test_detect_harm_bayesian_matches_detect_harm_statistic(
-    confidence_samples: dict[str, np.ndarray],
-) -> None:
-    base = shift.detect_harm(
-        **confidence_samples,
-        direction=Direction.HIGHER_IS_BETTER,
-        n_resamples=64,
-        random_state=42,
-    )
-    with_bayes = shift.detect_harm(
-        **confidence_samples,
-        direction=Direction.HIGHER_IS_BETTER,
-        bayesian=True,
-        n_resamples=64,
-        random_state=42,
-    )
-    assert np.isclose(base.statistic, with_bayes.statistic)
-    assert np.isclose(base.pvalue, with_bayes.pvalue)
-    assert base.direction == with_bayes.direction
-    assert np.allclose(base.null_distribution, with_bayes.null_distribution)
-
-
-def test_detect_harm_rejects_non_finite_threshold(
-    confidence_samples: dict[str, np.ndarray],
-) -> None:
-    with pytest.raises(ValueError, match="threshold must be finite"):
-        shift.detect_harm(
-            **confidence_samples,
-            direction=Direction.HIGHER_IS_BETTER,
-            bayesian=True,
-            threshold=float("inf"),
-        )
-
-
-def test_detect_harm_rejects_threshold_without_bayesian(
-    confidence_samples: dict[str, np.ndarray],
-) -> None:
-    with pytest.raises(ValueError, match="threshold is only meaningful when bayesian=True"):
-        shift.detect_harm(
-            **confidence_samples,
-            direction=Direction.HIGHER_IS_BETTER,
-            threshold=0.1,
-        )
-
-
 def test_harm_detection_supports_importance_weights(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
@@ -367,7 +303,9 @@ def test_significant_uses_pvalue_alpha(shift_samples: dict[str, np.ndarray]) -> 
     assert result.significant(alpha=0.5) == (result.pvalue <= 0.5)
 
 
-def test_significant_rejects_invalid_alpha(shift_samples: dict[str, np.ndarray]) -> None:
+def test_significant_rejects_invalid_alpha(
+    shift_samples: dict[str, np.ndarray],
+) -> None:
     result = shift.detect_shift(**shift_samples, n_resamples=64)
     with pytest.raises(ValueError, match="alpha must be in"):
         result.significant(alpha=0.0)

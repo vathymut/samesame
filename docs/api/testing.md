@@ -35,33 +35,9 @@ In each case, the fields most users look at first are:
 - `.statistic`
 - `.pvalue`
 
-`ShiftResult` also includes `.statistic_name`.
-`HarmResult` includes `.direction`.
+`HarmResult` also includes `.direction`.
 All results include `.null_distribution` when you need the full permutation output.
 All results offer `.significant(alpha=0.05)` to compare the p-value against a level.
-
-## Posterior evidence for harmful shift
-
-If you want posterior draws and a Bayes factor alongside the p-value, pass `bayesian=True` to
-`shift.detect_harm(...)`.
-
-```python
-import samesame as ss
-
-result = ss.detect_harm(
-    source_scores,
-    target_scores,
-    direction=ss.Direction.HIGHER_IS_WORSE,
-    bayesian=True,
-)
-
-print(f"p-value:      {result.pvalue:.4f}")
-print(f"Bayes factor: {result.bayes_factor:.2f}")
-```
-
-`bayesian=True` returns `BayesianHarmResult`, which adds `.posterior` (the posterior draws) and
-`.bayes_factor`. The optional `threshold` parameter sets the statistic value above which evidence
-counts as harm; it defaults to `1 / 12` and requires `bayesian=True`.
 
 ## API
 
@@ -78,5 +54,3 @@ counts as harm; it defaults to `1 / 12` and requires `bayesian=True`.
 ::: samesame.shift.ShiftResult
 
 ::: samesame.shift.HarmResult
-
-::: samesame.shift.BayesianHarmResult
