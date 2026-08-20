@@ -78,17 +78,17 @@ weights = from_domain_probabilities(
     lambda_=0.5,
 )
 
-unweighted = ss.shift.detect_harm(
+unweighted = ss.detect_harm(
     source_scores,
     target_scores,
-    direction="higher-is-worse",
+    direction=ss.Direction.HIGHER_IS_WORSE,
     random_state=123_456,
 )
 
-weighted = ss.shift.detect_harm(
+weighted = ss.detect_harm(
     source_scores,
     target_scores,
-    direction="higher-is-worse",
+    direction=ss.Direction.HIGHER_IS_WORSE,
     weights=weights,
     random_state=123_456,
 )

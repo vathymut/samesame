@@ -6,10 +6,16 @@
 #
 """Tests for samesame.weights."""
 
+from dataclasses import FrozenInstanceError
+
 import numpy as np
 import pytest
 
-from samesame.weights import ImportanceWeights, from_domain_probabilities
+from samesame.weights import (
+    EffectiveSampleSize,
+    ImportanceWeights,
+    from_domain_probabilities,
+)
 
 # ---------------------------------------------------------------------------
 # Numerical correctness — source mode
@@ -46,6 +52,14 @@ def test_both_mode_reweights_all(domain_probabilities):
     # source normalized: [10/13, 16/13]; target normalized: [16/13, 10/13]
     assert np.allclose(result.source, [10 / 13, 16 / 13])
     assert np.allclose(result.target, [16 / 13, 10 / 13])
+
+
+def test_default_mode_is_both(domain_probabilities):
+    """Omitting mode behaves exactly like mode='both'."""
+    default_result = from_domain_probabilities(**domain_probabilities)
+    both_result = from_domain_probabilities(**domain_probabilities, mode="both")
+    assert np.array_equal(default_result.source, both_result.source)
+    assert np.array_equal(default_result.target, both_result.target)
 
 
 def test_lambda_one_gives_uniform(domain_probabilities):
@@ -254,8 +268,8 @@ def test_ess_uniform_weights_equals_sample_size():
     """Uniform weights give ESS equal to sample size for each group."""
     weights = ImportanceWeights(source=np.ones(5), target=np.ones(3))
     ess = weights.effective_sample_size()
-    assert np.isclose(ess["source"], 5.0)
-    assert np.isclose(ess["target"], 3.0)
+    assert np.isclose(ess.source, 5.0)
+    assert np.isclose(ess.target, 3.0)
 
 
 def test_weights_normalized_to_sample_size_at_construction():
@@ -273,16 +287,16 @@ def test_ess_concentrated_weights_approaches_one():
         source=np.array([2.0, 0.0]), target=np.array([3.0, 0.0, 0.0])
     )
     ess = weights.effective_sample_size()
-    assert np.isclose(ess["source"], 1.0)
-    assert np.isclose(ess["target"], 1.0)
+    assert np.isclose(ess.source, 1.0)
+    assert np.isclose(ess.target, 1.0)
 
 
 def test_ess_single_element_is_one():
     """Single-element arrays have ESS = 1."""
     weights = ImportanceWeights(source=np.array([1.0]), target=np.array([1.0]))
     ess = weights.effective_sample_size()
-    assert np.isclose(ess["source"], 1.0)
-    assert np.isclose(ess["target"], 1.0)
+    assert np.isclose(ess.source, 1.0)
+    assert np.isclose(ess.target, 1.0)
 
 
 def test_ess_source_mode_known_values(domain_probabilities):
@@ -290,9 +304,9 @@ def test_ess_source_mode_known_values(domain_probabilities):
     result = from_domain_probabilities(**domain_probabilities, mode="source")
     ess = result.effective_sample_size()
     # source weights [10/13, 16/13] -> ESS ≈ 1.8989
-    assert np.isclose(ess["source"], 1.8989, atol=1e-4)
+    assert np.isclose(ess.source, 1.8989, atol=1e-4)
     # target weights [1, 1] -> ESS = 2
-    assert np.isclose(ess["target"], 2.0)
+    assert np.isclose(ess.target, 2.0)
 
 
 def test_ess_both_mode_known_values(domain_probabilities):
@@ -301,43 +315,40 @@ def test_ess_both_mode_known_values(domain_probabilities):
     ess = result.effective_sample_size()
     # Both groups have weights [10/13, 16/13] and [16/13, 10/13]
     # Both should have ESS ≈ 1.8989
-    assert np.isclose(ess["source"], 1.8989, atol=1e-4)
-    assert np.isclose(ess["target"], 1.8989, atol=1e-4)
+    assert np.isclose(ess.source, 1.8989, atol=1e-4)
+    assert np.isclose(ess.target, 1.8989, atol=1e-4)
 
 
 def test_ess_lambda_one_gives_sample_size(domain_probabilities):
     """lambda_=1.0 gives uniform weights, so ESS equals sample size."""
     result = from_domain_probabilities(**domain_probabilities, mode="both", lambda_=1.0)
     ess = result.effective_sample_size()
-    assert np.isclose(ess["source"], 2.0)
-    assert np.isclose(ess["target"], 2.0)
+    assert np.isclose(ess.source, 2.0)
+    assert np.isclose(ess.target, 2.0)
 
 
-def test_ess_returns_dict_with_source_and_target_keys(domain_probabilities):
-    """ESS returns dict with exactly 'source' and 'target' keys."""
-    result = from_domain_probabilities(**domain_probabilities)
+def test_ess_returns_frozen_dataclass_with_float_attributes(domain_probabilities):
+    """ESS is an EffectiveSampleSize with float .source and .target."""
+    result = from_domain_probabilities(**domain_probabilities, mode="both")
     ess = result.effective_sample_size()
-    assert isinstance(ess, dict)
-    assert set(ess.keys()) == {"source", "target"}
-    assert isinstance(ess["source"], float)
-    assert isinstance(ess["target"], float)
+    assert isinstance(ess, EffectiveSampleSize)
+    assert isinstance(ess.source, float)
+    assert isinstance(ess.target, float)
+    with pytest.raises(FrozenInstanceError):
+        ess.source = 1.0  # type: ignore[misc]
 
 
 def test_ess_values_are_positive_and_finite(domain_probabilities):
     """ESS values are always positive and finite."""
     result = from_domain_probabilities(**domain_probabilities, mode="both")
     ess = result.effective_sample_size()
-    assert ess["source"] > 0
-    assert ess["target"] > 0
-    assert np.isfinite(ess["source"])
-    assert np.isfinite(ess["target"])
+    assert ess.source > 0
+    assert ess.target > 0
+    assert np.isfinite(ess.source)
+    assert np.isfinite(ess.target)
 
 
-def test_ess_alias_returns_same_as_effective_sample_size(domain_probabilities):
-    """The .ess() alias returns identical values to .effective_sample_size()."""
+def test_ess_alias_removed(domain_probabilities):
+    """The .ess() alias no longer exists."""
     result = from_domain_probabilities(**domain_probabilities, mode="both")
-    ess1 = result.effective_sample_size()
-    ess2 = result.ess()
-    assert ess1 == ess2
-    assert ess1["source"] == ess2["source"]
-    assert ess1["target"] == ess2["target"]
+    assert not hasattr(result, "ess")

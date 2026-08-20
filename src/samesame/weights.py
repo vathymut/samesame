@@ -31,6 +31,22 @@ def _inverse_riw(density_ratio_values: NDArray, *, lam: float) -> NDArray[np.flo
 
 
 @dataclass(frozen=True)
+class EffectiveSampleSize:
+    """Kish's effective sample size for the source and target groups.
+
+    Attributes
+    ----------
+    source : float
+        Effective sample size for the source group.
+    target : float
+        Effective sample size for the target group.
+    """
+
+    source: float
+    target: float
+
+
+@dataclass(frozen=True)
 class ImportanceWeights:
     """Importance weights for Source and Target groups.
 
@@ -72,7 +88,7 @@ class ImportanceWeights:
         )
         return np.concatenate([source_weight, target_weight])
 
-    def effective_sample_size(self) -> dict[str, float]:
+    def effective_sample_size(self) -> EffectiveSampleSize:
         """Compute effective sample size for source and target weights.
 
         Returns Kish's effective sample size (ESS) for each group, quantifying
@@ -85,9 +101,9 @@ class ImportanceWeights:
 
         Returns
         -------
-        dict[str, float]
-            Dictionary with keys ``"source"`` and ``"target"``, each containing
-            the effective sample size for that group.
+        EffectiveSampleSize
+            Kish's effective sample size per group, accessible via the
+            ``.source`` and ``.target`` attributes.
 
         References
         ----------
@@ -105,9 +121,9 @@ class ImportanceWeights:
         ...     mode="both"
         ... )
         >>> ess = weights.effective_sample_size()
-        >>> round(ess["source"], 4)
+        >>> round(ess.source, 4)
         1.8989
-        >>> round(ess["target"], 4)
+        >>> round(ess.target, 4)
         1.8989
         """
         source_sum = self.source.sum()
@@ -118,20 +134,7 @@ class ImportanceWeights:
         target_sum_sq = (self.target**2).sum()
         target_ess = float(target_sum**2 / target_sum_sq)
 
-        return {"source": source_ess, "target": target_ess}
-
-    def ess(self) -> dict[str, float]:
-        """Alias for effective_sample_size().
-
-        See :meth:`effective_sample_size` for full documentation.
-
-        Returns
-        -------
-        dict[str, float]
-            Dictionary with keys ``"source"`` and ``"target"``, each containing
-            the effective sample size for that group.
-        """
-        return self.effective_sample_size()
+        return EffectiveSampleSize(source=source_ess, target=target_ess)
 
 
 def _check_group_weight_length(
@@ -207,7 +210,7 @@ def from_domain_probabilities(
     *,
     source_prob: ArrayLike,
     target_prob: ArrayLike,
-    mode: WeightingMode = "source",
+    mode: WeightingMode = "both",
     lambda_: float = 0.5,
 ) -> ImportanceWeights:
     """Build Importance weights from Domain probabilities.
@@ -230,12 +233,12 @@ def from_domain_probabilities(
         Importance-weighting mode — controls which group's samples are
         reweighted:
 
-        - ``'source'``: reweight source samples only (default). Use when
+        - ``'source'``: reweight source samples only. Use when
           correcting the source distribution to match target.
         - ``'target'``: reweight target samples only. Use when correcting
           the target distribution to match source.
-        - ``'both'``: reweight both groups simultaneously. Use when both
-          groups contain low-overlap outliers.
+        - ``'both'``: reweight both groups simultaneously (default). Use
+          when both groups contain low-overlap outliers.
 
     lambda_ : float, optional
         RIW blending coefficient in [0, 1] controlling the trade-off between
@@ -272,12 +275,12 @@ def from_domain_probabilities(
     >>> np.round(w.source, 4)
     array([0.7692, 1.2308])
     >>> np.round(w.target, 4)
-    array([1., 1.])
-    >>> w2 = from_domain_probabilities(source_prob=source_prob, target_prob=target_prob, mode="both")
+    array([1.2308, 0.7692])
+    >>> w2 = from_domain_probabilities(source_prob=source_prob, target_prob=target_prob, mode="source")
     >>> np.round(w2.source, 4)
     array([0.7692, 1.2308])
     >>> np.round(w2.target, 4)
-    array([1.2308, 0.7692])
+    array([1., 1.])
     """
     source_prob = _as_probability_vector(source_prob, name="source_prob")
     target_prob = _as_probability_vector(target_prob, name="target_prob")
@@ -302,4 +305,9 @@ def from_domain_probabilities(
     return ImportanceWeights(source=out_source, target=out_target)
 
 
-__all__ = ["ImportanceWeights", "WeightingMode", "from_domain_probabilities"]
+__all__ = [
+    "EffectiveSampleSize",
+    "ImportanceWeights",
+    "WeightingMode",
+    "from_domain_probabilities",
+]

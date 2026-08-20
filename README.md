@@ -46,19 +46,19 @@ rng = np.random.default_rng(123_456)
 source_scores = rng.normal(size=600)
 target_scores = rng.normal(size=600)
 
-shift = ss.shift.detect_shift(source_scores, target_scores)
-harm = ss.shift.detect_harm(
+shift = ss.detect_shift(source_scores, target_scores)
+harm = ss.detect_harm(
     source_scores,
     target_scores,
-    direction="higher-is-worse",
+    direction=ss.Direction.HIGHER_IS_WORSE,
 )
 
 print(f"Shift p-value: {shift.pvalue:.4f}")
 print(f"Harm  p-value: {harm.pvalue:.4f}")
 ```
 
-A small p-value from `detect_shift(...)` means the groups differ.
-A small p-value from `detect_harm(...)` means the target group also moved in the declared worse
+A small p-value from `ss.detect_shift(...)` means the groups differ.
+A small p-value from `ss.detect_harm(...)` means the target group also moved in the declared worse
 direction.
 
 ## Common signals
@@ -78,11 +78,11 @@ reuse across these settings.
 `samesame` is statistically grounded, but the working model is simple:
 
 1. Build a numeric signal for source and target.
-2. Test for any change with `ss.shift.detect_shift(...)`.
-3. Test for directional harm with `ss.shift.detect_harm(...)` when direction matters.
+2. Test for any change with `ss.detect_shift(...)`.
+3. Test for directional harm with `ss.detect_harm(...)` when direction matters.
 
 Both tests are permutation-based, which keeps the assumptions light. When source and target differ
-in feature support, `ss.weights.from_domain_probabilities(...)` lets you focus the test on the
+in feature support, `ss.from_domain_probabilities(...)` lets you focus the test on the
 region where the two groups are genuinely comparable.
 
 ## Pick a guide

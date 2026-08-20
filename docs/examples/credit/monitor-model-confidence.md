@@ -78,16 +78,16 @@ On this HELOC split, deployment confidence is higher on average than training co
 
 ## Step 3 - Test whether confidence dropped
 
-Higher confidence is better, so use `direction="higher-is-better"`.
+Higher confidence is better, so use `direction=ss.Direction.HIGHER_IS_BETTER`.
 
 ```python
 source_scores = train_confidence
 target_scores = deployment_confidence
 
-harm = ss.shift.detect_harm(
+harm = ss.detect_harm(
     source=source_scores,
     target=target_scores,
-    direction="higher-is-better",
+    direction=ss.Direction.HIGHER_IS_BETTER,
     random_state=12345,
 )
 

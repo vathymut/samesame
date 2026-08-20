@@ -1,10 +1,10 @@
 """Guide-owned helpers for the monitor-model-confidence example."""
 
+# ruff: noqa: I001
+
 from __future__ import annotations
 
-import numpy as np
 from numpy.typing import NDArray
-from scipy.special import logit
 
 # --8<-- [start:imports]
 import numpy as np

@@ -7,10 +7,10 @@ By the end, you will know how to:
 
 - distinguish "different" from "worse"
 - choose the correct `direction`
-- run `ss.shift.detect_harm(...)` and interpret the p-value
+- run `ss.detect_harm(...)` and interpret the p-value
 
-`ss.shift.detect_shift(...)` asks whether source and target differ at all.
-`ss.shift.detect_harm(...)` asks a narrower question: did the target group pick up more of the bad
+`ss.detect_shift(...)` asks whether source and target differ at all.
+`ss.detect_harm(...)` asks a narrower question: did the target group pick up more of the bad
 end of the signal?
 
 ## What you need
@@ -39,26 +39,26 @@ The target group is slightly worse on purpose, so this is a good example for lea
 ```python
 import samesame as ss
 
-shift = ss.shift.detect_shift(source_quality, target_quality)
+shift = ss.detect_shift(source_quality, target_quality)
 
-harm = ss.shift.detect_harm(
+harm = ss.detect_harm(
     source_quality,
     target_quality,
-    direction="higher-is-better",
+    direction=ss.Direction.HIGHER_IS_BETTER,
 )
 
 print(f"Shift p-value: {shift.pvalue:.4f}")
 print(f"Harm  p-value: {harm.pvalue:.4f}")
 ```
 
-Because higher values are better here, we use `direction="higher-is-better"`. That tells
+Because higher values are better here, we use `direction=ss.Direction.HIGHER_IS_BETTER`. That tells
 `samesame` to treat a downward move in the target group as harmful.
 
 ## How to read the result
 
 - A small p-value from `detect_shift(...)` means the groups differ.
 - A small p-value from `detect_harm(...)` means the target group also moved in the worse direction.
-- If your signal already uses larger values for worse outcomes, use `direction="higher-is-worse"` instead.
+- If your signal already uses larger values for worse outcomes, use `direction=ss.Direction.HIGHER_IS_WORSE` instead.
 
 Typical examples of `higher-is-worse` signals are predicted default risk, error, or anomaly level.
 Typical examples of `higher-is-better` signals are confidence, accuracy, or quality.

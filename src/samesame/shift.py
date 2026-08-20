@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from enum import Enum
 from numbers import Integral
 from typing import Literal
 
@@ -27,26 +28,41 @@ from samesame._posterior import compute_posterior_evidence
 from samesame._statistics import harmful_shift_statistic
 from samesame.weights import ImportanceWeights
 
-Direction = Literal["higher-is-worse", "higher-is-better"]
+
+class Direction(Enum):
+    """Polarity that defines "worse" for the scores.
+
+    Attributes
+    ----------
+    HIGHER_IS_WORSE : Direction
+        Larger scores indicate harm (e.g., predicted risk).
+    HIGHER_IS_BETTER : Direction
+        Larger scores indicate quality (e.g., confidence, accuracy).
+    """
+
+    HIGHER_IS_WORSE = "higher-is-worse"
+    HIGHER_IS_BETTER = "higher-is-better"
+
+
 RandomState = int | np.random.RandomState | np.random.Generator | None
 ShiftStatistic = Literal["roc_auc", "balanced_accuracy", "matthews_corrcoef"]
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, repr=False)
 class ShiftResult(TestResult):
     """Result of generic shift detection."""
 
     statistic_name: str
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, repr=False)
 class HarmResult(TestResult):
     """Result of harmful-shift detection."""
 
     direction: Direction
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, repr=False)
 class BayesianHarmResult(HarmResult):
     """Result of Bayesian harmful-shift detection."""
 
@@ -72,13 +88,13 @@ _SHIFT_STATISTICS: dict[str, Callable[..., float]] = {
 }
 
 
-def _validate_direction(direction: str) -> Direction:
-    match direction:
-        case "higher-is-worse" | "higher-is-better":
-            return direction
-    raise ValueError(
-        "direction must be one of 'higher-is-worse' or 'higher-is-better'."
-    )
+def _validate_direction(direction: Direction) -> Direction:
+    if not isinstance(direction, Direction):
+        raise TypeError(
+            "direction must be a samesame.shift.Direction member; "
+            f"got {direction!r}."
+        )
+    return direction
 
 
 def _resolve_random_state(random_state: RandomState) -> RandomNumberGenerator:
@@ -122,7 +138,7 @@ def _validate_shift_scores(statistic_name: str, predicted: NDArray) -> None:
 
 
 def _scores_for_direction(scores: NDArray, direction: Direction) -> NDArray:
-    if direction == "higher-is-better":
+    if direction is Direction.HIGHER_IS_BETTER:
         return -scores
     return scores
 
@@ -135,7 +151,6 @@ def _run_shift_test(
     transform: Callable[[NDArray], NDArray] | None,
     alternative: Literal["less", "greater", "two-sided"],
     n_resamples: int,
-    batch: int | None,
     random_state: RandomState,
     weights: ImportanceWeights | None,
     validate: Callable[[PreparedTwoSampleTest], None] | None = None,
@@ -151,7 +166,6 @@ def _run_shift_test(
         scores,
         metric,
         n_resamples=n_resamples,
-        batch=batch,
         alternative=alternative,
         rng=rng,
         sample_weight=prepared.sample_weight,
@@ -165,7 +179,6 @@ def _run_harm_test(
     *,
     direction: Direction,
     n_resamples: int,
-    batch: int | None,
     random_state: RandomState,
     weights: ImportanceWeights | None,
 ) -> _PreparedHarmTest:
@@ -178,7 +191,6 @@ def _run_harm_test(
         transform=lambda values: _scores_for_direction(values, validated_direction),
         alternative="greater",
         n_resamples=n_resamples,
-        batch=batch,
         random_state=random_state,
         weights=weights,
     )
@@ -198,7 +210,6 @@ def detect_shift(
     statistic: ShiftStatistic = "roc_auc",
     alternative: Literal["less", "greater", "two-sided"] = "two-sided",
     n_resamples: int = 9999,
-    batch: int | None = None,
     random_state: RandomState = None,
     weights: ImportanceWeights | None = None,
 ) -> ShiftResult:
@@ -217,9 +228,6 @@ def detect_shift(
         ``'two-sided'``.
     n_resamples : int, optional
         Number of permutation resamples. Default is 9999.
-    batch : int | None, optional
-        Number of permutations to evaluate per batch, or ``None`` for no
-        batching.
     random_state : int | np.random.RandomState | np.random.Generator | None, optional
         Random seed or generator for the permutation test.
     weights : ImportanceWeights | None, optional
@@ -233,7 +241,7 @@ def detect_shift(
     Raises
     ------
     ValueError
-        If ``n_resamples`` or ``batch`` is not positive.
+        If ``n_resamples`` is not positive.
     ValueError
         If ``statistic`` is not one of the supported statistics.
     """
@@ -245,7 +253,6 @@ def detect_shift(
         transform=None,
         alternative=alternative,
         n_resamples=n_resamples,
-        batch=batch,
         random_state=random_state,
         weights=weights,
         validate=lambda p: _validate_shift_scores(statistic, p.scores),
@@ -263,11 +270,12 @@ def detect_harm(
     target: ArrayLike,
     *,
     direction: Direction,
+    bayesian: bool = False,
+    threshold: float | None = None,
     n_resamples: int = 9999,
-    batch: int | None = None,
     random_state: RandomState = None,
     weights: ImportanceWeights | None = None,
-) -> HarmResult:
+) -> HarmResult | BayesianHarmResult:
     """Detect whether Target is harmfully shifted relative to Source.
 
     Parameters
@@ -276,13 +284,16 @@ def detect_harm(
         Outlier scores from the source (reference) group.
     target : ArrayLike
         Outlier scores from the target (evaluation) group.
-    direction : {'higher-is-worse', 'higher-is-better'}
+    direction : Direction
         Polarity that defines "worse" for the scores.
+    bayesian : bool, optional
+        When True, also compute posterior evidence for harmful shift
+        (posterior draws and Bayes factor). Default is False.
+    threshold : float | None, optional
+        Statistic value above which a posterior draw counts as evidence of
+        harm. Only meaningful when ``bayesian=True``. Default ``1 / 12``.
     n_resamples : int, optional
         Number of permutation resamples. Default is 9999.
-    batch : int | None, optional
-        Number of permutations to evaluate per batch, or ``None`` for no
-        batching.
     random_state : int | np.random.RandomState | np.random.Generator | None, optional
         Random seed or generator for the permutation test.
     weights : ImportanceWeights | None, optional
@@ -290,91 +301,38 @@ def detect_harm(
 
     Returns
     -------
-    HarmResult
-        Observed statistic, p-value, direction, and null distribution.
+    HarmResult or BayesianHarmResult
+        Observed statistic, p-value, direction, and null distribution. With
+        ``bayesian=True``, also posterior draws and Bayes factor.
 
     Raises
     ------
     ValueError
-        If ``n_resamples`` or ``batch`` is not positive.
+        If ``n_resamples`` is not positive.
     ValueError
-        If ``direction`` is not one of the supported directions.
+        If ``threshold`` is not finite, or is provided without
+        ``bayesian=True``.
+    TypeError
+        If ``direction`` is not a ``Direction`` member.
     """
+    if threshold is not None and not bayesian:
+        raise ValueError("threshold is only meaningful when bayesian=True.")
     prepared_test = _run_harm_test(
         source,
         target,
         direction=direction,
         n_resamples=n_resamples,
-        batch=batch,
         random_state=random_state,
         weights=weights,
     )
-    return HarmResult(
+    harm_result = HarmResult(
         statistic=prepared_test.result.statistic,
         pvalue=prepared_test.result.pvalue,
         direction=prepared_test.direction,
         null_distribution=prepared_test.result.null_distribution,
     )
-
-
-def detect_harm_bayesian(
-    source: ArrayLike,
-    target: ArrayLike,
-    *,
-    direction: Direction,
-    n_resamples: int = 9999,
-    batch: int | None = None,
-    random_state: RandomState = None,
-    weights: ImportanceWeights | None = None,
-    threshold: float | None = None,
-) -> BayesianHarmResult:
-    """Detect harmful shift and compute Bayesian posterior evidence.
-
-    Parameters
-    ----------
-    source : ArrayLike
-        Outlier scores from the source (reference) group.
-    target : ArrayLike
-        Outlier scores from the target (evaluation) group.
-    direction : {'higher-is-worse', 'higher-is-better'}
-        Polarity that defines "worse" for the scores.
-    n_resamples : int, optional
-        Number of permutation resamples. Default is 9999.
-    batch : int | None, optional
-        Number of permutations to evaluate per batch, or ``None`` for no
-        batching.
-    random_state : int | np.random.RandomState | np.random.Generator | None, optional
-        Random seed or generator for the permutation test.
-    weights : ImportanceWeights | None, optional
-        Importance weights for the source and target groups.
-    threshold : float | None, optional
-        Threshold above which the harmful-shift statistic counts as evidence
-        of harm. Default ``1 / 12``.
-
-    Returns
-    -------
-    BayesianHarmResult
-        Observed statistic, p-value, direction, null distribution, posterior
-        draws, and Bayes factor.
-
-    Raises
-    ------
-    ValueError
-        If ``n_resamples`` or ``batch`` is not positive.
-    ValueError
-        If ``direction`` is not one of the supported directions.
-    ValueError
-        If ``threshold`` is not finite.
-    """
-    prepared_test = _run_harm_test(
-        source,
-        target,
-        direction=direction,
-        n_resamples=n_resamples,
-        batch=batch,
-        random_state=random_state,
-        weights=weights,
-    )
+    if not bayesian:
+        return harm_result
     resolved_threshold = _resolve_posterior_threshold(threshold)
     posterior, bayes_factor = compute_posterior_evidence(
         prepared_test.prepared.labels,
@@ -386,10 +344,10 @@ def detect_harm_bayesian(
         base_weight=prepared_test.prepared.sample_weight,
     )
     return BayesianHarmResult(
-        statistic=prepared_test.result.statistic,
-        pvalue=prepared_test.result.pvalue,
-        direction=prepared_test.direction,
-        null_distribution=prepared_test.result.null_distribution,
+        statistic=harm_result.statistic,
+        pvalue=harm_result.pvalue,
+        direction=harm_result.direction,
+        null_distribution=harm_result.null_distribution,
         posterior=posterior,
         bayes_factor=bayes_factor,
     )
@@ -403,6 +361,5 @@ __all__ = [
     "ShiftStatistic",
     "TestResult",
     "detect_harm",
-    "detect_harm_bayesian",
     "detect_shift",
 ]

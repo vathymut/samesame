@@ -54,10 +54,10 @@ rf_bad.fit(X_train, y_train_binary)
 train_risk = rf_bad.oob_decision_function_[:, 1].ravel()
 deployment_risk = rf_bad.predict_proba(X_deployment)[:, 1].ravel()
 
-unweighted = ss.shift.detect_harm(
+unweighted = ss.detect_harm(
     source=train_risk,
     target=deployment_risk,
-    direction="higher-is-worse",
+    direction=ss.Direction.HIGHER_IS_WORSE,
     random_state=12345,
 )
 ```
@@ -79,10 +79,10 @@ weights = from_domain_probabilities(
     lambda_=0.5,
 )
 
-weighted = ss.shift.detect_harm(
+weighted = ss.detect_harm(
     source=train_risk,
     target=deployment_risk,
-    direction="higher-is-worse",
+    direction=ss.Direction.HIGHER_IS_WORSE,
     weights=weights,
     random_state=12345,
 )

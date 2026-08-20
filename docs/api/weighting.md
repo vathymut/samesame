@@ -15,9 +15,9 @@ and target actually share.
 import samesame as ss
 from samesame.weights import ImportanceWeights, from_domain_probabilities
 
-result = ss.shift.detect_shift(source_scores, target_scores)
+result = ss.detect_shift(source_scores, target_scores)
 
-result = ss.shift.detect_shift(
+result = ss.detect_shift(
     source_scores,
     target_scores,
     weights=ImportanceWeights(
@@ -29,13 +29,13 @@ result = ss.shift.detect_shift(
 weights = from_domain_probabilities(
     source_prob=source_domain_probs,
     target_prob=target_domain_probs,
-    mode="source",
+    mode="both",
 )
 
-result = ss.shift.detect_harm(
+result = ss.detect_harm(
     source_scores,
     target_scores,
-    direction="higher-is-worse",
+    direction=ss.Direction.HIGHER_IS_WORSE,
     weights=weights,
 )
 ```
@@ -48,7 +48,7 @@ support rather than low-overlap outliers.
 It takes three main controls:
 
 - `source_prob` and `target_prob`, passed separately
-- `mode`, which decides whether to reweight source, target, or both
+- `mode`, which decides whether to reweight source, target, or both (default `"both"`)
 - `lambda_`, which trades off correction strength against stability
 
 ## Choosing a mode
@@ -57,7 +57,7 @@ It takes three main controls:
 |------|--------------------|
 | `mode="source"` | overlap from the source side |
 | `mode="target"` | overlap from the target side |
-| `mode="both"` | common support from both sides |
+| `mode="both"` | common support from both sides (default) |
 
 `lambda_=0.5` is a practical default. Lower values correct more aggressively. Higher values move
 closer to uniform weights.

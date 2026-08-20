@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from typing import Literal
 
 import numpy as np
@@ -32,6 +32,32 @@ class TestResult:
     statistic: float
     pvalue: float
     null_distribution: NDArray[np.float64]
+
+    def significant(self, alpha: float = 0.05) -> bool:
+        """Return whether ``pvalue`` is significant at level ``alpha``.
+
+        Parameters
+        ----------
+        alpha : float, optional
+            Significance level. Default is 0.05.
+
+        Returns
+        -------
+        bool
+            True when ``pvalue <= alpha``.
+        """
+        alpha_value = float(alpha)
+        if not np.isfinite(alpha_value) or not 0.0 < alpha_value < 1.0:
+            raise ValueError("alpha must be in the open interval (0, 1).")
+        return self.pvalue <= alpha_value
+
+    def __repr__(self) -> str:
+        rendered = ", ".join(
+            f"{field.name}={getattr(self, field.name)!r}"
+            for field in fields(self)
+            if field.name != "null_distribution"
+        )
+        return f"{type(self).__name__}({rendered})"
 
 
 def prepare_two_sample_test(
@@ -69,7 +95,6 @@ def run_permutation_test(
     metric: Callable[..., float],
     *,
     n_resamples: int,
-    batch: int | None,
     alternative: Literal["less", "greater", "two-sided"],
     rng: RandomNumberGenerator,
     sample_weight: NDArray[np.float64] | None = None,
@@ -87,8 +112,6 @@ def run_permutation_test(
         ``sample_weight``.
     n_resamples : int
         Number of permutation resamples.
-    batch : int | None
-        Number of permutations to evaluate per batch, or ``None``.
     alternative : {'less', 'greater', 'two-sided'}
         Alternative hypothesis for the permutation test.
     rng : np.random.Generator | np.random.RandomState
@@ -104,15 +127,13 @@ def run_permutation_test(
     Raises
     ------
     ValueError
-        If ``n_resamples`` or ``batch`` is not a positive integer.
+        If ``n_resamples`` is not a positive integer.
     ValueError
         If ``alternative`` is not one of ``'less'``, ``'greater'``,
         ``'two-sided'``.
     """
     if n_resamples < 1:
         raise ValueError("n_resamples must be a positive integer.")
-    if batch is not None and batch < 1:
-        raise ValueError("batch must be a positive integer or None.")
 
     def statistic(labels: NDArray[np.int_], scores: NDArray) -> float:
         return float(metric(labels, scores, sample_weight=sample_weight))
@@ -122,7 +143,6 @@ def run_permutation_test(
         statistic=statistic,
         permutation_type="pairings",
         n_resamples=n_resamples,
-        batch=batch,
         alternative=alternative,
         rng=rng,
     )

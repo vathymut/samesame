@@ -27,10 +27,10 @@ weights_both = from_domain_probabilities(
   lambda_=0.5,
 )
 
-double_weighted = ss.shift.detect_harm(
+double_weighted = ss.detect_harm(
   source=train_risk,
   target=deployment_risk,
-  direction="higher-is-worse",
+  direction=ss.Direction.HIGHER_IS_WORSE,
   weights=weights_both,
   random_state=12345,
 )
@@ -48,10 +48,10 @@ weights_source = from_domain_probabilities(
   lambda_=0.5,
 )
 
-source_weighted = ss.shift.detect_harm(
+source_weighted = ss.detect_harm(
   source=train_risk,
   target=deployment_risk,
-  direction="higher-is-worse",
+  direction=ss.Direction.HIGHER_IS_WORSE,
   weights=weights_source,
   random_state=12345,
 )

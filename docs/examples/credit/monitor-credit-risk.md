@@ -10,7 +10,7 @@ familiarity with fitting a scikit-learn classifier and calling `predict_proba(..
 ## Why this signal works well
 
 Predicted default probability is already meaningful. Larger values are directly worse, so it is a
-natural signal for `ss.shift.detect_harm(...)`.
+natural signal for `ss.detect_harm(...)`.
 
 This guide uses the HELOC dataset and simulates deployment by training on lower-risk customers and
 testing on higher-risk customers.
@@ -59,7 +59,7 @@ rf_domain = RandomForestClassifier(
 rf_domain.fit(X_concat, split)
 domain_scores = rf_domain.oob_decision_function_[:, 1]
 
-shift = ss.shift.detect_shift(
+shift = ss.detect_shift(
     source=domain_scores[split.values == 0],
     target=domain_scores[split.values == 1],
 )
@@ -101,10 +101,10 @@ rf_bad.fit(X_train, loan_status)
 train_risk = rf_bad.oob_decision_function_[:, 1].ravel()
 deployment_risk = rf_bad.predict_proba(X_deployment)[:, 1].ravel()
 
-harm = ss.shift.detect_harm(
+harm = ss.detect_harm(
     source=train_risk,
     target=deployment_risk,
-    direction="higher-is-worse",
+    direction=ss.Direction.HIGHER_IS_WORSE,
 )
 
 print(f"Statistic: {harm.statistic:.4f}")
