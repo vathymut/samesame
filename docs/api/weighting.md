@@ -1,7 +1,7 @@
 # Importance weights
 
-Use `samesame.weights` when you want a shift test to focus on the part of feature space that source
-and target actually share.
+Use `samesame.weights` when you want a shift test to focus on the region of feature space where
+source and target have common support.
 
 ## Choose an approach
 
@@ -43,7 +43,7 @@ result = ss.detect_harm(
 ## When `from_domain_probabilities(...)` helps
 
 Use it when source and target do not overlap well and you want the comparison to emphasize common
-support rather than low-overlap outliers.
+support rather than low-overlap observations.
 
 It takes three main controls:
 
@@ -59,14 +59,14 @@ It takes three main controls:
 | `mode="target"` | overlap from the target side |
 | `mode="both"` | common support from both sides (default) |
 
-`lambda_=0.5` is a practical default. Lower values correct more aggressively. Higher values move
-closer to uniform weights.
+`lambda_=0.5` is a practical default. Lower values correct more aggressively. Higher values produce
+weights closer to uniform.
 
 ## Effective sample size
 
 Once you have `ImportanceWeights`, call `.effective_sample_size()` to get Kish's ESS for each group.
 ESS is bounded above by the sample size; it drops toward 1 when a few observations carry almost all
-the weight. Use it to decide whether your weights are trustworthy before you pass them to a test.
+the weight. Use it to assess whether the weights are sufficiently dispersed for the comparison.
 
 ```python
 ess = weights.effective_sample_size()

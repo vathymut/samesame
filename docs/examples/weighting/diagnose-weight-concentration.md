@@ -1,12 +1,12 @@
 # How to: Diagnose weight concentration with effective sample size
 
-Use this guide after you have built importance weights and want to know whether they are safe to use
-in a shift test.
+Use this guide after you have built importance weights and want to assess whether they are
+sufficiently dispersed for a shift test.
 
 Importance weights correct for low overlap between source and target, but they can also put most of
 their mass on a handful of observations. When that happens, the weighted test is effectively
-comparing a few samples, not the whole group. Kish's effective sample size (ESS) tells you how bad
-that is before you trust the result.
+comparing a few samples, not the whole group. Kish's effective sample size (ESS) measures that
+concentration before you interpret the result.
 
 ## What you need
 
@@ -54,7 +54,7 @@ ESS is bounded above by the actual sample size. Uniform weights give `ESS = n`; 
 hogging all the weight push ESS toward 1. In this example, source ESS collapses to roughly `6` out
 of `400`, which means a handful of source observations are doing almost all the work.
 
-## Step 3 - Sweep `lambda_` and pick the smallest correction you trust
+## Step 3 - Sweep `lambda_` and choose the smallest correction you support
 
 ESS rises with `lambda_`, so use it to find the trade-off you are willing to accept.
 
@@ -85,16 +85,16 @@ lambda_=1.0   source ESS= 400.00  target ESS= 400.00
 
 - Compare ESS to `n` for each group, not to each other. A useful rule of thumb: worry when ESS is a
   small fraction of `n` (say, below a quarter).
-- The collapse from `400` to `6.53` at `lambda_=0.0` is the signal that plain density-ratio weights
-  are unsafe here — one source observation carries a weight above `100`.
+- The collapse from `400` to `6.53` at `lambda_=0.0` shows that plain density-ratio weights are
+  highly concentrated here; one source observation carries a weight above `100`.
 - `lambda_=0.5` recovers most of the sample while still correcting for overlap. That is why it is the
   default.
 - If ESS stays low even at `lambda_=0.5`, the groups barely overlap. Consider skipping weights
   altogether or collecting more comparable data rather than pushing `lambda_` higher.
 
 ESS is a diagnostic, not a verdict. Use it alongside the weighted p-value: a significant weighted
-result with a healthy ESS is meaningful; a significant weighted result with `ESS ≈ 1` is an artifact
-of one or two observations.
+result with a healthy ESS is easier to interpret; a significant weighted result with `ESS ≈ 1` may
+be driven by one or two observations.
 
 For the intuition behind the weighting formulas, see
 [When importance weights help](../../explanation/importance-weights-rationale.md).

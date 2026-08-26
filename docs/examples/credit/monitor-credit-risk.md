@@ -82,7 +82,7 @@ feature_importance = (
 print(feature_importance.head(5))
 ```
 
-## Step 2 - Check whether predicted risk moved up
+## Step 2 - Check whether predicted risk increased
 
 Now train the actual credit model on the training set. Use out-of-bag predictions for training and
 standard predictions for deployment.
@@ -112,7 +112,7 @@ print(f"p-value:   {harm.pvalue:.4f}")
 ```
 
 On this split, you should again see a very small p-value. That means deployment is not only
-different, but also riskier according to the model.
+different, but also shows higher predicted risk according to the model.
 
 ## Step 3 - Decide what to do
 
@@ -124,10 +124,10 @@ Using both tests together gives a clearer picture than either test alone. Call a
 | significant | significant | the population changed **and** predicted risk worsened |
 | significant | not significant | the population changed, but not in a clearly harmful way |
 | not significant | significant | rare; the directional signal is strong where the two-sided one is not — investigate directly |
-| not significant | not significant | no clear evidence of a problem |
+| not significant | not significant | no clear evidence of harmful shift |
 
-In this HELOC example, both tests are significant. That is a good signal to retrain, recalibrate, or
-otherwise revisit the deployment policy for the new population.
+In this HELOC example, both tests are significant. These results justify investigating retraining,
+recalibration, or changes to the deployment policy for the new population.
 
 If you want a separate confidence view, see [Monitor model confidence](monitor-model-confidence.md).
 If labels are available, see

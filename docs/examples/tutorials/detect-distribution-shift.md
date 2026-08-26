@@ -9,7 +9,7 @@ By the end, you will know how to:
 - keep that signal honest with out-of-sample predictions
 - run `ss.detect_shift(...)` and interpret the result
 
-The idea is straightforward: train a classifier to tell **source** from **target** apart. If its
+The workflow is: train a classifier to distinguish **source** from **target**. If its
 out-of-sample probabilities separate the two groups more than chance, the datasets differ.
 
 ## What you need
@@ -20,7 +20,7 @@ out-of-sample probabilities separate the two groups more than chance, the datase
 
 ## Step 1 - Create a simple source and target example
 
-Here we make a synthetic target group that is slightly shifted away from the source group.
+Here we create a synthetic target group with a slight distributional shift from the source group.
 
 ```python
 import numpy as np
@@ -78,11 +78,12 @@ a deliberately shifted target group.
 
 - A small p-value means the target group looks different from the source group.
 - A large p-value means there is not enough evidence to say the groups differ.
-- The default statistic is ROC AUC: `0.5` means the classifier cannot separate the groups, and
-  larger values mean stronger separation.
+- The default statistic is ROC AUC: a value near `0.5` indicates little separability. Values farther
+  from `0.5` indicate stronger separation; values below `0.5` mean the classifier's ordering is
+  reversed.
 
 `ss.detect_shift(...)` answers only the question "did anything change?" It does not tell you
 whether the change is worse for your application.
 
 If direction matters, continue to
-[Check whether a change points in a worse direction](check-shift-harm.md).
+[Check whether target shifted toward worse outcomes](check-shift-harm.md).

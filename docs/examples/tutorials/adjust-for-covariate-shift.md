@@ -1,7 +1,7 @@
 # Tutorial: Focus on shared support with importance weights
 
 Use this tutorial when source and target do not cover the same feature space well, and you want
-your test to focus on the region where they genuinely overlap.
+your test to focus on the region where they have common support.
 
 By the end, you will know how to:
 
@@ -9,8 +9,8 @@ By the end, you will know how to:
 - keep weighting inputs separate from the signal you want to test
 - compare unweighted and weighted harmful-shift results
 
-Importance weights help when a plain test is being pulled around by observations that are rare or
-irrelevant for the comparison you actually care about.
+Importance weights help when a plain test is being influenced by observations that are rare or
+irrelevant to the comparison of interest.
 
 ## What you need
 
@@ -44,7 +44,7 @@ domain_prob = cross_val_predict(
 )[:, 1]
 ```
 
-## Step 2 - Build the signal you actually want to monitor
+## Step 2 - Build the outcome signal to monitor
 
 This should be a separate signal. Do not reuse `domain_prob` as the harmful-shift input.
 
@@ -101,7 +101,7 @@ print(f"Weighted   p-value: {weighted.pvalue:.4f}")
 
 - The unweighted test uses the full source and target groups.
 - The weighted test puts more emphasis on the region where the two groups overlap.
-- If the unweighted result is strong but the weighted result is much weaker, the apparent problem
+- If the unweighted result is strong but the weighted result is much weaker, the apparent shift
   may be concentrated in low-overlap regions.
 - If both results are strong, the signal persists in common support.
 

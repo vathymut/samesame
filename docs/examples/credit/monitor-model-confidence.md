@@ -13,7 +13,7 @@ Predicted risk and model confidence are not the same thing.
 - **Predicted risk** asks whether the model thinks outcomes are worse.
 - **Confidence** asks whether the model looks more or less certain about its predictions.
 
-Those signals can move together, but they do not have to. A model can become more confident while
+Those signals can change together, but they do not have to. A model can become more confident while
 still producing riskier outcomes.
 
 ## Setup
@@ -74,7 +74,8 @@ print(f"Training mean confidence:   {train_confidence.mean():.3f}")
 print(f"Deployment mean confidence: {deployment_confidence.mean():.3f}")
 ```
 
-On this HELOC split, deployment confidence is higher on average than training confidence.
+On this HELOC split, deployment confidence is higher across the score distribution than training
+confidence.
 
 ## Step 3 - Test whether confidence dropped
 
@@ -96,7 +97,7 @@ print(f"p-value:   {harm.pvalue:.4f}")
 ```
 
 This workflow should not flag a harmful confidence shift on the HELOC split, because deployment
-confidence moves up rather than down.
+confidence shifts toward higher scores rather than lower scores.
 
 ## What this tells you
 

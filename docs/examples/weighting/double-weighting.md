@@ -3,8 +3,8 @@
 Use this guide when both source and target contain low-overlap observations and source-only
 reweighting is not enough.
 
-This is the most aggressive weighting mode. Use it only when you have a real reason to believe the
-problem sits on both sides of the comparison.
+This mode applies weighting to both groups and can substantially change the comparison. Use it when
+low-overlap observations occur in both groups.
 
 ## Step 1 - Start from the source-reweighting setup
 
@@ -35,7 +35,7 @@ double_weighted = ss.detect_harm(
   random_state=12345,
 )
 
-print(f"Double-weighted p-value: {double_weighted.pvalue:.4f}")
+print(f"Doubly-weighted p-value: {double_weighted.pvalue:.4f}")
 ```
 
 ## Step 3 - Compare the three views
@@ -58,27 +58,27 @@ source_weighted = ss.detect_harm(
 
 print(f"Unweighted      p-value: {unweighted.pvalue:.4f}")
 print(f"Source-weighted p-value: {source_weighted.pvalue:.4f}")
-print(f"Double-weighted p-value: {double_weighted.pvalue:.4f}")
+print(f"Doubly-weighted p-value: {double_weighted.pvalue:.4f}")
 ```
 
 Think of the three results this way:
 
 - **Unweighted** looks at the full populations.
 - **Source-weighted** focuses on overlap from the source side.
-- **Double-weighted** focuses on common support from both sides.
+- **Doubly-weighted** focuses on common support from both sides.
 
-If the signal shrinks only after double-weighting, target-side outliers were still influencing the
+If the signal shrinks only after doubly-weighting, target-side outliers were still influencing the
 result after source reweighting.
 
 ## Choosing `lambda_`
 
-`lambda_=0.5` is the safest starting point.
+`lambda_=0.5` is a practical starting point.
 
 - Lower values make the correction stronger and the variance higher.
-- Higher values move closer to uniform weights.
+- Higher values produce weights closer to uniform.
 
-If you are unsure, start at `0.5`, inspect the sensitivity, and only move lower when you trust the
-domain probabilities and the overlap story.
+If you are unsure, start at `0.5`, inspect the sensitivity, and only choose a lower value when the
+domain probabilities and assumed overlap structure are reliable.
 
 For the intuition behind the formulas, see
 [When importance weights help](../../explanation/importance-weights-rationale.md).

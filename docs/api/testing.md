@@ -7,7 +7,7 @@ Use this page when you already have a numeric signal for a source group and a ta
 | Function | What it answers | Use it when |
 |----------|------------------|-------------|
 | `shift.detect_shift(...)` | Did anything change? | you want to detect any difference between source and target |
-| `shift.detect_harm(...)` | Did the target group move in a worse direction? | you know what "worse" means for your signal |
+| `shift.detect_harm(...)` | Did the target distribution shift toward worse outcomes? | you know what "worse" means for your signal |
 
 Examples of useful signals include predicted risk, prediction error, model confidence, and domain
 classifier probabilities.

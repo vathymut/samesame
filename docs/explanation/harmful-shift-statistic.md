@@ -4,7 +4,7 @@
 permutation null. They answer different questions because they use different statistics.
 
 - `detect_shift` asks **did anything change?** It uses ROC AUC under a two-sided alternative.
-- `detect_harm` asks **did the target move in a worse direction?** It uses a directional,
+- `detect_harm` asks **did the target distribution shift toward worse outcomes?** It uses a directional,
   source-anchored statistic under a one-sided (`greater`) alternative.
 
 This page explains what the harm statistic measures and why it is not redundant with AUC.
@@ -44,7 +44,7 @@ target clears a high bar that source stays below.
 - **Directional.** If target has excess mass in the worse tail, $TPR$ stays high where $FPR$ is small,
   so $T$ is large. If target looks like source, $TPR \approx FPR$ throughout and $T$ is small.
 - **Source-anchored.** Because the weight is built from $\hat{F}_{\text{source}}$, the comparison is
-  calibrated to where the reference distribution actually lives, not to an arbitrary score range.
+  calibrated to where the reference distribution lies, not to an arbitrary score range.
 - **Less sensitive to symmetric change.** A shift that moves target *away* from source on the
   *better* side inflates two-sided AUC but does not inflate $T$ much, because the weight down at the
   high-$FPR$ end is tiny.
@@ -66,16 +66,16 @@ distributions, only that the labels are exchangeable under the null.
 
 | | `detect_shift` (AUC) | `detect_harm` (harm statistic) |
 |---|---|---|
-| Question | Did anything change? | Did target move worse? |
+| Question | Did anything change? | Did the target distribution shift toward worse outcomes? |
 | Statistic | $\int TPR \, dFPR$ | $\int TPR \cdot (1-FPR)^{2} \, dFPR$ |
 | Weight on the ROC | uniform | favours low $FPR$ (the worse tail) |
 | Alternative | two-sided | one-sided (`greater`) |
 | Sensitive to | any separability | directional excess over source support |
 
-Use `detect_shift` when you only need to know that the groups differ. Use `detect_harm` once you can
-declare what "worse" means for your signal — it will not flag a change that moves in a better or
-neutral direction.
+Use `detect_shift` when you only need to know whether the source and target distributions differ.
+Use `detect_harm` once you can declare what "worse" means for your signal. It will not flag a change
+that shifts in a better or neutral direction.
 
 For the worked examples, see
-[Check whether a change points in a worse direction](../examples/tutorials/check-shift-harm.md).
+[Check whether target shifted toward worse outcomes](../examples/tutorials/check-shift-harm.md).
 For the full API, see [Shift testing](../api/testing.md).

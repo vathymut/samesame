@@ -58,8 +58,8 @@ Lower values correct more aggressively. Higher values are more conservative.
 
 | Mode | Use it when |
 |------|-------------|
-| `mode="source"` | source contains observations that are foreign to target |
-| `mode="target"` | target contains observations that are foreign to source |
+| `mode="source"` | source contains observations outside the target's common support |
+| `mode="target"` | target contains observations outside the source's common support |
 | `mode="both"` | both groups contain low-overlap observations and you want to focus on common support only |
 
 In all three cases, `from_domain_probabilities(...)` normalizes each active group so the weights
@@ -73,7 +73,7 @@ Start unweighted when:
 - you do not have a reliable domain classifier
 - you want the first-pass answer before narrowing attention to common support
 
-Weights are most useful when you already know that overlap is the issue, not as a reflex for every
+Weights are most useful when you already know that overlap is the issue, not as a default for every
 comparison.
 
 ## References

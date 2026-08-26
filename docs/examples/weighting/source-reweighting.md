@@ -4,7 +4,7 @@ Use this guide when the source group contains observations that deployment will 
 and you want the harmful-shift test to focus on comparable cases instead.
 
 This is the practical version of source reweighting: keep deployment unchanged, and down-weight the
-source observations that look foreign to it.
+source observations that are unlikely under the target distribution.
 
 ## Step 1 - Recreate the baseline workflow
 
@@ -94,10 +94,12 @@ print(f"Weighted   p-value: {weighted.pvalue:.4f}")
 ## Step 3 - Interpret the difference
 
 - The unweighted test uses every observation at full strength.
-- The weighted test reduces the influence of source observations that do not look like deployment.
+- The weighted test reduces the influence of source observations that are unlikely under the target
+  distribution.
 - If the result weakens substantially, the original signal was being driven by parts of training
   that are not very relevant for deployment.
-- If the result stays strong, the problem persists in the region the two groups share.
+- If the result stays strong, the shift persists in the region where the two groups have common
+  support.
 
 Use this mode when training contains outliers or edge cases that are not representative of the
 population you now care about.

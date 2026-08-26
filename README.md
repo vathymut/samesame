@@ -15,8 +15,8 @@
 
 > Same, same but different ...
 
-`samesame` compares a reference group with a new group and tells you whether the new group looks
-different, and whether it moved in a worse direction.
+`samesame` compares a source group with a target group and tells you whether their score
+distributions differ, and whether the target distribution shifted toward worse outcomes.
 
 In the package, the reference group is called **source** and the new group is called **target**.
 That could mean training vs production data, a baseline batch vs a fresh batch, or one segment vs
@@ -33,7 +33,7 @@ confidence, prediction error, or a classifier score used to compare two datasets
 ## Start here
 
 - Start with [Detect a distribution shift](examples/tutorials/detect-distribution-shift.md) if you want to know whether two datasets differ at all.
-- Continue to [Check whether a shift is harmful](examples/tutorials/check-shift-harm.md) when you know what "worse" means for your signal.
+- Continue to [Check whether target shifted toward worse outcomes](examples/tutorials/check-shift-harm.md) when you know what "worse" means for your signal.
 - Use [Adjust for covariate shift with importance weights](examples/tutorials/adjust-for-covariate-shift.md) when source and target have different feature coverage and you want to focus on their overlap.
 
 ## Quick example
@@ -58,8 +58,8 @@ print(f"Harm  p-value: {harm.pvalue:.4f}")
 ```
 
 A small p-value from `ss.detect_shift(...)` means the groups differ.
-A small p-value from `ss.detect_harm(...)` means the target group also moved in the declared worse
-direction.
+A small p-value from `ss.detect_harm(...)` means the target distribution also shifted toward worse
+outcomes according to the declared direction.
 
 ## Common signals
 
