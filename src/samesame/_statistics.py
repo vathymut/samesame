@@ -1,4 +1,4 @@
-"""Internal statistics for source-versus-target tests."""
+"""Harmful-shift statistic: weighted AUC with source-anchored weighting."""
 
 from __future__ import annotations
 
@@ -14,14 +14,20 @@ def harmful_shift_statistic(
     *,
     sample_weight: NDArray[np.float64] | None = None,
 ) -> float:
-    """Compute the weighted harmful-shift statistic."""
+    """Directional shift statistic: ``∫ TPR · F_source(t)^2 dFPR``.
+
+    Larger values mean the target distribution has more mass above high
+    thresholds that source rarely exceeds. Inputs are the pooled labels
+    (0 = source, 1 = target) and scores pooled in the same order.
+    """
     fpr, tpr, thresholds = roc_curve(labels, scores, sample_weight=sample_weight)
-    negatives = labels == 0
-    negative_weights = None if sample_weight is None else sample_weight[negatives]
-    negative_cdf = _weighted_ecdf(
-        scores[negatives], thresholds, freq_weights=negative_weights
+
+    is_source = labels == 0
+    source_weights = None if sample_weight is None else sample_weight[is_source]
+    source_cdf = _weighted_ecdf(
+        scores[is_source], thresholds, freq_weights=source_weights
     )
-    return float(trapezoid(y=tpr * negative_cdf**2, x=fpr))
+    return float(trapezoid(y=tpr * source_cdf**2, x=fpr))
 
 
 def _weighted_ecdf(
@@ -29,16 +35,16 @@ def _weighted_ecdf(
     query: NDArray,
     freq_weights: NDArray[np.float64] | None = None,
 ) -> NDArray[np.float64]:
-    """Evaluate the (weighted) empirical CDF of ``x`` at each point in ``query``.
+    """Weighted ECDF of ``x`` evaluated at ``query``.
 
-    Raises
-    ------
-    ValueError
-        If ``freq_weights`` has the wrong length, contains non-finite values,
-        is negative, or sums to zero.
+    For each threshold ``q`` returns the total weight of observations with
+    ``x ≤ q`` divided by total weight. Uses right-continuous step function.
     """
     if freq_weights is None:
-        freq_weights = np.ones(len(x))
+        freq_weights = np.ones(len(x), dtype=np.float64)
+    else:
+        freq_weights = np.asarray(freq_weights, dtype=np.float64)
+
     if len(freq_weights) != len(x):
         raise ValueError("freq_weights must have the same length as x.")
     if not np.all(np.isfinite(freq_weights)):
@@ -49,10 +55,20 @@ def _weighted_ecdf(
         raise ValueError("freq_weights must be non-negative.")
     if freq_weights.sum() == 0:
         raise ValueError("freq_weights must not be all zero.")
+
+    # Sort and collapse duplicates so the ECDF is constant between distinct values.
     order = np.argsort(x)
-    x_unique, first = np.unique(x[order], return_index=True)
-    weight_sums = np.add.reduceat(freq_weights[order], first)
-    cdf = np.cumsum(weight_sums) / np.sum(weight_sums)
+    x_sorted = x[order]
+    w_sorted = freq_weights[order]
+
+    # Unique values + sum of weights per distinct value
+    x_unique, first_idx = np.unique(x_sorted, return_index=True)
+    weight_per_unique = np.add.reduceat(w_sorted, first_idx)
+    cdf_at_unique = np.cumsum(weight_per_unique) / weight_per_unique.sum()
+
+    # Step function: 0 below min, cdf_at_unique between values, 1 above max.
     knots = np.r_[-np.inf, x_unique]
-    levels = np.r_[0.0, cdf]
-    return levels[np.searchsorted(knots, query, "right") - 1]
+    levels = np.r_[0.0, cdf_at_unique]
+    # searchsorted right gives interval containing each query
+    pos = np.searchsorted(knots, query, side="right") - 1
+    return levels[pos]

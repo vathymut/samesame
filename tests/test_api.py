@@ -267,9 +267,18 @@ def test_harm_result_repr_includes_higher_is_worse(
     assert "worse='higher'" in repr(result)
 
 
-def test_rng_rejects_integer_seed(shift_samples: dict[str, np.ndarray]) -> None:
+def test_rng_accepts_integer_seed(shift_samples: dict[str, np.ndarray]) -> None:
+    # int seeds are a delightful UX — they must be accepted and reproducible
+    r1 = shift.test_shift(**shift_samples, rng=42, n_resamples=64)
+    r2 = shift.test_shift(**shift_samples, rng=42, n_resamples=64)
+    assert r1.statistic == r2.statistic
+    assert r1.pvalue == r2.pvalue
+    assert np.array_equal(r1.null_distribution, r2.null_distribution)
+
+
+def test_rng_rejects_invalid_type(shift_samples: dict[str, np.ndarray]) -> None:
     with pytest.raises(TypeError, match="rng must be"):
-        shift.test_shift(**shift_samples, rng=42)  # type: ignore[arg-type]
+        shift.test_shift(**shift_samples, rng="bad")  # type: ignore[arg-type]
 
 
 def test_results_do_not_expose_significant_method(

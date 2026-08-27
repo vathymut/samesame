@@ -1,31 +1,36 @@
-"""Public shift-detection seam."""
+"""Shift tests: does the target differ, and is the difference harmful?"""
 
 from __future__ import annotations
 
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
 from typing import Literal
 
-import numpy as np
 from numpy.typing import ArrayLike, NDArray
 from sklearn.metrics import roc_auc_score
 
-from samesame._permutation import Rng, _permutation_test
+from samesame._permutation import Seed, _permutation_test
 from samesame._statistics import harmful_shift_statistic
 from samesame.weights import ImportanceWeights
+
+Worse = Literal["higher", "lower"]
+
+
+def _fmt(v: object) -> str:
+    return f"{v:.4g}" if isinstance(v, float) else repr(v)
 
 
 @dataclass(frozen=True)
 class ShiftResult:
-    """Result of generic shift detection.
+    """Result of :func:`test_shift`.
 
     Attributes
     ----------
     statistic : float
-        Observed value of the test statistic.
+        Observed test statistic (ROC AUC).
     pvalue : float
-        Permutation p-value.
+        Permutation p-value (two-sided).
     null_distribution : NDArray[np.float64]
-        Permutation null distribution of the statistic.
+        Null distribution of the statistic.
     """
 
     statistic: float
@@ -33,33 +38,66 @@ class ShiftResult:
     null_distribution: NDArray[np.float64]
 
     def __repr__(self) -> str:
-        parts = []
-        for field in fields(self):
-            if field.name == "null_distribution":
-                continue
-            value = getattr(self, field.name)
-            rendered = f"{value:.4g}" if isinstance(value, float) else repr(value)
-            parts.append(f"{field.name}={rendered}")
-        return f"{type(self).__name__}({', '.join(parts)})"
+        return (
+            f"{type(self).__name__}("
+            f"statistic={_fmt(self.statistic)}, pvalue={_fmt(self.pvalue)})"
+        )
 
 
 @dataclass(frozen=True, repr=False)
 class HarmfulShiftResult(ShiftResult):
-    """Result of harmful-shift detection.
+    """Result of :func:`test_harmful_shift`.
 
     Attributes
     ----------
     statistic : float
-        Observed value of the test statistic.
+        Observed harmful-shift statistic.
     pvalue : float
-        Permutation p-value.
+        Permutation p-value (one-sided, greater).
     null_distribution : NDArray[np.float64]
-        Permutation null distribution of the statistic.
+        Null distribution of the statistic.
     worse : {'higher', 'lower'}
-        Whether higher or lower scores indicate worse outcomes.
+        Declared harmful direction.
     """
 
-    worse: Literal["higher", "lower"]
+    worse: Worse  # type: ignore[assignment]
+
+    def __repr__(self) -> str:
+        return (
+            f"{type(self).__name__}("
+            f"statistic={_fmt(self.statistic)}, pvalue={_fmt(self.pvalue)}, "
+            f"worse={self.worse!r})"
+        )
+
+
+# ---------------------------------------------------------------------------
+# internal metrics
+# ---------------------------------------------------------------------------
+
+
+def _auc_metric(
+    labels: NDArray[np.int_],
+    scores: NDArray[np.float64],
+    sample_weight: NDArray[np.float64] | None,
+) -> float:
+    return float(roc_auc_score(labels, scores, sample_weight=sample_weight))
+
+
+def _harm_metric_factory(worse: Worse):
+    def _metric(
+        labels: NDArray[np.int_],
+        scores: NDArray[np.float64],
+        sample_weight: NDArray[np.float64] | None,
+    ) -> float:
+        polarity = scores if worse == "higher" else -scores
+        return harmful_shift_statistic(labels, polarity, sample_weight=sample_weight)
+
+    return _metric
+
+
+# ---------------------------------------------------------------------------
+# public API
+# ---------------------------------------------------------------------------
 
 
 def test_shift(
@@ -67,55 +105,46 @@ def test_shift(
     target: ArrayLike,
     *,
     n_resamples: int = 9999,
-    rng: Rng | None = None,
+    rng: Seed = None,
     weights: ImportanceWeights | None = None,
 ) -> ShiftResult:
-    """Test whether Source and Target Outlier score distributions differ.
+    """Test whether source and target score distributions differ.
+
+    Two-sided permutation test using ROC AUC. A small p-value is evidence
+    that the groups differ.
 
     Parameters
     ----------
     source : ArrayLike
-        Outlier scores from the source (reference) group.
-        When scores come from a fitted model, generate them out of sample
-        with cross-validation, out-of-bag predictions, or a held-out set.
-        In-sample predictions can invalidate the test interpretation.
+        Scores from the source (reference) group. Generate out-of-sample
+        when they come from a fitted model (cross-validation, OOB, or
+        held-out set); in-sample predictions can invalidate the test.
     target : ArrayLike
-        Outlier scores from the target (evaluation) group.
-        When scores come from a fitted model, generate them out of sample
-        with cross-validation, out-of-bag predictions, or a held-out set.
-        In-sample predictions can invalidate the test interpretation.
+        Scores from the target (evaluation) group.
     n_resamples : int, optional
-        Number of permutation resamples. Default is 9999.
-    rng : np.random.RandomState | np.random.Generator | None, optional
-        Random generator for the permutation test. Integer seeds are not
-        accepted; use ``np.random.default_rng(seed)`` when reproducibility
-        from a seed is needed.
+        Number of permutation resamples. Default 9999.
+    rng : int | np.random.Generator | np.random.RandomState | None, optional
+        Random state for reproducibility. Pass an ``int`` seed or a
+        ``Generator``/``RandomState``. Default ``None``.
     weights : ImportanceWeights | None, optional
-        Importance weights for the source and target groups.
+        Importance weights per group.
 
     Returns
     -------
     ShiftResult
         Observed statistic, p-value, and null distribution.
-
-    Raises
-    ------
-    ValueError
-        If ``n_resamples`` is not positive.
     """
     statistic, pvalue, null_distribution = _permutation_test(
         source,
         target,
-        metric=roc_auc_score,
+        metric=_auc_metric,
         alternative="two-sided",
         n_resamples=n_resamples,
         rng=rng,
         weights=weights,
     )
     return ShiftResult(
-        statistic=statistic,
-        pvalue=pvalue,
-        null_distribution=null_distribution,
+        statistic=statistic, pvalue=pvalue, null_distribution=null_distribution
     )
 
 
@@ -123,58 +152,41 @@ def test_harmful_shift(
     source: ArrayLike,
     target: ArrayLike,
     *,
-    worse: Literal["higher", "lower"],
+    worse: Worse,
     n_resamples: int = 9999,
-    rng: Rng | None = None,
+    rng: Seed = None,
     weights: ImportanceWeights | None = None,
 ) -> HarmfulShiftResult:
-    """Test whether Target is harmfully shifted relative to Source.
+    """Test whether target is harmfully shifted relative to source.
+
+    One-sided permutation test. A small p-value is evidence that target
+    has excess mass in the harmful tail.
 
     Parameters
     ----------
     source : ArrayLike
-        Outlier scores from the source (reference) group.
-        When scores come from a fitted model, generate them out of sample
-        with cross-validation, out-of-bag predictions, or a held-out set.
-        In-sample predictions can invalidate the test interpretation.
+        Scores from the source (reference) group.
     target : ArrayLike
-        Outlier scores from the target (evaluation) group.
-        When scores come from a fitted model, generate them out of sample
-        with cross-validation, out-of-bag predictions, or a held-out set.
-        In-sample predictions can invalidate the test interpretation.
+        Scores from the target (evaluation) group.
     worse : {'higher', 'lower'}
-        Whether higher or lower scores indicate worse outcomes.
+        Whether larger (``'higher'``) or smaller (``'lower'``) scores
+        indicate harm.
     n_resamples : int, optional
-        Number of permutation resamples. Default is 9999.
-    rng : np.random.RandomState | np.random.Generator | None, optional
-        Random generator for the permutation test. Integer seeds are not
-        accepted; use ``np.random.default_rng(seed)`` when reproducibility
-        from a seed is needed.
+        Number of permutation resamples. Default 9999.
+    rng : int | np.random.Generator | np.random.RandomState | None, optional
+        Random state for reproducibility.
     weights : ImportanceWeights | None, optional
-        Importance weights for the source and target groups.
+        Importance weights per group.
 
     Returns
     -------
     HarmfulShiftResult
-        Observed statistic, p-value, and harm direction.
-
-    Raises
-    ------
-    ValueError
-        If ``n_resamples`` is not positive.
-    ValueError
-        If ``worse`` is not ``"higher"`` or ``"lower"``.
+        Observed statistic, p-value, harm direction, and null distribution.
     """
     if worse not in ("higher", "lower"):
         raise ValueError("worse must be either 'higher' or 'lower'.")
 
-    def metric(
-        labels: NDArray[np.int_],
-        scores: NDArray,
-        sample_weight: NDArray[np.float64] | None,
-    ) -> float:
-        polarity = scores if worse == "higher" else -scores
-        return harmful_shift_statistic(labels, polarity, sample_weight=sample_weight)
+    metric = _harm_metric_factory(worse)
 
     statistic, pvalue, null_distribution = _permutation_test(
         source,
@@ -193,9 +205,4 @@ def test_harmful_shift(
     )
 
 
-__all__ = [
-    "HarmfulShiftResult",
-    "ShiftResult",
-    "test_harmful_shift",
-    "test_shift",
-]
+__all__ = ["HarmfulShiftResult", "ShiftResult", "test_harmful_shift", "test_shift"]

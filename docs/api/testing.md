@@ -18,7 +18,7 @@ classifier probabilities.
 All functions accept:
 
 - `n_resamples` to control the number of permutation resamples
-- `rng` for reproducibility; pass a NumPy `Generator` or `RandomState`, or leave it as `None`
+- `rng` for reproducibility; pass an ``int`` seed, a NumPy ``Generator``/``RandomState``, or ``None``
 - `weights` for weighted testing with `ImportanceWeights`
 
 `shift.test_harmful_shift(...)` also requires `worse`:
