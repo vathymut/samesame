@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from numbers import Integral
 from typing import Literal
 
 import numpy as np
@@ -60,6 +61,7 @@ def run_permutation_test(
     metric: Callable[..., float],
     *,
     n_resamples: int,
+    batch: int | None,
     alternative: Literal["less", "greater", "two-sided"],
     rng: RandomNumberGenerator,
     sample_weight: NDArray[np.float64] | None = None,
@@ -77,6 +79,9 @@ def run_permutation_test(
         ``sample_weight``.
     n_resamples : int
         Number of permutation resamples.
+    batch : int or None
+        Number of permutations processed at once. ``None`` lets SciPy choose
+        its default batch size.
     alternative : {'less', 'greater', 'two-sided'}
         Alternative hypothesis for the permutation test.
     rng : np.random.Generator | np.random.RandomState
@@ -99,6 +104,10 @@ def run_permutation_test(
     """
     if n_resamples < 1:
         raise ValueError("n_resamples must be a positive integer.")
+    if batch is not None and (
+        isinstance(batch, bool) or not isinstance(batch, Integral) or batch < 1
+    ):
+        raise ValueError("batch must be None or a positive integer.")
 
     def statistic(labels: NDArray[np.int_], scores: NDArray) -> float:
         return float(metric(labels, scores, sample_weight=sample_weight))
@@ -108,6 +117,7 @@ def run_permutation_test(
         statistic=statistic,
         permutation_type="pairings",
         n_resamples=n_resamples,
+        batch=batch,
         alternative=alternative,
         rng=rng,
     )

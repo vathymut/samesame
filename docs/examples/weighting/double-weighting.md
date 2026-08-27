@@ -18,9 +18,9 @@ At that point you already have:
 ## Step 2 - Weight both groups
 
 ```python
-from samesame.weights import from_domain_probabilities
+from samesame.weights import domain_weights
 
-weights_both = from_domain_probabilities(
+weights_both = domain_weights(
   source_prob=source_prob,
   target_prob=target_prob,
   mode="both",
@@ -30,9 +30,9 @@ weights_both = from_domain_probabilities(
 double_weighted = ss.detect_harm(
   source=train_risk,
   target=deployment_risk,
-  direction=ss.Direction.HIGHER_IS_WORSE,
+    worse="higher",
   weights=weights_both,
-  random_state=12345,
+  rng=12345,
 )
 
 print(f"Doubly-weighted p-value: {double_weighted.pvalue:.4f}")
@@ -41,7 +41,7 @@ print(f"Doubly-weighted p-value: {double_weighted.pvalue:.4f}")
 ## Step 3 - Compare the three views
 
 ```python
-weights_source = from_domain_probabilities(
+weights_source = domain_weights(
   source_prob=source_prob,
   target_prob=target_prob,
   mode="source",
@@ -51,9 +51,9 @@ weights_source = from_domain_probabilities(
 source_weighted = ss.detect_harm(
   source=train_risk,
   target=deployment_risk,
-  direction=ss.Direction.HIGHER_IS_WORSE,
+    worse="higher",
   weights=weights_source,
-  random_state=12345,
+  rng=12345,
 )
 
 print(f"Unweighted      p-value: {unweighted.pvalue:.4f}")

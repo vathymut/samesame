@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, fields
-from enum import Enum
 from numbers import Integral
 from typing import Literal
 
@@ -20,23 +19,8 @@ from samesame._comparison import (
 from samesame._statistics import harmful_shift_statistic
 from samesame.weights import ImportanceWeights
 
-
-class Direction(Enum):
-    """Polarity that defines "worse" for the scores.
-
-    Attributes
-    ----------
-    HIGHER_IS_WORSE : Direction
-        Larger scores indicate harm (e.g., predicted risk).
-    HIGHER_IS_BETTER : Direction
-        Larger scores indicate quality (e.g., confidence, accuracy).
-    """
-
-    HIGHER_IS_WORSE = "higher-is-worse"
-    HIGHER_IS_BETTER = "higher-is-better"
-
-
-RandomState = int | np.random.RandomState | np.random.Generator | None
+Rng = int | np.random.RandomState | np.random.Generator | None
+Worse = Literal["higher", "lower"]
 
 
 @dataclass(frozen=True)
@@ -98,32 +82,30 @@ class ShiftResult(TestResult):
 class HarmResult(TestResult):
     """Result of harmful-shift detection."""
 
-    direction: Direction
+    worse: Worse
 
 
-def _validate_direction(direction: Direction) -> Direction:
-    if not isinstance(direction, Direction):
-        raise TypeError(
-            f"direction must be a samesame.shift.Direction member; got {direction!r}."
-        )
-    return direction
+def _validate_worse(worse: str) -> Worse:
+    if worse not in ("higher", "lower"):
+        raise ValueError("worse must be either 'higher' or 'lower'.")
+    return worse  # type: ignore[return-value]
 
 
-def _resolve_random_state(random_state: RandomState) -> RandomNumberGenerator:
-    if random_state is None:
+def _resolve_rng(rng: Rng) -> RandomNumberGenerator:
+    if rng is None:
         return np.random.default_rng()
-    if isinstance(random_state, np.random.Generator | np.random.RandomState):
-        return random_state
-    if isinstance(random_state, Integral):
-        return np.random.default_rng(int(random_state))
+    if isinstance(rng, np.random.Generator | np.random.RandomState):
+        return rng
+    if isinstance(rng, Integral):
+        return np.random.default_rng(int(rng))
     raise TypeError(
-        "random_state must be an int, numpy.random.Generator, "
+        "rng must be an int, numpy.random.Generator, "
         "numpy.random.RandomState, or None."
     )
 
 
-def _scores_for_direction(scores: NDArray, direction: Direction) -> NDArray:
-    if direction is Direction.HIGHER_IS_BETTER:
+def _scores_for_worse(scores: NDArray, worse: Worse) -> NDArray:
+    if worse == "lower":
         return -scores
     return scores
 
@@ -136,18 +118,20 @@ def _run_shift_test(
     transform: Callable[[NDArray], NDArray] | None,
     alternative: Literal["less", "greater", "two-sided"],
     n_resamples: int,
-    random_state: RandomState,
+    batch: int | None,
+    rng: Rng,
     weights: ImportanceWeights | None,
 ) -> TestResult:
     """Prepare arrays, resolve the RNG, and run the permutation test."""
     prepared = prepare_two_sample_test(source, target, weights=weights)
     scores = prepared.scores if transform is None else transform(prepared.scores)
-    rng = _resolve_random_state(random_state)
+    rng = _resolve_rng(rng)
     statistic, pvalue, null_distribution = run_permutation_test(
         prepared.labels,
         scores,
         metric,
         n_resamples=n_resamples,
+        batch=batch,
         alternative=alternative,
         rng=rng,
         sample_weight=prepared.sample_weight,
@@ -163,27 +147,29 @@ def _run_harm_test(
     source: ArrayLike,
     target: ArrayLike,
     *,
-    direction: Direction,
+    worse: Worse,
     n_resamples: int,
-    random_state: RandomState,
+    batch: int | None,
+    rng: Rng,
     weights: ImportanceWeights | None,
 ) -> HarmResult:
     """Prepare arrays and run the harmful-shift permutation test."""
-    validated_direction = _validate_direction(direction)
+    validated_worse = _validate_worse(worse)
     result = _run_shift_test(
         source,
         target,
         metric=harmful_shift_statistic,
-        transform=lambda values: _scores_for_direction(values, validated_direction),
+        transform=lambda values: _scores_for_worse(values, validated_worse),
         alternative="greater",
         n_resamples=n_resamples,
-        random_state=random_state,
+        batch=batch,
+        rng=rng,
         weights=weights,
     )
     return HarmResult(
         statistic=result.statistic,
         pvalue=result.pvalue,
-        direction=validated_direction,
+        worse=validated_worse,
         null_distribution=result.null_distribution,
     )
 
@@ -193,7 +179,8 @@ def detect_shift(
     target: ArrayLike,
     *,
     n_resamples: int = 9999,
-    random_state: RandomState = None,
+    batch: int | None = None,
+    rng: Rng = None,
     weights: ImportanceWeights | None = None,
 ) -> ShiftResult:
     """Detect whether Source and Target Outlier score distributions differ.
@@ -202,11 +189,20 @@ def detect_shift(
     ----------
     source : ArrayLike
         Outlier scores from the source (reference) group.
+        When scores come from a fitted model, generate them out of sample
+        with cross-validation, out-of-bag predictions, or a held-out set.
+        In-sample predictions can invalidate the test interpretation.
     target : ArrayLike
         Outlier scores from the target (evaluation) group.
+        When scores come from a fitted model, generate them out of sample
+        with cross-validation, out-of-bag predictions, or a held-out set.
+        In-sample predictions can invalidate the test interpretation.
     n_resamples : int, optional
         Number of permutation resamples. Default is 9999.
-    random_state : int | np.random.RandomState | np.random.Generator | None, optional
+    batch : int or None, optional
+        Number of permutations processed at once. Controls memory usage and
+        runtime, not the number of resamples. Default is None.
+    rng : int | np.random.RandomState | np.random.Generator | None, optional
         Random seed or generator for the permutation test.
     weights : ImportanceWeights | None, optional
         Importance weights for the source and target groups.
@@ -228,7 +224,8 @@ def detect_shift(
         transform=None,
         alternative="two-sided",
         n_resamples=n_resamples,
-        random_state=random_state,
+        batch=batch,
+        rng=rng,
         weights=weights,
     )
     return ShiftResult(
@@ -242,9 +239,10 @@ def detect_harm(
     source: ArrayLike,
     target: ArrayLike,
     *,
-    direction: Direction,
+    worse: Worse,
     n_resamples: int = 9999,
-    random_state: RandomState = None,
+    batch: int | None = None,
+    rng: Rng = None,
     weights: ImportanceWeights | None = None,
 ) -> HarmResult:
     """Detect whether Target is harmfully shifted relative to Source.
@@ -253,13 +251,22 @@ def detect_harm(
     ----------
     source : ArrayLike
         Outlier scores from the source (reference) group.
+        When scores come from a fitted model, generate them out of sample
+        with cross-validation, out-of-bag predictions, or a held-out set.
+        In-sample predictions can invalidate the test interpretation.
     target : ArrayLike
         Outlier scores from the target (evaluation) group.
-    direction : Direction
-        Polarity that defines "worse" for the scores.
+        When scores come from a fitted model, generate them out of sample
+        with cross-validation, out-of-bag predictions, or a held-out set.
+        In-sample predictions can invalidate the test interpretation.
+    worse : {'higher', 'lower'}
+        Whether higher or lower scores indicate worse outcomes.
     n_resamples : int, optional
         Number of permutation resamples. Default is 9999.
-    random_state : int | np.random.RandomState | np.random.Generator | None, optional
+    batch : int or None, optional
+        Number of permutations processed at once. Controls memory usage and
+        runtime, not the number of resamples. Default is None.
+    rng : int | np.random.RandomState | np.random.Generator | None, optional
         Random seed or generator for the permutation test.
     weights : ImportanceWeights | None, optional
         Importance weights for the source and target groups.
@@ -267,30 +274,31 @@ def detect_harm(
     Returns
     -------
     HarmResult
-        Observed statistic, p-value, direction, and null distribution.
+        Observed statistic, p-value, worse direction, and null distribution.
 
     Raises
     ------
     ValueError
         If ``n_resamples`` is not positive.
-    TypeError
-        If ``direction`` is not a ``Direction`` member.
+    ValueError
+        If ``worse`` is not ``"higher"`` or ``"lower"``.
     """
     return _run_harm_test(
         source,
         target,
-        direction=direction,
+        worse=worse,
         n_resamples=n_resamples,
-        random_state=random_state,
+        batch=batch,
+        rng=rng,
         weights=weights,
     )
 
 
 __all__ = [
-    "Direction",
     "HarmResult",
     "ShiftResult",
     "TestResult",
+    "Worse",
     "detect_harm",
     "detect_shift",
 ]

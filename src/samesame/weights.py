@@ -9,6 +9,7 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 WeightingMode = Literal["source", "target", "both"]
+_PROBABILITY_CLIP = 1e-6
 
 
 def _density_ratio(
@@ -112,10 +113,10 @@ class ImportanceWeights:
         Examples
         --------
         >>> import numpy as np
-        >>> from samesame.weights import from_domain_probabilities
+        >>> from samesame.weights import domain_weights
         >>> source_prob = np.array([0.25, 0.4])
         >>> target_prob = np.array([0.6, 0.75])
-        >>> weights = from_domain_probabilities(
+        >>> weights = domain_weights(
         ...     source_prob=source_prob,
         ...     target_prob=target_prob,
         ...     mode="both"
@@ -185,9 +186,9 @@ def _as_probability_vector(values: ArrayLike, *, name: str) -> NDArray[np.float6
         raise ValueError(f"{name} must be one-dimensional.")
     if probabilities.size == 0:
         raise ValueError(f"{name} must be non-empty.")
-    if np.any(probabilities <= 0.0) or np.any(probabilities >= 1.0):
+    if np.any(probabilities < 0.0) or np.any(probabilities > 1.0):
         raise ValueError(
-            f"{name} domain probabilities must be in the open interval (0, 1)."
+            f"{name} domain probabilities must be in the closed interval [0, 1]."
         )
     return probabilities
 
@@ -206,7 +207,7 @@ def _validate_mode(mode: str) -> WeightingMode:
     raise ValueError("mode must be one of 'source', 'target', 'both'.")
 
 
-def from_domain_probabilities(
+def domain_weights(
     *,
     source_prob: ArrayLike,
     target_prob: ArrayLike,
@@ -224,11 +225,13 @@ def from_domain_probabilities(
     source_prob : NDArray
         Domain probabilities for source samples — probability, output by a
         domain classifier, that each source observation belongs to the target
-        group. Must be in the open interval (0, 1).
+        group. Must be in the closed interval [0, 1]. Values are clipped to
+        ``[1e-6, 1 - 1e-6]`` before calculating weights.
     target_prob : NDArray
         Domain probabilities for target samples — probability, output by a
         domain classifier, that each target observation belongs to the target
-        group. Must be in the open interval (0, 1).
+        group. Must be in the closed interval [0, 1]. Values are clipped to
+        ``[1e-6, 1 - 1e-6]`` before calculating weights.
     mode : {'source', 'target', 'both'}, optional
         Importance-weighting mode — controls which group's samples are
         reweighted:
@@ -257,7 +260,7 @@ def from_domain_probabilities(
     Raises
     ------
     ValueError
-        If any value in ``source_prob`` or ``target_prob`` is outside (0, 1).
+        If any value in ``source_prob`` or ``target_prob`` is outside [0, 1].
     ValueError
         If ``lambda_`` is outside [0, 1].
     ValueError
@@ -268,15 +271,15 @@ def from_domain_probabilities(
     Examples
     --------
     >>> import numpy as np
-    >>> from samesame.weights import from_domain_probabilities
+    >>> from samesame.weights import domain_weights
     >>> source_prob = np.array([0.25, 0.4])
     >>> target_prob = np.array([0.6, 0.75])
-    >>> w = from_domain_probabilities(source_prob=source_prob, target_prob=target_prob)
+    >>> w = domain_weights(source_prob=source_prob, target_prob=target_prob)
     >>> np.round(w.source, 4)
     array([0.7692, 1.2308])
     >>> np.round(w.target, 4)
     array([1.2308, 0.7692])
-    >>> w2 = from_domain_probabilities(source_prob=source_prob, target_prob=target_prob, mode="source")
+    >>> w2 = domain_weights(source_prob=source_prob, target_prob=target_prob, mode="source")
     >>> np.round(w2.source, 4)
     array([0.7692, 1.2308])
     >>> np.round(w2.target, 4)
@@ -284,6 +287,8 @@ def from_domain_probabilities(
     """
     source_prob = _as_probability_vector(source_prob, name="source_prob")
     target_prob = _as_probability_vector(target_prob, name="target_prob")
+    source_prob = np.clip(source_prob, _PROBABILITY_CLIP, 1.0 - _PROBABILITY_CLIP)
+    target_prob = np.clip(target_prob, _PROBABILITY_CLIP, 1.0 - _PROBABILITY_CLIP)
     n_source = len(source_prob)
     n_target = len(target_prob)
     lambda_value = _validate_lambda(lambda_)
@@ -309,5 +314,5 @@ __all__ = [
     "EffectiveSampleSize",
     "ImportanceWeights",
     "WeightingMode",
-    "from_domain_probabilities",
+    "domain_weights",
 ]

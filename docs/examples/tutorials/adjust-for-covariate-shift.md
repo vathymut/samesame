@@ -66,12 +66,12 @@ target_scores = risk_score[group == 1]
 
 ```python
 import samesame as ss
-from samesame.weights import from_domain_probabilities
+from samesame.weights import domain_weights
 
 source_prob = domain_prob[group == 0]
 target_prob = domain_prob[group == 1]
 
-weights = from_domain_probabilities(
+weights = domain_weights(
     source_prob=source_prob,
     target_prob=target_prob,
     mode="source",
@@ -81,16 +81,16 @@ weights = from_domain_probabilities(
 unweighted = ss.detect_harm(
     source_scores,
     target_scores,
-    direction=ss.Direction.HIGHER_IS_WORSE,
-    random_state=123_456,
+    worse="higher",
+    rng=123_456,
 )
 
 weighted = ss.detect_harm(
     source_scores,
     target_scores,
-    direction=ss.Direction.HIGHER_IS_WORSE,
+    worse="higher",
     weights=weights,
-    random_state=123_456,
+    rng=123_456,
 )
 
 print(f"Unweighted p-value: {unweighted.pvalue:.4f}")

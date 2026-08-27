@@ -22,7 +22,7 @@ can run it on its own.
 ```python
 import numpy as np
 
-from samesame.weights import from_domain_probabilities
+from samesame.weights import domain_weights
 
 rng = np.random.default_rng(7)
 
@@ -33,7 +33,7 @@ target_prob = rng.beta(a=5, b=2, size=400)
 # the density ratio through the roof and dominate the weighted comparison.
 source_prob[:8] = rng.uniform(0.97, 0.999, size=8)
 
-weights = from_domain_probabilities(
+weights = domain_weights(
     source_prob=source_prob,
     target_prob=target_prob,
     mode="both",
@@ -60,7 +60,7 @@ ESS rises with `lambda_`, so use it to find the trade-off you are willing to acc
 
 ```python
 for lam in [0.0, 0.25, 0.5, 0.75, 1.0]:
-    w = from_domain_probabilities(
+    w = domain_weights(
         source_prob=source_prob,
         target_prob=target_prob,
         mode="both",

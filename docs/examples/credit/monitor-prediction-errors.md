@@ -38,7 +38,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     y_binary,
     test_size=0.30,
     stratify=y_binary,
-    random_state=12345,
+    rng=12345,
 )
 ```
 
@@ -50,7 +50,7 @@ Use out-of-bag predictions for training so the training-side errors are not arti
 rf = RandomForestClassifier(
     n_estimators=500,
     oob_score=True,
-    random_state=12345,
+    rng=12345,
     min_samples_leaf=10,
 )
 rf.fit(X_train, y_train)
@@ -85,13 +85,13 @@ logloss_test = -(
 harm_brier = ss.detect_harm(
     source=brier_train,
     target=brier_test,
-    direction=ss.Direction.HIGHER_IS_WORSE,
+    worse="higher",
 )
 
 harm_logloss = ss.detect_harm(
     source=logloss_train,
     target=logloss_test,
-    direction=ss.Direction.HIGHER_IS_WORSE,
+    worse="higher",
 )
 
 print(f"Brier p-value:   {harm_brier.pvalue:.4f}")

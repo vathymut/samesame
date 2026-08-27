@@ -42,7 +42,7 @@ $$
 w_{\text{target}}(x) = \frac{1}{\lambda + (1 - \lambda) \hat{r}(x)}
 $$
 
-You do not need to compute these by hand. `from_domain_probabilities(...)` does it for you.
+You do not need to compute these by hand. `domain_weights(...)` does it for you.
 
 ## What `lambda_` changes
 
@@ -62,7 +62,7 @@ Lower values correct more aggressively. Higher values are more conservative.
 | `mode="target"` | target contains observations outside the source's common support |
 | `mode="both"` | both groups contain low-overlap observations and you want to focus on common support only |
 
-In all three cases, `from_domain_probabilities(...)` normalizes each active group so the weights
+In all three cases, `domain_weights(...)` normalizes each active group so the weights
 sum to that group's sample size.
 
 ## When to skip weighting

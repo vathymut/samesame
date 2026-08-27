@@ -6,7 +6,6 @@ from pathlib import Path
 import numpy as np
 
 from samesame import shift
-from samesame.shift import Direction
 
 
 def _load_example_module():
@@ -57,18 +56,18 @@ def test_confidence_recipe_feeds_harm_detection_in_expected_direction() -> None:
     harmful = shift.detect_harm(
         source_scores,
         target_scores,
-        direction=Direction.HIGHER_IS_BETTER,
+        worse="lower",
         n_resamples=99,
-        random_state=42,
+        rng=42,
     )
     reverse = shift.detect_harm(
         target_scores,
         source_scores,
-        direction=Direction.HIGHER_IS_BETTER,
+        worse="lower",
         n_resamples=99,
-        random_state=42,
+        rng=42,
     )
 
     assert source_scores.mean() > target_scores.mean()
-    assert harmful.direction is Direction.HIGHER_IS_BETTER
+    assert harmful.worse == "lower"
     assert harmful.statistic > reverse.statistic

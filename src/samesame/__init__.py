@@ -1,15 +1,14 @@
 """Public package surface for samesame."""
 
 from . import shift, weights
-from .shift import Direction, detect_harm, detect_shift
-from .weights import ImportanceWeights, from_domain_probabilities
+from .shift import detect_harm, detect_shift
+from .weights import ImportanceWeights, domain_weights
 
 __all__ = [
-    "Direction",
     "ImportanceWeights",
     "detect_harm",
     "detect_shift",
-    "from_domain_probabilities",
+    "domain_weights",
     "shift",
     "weights",
 ]

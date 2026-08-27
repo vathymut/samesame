@@ -2,37 +2,27 @@ from __future__ import annotations
 
 import inspect
 from dataclasses import FrozenInstanceError
-from enum import Enum
 
 import numpy as np
 import pytest
 
 import samesame as ss
 from samesame import shift
-from samesame.shift import Direction, HarmResult, ShiftResult
-from samesame.weights import ImportanceWeights, from_domain_probabilities
-
-
-def test_direction_is_enum_with_two_members() -> None:
-    assert issubclass(Direction, Enum)
-    assert {member.name for member in Direction} == {
-        "HIGHER_IS_WORSE",
-        "HIGHER_IS_BETTER",
-    }
+from samesame.shift import HarmResult, ShiftResult
+from samesame.weights import ImportanceWeights, domain_weights
 
 
 def test_root_exports() -> None:
     assert ss.detect_shift is shift.detect_shift
     assert ss.detect_harm is shift.detect_harm
-    assert ss.Direction is Direction
-    assert ss.from_domain_probabilities is from_domain_probabilities
+    assert ss.domain_weights is domain_weights
     assert ss.ImportanceWeights is ImportanceWeights
     assert ss.shift is shift
     assert ss.weights is ss.weights
     assert "detect_shift" in ss.__all__
     assert "detect_harm" in ss.__all__
-    assert "Direction" in ss.__all__
-    assert "from_domain_probabilities" in ss.__all__
+    assert "domain_weights" in ss.__all__
+    assert not hasattr(ss, "from_domain_probabilities")
     assert "ImportanceWeights" in ss.__all__
     assert "shift" in ss.__all__
     assert "weights" in ss.__all__
@@ -50,7 +40,9 @@ def test_root_exports() -> None:
 
 def test_detect_shift_signature_is_minimal() -> None:
     params = set(inspect.signature(shift.detect_shift).parameters)
-    assert params == {"source", "target", "n_resamples", "random_state", "weights"}
+    assert params == {
+        "source", "target", "n_resamples", "batch", "rng", "weights"
+    }
 
 
 def test_detect_harm_signature_is_minimal() -> None:
@@ -58,11 +50,27 @@ def test_detect_harm_signature_is_minimal() -> None:
     assert params == {
         "source",
         "target",
-        "direction",
+        "worse",
         "n_resamples",
-        "random_state",
+        "batch",
+        "rng",
         "weights",
     }
+
+
+def test_batch_is_passed_to_permutation_test(
+    shift_samples: dict[str, np.ndarray],
+) -> None:
+    result = shift.detect_shift(**shift_samples, n_resamples=64, batch=4)
+    assert result.null_distribution.shape == (64,)
+
+
+@pytest.mark.parametrize("batch", [0, -1, 1.5, True])
+def test_batch_rejects_invalid_values(
+    shift_samples: dict[str, np.ndarray], batch: object
+) -> None:
+    with pytest.raises(ValueError, match="batch must be None or a positive integer"):
+        shift.detect_shift(**shift_samples, batch=batch)  # type: ignore[arg-type]
 
 
 def test_flat_harm_detection_matches_namespace(
@@ -70,12 +78,12 @@ def test_flat_harm_detection_matches_namespace(
 ) -> None:
     flat = ss.detect_harm(
         **confidence_samples,
-        direction=Direction.HIGHER_IS_BETTER,
+        worse="lower",
         n_resamples=64,
     )
     namespaced = shift.detect_harm(
         **confidence_samples,
-        direction=Direction.HIGHER_IS_BETTER,
+        worse="lower",
         n_resamples=64,
     )
     assert flat.statistic == namespaced.statistic
@@ -114,37 +122,30 @@ def test_results_are_frozen(shift_samples: dict[str, np.ndarray]) -> None:
         result.pvalue = 0.0  # type: ignore[misc]
 
 
-def test_detect_shift_rejects_batch_kwarg(
-    shift_samples: dict[str, np.ndarray],
-) -> None:
-    with pytest.raises(TypeError, match="batch"):
-        shift.detect_shift(**shift_samples, batch=100)  # type: ignore[call-arg]
-
-
-def test_detect_harm_requires_direction(
+def test_detect_harm_requires_worse(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
     with pytest.raises(TypeError):
         shift.detect_harm(**confidence_samples)
 
 
-def test_detect_harm_accepts_direction_enum(
+def test_detect_harm_accepts_worse(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
     result = shift.detect_harm(
         **confidence_samples,
-        direction=Direction.HIGHER_IS_BETTER,
+        worse="lower",
         n_resamples=64,
     )
     assert isinstance(result, HarmResult)
-    assert result.direction is Direction.HIGHER_IS_BETTER
+    assert result.worse == "lower"
 
 
-def test_detect_harm_rejects_raw_direction_string(
+def test_detect_harm_rejects_invalid_worse(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
-    with pytest.raises(TypeError, match="must be a samesame.shift.Direction"):
-        shift.detect_harm(**confidence_samples, direction="higher-is-worse")  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="worse must be"):
+        shift.detect_harm(**confidence_samples, worse="sideways")  # type: ignore[arg-type]
 
 
 def test_detect_harm_handles_higher_is_better(
@@ -152,17 +153,17 @@ def test_detect_harm_handles_higher_is_better(
 ) -> None:
     primary = shift.detect_harm(
         **confidence_samples,
-        direction=Direction.HIGHER_IS_BETTER,
+        worse="lower",
         n_resamples=64,
     )
     mirrored = shift.detect_harm(
         source=-confidence_samples["source"],
         target=-confidence_samples["target"],
-        direction=Direction.HIGHER_IS_WORSE,
+        worse="higher",
         n_resamples=64,
     )
     assert isinstance(primary, HarmResult)
-    assert primary.direction is Direction.HIGHER_IS_BETTER
+    assert primary.worse == "lower"
     assert np.isclose(primary.statistic, mirrored.statistic)
     assert np.isclose(primary.pvalue, mirrored.pvalue)
 
@@ -229,7 +230,7 @@ def test_shift_supports_contextual_weights(
     source, target = shift_samples["source"], shift_samples["target"]
     source_prob = rng.uniform(0.2, 0.5, size=len(source))
     target_prob = rng.uniform(0.5, 0.8, size=len(target))
-    weights = from_domain_probabilities(
+    weights = domain_weights(
         source_prob=source_prob, target_prob=target_prob, mode="source"
     )
     base = shift.detect_shift(**shift_samples, n_resamples=64)
@@ -243,9 +244,9 @@ def test_detect_harm_has_no_posterior_fields(
 ) -> None:
     result = shift.detect_harm(
         **confidence_samples,
-        direction=Direction.HIGHER_IS_BETTER,
+        worse="lower",
         n_resamples=64,
-        random_state=0,
+        rng=0,
     )
     assert isinstance(result, HarmResult)
     assert not hasattr(result, "posterior")
@@ -259,15 +260,15 @@ def test_harm_detection_supports_importance_weights(
     source, target = confidence_samples["source"], confidence_samples["target"]
     source_prob = rng.uniform(0.2, 0.5, size=len(source))
     target_prob = rng.uniform(0.5, 0.8, size=len(target))
-    weights = from_domain_probabilities(
+    weights = domain_weights(
         source_prob=source_prob, target_prob=target_prob, mode="target"
     )
     base = shift.detect_harm(
-        **confidence_samples, direction=Direction.HIGHER_IS_BETTER, n_resamples=64
+        **confidence_samples, worse="lower", n_resamples=64
     )
     contextual = shift.detect_harm(
         **confidence_samples,
-        direction=Direction.HIGHER_IS_BETTER,
+        worse="lower",
         n_resamples=64,
         weights=weights,
     )
@@ -286,15 +287,15 @@ def test_shift_result_repr_omits_null_distribution(
     assert "pvalue=" in rendered
 
 
-def test_harm_result_repr_includes_direction(
+def test_harm_result_repr_includes_worse(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
     result = shift.detect_harm(
         **confidence_samples,
-        direction=Direction.HIGHER_IS_WORSE,
+        worse="higher",
         n_resamples=64,
     )
-    assert "Direction.HIGHER_IS_WORSE" in repr(result)
+    assert "worse='higher'" in repr(result)
 
 
 def test_significant_uses_pvalue_alpha(shift_samples: dict[str, np.ndarray]) -> None:

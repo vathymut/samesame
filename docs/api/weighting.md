@@ -9,11 +9,11 @@ source and target have common support.
 |-----------|------------|
 | No weighting needed | Omit `weights` |
 | You already have sample weights | Wrap them in `ImportanceWeights(source=..., target=...)` |
-| You have domain-classifier probabilities | Build weights with `from_domain_probabilities(...)` |
+| You have domain-classifier probabilities | Build weights with `domain_weights(...)` |
 
 ```python
 import samesame as ss
-from samesame.weights import ImportanceWeights, from_domain_probabilities
+from samesame.weights import ImportanceWeights, domain_weights
 
 result = ss.detect_shift(source_scores, target_scores)
 
@@ -26,7 +26,7 @@ result = ss.detect_shift(
     ),
 )
 
-weights = from_domain_probabilities(
+weights = domain_weights(
     source_prob=source_domain_probs,
     target_prob=target_domain_probs,
     mode="both",
@@ -35,12 +35,12 @@ weights = from_domain_probabilities(
 result = ss.detect_harm(
     source_scores,
     target_scores,
-    direction=ss.Direction.HIGHER_IS_WORSE,
+    worse="higher",
     weights=weights,
 )
 ```
 
-## When `from_domain_probabilities(...)` helps
+## When `domain_weights(...)` helps
 
 Use it when source and target do not overlap well and you want the comparison to emphasize common
 support rather than low-overlap observations.
@@ -50,6 +50,9 @@ It takes three main controls:
 - `source_prob` and `target_prob`, passed separately
 - `mode`, which decides whether to reweight source, target, or both (default `"both"`)
 - `lambda_`, which trades off correction strength against stability
+
+Probabilities must be in `[0, 1]`. Values at 0 or 1 are automatically clipped away
+from the boundaries before weights are calculated.
 
 ## Choosing a mode
 

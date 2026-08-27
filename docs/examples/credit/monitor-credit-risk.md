@@ -104,7 +104,7 @@ deployment_risk = rf_bad.predict_proba(X_deployment)[:, 1].ravel()
 harm = ss.detect_harm(
     source=train_risk,
     target=deployment_risk,
-    direction=ss.Direction.HIGHER_IS_WORSE,
+    worse="higher",
 )
 
 print(f"Statistic: {harm.statistic:.4f}")

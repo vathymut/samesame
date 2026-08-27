@@ -11,12 +11,12 @@ This page explains what the harm statistic measures and why it is not redundant 
 
 ## The direction transform makes "worse" always mean "larger"
 
-You declare polarity with `Direction`:
+You declare the harmful direction with `worse`:
 
-- `HIGHER_IS_WORSE` — larger raw scores mean harm (e.g., predicted risk).
-- `HIGHER_IS_BETTER` — larger raw scores mean quality (e.g., confidence, accuracy).
+- `worse="higher"` — larger raw scores mean harm (e.g., predicted risk).
+- `worse="lower"` — smaller raw scores mean harm (e.g., confidence, accuracy).
 
-Internally, `HIGHER_IS_BETTER` negates the scores. After that transform, **larger always means
+Internally, `worse="lower"` negates the scores. After that transform, **larger always means
 worse**, regardless of which polarity you chose. Everything below assumes transformed scores.
 
 ## What the harm statistic integrates

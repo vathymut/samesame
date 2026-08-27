@@ -50,7 +50,7 @@ shift = ss.detect_shift(source_scores, target_scores)
 harm = ss.detect_harm(
     source_scores,
     target_scores,
-    direction=ss.Direction.HIGHER_IS_WORSE,
+    worse="higher",
 )
 
 print(f"Shift p-value: {shift.pvalue:.4f}")
@@ -82,8 +82,12 @@ reuse across these settings.
 3. Test for directional harm with `ss.detect_harm(...)` when direction matters.
 
 Both tests are permutation-based, which keeps the assumptions light. When source and target differ
-in feature support, `ss.from_domain_probabilities(...)` lets you focus the test on the
+in feature support, `ss.domain_weights(...)` lets you focus the test on the
 region where the two groups are genuinely comparable.
+
+When scores come from a fitted model, generate them out of sample with cross-validation,
+out-of-bag predictions, or a held-out evaluation set. In-sample predictions can create artificial
+separation and invalidate the test interpretation.
 
 ## Pick a guide
 

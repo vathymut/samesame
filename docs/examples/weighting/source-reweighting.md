@@ -57,7 +57,7 @@ deployment_risk = rf_bad.predict_proba(X_deployment)[:, 1].ravel()
 unweighted = ss.detect_harm(
     source=train_risk,
     target=deployment_risk,
-    direction=ss.Direction.HIGHER_IS_WORSE,
+    worse="higher",
     random_state=12345,
 )
 ```
@@ -67,12 +67,12 @@ unweighted = ss.detect_harm(
 ## Step 2 - Build source-side importance weights
 
 ```python
-from samesame.weights import from_domain_probabilities
+from samesame.weights import domain_weights
 
 source_prob = domain_prob[split.values == 0]
 target_prob = domain_prob[split.values == 1]
 
-weights = from_domain_probabilities(
+weights = domain_weights(
     source_prob=source_prob,
     target_prob=target_prob,
     mode="source",
@@ -82,9 +82,9 @@ weights = from_domain_probabilities(
 weighted = ss.detect_harm(
     source=train_risk,
     target=deployment_risk,
-    direction=ss.Direction.HIGHER_IS_WORSE,
+    worse="higher",
     weights=weights,
-    random_state=12345,
+    rng=12345,
 )
 
 print(f"Unweighted p-value: {unweighted.pvalue:.4f}")

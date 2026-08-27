@@ -79,7 +79,7 @@ confidence.
 
 ## Step 3 - Test whether confidence dropped
 
-Higher confidence is better, so use `direction=ss.Direction.HIGHER_IS_BETTER`.
+Higher confidence is better, so use `worse="lower"`.
 
 ```python
 source_scores = train_confidence
@@ -88,8 +88,8 @@ target_scores = deployment_confidence
 harm = ss.detect_harm(
     source=source_scores,
     target=target_scores,
-    direction=ss.Direction.HIGHER_IS_BETTER,
-    random_state=12345,
+    worse="lower",
+    rng=12345,
 )
 
 print(f"Statistic: {harm.statistic:.4f}")
