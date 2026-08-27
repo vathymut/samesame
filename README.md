@@ -15,20 +15,24 @@
 
 > Same, same but different ...
 
-`samesame` compares a source group with a target group and tells you whether their score
-distributions differ, and whether the target distribution shifted toward worse outcomes.
+`samesame` compares a source group with a target group and tells you whether these distributions
+differ, and whether the target distribution shifted toward worse outcomes. It is designed for
+monitoring machine learning (ML) systems and model behavior across time, domains, and contexts.
 
 In the package, the reference group is called **source** and the new group is called **target**.
 That could mean training vs production data, a baseline batch vs a fresh batch, or one segment vs
 another.
 
+Each distribution is represented by a relevant score, such as predicted risk, model confidence,
+prediction error, or a classifier score.
+
 The package is built around two practical questions:
 
-- Did anything change?
-- Did the change point in a worse direction?
+- **Did anything change?** Use `test_shift` for a two-sided comparison.
+- **Did the change point in a worse direction?** Use `test_harmful_shift` when you can define what
+  "worse" means for the score.
 
-You answer those questions with the signal that matches your use case: predicted risk, model
-confidence, prediction error, or a classifier score used to compare two datasets.
+You answer those questions with the score that matches your use case.
 
 ## Start here
 
@@ -43,22 +47,23 @@ import numpy as np
 import samesame as ss
 
 rng = np.random.default_rng(123_456)
-source_scores = rng.normal(size=600)
-target_scores = rng.normal(size=600)
+source_scores = rng.normal(loc=0.0, scale=1.0, size=600)
+target_scores = rng.normal(loc=0.6, scale=1.0, size=600)
 
-shift = ss.test_shift(source_scores, target_scores)
+shift = ss.test_shift(source_scores, target_scores, rng=rng)
 harm = ss.test_harmful_shift(
     source_scores,
     target_scores,
     worse="higher",
+    rng=rng,
 )
 
-print(f"Shift p-value: {shift.pvalue:.4f}")
-print(f"Harm  p-value: {harm.pvalue:.4f}")
+print(f"Shift statistic: {shift.statistic:.3f}, p-value: {shift.pvalue:.4f}")
+print(f"Harm  statistic: {harm.statistic:.3f}, p-value: {harm.pvalue:.4f}")
 ```
 
-A small p-value from `ss.test_shift(...)` means the groups differ.
-A small p-value from `ss.test_harmful_shift(...)` means the target distribution also shifted toward worse
+A small p-value from `ss.test_shift(...)` is evidence that the groups differ. A small p-value from
+`ss.test_harmful_shift(...)` is evidence that the target distribution also shifted toward worse
 outcomes according to the declared direction.
 
 ## Common signals
