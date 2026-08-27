@@ -9,16 +9,14 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 from sklearn.metrics import roc_auc_score
 
-from samesame._permutation import _permutation_test
+from samesame._permutation import Rng, _permutation_test
 from samesame._statistics import harmful_shift_statistic
 from samesame.weights import ImportanceWeights
 
-Rng = np.random.RandomState | np.random.Generator | None
-
 
 @dataclass(frozen=True)
-class _TestResult:
-    """Shared fields for all statistical test results.
+class ShiftResult:
+    """Result of generic shift detection.
 
     Attributes
     ----------
@@ -35,34 +33,33 @@ class _TestResult:
     null_distribution: NDArray[np.float64]
 
     def __repr__(self) -> str:
-        rendered = ", ".join(
-            f"{field.name}={getattr(self, field.name)!r}"
-            for field in fields(self)
-            if field.name != "null_distribution"
-        )
-        return f"{type(self).__name__}({rendered})"
+        parts = []
+        for field in fields(self):
+            if field.name == "null_distribution":
+                continue
+            value = getattr(self, field.name)
+            rendered = f"{value:.4g}" if isinstance(value, float) else repr(value)
+            parts.append(f"{field.name}={rendered}")
+        return f"{type(self).__name__}({', '.join(parts)})"
 
 
 @dataclass(frozen=True, repr=False)
-class ShiftResult(_TestResult):
-    """Result of generic shift detection."""
+class HarmfulShiftResult(ShiftResult):
+    """Result of harmful-shift detection.
 
-
-@dataclass(frozen=True, repr=False)
-class HarmfulShiftResult(_TestResult):
-    """Result of harmful-shift detection."""
+    Attributes
+    ----------
+    statistic : float
+        Observed value of the test statistic.
+    pvalue : float
+        Permutation p-value.
+    null_distribution : NDArray[np.float64]
+        Permutation null distribution of the statistic.
+    worse : {'higher', 'lower'}
+        Whether higher or lower scores indicate worse outcomes.
+    """
 
     worse: Literal["higher", "lower"]
-
-
-def _resolve_rng(rng: Rng) -> np.random.Generator | np.random.RandomState:
-    if rng is None:
-        return np.random.default_rng()
-    if isinstance(rng, np.random.Generator | np.random.RandomState):
-        return rng
-    raise TypeError(
-        "rng must be a numpy.random.Generator, numpy.random.RandomState, or None."
-    )
 
 
 def test_shift(
@@ -70,7 +67,7 @@ def test_shift(
     target: ArrayLike,
     *,
     n_resamples: int = 9999,
-    rng: Rng = None,
+    rng: Rng | None = None,
     weights: ImportanceWeights | None = None,
 ) -> ShiftResult:
     """Test whether Source and Target Outlier score distributions differ.
@@ -112,7 +109,7 @@ def test_shift(
         metric=roc_auc_score,
         alternative="two-sided",
         n_resamples=n_resamples,
-        rng=_resolve_rng(rng),
+        rng=rng,
         weights=weights,
     )
     return ShiftResult(
@@ -128,7 +125,7 @@ def test_harmful_shift(
     *,
     worse: Literal["higher", "lower"],
     n_resamples: int = 9999,
-    rng: Rng = None,
+    rng: Rng | None = None,
     weights: ImportanceWeights | None = None,
 ) -> HarmfulShiftResult:
     """Test whether Target is harmfully shifted relative to Source.
@@ -185,7 +182,7 @@ def test_harmful_shift(
         metric=metric,
         alternative="greater",
         n_resamples=n_resamples,
-        rng=_resolve_rng(rng),
+        rng=rng,
         weights=weights,
     )
     return HarmfulShiftResult(

@@ -6,9 +6,9 @@ from .weights import ImportanceWeights, domain_weights
 
 __all__ = [
     "ImportanceWeights",
-    "test_harmful_shift",
-    "test_shift",
     "domain_weights",
     "shift",
+    "test_harmful_shift",
+    "test_shift",
     "weights",
 ]

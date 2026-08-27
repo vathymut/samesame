@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, cast
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
@@ -15,10 +15,10 @@ _PROBABILITY_CLIP = 1e-6
 def _density_ratio(
     domain_prob: NDArray[np.float64],
     *,
-    group_balance: float,
+    prior_ratio: float,
 ) -> NDArray[np.float64]:
     """Density ratio ``p(target)/p(source)`` implied by domain probabilities."""
-    return (domain_prob / (1.0 - domain_prob)) * group_balance
+    return (domain_prob / (1.0 - domain_prob)) * prior_ratio
 
 
 def _riw(density_ratio_values: NDArray, *, shrinkage: float) -> NDArray[np.float64]:
@@ -187,10 +187,9 @@ def _validate_shrinkage(shrinkage: float) -> float:
 
 
 def _validate_reweight(reweight: str) -> ReweightMode:
-    match reweight:
-        case "source" | "target" | "both":
-            return reweight
-    raise ValueError("reweight must be one of 'source', 'target', 'both'.")
+    if reweight not in ("source", "target", "both"):
+        raise ValueError("reweight must be one of 'source', 'target', 'both'.")
+    return cast("ReweightMode", reweight)
 
 
 def domain_weights(
@@ -280,9 +279,9 @@ def domain_weights(
     shrinkage_value = _validate_shrinkage(shrinkage)
     validated_reweight = _validate_reweight(reweight)
 
-    group_balance = n_source / n_target
-    source_dr = _density_ratio(source, group_balance=group_balance)
-    target_dr = _density_ratio(target, group_balance=group_balance)
+    prior_ratio = n_source / n_target
+    source_dr = _density_ratio(source, prior_ratio=prior_ratio)
+    target_dr = _density_ratio(target, prior_ratio=prior_ratio)
 
     out_source = np.ones(n_source, dtype=np.float64)
     out_target = np.ones(n_target, dtype=np.float64)

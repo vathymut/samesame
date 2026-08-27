@@ -111,6 +111,7 @@ def test_detect_harmful_shift_accepts_higher_is_worse(
         n_resamples=64,
     )
     assert isinstance(result, HarmfulShiftResult)
+    assert isinstance(result, ShiftResult)
     assert result.worse == "lower"
 
 

@@ -12,7 +12,17 @@ from sklearn.utils import column_or_1d
 
 from samesame.weights import ImportanceWeights
 
-RandomNumberGenerator = np.random.Generator | np.random.RandomState
+Rng = np.random.Generator | np.random.RandomState
+
+
+def _resolve_rng(rng: Rng | None) -> Rng:
+    if rng is None:
+        return np.random.default_rng()
+    if isinstance(rng, np.random.Generator | np.random.RandomState):
+        return rng
+    raise TypeError(
+        "rng must be a numpy.random.Generator, numpy.random.RandomState, or None."
+    )
 
 
 def _permutation_test(
@@ -22,7 +32,7 @@ def _permutation_test(
     metric: Callable[..., float],
     alternative: Literal["less", "greater", "two-sided"],
     n_resamples: int,
-    rng: RandomNumberGenerator,
+    rng: Rng | None,
     weights: ImportanceWeights | None,
 ) -> tuple[float, float, NDArray[np.float64]]:
     """Validate scores and weights, then run a weighted permutation test.
@@ -34,6 +44,7 @@ def _permutation_test(
     """
     if n_resamples < 1:
         raise ValueError("n_resamples must be a positive integer.")
+    rng = _resolve_rng(rng)
     source_scores = _as_numeric_vector(source, name="source")
     target_scores = _as_numeric_vector(target, name="target")
     labels = np.concatenate(
