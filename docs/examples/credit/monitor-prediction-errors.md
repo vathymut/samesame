@@ -38,7 +38,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     y_binary,
     test_size=0.30,
     stratify=y_binary,
-    rng=np.random.default_rng(12345),
+    random_state=12345,
 )
 ```
 
@@ -50,7 +50,7 @@ Use out-of-bag predictions for training so the training-side errors are not arti
 rf = RandomForestClassifier(
     n_estimators=500,
     oob_score=True,
-    rng=np.random.default_rng(12345),
+    random_state=12345,
     min_samples_leaf=10,
 )
 rf.fit(X_train, y_train)

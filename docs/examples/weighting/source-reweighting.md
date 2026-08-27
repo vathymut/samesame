@@ -14,6 +14,7 @@ This example uses the same HELOC split as
 ```python
 import re
 
+import numpy as np
 import pandas as pd
 from sklearn.datasets import fetch_openml
 from sklearn.ensemble import RandomForestClassifier
@@ -58,7 +59,7 @@ unweighted = ss.test_harmful_shift(
     source=train_risk,
     target=deployment_risk,
     worse="higher",
-    random_state=12345,
+    rng=np.random.default_rng(12345),
 )
 ```
 

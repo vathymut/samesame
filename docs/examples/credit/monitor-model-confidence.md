@@ -60,6 +60,8 @@ Higher values mean the model separates the classes more strongly, which we treat
 confidence.
 
 ```python
+import numpy as np
+
 --8<-- "_code/monitor_model_confidence_example.py:imports"
 --8<-- "_code/monitor_model_confidence_example.py:logit-gap"
 --8<-- "_code/monitor_model_confidence_example.py:outlier-scores"

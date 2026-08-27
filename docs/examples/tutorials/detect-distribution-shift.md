@@ -31,7 +31,7 @@ source = rng.normal(loc=0.0, scale=1.0, size=(400, 4))
 target = rng.normal(loc=[0.7, 0.0, 0.0, 0.0], scale=1.0, size=(400, 4))
 
 X = np.vstack([source, target])
-group = np.r_[np.zeros(len(source), dtype=int), np.ones(len(target), dtype=int)]
+labels = np.r_[np.zeros(len(source), dtype=int), np.ones(len(target), dtype=int)]
 ```
 
 In a real workflow, `source` might be training data and `target` might be production data.
@@ -45,25 +45,26 @@ good default because it handles that for you.
 from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.model_selection import cross_val_predict
 
-prob_target = cross_val_predict(
+domain_score = cross_val_predict(
     HistGradientBoostingClassifier(random_state=123_456),
     X,
-    group,
+    labels,
     cv=10,
     method="predict_proba",
 )[:, 1]
 ```
 
-`prob_target` is the model's estimated probability that each observation belongs to the target
-group.
+`domain_score` is the model's estimated probability that each observation belongs to the target
+group. It is a domain score used to compare the source and target distributions, not an outlier score
+from the monitored model.
 
 ## Step 3 - Run the shift test
 
 ```python
 import samesame as ss
 
-source_scores = prob_target[group == 0]
-target_scores = prob_target[group == 1]
+source_scores = domain_score[labels == 0]
+target_scores = domain_score[labels == 1]
 
 shift = ss.test_shift(source_scores, target_scores)
 

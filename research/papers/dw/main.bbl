@@ -1,0 +1,189 @@
+\begin{thebibliography}{}
+
+\bibitem[Amoukou et~al., 2024]{Amoukou_2024}
+Amoukou, S.~I., Brunel, N. J.-B., and Salaün, T. (2024).
+\newblock Sequential harmful shift detection without labels.
+\newblock In {\em Advances in Neural Information Processing Systems 37}. Curran
+  Associates, Inc.
+
+\bibitem[Barocas et~al., 2023]{Barocas_2023}
+Barocas, S., Hardt, M., and Narayanan, A. (2023).
+\newblock {\em Fairness and Machine Learning: Limitations and Opportunities}.
+\newblock The MIT Press.
+
+\bibitem[Bellot and van~der Schaar, 2021]{pmlr-v161-bellot21b}
+Bellot, A. and van~der Schaar, M. (2021).
+\newblock A kernel two-sample test with selection bias.
+\newblock In de~Campos, C. and Maathuis, M.~H., editors, {\em Proceedings of
+  the Thirty-Seventh Conference on Uncertainty in Artificial Intelligence},
+  volume 161 of {\em Proceedings of Machine Learning Research}, pages 205--214.
+  PMLR.
+
+\bibitem[Bickel et~al., 2007]{Bickel_2007}
+Bickel, S., Br{\"u}ckner, M., and Scheffer, T. (2007).
+\newblock Discriminative learning for differing training and test
+  distributions.
+\newblock In {\em Proceedings of the 24th International Conference on Machine
+  Learning}, pages 81--88. ACM.
+
+\bibitem[Cobb and Van~Looveren, 2022]{pmlr-v162-cobb22a}
+Cobb, O. and Van~Looveren, A. (2022).
+\newblock Context-aware drift detection.
+\newblock In Chaudhuri, K., Jegelka, S., Song, L., Szepesvari, C., Niu, G., and
+  Sabato, S., editors, {\em Proceedings of the 39th International Conference on
+  Machine Learning}, volume 162 of {\em Proceedings of Machine Learning
+  Research}, pages 4087--4111. PMLR.
+
+\bibitem[Crump et~al., 2009]{Crump_2009}
+Crump, R.~K., Hotz, V.~J., Imbens, G.~W., and Mitnik, O.~A. (2009).
+\newblock Dealing with limited overlap in estimation of average treatment
+  effects.
+\newblock {\em Biometrika}, 96(1):187--199.
+
+\bibitem[Dwork et~al., 2012]{Dwork_2012}
+Dwork, C., Hardt, M., Pitassi, T., Reingold, O., and Zemel, R. (2012).
+\newblock Fairness through awareness.
+\newblock In {\em Proceedings of the 3rd Innovations in Theoretical Computer
+  Science Conference}, pages 214--226. ACM.
+
+\bibitem[Gagnon-Bartsch and Shem-Tov, 2019]{GagnonBartsch_2019}
+Gagnon-Bartsch, J.~A. and Shem-Tov, Y. (2019).
+\newblock The classification permutation test: A flexible approach to testing
+  for covariate imbalance in observational studies.
+\newblock {\em The Annals of Applied Statistics}, 13(3):1464--1483.
+
+\bibitem[Gardner et~al., 2023]{Gardner_2023}
+Gardner, J., Popovic, Z., and Schmidt, L. (2023).
+\newblock Benchmarking distribution shift in tabular data with {TableShift}.
+\newblock In {\em Advances in Neural Information Processing Systems 36}. Curran
+  Associates, Inc.
+
+\bibitem[Ginsberg et~al., 2023]{Ginsberg_2023}
+Ginsberg, T., Liang, Z., and Krishnan, R.~G. (2023).
+\newblock A learning based hypothesis test for harmful covariate shift.
+\newblock In {\em International Conference on Learning Representations}.
+
+\bibitem[Hanley and McNeil, 1982]{Hanley_1982}
+Hanley, J.~A. and McNeil, B.~J. (1982).
+\newblock The meaning and use of the area under a receiver operating
+  characteristic (roc) curve.
+\newblock {\em Radiology}, 143(1):29--36.
+
+\bibitem[Hu and Lei, 2024]{Hu_2024}
+Hu, X. and Lei, J. (2024).
+\newblock A two-sample conditional distribution test using conformal prediction
+  and weighted rank sum.
+\newblock {\em Journal of the American Statistical Association},
+  119(546):1136--1154.
+
+\bibitem[Kamulete, 2022]{pmlr-v180-kamulete22a}
+Kamulete, V.~M. (2022).
+\newblock Test for non-negligible adverse shifts.
+\newblock In Cussens, J. and Zhang, K., editors, {\em Proceedings of the
+  Thirty-Eighth Conference on Uncertainty in Artificial Intelligence}, volume
+  180 of {\em Proceedings of Machine Learning Research}, pages 959--968. PMLR.
+
+\bibitem[Kanamori et~al., 2012]{Kanamori_2012}
+Kanamori, T., Suzuki, T., and Sugiyama, M. (2012).
+\newblock $f$-divergence estimation and two-sample homogeneity test under
+  semiparametric density-ratio models.
+\newblock {\em IEEE Transactions on Information Theory}, 58(2):708--720.
+
+\bibitem[Kish, 1965]{Kish_1965}
+Kish, L. (1965).
+\newblock {\em Survey Sampling}.
+\newblock John Wiley \& Sons, New York.
+
+\bibitem[Kosorok, 2008]{Kosorok_2008}
+Kosorok, M.~R. (2008).
+\newblock {\em Introduction to Empirical Processes and Semiparametric
+  Inference}.
+\newblock Springer, New York.
+
+\bibitem[LaLonde, 1986]{LaLonde_1986}
+LaLonde, R.~J. (1986).
+\newblock Evaluating the econometric evaluations of training programs with
+  experimental data.
+\newblock {\em The American Economic Review}, 76(4):604--620.
+
+\bibitem[Lee, 1990]{Lee_1990}
+Lee, A.~J. (1990).
+\newblock {\em U-Statistics: Theory and Practice}.
+\newblock Marcel Dekker, New York.
+
+\bibitem[Lehmann and Romano, 2005]{Lehmann_2005}
+Lehmann, E.~L. and Romano, J.~P. (2005).
+\newblock {\em Testing Statistical Hypotheses}.
+\newblock Springer, New York, 3 edition.
+
+\bibitem[Li et~al., 2018]{Li_2018_balancing}
+Li, F., Morgan, K.~L., and Zaslavsky, A.~M. (2018).
+\newblock Balancing covariates via propensity score weighting.
+\newblock {\em Journal of the American Statistical Association},
+  113(521):390--400.
+
+\bibitem[Li et~al., 2019]{Li_2019}
+Li, F., Thomas, L.~E., and Li, F. (2019).
+\newblock Addressing extreme propensity scores via the overlap weights.
+\newblock {\em American Journal of Epidemiology}, 188(1):250--257.
+
+\bibitem[Morgan and Winship, 2015]{Morgan_2015}
+Morgan, S.~L. and Winship, C. (2015).
+\newblock {\em Counterfactuals and Causal Inference: Methods and Principles for
+  Social Research}.
+\newblock Cambridge University Press, 2 edition.
+
+\bibitem[Nguyen et~al., 2025]{Nguyen_D3M_2025}
+Nguyen, V., Shui, C., Giri, V., Arya, S., Verma, A., Razak, F., and Krishnan,
+  R.~G. (2025).
+\newblock Reliably detecting model failures in deployment without labels.
+\newblock In {\em Advances in Neural Information Processing Systems 38}.
+
+\bibitem[O'Neil and Redner, 1993]{ONeil_1993}
+O'Neil, K.~A. and Redner, R.~A. (1993).
+\newblock Asymptotic distributions of weighted {$U$}-statistics of degree 2.
+\newblock {\em The Annals of Probability}, 21(2):1159--1174.
+
+\bibitem[Podkopaev and Ramdas, 2022]{Podkopaev_Ramdas_2022}
+Podkopaev, A. and Ramdas, A. (2022).
+\newblock Tracking the risk of a deployed model and detecting harmful
+  distribution shifts.
+\newblock In {\em International Conference on Learning Representations}.
+
+\bibitem[Prinster et~al., 2025]{Prinster_2025}
+Prinster, D., Han, X., Liu, A., and Saria, S. (2025).
+\newblock {WATCH}: Adaptive monitoring for {AI} deployments via
+  weighted-conformal martingales.
+\newblock In Singh, A., Fazel, M., Hsu, D., Lacoste-Julien, S., Berkenkamp, F.,
+  Maharaj, T., Wagstaff, K., and Zhu, J., editors, {\em Proceedings of the 42nd
+  International Conference on Machine Learning}, volume 267 of {\em Proceedings
+  of Machine Learning Research}, pages 49830--49859. PMLR.
+
+\bibitem[Segovia-Mart{\'\i}n et~al., 2023]{SegoviaMartin_2023}
+Segovia-Mart{\'\i}n, J.~I., Mazuelas, S., and Liu, A. (2023).
+\newblock Double-weighting for covariate shift adaptation.
+\newblock In Krause, A., Brunskill, E., Cho, K., Engelhardt, B., Sabato, S.,
+  and Scarlett, J., editors, {\em Proceedings of the 40th International
+  Conference on Machine Learning}, volume 202 of {\em Proceedings of Machine
+  Learning Research}, pages 30439--30457. PMLR.
+
+\bibitem[Sugiyama et~al., 2012]{Sugiyama_2012}
+Sugiyama, M., Suzuki, T., and Kanamori, T. (2012).
+\newblock {\em Density Ratio Estimation in Machine Learning}.
+\newblock Cambridge University Press, New York.
+
+\bibitem[Xie and Priebe, 2002]{Xie_2002}
+Xie, J. and Priebe, C.~E. (2002).
+\newblock A weighted generalization of the {Mann-Whitney-Wilcoxon} statistic.
+\newblock {\em Journal of Statistical Planning and Inference}, 102(2):441--466.
+
+\bibitem[Xu et~al., 2024]{Xu_2024_crt}
+Xu, B., Huang, Y., Hong, C., Li, S., and Liu, M. (2024).
+\newblock Covariate shift corrected conditional randomization test.
+
+\bibitem[Yamada et~al., 2013]{Yamada_2013}
+Yamada, M., Suzuki, T., Kanamori, T., Hachiya, H., and Sugiyama, M. (2013).
+\newblock Relative density-ratio estimation for robust distribution comparison.
+\newblock {\em Neural Computation}, 25(5):1324--1370.
+
+\end{thebibliography}

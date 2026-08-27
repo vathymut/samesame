@@ -1,0 +1,190 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{Gardner_2023}
+\citation{LaLonde_1986}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}\protected@file@percent }
+\newlabel{sec:introduction}{{1}{1}{Introduction}{section.1}{}}
+\newlabel{sec:introduction@cref}{{[section][1][]1}{[1][1][]1}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces HELOC credit-risk motivating example. Horizontal bar chart with weighting modes on the y-axis and harm-test $p$-value on the x-axis. The dashed line marks the 0.05 decision threshold. All three standard modes (unweighted, source-weighted, target-weighted) reject; the doubly weighted test does not. Effective sample sizes after reweighting to common support: source 401 of 1,536; target 803 of 2,776. The non-rejection indicates that comparable applicants receive similar predictions on common support.}}{1}{figure.caption.2}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{fig:heloc-motivating}{{1}{1}{HELOC credit-risk motivating example. Horizontal bar chart with weighting modes on the y-axis and harm-test $p$-value on the x-axis. The dashed line marks the 0.05 decision threshold. All three standard modes (unweighted, source-weighted, target-weighted) reject; the doubly weighted test does not. Effective sample sizes after reweighting to common support: source 401 of 1,536; target 803 of 2,776. The non-rejection indicates that comparable applicants receive similar predictions on common support}{figure.caption.2}{}}
+\newlabel{fig:heloc-motivating@cref}{{[figure][1][]1}{[1][1][]1}{}{}{}}
+\citation{pmlr-v180-kamulete22a}
+\citation{Bickel_2007}
+\citation{Yamada_2013}
+\citation{Crump_2009}
+\citation{Morgan_2015}
+\citation{Crump_2009}
+\citation{Li_2018_balancing}
+\citation{Li_2019}
+\citation{Morgan_2015}
+\citation{Bickel_2007}
+\citation{Yamada_2013}
+\citation{Kanamori_2012}
+\citation{Sugiyama_2012}
+\citation{SegoviaMartin_2023}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{2}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Overlap trimming and weighting in causal inference.}{2}{section*.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Density-ratio weighting for covariate shift.}{2}{section*.4}\protected@file@percent }
+\citation{pmlr-v180-kamulete22a}
+\citation{Podkopaev_Ramdas_2022}
+\citation{Nguyen_D3M_2025}
+\citation{Amoukou_2024}
+\citation{Prinster_2025}
+\citation{Ginsberg_2023}
+\citation{pmlr-v162-cobb22a}
+\citation{Hu_2024}
+\citation{Xu_2024_crt}
+\citation{GagnonBartsch_2019}
+\@writefile{toc}{\contentsline {paragraph}{Harmful-shift detection.}{3}{section*.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Risk tracking and sequential monitoring.}{3}{section*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Conditional distribution testing.}{3}{section*.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Common-support tests.}{3}{section*.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Method}{3}{section.3}\protected@file@percent }
+\newlabel{sec:method}{{3}{3}{Method}{section.3}{}}
+\newlabel{sec:method@cref}{{[section][3][]3}{[1][3][]3}{}{}{}}
+\@writefile{toc}{\contentsline {paragraph}{Setup.}{3}{section*.9}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Weighting modes for common-support testing. \textbf  {(a)} Weight as a function of domain probability $p$ for six approaches: unweighted (uniform), Crump trimming (binary mask at threshold $\alpha =0.1$), overlap weights ($p(1-p)$), and stabilized RIW (forward, inverse, doubly weighted). Overlap weights are symmetric---the same function $w(p)$ applies to both groups---and reach zero at the boundaries. Stabilized RIW weights are asymmetric: forward (source) and inverse (target) corrections handle each group's density structure separately and remain bounded away from zero. \textbf  {(b)} Concrete example with two-sided mismatch. Source and target densities overlap partially; weak-overlap regions on both tails carry non-comparable mass. The doubly weighted mode (both corrections active) concentrates effective weight on the common-support region (shaded), downweighting observations from low-overlap tails. The asymmetric corrections are what allow RIW to resolve two-sided contamination where symmetric schemes (overlap, Crump) cannot.}}{3}{figure.caption.10}\protected@file@percent }
+\newlabel{fig:conceptual-weighting}{{2}{3}{Weighting modes for common-support testing. \textbf {(a)} Weight as a function of domain probability $p$ for six approaches: unweighted (uniform), Crump trimming (binary mask at threshold $\alpha =0.1$), overlap weights ($p(1-p)$), and stabilized RIW (forward, inverse, doubly weighted). Overlap weights are symmetric---the same function $w(p)$ applies to both groups---and reach zero at the boundaries. Stabilized RIW weights are asymmetric: forward (source) and inverse (target) corrections handle each group's density structure separately and remain bounded away from zero. \textbf {(b)} Concrete example with two-sided mismatch. Source and target densities overlap partially; weak-overlap regions on both tails carry non-comparable mass. The doubly weighted mode (both corrections active) concentrates effective weight on the common-support region (shaded), downweighting observations from low-overlap tails. The asymmetric corrections are what allow RIW to resolve two-sided contamination where symmetric schemes (overlap, Crump) cannot}{figure.caption.10}{}}
+\newlabel{fig:conceptual-weighting@cref}{{[figure][2][]2}{[1][3][]3}{}{}{}}
+\@writefile{toc}{\contentsline {paragraph}{Weights from domain probabilities.}{3}{section*.11}\protected@file@percent }
+\citation{Bickel_2007}
+\citation{Yamada_2013}
+\citation{pmlr-v161-bellot21b}
+\citation{Kosorok_2008}
+\@writefile{toc}{\contentsline {paragraph}{Weighted score distributions.}{4}{section*.12}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Inference.}{4}{section*.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Formal properties.}{4}{section*.14}\protected@file@percent }
+\newlabel{prop:consistency}{{1}{4}{Consistency}{proposition.1}{}}
+\newlabel{prop:consistency@cref}{{[proposition][1][]1}{[1][4][]4}{}{}{}}
+\citation{Lehmann_2005}
+\citation{Lehmann_2005}
+\citation{Kish_1965}
+\citation{Yamada_2013}
+\citation{Crump_2009}
+\citation{Li_2018}
+\newlabel{prop:permutation}{{2}{5}{Permutation validity}{proposition.2}{}}
+\newlabel{prop:permutation@cref}{{[proposition][2][]2}{[1][5][]5}{}{}{}}
+\@writefile{toc}{\contentsline {paragraph}{Effective sample size.}{5}{section*.15}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Results}{5}{section.4}\protected@file@percent }
+\newlabel{sec:results}{{4}{5}{Results}{section.4}{}}
+\newlabel{sec:results@cref}{{[section][4][]4}{[1][5][]5}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}False Alarms from Weak Overlap}{5}{subsection.4.1}\protected@file@percent }
+\newlabel{sec:calibration}{{4.1}{5}{False Alarms from Weak Overlap}{subsection.4.1}{}}
+\newlabel{sec:calibration@cref}{{[subsection][1][4]4.1}{[1][5][]5}{}{}{}}
+\citation{Gardner_2023}
+\citation{LaLonde_1986}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Calibration under weak overlap. Low-overlap severity (fraction of observations with weak domain separation) versus false positive rate across $100$ simulation repeats at the $5\%$ nominal level. The null keeps harmful behavior aligned on the common support while increasing weak-overlap observations on both sides. Unweighted, source-weighted, and target-weighted tests over-reject as overlap weakens. The doubly weighted test stays near nominal over the tested range.}}{6}{figure.caption.16}\protected@file@percent }
+\newlabel{fig:calibration}{{3}{6}{Calibration under weak overlap. Low-overlap severity (fraction of observations with weak domain separation) versus false positive rate across $100$ simulation repeats at the $5\%$ nominal level. The null keeps harmful behavior aligned on the common support while increasing weak-overlap observations on both sides. Unweighted, source-weighted, and target-weighted tests over-reject as overlap weakens. The doubly weighted test stays near nominal over the tested range}{figure.caption.16}{}}
+\newlabel{fig:calibration@cref}{{[figure][3][]3}{[1][6][]6}{}{}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Rejection rates (\%) under weak overlap (\emph  {null}: no harmful change on common support). The three weighting families (Table~\ref {tab:weighting-benchmarks}) behave differently: Crump and overlap track the unweighted test, while only the doubly weighted mode stays at nominal.}}{6}{table.caption.17}\protected@file@percent }
+\newlabel{tab:calibration-reject}{{1}{6}{Rejection rates (\%) under weak overlap (\emph {null}: no harmful change on common support). The three weighting families (Table~\ref {tab:weighting-benchmarks}) behave differently: Crump and overlap track the unweighted test, while only the doubly weighted mode stays at nominal}{table.caption.17}{}}
+\newlabel{tab:calibration-reject@cref}{{[table][1][]1}{[1][6][]6}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Power for Harmful Shift on Common Support}{6}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Real-World Data}{6}{subsection.4.3}\protected@file@percent }
+\newlabel{sec:real-data-workflow}{{4.3}{6}{Real-World Data}{subsection.4.3}{}}
+\newlabel{sec:real-data-workflow@cref}{{[subsection][3][4]4.3}{[1][6][]6}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Power for harmful shift on the common support. (a) Rejection rate for the density-ratio weighting family---unweighted, source-weighted, target-weighted, and doubly weighted. (b) Rejection rate for the causal-inference baselines---unweighted, Crump-trimmed, and overlap-weighted. (c) Mann-Whitney statistic on a common scale across all six modes, revealing the graded signal difference between weighting schemes before the binary rejection threshold. Effect size on the common support (x-axis) versus rejection rate or statistic (y-axis) across $100$ simulation repeats.}}{7}{figure.caption.18}\protected@file@percent }
+\newlabel{fig:power}{{4}{7}{Power for harmful shift on the common support. (a) Rejection rate for the density-ratio weighting family---unweighted, source-weighted, target-weighted, and doubly weighted. (b) Rejection rate for the causal-inference baselines---unweighted, Crump-trimmed, and overlap-weighted. (c) Mann-Whitney statistic on a common scale across all six modes, revealing the graded signal difference between weighting schemes before the binary rejection threshold. Effect size on the common support (x-axis) versus rejection rate or statistic (y-axis) across $100$ simulation repeats}{figure.caption.18}{}}
+\newlabel{fig:power@cref}{{[figure][4][]4}{[1][6][]7}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Domain Classifier Sensitivity}{7}{subsection.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Limitations}{7}{section.5}\protected@file@percent }
+\citation{Yamada_2013}
+\citation{Barocas_2023}
+\citation{Dwork_2012}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Real-data workflow validation. Two-panel figure: \textbf  {(a)} Cross-task p-value scatter showing all tasks $\times $ workflows $\times $ modes. Each row groups the three workflows for one task; each mode is color-coded. The dashed vertical line marks the $0.05$ decision threshold. \textbf  {(b)} Effective sample sizes (Kish's ESS) for source and target under the doubly weighted mode. The two bars per task show how much of each group's data survives the common-support restriction; the gap between ESS and the original sample size (not shown) diagnoses the extent of weak-overlap contamination.}}{8}{figure.caption.19}\protected@file@percent }
+\newlabel{fig:real-data-workflow}{{5}{8}{Real-data workflow validation. Two-panel figure: \textbf {(a)} Cross-task p-value scatter showing all tasks $\times $ workflows $\times $ modes. Each row groups the three workflows for one task; each mode is color-coded. The dashed vertical line marks the $0.05$ decision threshold. \textbf {(b)} Effective sample sizes (Kish's ESS) for source and target under the doubly weighted mode. The two bars per task show how much of each group's data survives the common-support restriction; the gap between ESS and the original sample size (not shown) diagnoses the extent of weak-overlap contamination}{figure.caption.19}{}}
+\newlabel{fig:real-data-workflow@cref}{{[figure][5][]5}{[1][7][]8}{}{}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusion}{8}{section.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Broader Impact}{8}{section.7}\protected@file@percent }
+\bibdata{references}
+\bibcite{Amoukou_2024}{Amoukou et~al., 2024}
+\bibcite{Barocas_2023}{Barocas et~al., 2023}
+\bibcite{pmlr-v161-bellot21b}{Bellot and van~der Schaar, 2021}
+\bibcite{Bickel_2007}{Bickel et~al., 2007}
+\bibcite{pmlr-v162-cobb22a}{Cobb and Van~Looveren, 2022}
+\bibcite{Crump_2009}{Crump et~al., 2009}
+\bibcite{Dwork_2012}{Dwork et~al., 2012}
+\bibcite{GagnonBartsch_2019}{Gagnon-Bartsch and Shem-Tov, 2019}
+\bibcite{Gardner_2023}{Gardner et~al., 2023}
+\bibcite{Ginsberg_2023}{Ginsberg et~al., 2023}
+\bibcite{Hanley_1982}{Hanley and McNeil, 1982}
+\bibcite{Hu_2024}{Hu and Lei, 2024}
+\bibcite{pmlr-v180-kamulete22a}{Kamulete, 2022}
+\bibcite{Kanamori_2012}{Kanamori et~al., 2012}
+\bibcite{Kish_1965}{Kish, 1965}
+\bibcite{Kosorok_2008}{Kosorok, 2008}
+\bibcite{LaLonde_1986}{LaLonde, 1986}
+\bibcite{Lee_1990}{Lee, 1990}
+\bibcite{Lehmann_2005}{Lehmann and Romano, 2005}
+\bibcite{Li_2018_balancing}{Li et~al., 2018}
+\bibcite{Li_2019}{Li et~al., 2019}
+\bibcite{Morgan_2015}{Morgan and Winship, 2015}
+\bibcite{Nguyen_D3M_2025}{Nguyen et~al., 2025}
+\bibcite{ONeil_1993}{O'Neil and Redner, 1993}
+\bibcite{Podkopaev_Ramdas_2022}{Podkopaev and Ramdas, 2022}
+\bibcite{Prinster_2025}{Prinster et~al., 2025}
+\bibcite{SegoviaMartin_2023}{Segovia-Mart{\'\i }n et~al., 2023}
+\bibcite{Sugiyama_2012}{Sugiyama et~al., 2012}
+\bibcite{Xie_2002}{Xie and Priebe, 2002}
+\bibcite{Xu_2024_crt}{Xu et~al., 2024}
+\bibcite{Yamada_2013}{Yamada et~al., 2013}
+\bibstyle{apalike}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Sensitivity to $\lambda $. Two-panel figure sharing the same x-axis ($\lambda $). Left panel (y-axis: rejection rate) shows calibration and power across $\lambda $ as solid lines for the doubly weighted mode, with horizontal dashed lines for the corresponding unweighted baseline. Right panel (y-axis: minimum effective sample size) tracks weight stability across the same $\lambda $ grid. Smaller $\lambda $ values correct weak-overlap bias more strongly but increase weight concentration. Larger values approach the unweighted regime.}}{10}{figure.caption.21}\protected@file@percent }
+\newlabel{fig:lambda-sensitivity}{{6}{10}{Sensitivity to $\lambda $. Two-panel figure sharing the same x-axis ($\lambda $). Left panel (y-axis: rejection rate) shows calibration and power across $\lambda $ as solid lines for the doubly weighted mode, with horizontal dashed lines for the corresponding unweighted baseline. Right panel (y-axis: minimum effective sample size) tracks weight stability across the same $\lambda $ grid. Smaller $\lambda $ values correct weak-overlap bias more strongly but increase weight concentration. Larger values approach the unweighted regime}{figure.caption.21}{}}
+\newlabel{fig:lambda-sensitivity@cref}{{[figure][6][]6}{[1][10][]10}{}{}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {A}Reproducibility Plan}{10}{appendix.A}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.1}Sensitivity to $\lambda $}{10}{subsection.A.1}\protected@file@percent }
+\newlabel{app:lambda}{{A.1}{10}{Sensitivity to $\lambda $}{subsection.A.1}{}}
+\newlabel{app:lambda@cref}{{[subsection][1][1]A.1}{[1][10][]10}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.2}Permutation Resample Sensitivity}{10}{subsection.A.2}\protected@file@percent }
+\newlabel{app:perm-sensitivity}{{A.2}{10}{Permutation Resample Sensitivity}{subsection.A.2}{}}
+\newlabel{app:perm-sensitivity@cref}{{[subsection][2][1]A.2}{[1][10][]10}{}{}{}}
+\citation{Hanley_1982}
+\citation{Lee_1990}
+\citation{ONeil_1993}
+\citation{Lee_1990}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.3}Reproducibility Checklist}{11}{subsection.A.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {B}Theoretical Context}{11}{appendix.B}\protected@file@percent }
+\newlabel{app:theory}{{B}{11}{Theoretical Context}{appendix.B}{}}
+\newlabel{app:theory@cref}{{[section][2][]B}{[1][11][]11}{}{}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {B.1}Theoretical context}{11}{subsection.B.1}\protected@file@percent }
+\citation{Xie_2002}
+\@writefile{toc}{\contentsline {subsection}{\numberline {B.2}Bias of the $\lambda $-Interpolated Estimand}{12}{subsection.B.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {C}Weighting Approaches Comparison}{12}{appendix.C}\protected@file@percent }
+\newlabel{app:weighting-comparison}{{C}{12}{Weighting Approaches Comparison}{appendix.C}{}}
+\newlabel{app:weighting-comparison@cref}{{[section][3][]C}{[1][12][]12}{}{}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {D}Real-Data Task Details}{12}{appendix.D}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {E}Asymmetric Diagnostics}{12}{appendix.E}\protected@file@percent }
+\newlabel{app:mode-comparison}{{E}{12}{Asymmetric Diagnostics}{appendix.E}{}}
+\newlabel{app:mode-comparison@cref}{{[section][5][]E}{[1][12][]12}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Asymmetric-diagnostic study. Contamination pattern (source-only, target-only, or two-sided) versus rejection rate. The dotted line marks the $5\%$ nominal level. Source-weighted and target-weighted diagnostics help only for one-sided contamination. The doubly weighted test remains calibrated when both sides contain irrelevant weak-overlap mass.}}{12}{figure.caption.25}\protected@file@percent }
+\newlabel{fig:mode-comparison}{{7}{12}{Asymmetric-diagnostic study. Contamination pattern (source-only, target-only, or two-sided) versus rejection rate. The dotted line marks the $5\%$ nominal level. Source-weighted and target-weighted diagnostics help only for one-sided contamination. The doubly weighted test remains calibrated when both sides contain irrelevant weak-overlap mass}{figure.caption.25}{}}
+\newlabel{fig:mode-comparison@cref}{{[figure][7][]7}{[1][12][]12}{}{}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {F}Second Synthetic Data-Generating Process}{12}{appendix.F}\protected@file@percent }
+\newlabel{app:second-dgp}{{F}{12}{Second Synthetic Data-Generating Process}{appendix.F}{}}
+\newlabel{app:second-dgp@cref}{{[section][6][]F}{[1][12][]12}{}{}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {G}Domain Classifier Sensitivity}{12}{appendix.G}\protected@file@percent }
+\newlabel{app:domain-clf-sensitivity}{{G}{12}{Domain Classifier Sensitivity}{appendix.G}{}}
+\newlabel{app:domain-clf-sensitivity@cref}{{[section][7][]G}{[1][12][]12}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Calibration under the second DGP. The doubly weighted test preserves calibration while unweighted and one-sided modes over-reject.}}{13}{figure.caption.26}\protected@file@percent }
+\newlabel{fig:second-dgp-calibration}{{8}{13}{Calibration under the second DGP. The doubly weighted test preserves calibration while unweighted and one-sided modes over-reject}{figure.caption.26}{}}
+\newlabel{fig:second-dgp-calibration@cref}{{[figure][8][]8}{[1][12][]13}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Power under the second DGP. The doubly weighted test detects harmful shift on the common support while remaining specific at zero effect.}}{13}{figure.caption.27}\protected@file@percent }
+\newlabel{fig:second-dgp-power}{{9}{13}{Power under the second DGP. The doubly weighted test detects harmful shift on the common support while remaining specific at zero effect}{figure.caption.27}{}}
+\newlabel{fig:second-dgp-power@cref}{{[figure][9][]9}{[1][12][]13}{}{}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Weighting approaches for common-support testing. Every method addresses overlap, but they differ in \emph  {which quantity} they target and \emph  {what} they preserve. The overlap-vs-stabilized contrast is central: both produce continuous, bounded weights, but the mechanism and estimand diverge fundamentally.}}{13}{table.caption.22}\protected@file@percent }
+\newlabel{tab:weighting-benchmarks}{{2}{13}{Weighting approaches for common-support testing. Every method addresses overlap, but they differ in \emph {which quantity} they target and \emph {what} they preserve. The overlap-vs-stabilized contrast is central: both produce continuous, bounded weights, but the mechanism and estimand diverge fundamentally}{table.caption.22}{}}
+\newlabel{tab:weighting-benchmarks@cref}{{[table][2][]2}{[1][12][]13}{}{}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Real-data task provenance. Most tasks are fetched by pinned OpenML data ID; the NSW data comes from the MatchIt R package (Rdatasets mirror). The split recreates the TableShift source and target pools locally without the TableShift runtime. The NSW task uses a raw outcome score (no source model). $N_{\mathrm  {train}}$\,=\,source training rows; $N_{\mathrm  {src}}$\,=\,held-out source evaluation rows; $N_{\mathrm  {tgt}}$\,=\,target rows.}}{14}{table.caption.23}\protected@file@percent }
+\newlabel{tab:appendix-provenance}{{3}{14}{Real-data task provenance. Most tasks are fetched by pinned OpenML data ID; the NSW data comes from the MatchIt R package (Rdatasets mirror). The split recreates the TableShift source and target pools locally without the TableShift runtime. The NSW task uses a raw outcome score (no source model). $N_{\mathrm {train}}$\,=\,source training rows; $N_{\mathrm {src}}$\,=\,held-out source evaluation rows; $N_{\mathrm {tgt}}$\,=\,target rows}{table.caption.23}{}}
+\newlabel{tab:appendix-provenance@cref}{{[table][3][]3}{[1][12][]14}{}{}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Per-workflow $p$-values, decision flips, and effective sample sizes for the real-data tasks. \emph  {Unw.}\,$p$\,=\,unweighted p-value; \emph  {DW}\,$p$\,=\,doubly weighted p-value ($\lambda = 0.5$, 499 permutations). Flip\,=\,decision change at $\alpha = 0.05$ between unweighted and doubly weighted; $\dagger $ marks a borderline flip. $N_{\mathrm  {src}}$ and $N_{\mathrm  {tgt}}$ are the original sample sizes; $\mathrm  {ESS}_{\mathrm  {src}}$ and $\mathrm  {ESS}_{\mathrm  {tgt}}$ are Kish's effective sample sizes for the doubly weighted mode. ESS is constant within each task because the domain classifier does not depend on the monitoring score. Reading a row---e.g., HELOC Risk: $N_{\mathrm  {src}}=1{,}536$, $N_{\mathrm  {tgt}}=2{,}776$, $\mathrm  {ESS}=401$ and $803$---shows that most observations fall outside the common support, explaining why the unweighted rejection ($p=0.002$) does not survive common-support restriction ($p=0.376$). Direction: $\uparrow $\,=\,higher target score is adverse; $\downarrow $\,=\,lower target score is adverse (score is higher-is-better).}}{14}{table.caption.24}\protected@file@percent }
+\newlabel{tab:appendix-results}{{4}{14}{Per-workflow $p$-values, decision flips, and effective sample sizes for the real-data tasks. \emph {Unw.}\,$p$\,=\,unweighted p-value; \emph {DW}\,$p$\,=\,doubly weighted p-value ($\lambda = 0.5$, 499 permutations). Flip\,=\,decision change at $\alpha = 0.05$ between unweighted and doubly weighted; $\dagger $ marks a borderline flip. $N_{\mathrm {src}}$ and $N_{\mathrm {tgt}}$ are the original sample sizes; $\mathrm {ESS}_{\mathrm {src}}$ and $\mathrm {ESS}_{\mathrm {tgt}}$ are Kish's effective sample sizes for the doubly weighted mode. ESS is constant within each task because the domain classifier does not depend on the monitoring score. Reading a row---e.g., HELOC Risk: $N_{\mathrm {src}}=1{,}536$, $N_{\mathrm {tgt}}=2{,}776$, $\mathrm {ESS}=401$ and $803$---shows that most observations fall outside the common support, explaining why the unweighted rejection ($p=0.002$) does not survive common-support restriction ($p=0.376$). Direction: $\uparrow $\,=\,higher target score is adverse; $\downarrow $\,=\,lower target score is adverse (score is higher-is-better)}{table.caption.24}{}}
+\newlabel{tab:appendix-results@cref}{{[table][4][]4}{[1][12][]14}{}{}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Doubly weighted rejection rate by domain classifier and severity (40 repeats, $\lambda = 0.5$).}}{14}{table.caption.28}\protected@file@percent }
+\newlabel{tab:domain-clf-sensitivity}{{5}{14}{Doubly weighted rejection rate by domain classifier and severity (40 repeats, $\lambda = 0.5$)}{table.caption.28}{}}
+\newlabel{tab:domain-clf-sensitivity@cref}{{[table][5][]5}{[1][13][]14}{}{}{}}
+\gdef \@abspage@last{14}
