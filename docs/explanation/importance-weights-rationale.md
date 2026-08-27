@@ -44,9 +44,9 @@ $$
 
 You do not need to compute these by hand. `domain_weights(...)` does it for you.
 
-## What `lambda_` changes
+## What `shrinkage` changes
 
-| `lambda_` | Effect |
+| `shrinkage` | Effect |
 |-----------|--------|
 | `0.0` | Plain density ratio. Strongest correction, highest variance. |
 | `0.5` | Practical default. Good balance between correction and stability. |

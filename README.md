@@ -15,16 +15,16 @@
 
 > Same, same but different ...
 
-`samesame` compares a source group with a target group and tells you whether these distributions
-differ, and whether the target distribution shifted toward worse outcomes. It is designed for
-monitoring machine learning (ML) systems and model behavior across time, domains, and contexts.
+`samesame` compares a source group with a target group and asks whether their score distributions
+differ, and whether the target moved toward worse outcomes. It is designed for monitoring machine
+learning (ML) systems and model behavior across time, domains, and contexts.
 
 In the package, the reference group is called **source** and the new group is called **target**.
 That could mean training vs production data, a baseline batch vs a fresh batch, or one segment vs
 another.
 
-Each distribution is represented by a relevant score, such as predicted risk, model confidence,
-prediction error, or a classifier score.
+Each distribution is represented by a relevant score: predicted risk, model confidence, prediction
+error, or a classifier score.
 
 The package is built around two practical questions:
 
@@ -78,7 +78,7 @@ Choose the signal that matches the decision you need to make:
 The package does not force one interpretation on you. It gives you a small set of tests you can
 reuse across these settings.
 
-## Why it works well in practice
+## The workflow
 
 `samesame` is statistically grounded, but the working model is simple:
 

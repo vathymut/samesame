@@ -20,7 +20,7 @@ out-of-sample probabilities separate the two groups more than chance, the datase
 
 ## Step 1 - Create a simple source and target example
 
-Here we create a synthetic target group with a slight distributional shift from the source group.
+We create a synthetic target group with a slight shift from the source group.
 
 ```python
 import numpy as np

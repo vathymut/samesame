@@ -1,7 +1,8 @@
 # Importance weights
 
-Use `samesame.weights` when you want a shift test to focus on the region of feature space where
-source and target have common support.
+Use `samesame.weights` when a plain comparison gives too much influence to observations that the
+other group rarely contains. Weighting changes the question: you are comparing the groups mainly
+where they overlap.
 
 ## Choose an approach
 
@@ -50,8 +51,7 @@ It takes two main controls:
 - `source` and `target`, passed separately as domain-classifier probabilities that estimate
   `P(target | observation)`. These are not the raw source and target observations or test scores.
 - `reweight`, which decides whether to reweight source, target, or both (default `"both"`)
-- `shrinkage`, which trades off correction strength against stability; this is the `lambda` parameter
-  from the underlying method
+- `shrinkage`, which trades off correction strength against stability
 
 Probabilities must be in `[0, 1]`. Values at 0 or 1 are automatically clipped away
 from the boundaries before weights are calculated.

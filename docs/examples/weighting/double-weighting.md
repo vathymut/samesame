@@ -21,18 +21,18 @@ At that point you already have:
 from samesame.weights import domain_weights
 
 weights_both = domain_weights(
-  source=source_prob,
-  target=target_prob,
-  reweight="both",
-  shrinkage=0.5,
+    source=source_prob,
+    target=target_prob,
+    reweight="both",
+    shrinkage=0.5,
 )
 
 double_weighted = ss.test_harmful_shift(
-  source=train_risk,
-  target=deployment_risk,
+    source=train_risk,
+    target=deployment_risk,
     worse="higher",
-  weights=weights_both,
-  rng=np.random.default_rng(12345),
+    weights=weights_both,
+    rng=np.random.default_rng(12345),
 )
 
 print(f"Doubly-weighted p-value: {double_weighted.pvalue:.4f}")
@@ -49,11 +49,11 @@ weights_source = domain_weights(
 )
 
 source_weighted = ss.test_harmful_shift(
-  source=train_risk,
-  target=deployment_risk,
+    source=train_risk,
+    target=deployment_risk,
     worse="higher",
-  weights=weights_source,
-  rng=np.random.default_rng(12345),
+    weights=weights_source,
+    rng=np.random.default_rng(12345),
 )
 
 print(f"Unweighted      p-value: {unweighted.pvalue:.4f}")
@@ -70,14 +70,14 @@ Think of the three results this way:
 If the signal shrinks only after doubly-weighting, target-side outliers were still influencing the
 result after source reweighting.
 
-## Choosing `lambda_`
+## Choosing `shrinkage`
 
-`lambda_=0.5` is a practical starting point.
+`shrinkage=0.5` is a practical starting point.
 
 - Lower values make the correction stronger and the variance higher.
 - Higher values produce weights closer to uniform.
 
-If you are unsure, start at `0.5`, inspect the sensitivity, and only choose a lower value when the
+If you are unsure, start at `0.5`, inspect the sensitivity, and choose a lower value only when the
 domain probabilities and assumed overlap structure are reliable.
 
 For the intuition behind the formulas, see

@@ -10,8 +10,8 @@ By the end, you will know how to:
 - run `ss.test_harmful_shift(...)` and interpret the p-value
 
 `ss.test_shift(...)` asks whether source and target differ at all.
-`ss.test_harmful_shift(...)` asks a narrower question: did the target distribution shift toward the harmful
-end of the signal?
+`ss.test_harmful_shift(...)` asks the narrower question: did the target move toward the harmful end
+of the signal?
 
 ## What you need
 

@@ -18,8 +18,7 @@ To install `uv`, check the documentation on [Installing uv](https://docs.astral.
 
 #### Create an environment and sync it
 
-You can use the `uv sync` to create a project virtual environment (if it does not already exist) and sync
-the project's dependencies with the environment.
+Use `uv sync` to create a project virtual environment, if needed, and sync the project's dependencies.
 
 ```bash
 git clone https://github.com/vathymut/samesame
@@ -29,8 +28,7 @@ uv sync --all-extras
 
 #### Use a specific Python version (optional)
 
-If you need to work with a specific version of Python, you can create a new virtual environment for that version
-and run the sync command:
+If you need a specific Python version, create a virtual environment for it and run sync:
 
 ```bash
 uv venv --python 3.12
@@ -81,16 +79,16 @@ Run the following:
 uv run mkdocs gh-deploy
 ```
 
-### Updating Package Version
+### Updating the Package Version
 
 ```bash
-python -m uv version --bump
+uv version --bump
 ```
 
 ### Building Python Package
 
 ```bash
-python -m uv build
+uv build
 ```
 
 ### Publishing to PyPI
@@ -99,7 +97,7 @@ Following [these instructions](https://github.com/astral-sh/uv/issues/10878#issu
 we first log in securely as follows:
 
 ```bash
-$ python -m uv auth login upload.pypi.org                      
+uv auth login upload.pypi.org
 username: __token__
 password: 
 ```
@@ -109,5 +107,5 @@ potentially, saved in a config file (e.g. see `.pypirc` file). Only then, we
 publish the new version of the package using:
 
 ```bash
-python -m uv publish --username __token__
+uv publish --username __token__
 ```
