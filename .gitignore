@@ -50,6 +50,13 @@ cover/*
 site/*
 MANIFEST
 
+# LaTeX build artifacts
+research/**/*.aux
+research/**/*.bbl
+research/**/*.blg
+research/**/*.out
+research/**/*.pdf
+
 # Per-project virtualenvs
 .venv*/
 .conda*/
