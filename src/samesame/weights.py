@@ -8,7 +8,7 @@ from typing import Literal
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
-WeightingMode = Literal["source", "target", "both"]
+_WeightingMode = Literal["source", "target", "both"]
 _PROBABILITY_CLIP = 1e-6
 
 
@@ -23,12 +23,16 @@ def _density_ratio(
     return (probs / (1.0 - probs)) * group_balance
 
 
-def _riw(density_ratio_values: NDArray, *, lam: float) -> NDArray[np.float64]:
-    return density_ratio_values / ((1.0 - lam) + lam * density_ratio_values)
+def _riw(density_ratio_values: NDArray, *, shrinkage: float) -> NDArray[np.float64]:
+    return density_ratio_values / (
+        (1.0 - shrinkage) + shrinkage * density_ratio_values
+    )
 
 
-def _inverse_riw(density_ratio_values: NDArray, *, lam: float) -> NDArray[np.float64]:
-    return 1.0 / (lam + (1.0 - lam) * density_ratio_values)
+def _inverse_riw(
+    density_ratio_values: NDArray, *, shrinkage: float
+) -> NDArray[np.float64]:
+    return 1.0 / (shrinkage + (1.0 - shrinkage) * density_ratio_values)
 
 
 @dataclass(frozen=True)
@@ -113,13 +117,13 @@ class ImportanceWeights:
         Examples
         --------
         >>> import numpy as np
-        >>> from samesame.weights import common_support_weights
-        >>> source_prob = np.array([0.25, 0.4])
-        >>> target_prob = np.array([0.6, 0.75])
-        >>> weights = common_support_weights(
-        ...     source_prob=source_prob,
-        ...     target_prob=target_prob,
-        ...     mode="both"
+        >>> from samesame.weights import domain_weights
+        >>> source = np.array([0.25, 0.4])
+        >>> target = np.array([0.6, 0.75])
+        >>> weights = domain_weights(
+        ...     source=source,
+        ...     target=target,
+        ...     reweight="both"
         ... )
         >>> ess = weights.effective_sample_size()
         >>> round(ess.source, 4)
@@ -193,46 +197,50 @@ def _as_probability_vector(values: ArrayLike, *, name: str) -> NDArray[np.float6
     return probabilities
 
 
-def _validate_lambda(lambda_: float) -> float:
-    lambda_value = float(lambda_)
-    if not np.isfinite(lambda_value) or lambda_value < 0.0 or lambda_value > 1.0:
-        raise ValueError("lambda_ must be in [0, 1] and finite.")
-    return lambda_value
+def _validate_shrinkage(shrinkage: float) -> float:
+    shrinkage_value = float(shrinkage)
+    if (
+        not np.isfinite(shrinkage_value)
+        or shrinkage_value < 0.0
+        or shrinkage_value > 1.0
+    ):
+        raise ValueError("shrinkage must be in [0, 1] and finite.")
+    return shrinkage_value
 
 
-def _validate_mode(mode: str) -> WeightingMode:
-    match mode:
+def _validate_reweight(reweight: str) -> _WeightingMode:
+    match reweight:
         case "source" | "target" | "both":
-            return mode
-    raise ValueError("mode must be one of 'source', 'target', 'both'.")
+            return reweight
+    raise ValueError("reweight must be one of 'source', 'target', 'both'.")
 
 
-def common_support_weights(
+def domain_weights(
     *,
-    source_prob: ArrayLike,
-    target_prob: ArrayLike,
-    mode: WeightingMode = "both",
-    lambda_: float = 0.5,
+    source: ArrayLike,
+    target: ArrayLike,
+    reweight: _WeightingMode = "both",
+    shrinkage: float = 0.5,
 ) -> ImportanceWeights:
     """Build Importance weights from Domain probabilities.
 
-    Computes RIW weights from domain probabilities.
-    The prior ratio is always inferred from the lengths of ``source_prob``
-    and ``target_prob``.
+    Computes RIW weights from domain probabilities. ``source`` and ``target``
+    are probabilities that each observation belongs to the target group.
+    The prior ratio is inferred from their lengths.
 
     Parameters
     ----------
-    source_prob : NDArray
+    source : NDArray
         Domain probabilities for source samples — probability, output by a
         domain classifier, that each source observation belongs to the target
         group. Must be in the closed interval [0, 1]. Values are clipped to
         ``[1e-6, 1 - 1e-6]`` before calculating weights.
-    target_prob : NDArray
+    target : NDArray
         Domain probabilities for target samples — probability, output by a
         domain classifier, that each target observation belongs to the target
         group. Must be in the closed interval [0, 1]. Values are clipped to
         ``[1e-6, 1 - 1e-6]`` before calculating weights.
-    mode : {'source', 'target', 'both'}, optional
+    reweight : {'source', 'target', 'both'}, optional
         Importance-weighting mode — controls which group's samples are
         reweighted:
 
@@ -243,7 +251,7 @@ def common_support_weights(
         - ``'both'``: reweight both groups simultaneously (default). Use
           when both groups contain low-overlap outliers.
 
-    lambda_ : float, optional
+    shrinkage : float, optional
         RIW blending coefficient in [0, 1] controlling the trade-off between
         correction strength and variance stability. ``0.0`` gives plain
         density-ratio weights (maximum correction, highest variance); ``1.0``
@@ -255,57 +263,57 @@ def common_support_weights(
     ImportanceWeights
         A frozen dataclass with ``.source`` and ``.target`` weight arrays.
         Weights for each active group are normalized so they sum to that
-        group's sample size. Samples not targeted by ``mode`` receive weight 1.
+        group's sample size. Samples not targeted by ``reweight`` receive weight 1.
 
     Raises
     ------
     ValueError
-        If any value in ``source_prob`` or ``target_prob`` is outside [0, 1].
+        If any value in ``source`` or ``target`` is outside [0, 1].
     ValueError
-        If ``lambda_`` is outside [0, 1].
+        If ``shrinkage`` is outside [0, 1].
     ValueError
-        If ``mode`` is not one of ``'source'``, ``'target'``, ``'both'``.
+        If ``reweight`` is not one of ``'source'``, ``'target'``, ``'both'``.
     ValueError
-        If ``source_prob`` or ``target_prob`` is empty.
+        If ``source`` or ``target`` is empty.
 
     Examples
     --------
     >>> import numpy as np
-    >>> from samesame.weights import common_support_weights
-    >>> source_prob = np.array([0.25, 0.4])
-    >>> target_prob = np.array([0.6, 0.75])
-    >>> w = common_support_weights(source_prob=source_prob, target_prob=target_prob)
+    >>> from samesame.weights import domain_weights
+    >>> source = np.array([0.25, 0.4])
+    >>> target = np.array([0.6, 0.75])
+    >>> w = domain_weights(source=source, target=target)
     >>> np.round(w.source, 4)
     array([0.7692, 1.2308])
     >>> np.round(w.target, 4)
     array([1.2308, 0.7692])
-    >>> w2 = common_support_weights(source_prob=source_prob, target_prob=target_prob, mode="source")
+    >>> w2 = domain_weights(source=source, target=target, reweight="source")
     >>> np.round(w2.source, 4)
     array([0.7692, 1.2308])
     >>> np.round(w2.target, 4)
     array([1., 1.])
     """
-    source_prob = _as_probability_vector(source_prob, name="source_prob")
-    target_prob = _as_probability_vector(target_prob, name="target_prob")
-    source_prob = np.clip(source_prob, _PROBABILITY_CLIP, 1.0 - _PROBABILITY_CLIP)
-    target_prob = np.clip(target_prob, _PROBABILITY_CLIP, 1.0 - _PROBABILITY_CLIP)
-    n_source = len(source_prob)
-    n_target = len(target_prob)
-    lambda_value = _validate_lambda(lambda_)
-    validated_mode = _validate_mode(mode)
+    source = _as_probability_vector(source, name="source")
+    target = _as_probability_vector(target, name="target")
+    source = np.clip(source, _PROBABILITY_CLIP, 1.0 - _PROBABILITY_CLIP)
+    target = np.clip(target, _PROBABILITY_CLIP, 1.0 - _PROBABILITY_CLIP)
+    n_source = len(source)
+    n_target = len(target)
+    shrinkage_value = _validate_shrinkage(shrinkage)
+    validated_reweight = _validate_reweight(reweight)
 
     group_balance = n_source / n_target
-    source_dr = _density_ratio(source_prob, group_balance=group_balance)
-    target_dr = _density_ratio(target_prob, group_balance=group_balance)
+    source_dr = _density_ratio(source, group_balance=group_balance)
+    target_dr = _density_ratio(target, group_balance=group_balance)
 
     out_source = np.ones(n_source, dtype=np.float64)
     out_target = np.ones(n_target, dtype=np.float64)
 
-    if validated_mode in ("source", "both"):
-        out_source = _riw(source_dr, lam=lambda_value)
+    if validated_reweight in ("source", "both"):
+        out_source = _riw(source_dr, shrinkage=shrinkage_value)
 
-    if validated_mode in ("target", "both"):
-        out_target = _inverse_riw(target_dr, lam=lambda_value)
+    if validated_reweight in ("target", "both"):
+        out_target = _inverse_riw(target_dr, shrinkage=shrinkage_value)
 
     return ImportanceWeights(source=out_source, target=out_target)
 
@@ -313,6 +321,5 @@ def common_support_weights(
 __all__ = [
     "EffectiveSampleSize",
     "ImportanceWeights",
-    "WeightingMode",
-    "common_support_weights",
+    "domain_weights",
 ]

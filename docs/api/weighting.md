@@ -9,15 +9,15 @@ source and target have common support.
 |-----------|------------|
 | No weighting needed | Omit `weights` |
 | You already have sample weights | Wrap them in `ImportanceWeights(source=..., target=...)` |
-| You have domain-classifier probabilities | Build weights with `common_support_weights(...)` |
+| You have domain-classifier probabilities | Build weights with `domain_weights(...)` |
 
 ```python
 import samesame as ss
-from samesame.weights import ImportanceWeights, common_support_weights
+from samesame.weights import ImportanceWeights, domain_weights
 
-result = ss.detect_shift(source_scores, target_scores)
+result = ss.test_shift(source_scores, target_scores)
 
-result = ss.detect_shift(
+result = ss.test_shift(
     source_scores,
     target_scores,
     weights=ImportanceWeights(
@@ -26,43 +26,45 @@ result = ss.detect_shift(
     ),
 )
 
-weights = common_support_weights(
-    source_prob=source_domain_probs,
-    target_prob=target_domain_probs,
-    mode="both",
+weights = domain_weights(
+    source=source_domain_probs,
+    target=target_domain_probs,
+    reweight="both",
 )
 
-result = ss.detect_harmful_shift(
+result = ss.test_harmful_shift(
     source_scores,
     target_scores,
-    higher_is_worse=True,
+    worse="higher",
     weights=weights,
 )
 ```
 
-## When `common_support_weights(...)` helps
+## When `domain_weights(...)` helps
 
 Use it when source and target do not overlap well and you want the comparison to emphasize common
 support rather than low-overlap observations.
 
-It takes three main controls:
+It takes two main controls:
 
-- `source_prob` and `target_prob`, passed separately
-- `mode`, which decides whether to reweight source, target, or both (default `"both"`)
-- `lambda_`, which trades off correction strength against stability
+- `source` and `target`, passed separately as domain-classifier probabilities that estimate
+  `P(target | observation)`. These are not the raw source and target observations or test scores.
+- `reweight`, which decides whether to reweight source, target, or both (default `"both"`)
+- `shrinkage`, which trades off correction strength against stability; this is the `lambda` parameter
+  from the underlying method
 
 Probabilities must be in `[0, 1]`. Values at 0 or 1 are automatically clipped away
 from the boundaries before weights are calculated.
 
-## Choosing a mode
+## Choosing what to reweight
 
 | Mode | What it emphasizes |
 |------|--------------------|
-| `mode="source"` | overlap from the source side |
-| `mode="target"` | overlap from the target side |
-| `mode="both"` | common support from both sides (default) |
+| `reweight="source"` | overlap from the source side |
+| `reweight="target"` | overlap from the target side |
+| `reweight="both"` | common support from both sides (default) |
 
-`lambda_=0.5` is a practical default. Lower values correct more aggressively. Higher values produce
+`shrinkage=0.5` is a practical default. Lower values correct more aggressively. Higher values produce
 weights closer to uniform.
 
 ## Effective sample size

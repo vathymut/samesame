@@ -53,21 +53,21 @@ def test_confidence_recipe_feeds_harm_detection_in_expected_direction() -> None:
     source_scores = example.outlier_scores_from_probabilities(source_probabilities)
     target_scores = example.outlier_scores_from_probabilities(target_probabilities)
 
-    harmful = shift.detect_harmful_shift(
+    harmful = shift.test_harmful_shift(
         source_scores,
         target_scores,
-        higher_is_worse=False,
+        worse="lower",
         n_resamples=99,
         rng=np.random.default_rng(42),
     )
-    reverse = shift.detect_harmful_shift(
+    reverse = shift.test_harmful_shift(
         target_scores,
         source_scores,
-        higher_is_worse=False,
+        worse="lower",
         n_resamples=99,
         rng=np.random.default_rng(42),
     )
 
     assert source_scores.mean() > target_scores.mean()
-    assert harmful.higher_is_worse is False
+    assert harmful.worse == "lower"
     assert harmful.statistic > reverse.statistic

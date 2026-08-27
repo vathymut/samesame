@@ -7,7 +7,7 @@ By the end, you will know how to:
 
 - turn two datasets into a comparison signal
 - keep that signal honest with out-of-sample predictions
-- run `ss.detect_shift(...)` and interpret the result
+- run `ss.test_shift(...)` and interpret the result
 
 The workflow is: train a classifier to distinguish **source** from **target**. If its
 out-of-sample probabilities separate the two groups more than chance, the datasets differ.
@@ -65,7 +65,7 @@ import samesame as ss
 source_scores = prob_target[group == 0]
 target_scores = prob_target[group == 1]
 
-shift = ss.detect_shift(source_scores, target_scores)
+shift = ss.test_shift(source_scores, target_scores)
 
 print(f"AUC statistic: {shift.statistic:.3f}")
 print(f"p-value:       {shift.pvalue:.4f}")
@@ -82,7 +82,7 @@ a deliberately shifted target group.
   from `0.5` indicate stronger separation; values below `0.5` mean the classifier's ordering is
   reversed.
 
-`ss.detect_shift(...)` answers only the question "did anything change?" It does not tell you
+`ss.test_shift(...)` answers only the question "did anything change?" It does not tell you
 whether the change is worse for your application.
 
 If direction matters, continue to

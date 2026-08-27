@@ -7,10 +7,10 @@ By the end, you will know how to:
 
 - distinguish "different" from "worse"
 - choose the correct `worse` direction
-- run `ss.detect_harmful_shift(...)` and interpret the p-value
+- run `ss.test_harmful_shift(...)` and interpret the p-value
 
-`ss.detect_shift(...)` asks whether source and target differ at all.
-`ss.detect_harmful_shift(...)` asks a narrower question: did the target distribution shift toward the harmful
+`ss.test_shift(...)` asks whether source and target differ at all.
+`ss.test_harmful_shift(...)` asks a narrower question: did the target distribution shift toward the harmful
 end of the signal?
 
 ## What you need
@@ -39,27 +39,27 @@ This example gives the target distribution slightly lower scores, so it illustra
 ```python
 import samesame as ss
 
-shift = ss.detect_shift(source_quality, target_quality)
+shift = ss.test_shift(source_quality, target_quality)
 
-harm = ss.detect_harmful_shift(
+harm = ss.test_harmful_shift(
     source_quality,
     target_quality,
-    higher_is_worse=False,
+    worse="lower",
 )
 
 print(f"Shift p-value: {shift.pvalue:.4f}")
 print(f"Harm  p-value: {harm.pvalue:.4f}")
 ```
 
-Because higher values are better here, we use `higher_is_worse=False`. That tells `samesame` to treat a
+Because higher values are better here, we use `worse="lower"`. That tells `samesame` to treat a
 shift toward lower target scores as harmful.
 
 ## How to read the result
 
-- A small p-value from `detect_shift(...)` means the groups differ.
-- A small p-value from `detect_harmful_shift(...)` means the target distribution also shifted toward worse
+- A small p-value from `test_shift(...)` means the groups differ.
+- A small p-value from `test_harmful_shift(...)` means the target distribution also shifted toward worse
   outcomes.
-- If your signal already uses larger values for worse outcomes, use `higher_is_worse=True` instead.
+- If your signal already uses larger values for worse outcomes, use `worse="higher"` instead.
 
 Typical examples of `higher-is-worse` signals are predicted default risk, error, or anomaly level.
 Typical examples of `higher-is-better` signals are confidence, accuracy, or quality.

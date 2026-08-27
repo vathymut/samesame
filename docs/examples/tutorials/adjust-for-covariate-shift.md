@@ -66,29 +66,29 @@ target_scores = risk_score[group == 1]
 
 ```python
 import samesame as ss
-from samesame.weights import common_support_weights
+from samesame.weights import domain_weights
 
 source_prob = domain_prob[group == 0]
 target_prob = domain_prob[group == 1]
 
-weights = common_support_weights(
-    source_prob=source_prob,
-    target_prob=target_prob,
-    mode="source",
-    lambda_=0.5,
+weights = domain_weights(
+    source=source_prob,
+    target=target_prob,
+    reweight="source",
+    shrinkage=0.5,
 )
 
-unweighted = ss.detect_harmful_shift(
+unweighted = ss.test_harmful_shift(
     source_scores,
     target_scores,
-    higher_is_worse=True,
+    worse="higher",
     rng=np.random.default_rng(123_456),
 )
 
-weighted = ss.detect_harmful_shift(
+weighted = ss.test_harmful_shift(
     source_scores,
     target_scores,
-    higher_is_worse=True,
+    worse="higher",
     weights=weights,
     rng=np.random.default_rng(123_456),
 )
@@ -105,7 +105,7 @@ print(f"Weighted   p-value: {weighted.pvalue:.4f}")
   may be concentrated in low-overlap regions.
 - If both results are strong, the signal persists in common support.
 
-`lambda_=0.5` is a practical default. Use `mode="both"` when both source and target contain
+`shrinkage=0.5` is a practical default. Use `reweight="both"` when both source and target contain
 low-overlap outliers.
 
 For the intuition behind the weighting formulas, see

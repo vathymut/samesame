@@ -6,8 +6,8 @@ Use this page when you already have a numeric signal for a source group and a ta
 
 | Function | What it answers | Use it when |
 |----------|------------------|-------------|
-| `shift.detect_shift(...)` | Did anything change? | you want to detect any difference between source and target |
-| `shift.detect_harmful_shift(...)` | Did the target distribution shift toward worse outcomes? | you know what "worse" means for your signal |
+| `shift.test_shift(...)` | Did anything change? | you want to detect any difference between source and target |
+| `shift.test_harmful_shift(...)` | Did the target distribution shift toward worse outcomes? | you know what "worse" means for your signal |
 
 Examples of useful signals include predicted risk, prediction error, model confidence, and domain
 classifier probabilities.
@@ -17,27 +17,25 @@ classifier probabilities.
 All functions accept:
 
 - `n_resamples` to control the number of permutation resamples
-- `batch` to control how many permutations are processed at once. It changes
-  peak memory use and runtime, not the number of resamples.
 - `rng` for reproducibility; pass a NumPy random generator or leave it as `None`
 - `weights` for weighted testing with `ImportanceWeights`
 
-`shift.detect_harmful_shift(...)` also requires `higher_is_worse`:
+`shift.test_harmful_shift(...)` also requires `worse`:
 
-- `higher_is_worse=True` when larger scores mean harm
-- `higher_is_worse=False` when smaller scores mean harm
+- `worse="higher"` when larger scores mean harm
+- `worse="lower"` when smaller scores mean harm
 
 ## What you get back
 
-- `shift.detect_shift(...)` returns `ShiftResult`
-- `shift.detect_harmful_shift(...)` returns `HarmResult`
+- `shift.test_shift(...)` returns `ShiftResult`
+- `shift.test_harmful_shift(...)` returns `HarmfulShiftResult`
 
 In each case, the fields most users look at first are:
 
 - `.statistic`
 - `.pvalue`
 
-`HarmResult` also includes `.higher_is_worse`.
+`HarmfulShiftResult` also includes `.worse`.
 All results include `.null_distribution` when you need the full permutation output.
 
 When scores come from a fitted model, generate them out of sample with cross-validation,
@@ -45,19 +43,14 @@ out-of-bag predictions, or a held-out evaluation set. In-sample predictions can 
 separation and invalidate the test interpretation. `samesame` receives scores only and cannot check
 how they were generated.
 
-For large inputs, set `batch` to a positive integer to limit peak memory. Leaving it as `None`
-uses SciPy's default and processes all resamples in one batch.
-
 ## API
 
-::: samesame.shift.detect_shift
+::: samesame.shift.test_shift
 
-::: samesame.shift.detect_harmful_shift
+::: samesame.shift.test_harmful_shift
 
 ## Result types
 
-::: samesame.shift.TestResult
-
 ::: samesame.shift.ShiftResult
 
-::: samesame.shift.HarmResult
+::: samesame.shift.HarmfulShiftResult

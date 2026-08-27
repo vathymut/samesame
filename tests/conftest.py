@@ -21,6 +21,6 @@ def confidence_samples() -> dict[str, np.ndarray]:
 @pytest.fixture
 def domain_probabilities() -> dict[str, np.ndarray]:
     return {
-        "source_prob": np.array([0.25, 0.4]),
-        "target_prob": np.array([0.6, 0.75]),
+        "source": np.array([0.25, 0.4]),
+        "target": np.array([0.6, 0.75]),
     }

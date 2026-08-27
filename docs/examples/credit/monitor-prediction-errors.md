@@ -13,7 +13,7 @@ Prediction errors turn model quality into a numeric signal:
 - **Log-loss** penalizes confident mistakes more heavily
 
 For both, larger values mean worse predictions, so they work naturally with
-`ss.detect_harmful_shift(...)`.
+`ss.test_harmful_shift(...)`.
 
 ## Setup
 
@@ -82,16 +82,16 @@ logloss_test = -(
 ## Step 3 - Test whether errors are worse on the test set
 
 ```python
-harm_brier = ss.detect_harmful_shift(
+harm_brier = ss.test_harmful_shift(
     source=brier_train,
     target=brier_test,
-    higher_is_worse=True,
+    worse="higher",
 )
 
-harm_logloss = ss.detect_harmful_shift(
+harm_logloss = ss.test_harmful_shift(
     source=logloss_train,
     target=logloss_test,
-    higher_is_worse=True,
+    worse="higher",
 )
 
 print(f"Brier p-value:   {harm_brier.pvalue:.4f}")
@@ -106,7 +106,7 @@ result when training and test come from the same population.
 - Small p-values mean the test set contains a disproportionate share of higher-error predictions.
 - Large p-values mean there is not enough evidence that the model performs worse on the test set.
 
-It is common for Brier score and log-loss to tell a similar story here. `ss.detect_harmful_shift(...)`
+It is common for Brier score and log-loss to tell a similar story here. `ss.test_harmful_shift(...)`
 is rank-based, so signals that order observations in a similar way often produce similar results.
 
 Use this guide when labels are available. If they are not, use

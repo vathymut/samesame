@@ -18,19 +18,19 @@ At that point you already have:
 ## Step 2 - Weight both groups
 
 ```python
-from samesame.weights import common_support_weights
+from samesame.weights import domain_weights
 
-weights_both = common_support_weights(
-  source_prob=source_prob,
-  target_prob=target_prob,
-  mode="both",
-  lambda_=0.5,
+weights_both = domain_weights(
+  source=source_prob,
+  target=target_prob,
+  reweight="both",
+  shrinkage=0.5,
 )
 
-double_weighted = ss.detect_harmful_shift(
+double_weighted = ss.test_harmful_shift(
   source=train_risk,
   target=deployment_risk,
-    higher_is_worse=True,
+    worse="higher",
   weights=weights_both,
   rng=np.random.default_rng(12345),
 )
@@ -41,17 +41,17 @@ print(f"Doubly-weighted p-value: {double_weighted.pvalue:.4f}")
 ## Step 3 - Compare the three views
 
 ```python
-weights_source = common_support_weights(
-  source_prob=source_prob,
-  target_prob=target_prob,
-  mode="source",
-  lambda_=0.5,
+weights_source = domain_weights(
+  source=source_prob,
+  target=target_prob,
+  reweight="source",
+  shrinkage=0.5,
 )
 
-source_weighted = ss.detect_harmful_shift(
+source_weighted = ss.test_harmful_shift(
   source=train_risk,
   target=deployment_risk,
-    higher_is_worse=True,
+    worse="higher",
   weights=weights_source,
   rng=np.random.default_rng(12345),
 )
