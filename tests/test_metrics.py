@@ -24,7 +24,7 @@ def separated() -> dict[str, np.ndarray]:
     rng = np.random.default_rng(11)
     actual = np.array([0] * 40 + [1] * 40)
     predicted = np.concatenate([rng.uniform(0.0, 0.3, 40), rng.uniform(0.7, 1.0, 40)])
-    return {"actual": actual, "predicted": predicted}
+    return {"labels": actual, "scores": predicted}
 
 
 @pytest.fixture
@@ -33,7 +33,7 @@ def mixed() -> dict[str, np.ndarray]:
     rng = np.random.default_rng(22)
     actual = np.array([0] * 60 + [1] * 60)
     predicted = np.concatenate([rng.normal(0.4, 0.15, 60), rng.normal(0.6, 0.15, 60)])
-    return {"actual": actual, "predicted": predicted}
+    return {"labels": actual, "scores": predicted}
 
 
 # ---------------------------------------------------------------------------
@@ -53,7 +53,7 @@ def test_wauc_result_bounded(mixed: dict[str, np.ndarray]) -> None:
 
 def test_wauc_result_bounded_with_weights(mixed: dict[str, np.ndarray]) -> None:
     rng = np.random.default_rng(33)
-    weights = rng.uniform(0.5, 2.0, len(mixed["actual"]))
+    weights = rng.uniform(0.5, 2.0, len(mixed["labels"]))
     result = harmful_shift_statistic(**mixed, sample_weight=weights)
     assert 0.0 <= result <= 1.0
 
@@ -70,8 +70,8 @@ def test_wauc_harmful_shift_exceeds_reverse_shift(
     than when source scores exceed target scores (reverse)."""
     result_harm = harmful_shift_statistic(**separated)
     result_reverse = harmful_shift_statistic(
-        separated["actual"],
-        1.0 - separated["predicted"],
+        separated["labels"],
+        1.0 - separated["scores"],
     )
     assert result_harm > result_reverse
 
@@ -79,7 +79,7 @@ def test_wauc_harmful_shift_exceeds_reverse_shift(
 def test_wauc_sensitive_to_shift_direction(mixed: dict[str, np.ndarray]) -> None:
     """Harmfully shifted data (target higher) yields higher WAUC than reversed."""
     result_harm = harmful_shift_statistic(**mixed)
-    result_reverse = harmful_shift_statistic(mixed["actual"], 1.0 - mixed["predicted"])
+    result_reverse = harmful_shift_statistic(mixed["labels"], 1.0 - mixed["scores"])
     assert result_harm > result_reverse
 
 
@@ -91,7 +91,7 @@ def test_wauc_sensitive_to_shift_direction(mixed: dict[str, np.ndarray]) -> None
 def test_wauc_uniform_weights_match_unweighted(mixed: dict[str, np.ndarray]) -> None:
     """Uniform sample_weight must produce the same result as no weights."""
     unweighted = harmful_shift_statistic(**mixed)
-    uniform = np.ones(len(mixed["actual"]), dtype=float)
+    uniform = np.ones(len(mixed["labels"]), dtype=float)
     weighted = harmful_shift_statistic(**mixed, sample_weight=uniform)
     assert np.isclose(unweighted, weighted)
 
@@ -100,19 +100,19 @@ def test_wauc_asymmetric_negative_weights_change_result(
     mixed: dict[str, np.ndarray],
 ) -> None:
     """Weights that reshape the negative-class ECDF must change the result."""
-    actual = mixed["actual"]
-    predicted = mixed["predicted"]
-    n = len(actual)
-    neg_idx = np.where(actual == 0)[0]
-    neg_by_score = neg_idx[np.argsort(predicted[neg_idx])]
+    labels = mixed["labels"]
+    scores = mixed["scores"]
+    n = len(labels)
+    neg_idx = np.where(labels == 0)[0]
+    neg_by_score = neg_idx[np.argsort(scores[neg_idx])]
     half = len(neg_by_score) // 2
     # a: up-weight low-scoring negatives; b: up-weight high-scoring negatives
     weights_a = np.ones(n)
     weights_b = np.ones(n)
     weights_a[neg_by_score[:half]] = 5.0
     weights_b[neg_by_score[half:]] = 5.0
-    result_a = harmful_shift_statistic(actual, predicted, sample_weight=weights_a)
-    result_b = harmful_shift_statistic(actual, predicted, sample_weight=weights_b)
+    result_a = harmful_shift_statistic(labels, scores, sample_weight=weights_a)
+    result_b = harmful_shift_statistic(labels, scores, sample_weight=weights_b)
     assert not np.isclose(result_a, result_b)
 
 
@@ -120,18 +120,18 @@ def test_wauc_weights_affect_negative_class_ecdf(
     mixed: dict[str, np.ndarray],
 ) -> None:
     """Up-weighting hard negatives should reduce wauc relative to unweighted."""
-    actual = mixed["actual"]
-    predicted = mixed["predicted"]
+    labels = mixed["labels"]
+    scores = mixed["scores"]
     # Find the highest-scoring negative (hardest for the classifier)
-    neg_idx = np.where(actual == 0)[0]
-    hardest_neg = neg_idx[np.argmax(predicted[neg_idx])]
+    neg_idx = np.where(labels == 0)[0]
+    hardest_neg = neg_idx[np.argmax(scores[neg_idx])]
     # Up-weighting that sample should make the ECDF heavier at high thresholds,
     # changing the integration result.
-    weights_base = np.ones(len(actual), dtype=float)
+    weights_base = np.ones(len(labels), dtype=float)
     weights_hard = weights_base.copy()
     weights_hard[hardest_neg] = 20.0
-    result_base = harmful_shift_statistic(actual, predicted, sample_weight=weights_base)
-    result_hard = harmful_shift_statistic(actual, predicted, sample_weight=weights_hard)
+    result_base = harmful_shift_statistic(labels, scores, sample_weight=weights_base)
+    result_hard = harmful_shift_statistic(labels, scores, sample_weight=weights_hard)
     assert not np.isclose(result_base, result_hard)
 
 
@@ -144,20 +144,20 @@ def test_wauc_rejects_all_zero_negative_class_weights(
     mixed: dict[str, np.ndarray],
 ) -> None:
     """All-zero weights for the negative class raise instead of returning NaN."""
-    actual = mixed["actual"]
-    weights = np.ones(len(actual), dtype=float)
-    weights[actual == 0] = 0.0
+    labels = mixed["labels"]
+    weights = np.ones(len(labels), dtype=float)
+    weights[labels == 0] = 0.0
     with pytest.raises(ValueError, match="freq_weights must not be all zero"):
-        harmful_shift_statistic(actual, mixed["predicted"], sample_weight=weights)
+        harmful_shift_statistic(labels, mixed["scores"], sample_weight=weights)
 
 
 def test_wauc_rejects_negative_freq_weights(mixed: dict[str, np.ndarray]) -> None:
     """Negative weights for the negative class raise explicitly."""
-    actual = mixed["actual"]
-    weights = np.ones(len(actual), dtype=float)
-    weights[actual == 0] = -1.0
+    labels = mixed["labels"]
+    weights = np.ones(len(labels), dtype=float)
+    weights[labels == 0] = -1.0
     with pytest.raises(ValueError, match="freq_weights must be non-negative"):
-        harmful_shift_statistic(actual, mixed["predicted"], sample_weight=weights)
+        harmful_shift_statistic(labels, mixed["scores"], sample_weight=weights)
 
 
 def test_weighted_ecdf_rejects_wrong_length_freq_weights() -> None:

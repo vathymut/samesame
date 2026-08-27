@@ -19,25 +19,14 @@ def test_root_exports() -> None:
     assert ss.ImportanceWeights is ImportanceWeights
     assert ss.shift is shift
     assert ss.weights is ss.weights
-    assert "test_shift" in ss.__all__
-    assert "test_harmful_shift" in ss.__all__
-    assert "domain_weights" in ss.__all__
-    assert not hasattr(ss, "detect_shift")
-    assert not hasattr(ss, "detect_harmful_shift")
-    assert not hasattr(ss, "common_support_weights")
-    assert not hasattr(ss, "from_domain_probabilities")
-    assert "ImportanceWeights" in ss.__all__
-    assert "shift" in ss.__all__
-    assert "weights" in ss.__all__
-    assert "scores" not in ss.__all__
-    assert not hasattr(ss, "stats")
-    assert not hasattr(ss, "adverse_shift_posterior")
-    assert not hasattr(shift, "as_bf")
-    assert not hasattr(shift, "infer_harm")
-    assert not hasattr(shift, "detect_harm")
-    assert not hasattr(shift, "BayesianHarmResult")
-    assert not hasattr(shift, "detect_harm_bayesian")
-    assert not hasattr(shift, "ShiftStatistic")
+    assert set(ss.__all__) == {
+        "ImportanceWeights",
+        "test_harmful_shift",
+        "test_shift",
+        "domain_weights",
+        "shift",
+        "weights",
+    }
 
 
 def test_detect_shift_signature_is_minimal() -> None:
@@ -130,7 +119,8 @@ def test_detect_harm_rejects_non_bool_higher_is_worse(
 ) -> None:
     with pytest.raises(ValueError, match="worse must be"):
         shift.test_harmful_shift(
-            **confidence_samples, worse="sideways"  # type: ignore[arg-type]
+            **confidence_samples,
+            worse="sideways",  # type: ignore[arg-type]
         )
 
 
@@ -170,9 +160,7 @@ def test_shift_supports_explicit_weights(
         target=np.linspace(1.0, 3.0, len(target)),
     )
     base = shift.test_shift(**shift_samples, n_resamples=64)
-    weighted = shift.test_shift(
-        **shift_samples, n_resamples=64, weights=sample_weight
-    )
+    weighted = shift.test_shift(**shift_samples, n_resamples=64, weights=sample_weight)
     assert isinstance(weighted, ShiftResult)
     assert base.statistic != weighted.statistic
 
@@ -216,9 +204,7 @@ def test_shift_supports_contextual_weights(
     source, target = shift_samples["source"], shift_samples["target"]
     source_prob = rng.uniform(0.2, 0.5, size=len(source))
     target_prob = rng.uniform(0.5, 0.8, size=len(target))
-    weights = domain_weights(
-        source=source_prob, target=target_prob, reweight="source"
-    )
+    weights = domain_weights(source=source_prob, target=target_prob, reweight="source")
     base = shift.test_shift(**shift_samples, n_resamples=64)
     contextual = shift.test_shift(**shift_samples, n_resamples=64, weights=weights)
     assert isinstance(contextual, ShiftResult)
@@ -246,12 +232,8 @@ def test_harm_detection_supports_importance_weights(
     source, target = confidence_samples["source"], confidence_samples["target"]
     source_prob = rng.uniform(0.2, 0.5, size=len(source))
     target_prob = rng.uniform(0.5, 0.8, size=len(target))
-    weights = domain_weights(
-        source=source_prob, target=target_prob, reweight="target"
-    )
-    base = shift.test_harmful_shift(
-        **confidence_samples, worse="lower", n_resamples=64
-    )
+    weights = domain_weights(source=source_prob, target=target_prob, reweight="target")
+    base = shift.test_harmful_shift(**confidence_samples, worse="lower", n_resamples=64)
     contextual = shift.test_harmful_shift(
         **confidence_samples,
         worse="lower",
@@ -294,3 +276,37 @@ def test_results_do_not_expose_significant_method(
 ) -> None:
     result = shift.test_shift(**shift_samples, n_resamples=64)
     assert not hasattr(result, "significant")
+
+
+def test_shift_rejects_non_positive_n_resamples(
+    shift_samples: dict[str, np.ndarray],
+) -> None:
+    with pytest.raises(ValueError, match="n_resamples must be"):
+        shift.test_shift(**shift_samples, n_resamples=0)
+    with pytest.raises(ValueError, match="n_resamples must be"):
+        shift.test_harmful_shift(**shift_samples, worse="higher", n_resamples=-1)
+
+
+def test_shift_rejects_empty_scores() -> None:
+    with pytest.raises(ValueError, match="source must not be empty"):
+        shift.test_shift(source=np.array([]), target=np.array([0.5]))
+
+
+def test_shift_rejects_non_numeric_scores() -> None:
+    with pytest.raises(ValueError, match="source must be a one-dimensional numeric"):
+        shift.test_shift(source=np.array(["a", "b"]), target=np.array([0.5, 0.6]))
+
+
+def test_importance_weights_repr_truncates_long_arrays() -> None:
+    weights = ImportanceWeights(source=np.ones(300), target=np.ones(300))
+    rendered = repr(weights)
+    assert "ImportanceWeights(" in rendered
+    assert "..." in rendered
+    assert len(rendered) < 200
+
+
+def test_importance_weights_repr_shows_short_arrays_fully() -> None:
+    weights = ImportanceWeights(source=np.array([1.0, 2.0]), target=np.array([1.0]))
+    rendered = repr(weights)
+    assert "[0.66666667 1.33333333]" in rendered
+    assert "[1.]" in rendered

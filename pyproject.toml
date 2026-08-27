@@ -37,19 +37,13 @@ build-backend = "uv_build"
 
 [project.optional-dependencies]
 dev = ["samesame[docs,test]", "code-review-graph"]
-test = ["uv>=0.11.14", "pytest", "pytest-cov", "ruff"]
+test = ["pytest", "pytest-cov", "ruff"]
 docs = ["mkdocs-material", "mkdocstrings-python", "numpydoc", "pandas"]
 
 [tool.pytest.ini_options]
 addopts = "--cov samesame --cov-report term-missing --verbose --doctest-modules --doctest-continue-on-failure -m \"not slow\""
-testpaths = ["tests"]
+testpaths = ["tests", "src"]
 markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
-
-[tool.setuptools]
-package-dir = { "" = "src" }
-
-[tool.setuptools.packages.find]
-where = ["src"]
 
 [tool.numpydoc_validation]
 checks = [

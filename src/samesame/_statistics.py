@@ -9,25 +9,19 @@ from sklearn.metrics import roc_curve
 
 
 def harmful_shift_statistic(
-    actual: NDArray[np.int_],
-    predicted: NDArray,
+    labels: NDArray[np.int_],
+    scores: NDArray,
     *,
     sample_weight: NDArray[np.float64] | None = None,
 ) -> float:
     """Compute the weighted harmful-shift statistic."""
-    fpr, tpr, thresholds = roc_curve(
-        actual,
-        predicted,
-        pos_label=None,
-        sample_weight=sample_weight,
+    fpr, tpr, thresholds = roc_curve(labels, scores, sample_weight=sample_weight)
+    negatives = labels == 0
+    negative_weights = None if sample_weight is None else sample_weight[negatives]
+    negative_cdf = _weighted_ecdf(
+        scores[negatives], thresholds, freq_weights=negative_weights
     )
-    negative_mask = actual == 0
-    negative_weights = None if sample_weight is None else sample_weight[negative_mask]
-    cdf_values = _weighted_ecdf(
-        predicted[negative_mask], thresholds, freq_weights=negative_weights
-    )
-    weights = np.power(cdf_values, 2)
-    return float(trapezoid(y=tpr * weights, x=fpr))
+    return float(trapezoid(y=tpr * negative_cdf**2, x=fpr))
 
 
 def _weighted_ecdf(
@@ -35,36 +29,30 @@ def _weighted_ecdf(
     query: NDArray,
     freq_weights: NDArray[np.float64] | None = None,
 ) -> NDArray[np.float64]:
-    """Evaluate the (weighted) empirical CDF of x at each point in query.
+    """Evaluate the (weighted) empirical CDF of ``x`` at each point in ``query``.
 
     Raises
     ------
     ValueError
-        If ``x`` or ``freq_weights`` is not one-dimensional, weights have the
-        wrong length, are not finite, are negative, or sum to zero.
+        If ``freq_weights`` has the wrong length, contains non-finite values,
+        is negative, or sums to zero.
     """
-    x = np.asarray(x)
-    if x.ndim != 1:
-        raise ValueError("x must be one-dimensional.")
     if freq_weights is None:
         freq_weights = np.ones(len(x))
-    freq_weights = np.asarray(freq_weights)
-    if freq_weights.ndim != 1:
-        raise ValueError("freq_weights must be one-dimensional.")
+    if len(freq_weights) != len(x):
+        raise ValueError("freq_weights must have the same length as x.")
     if not np.all(np.isfinite(freq_weights)):
         raise ValueError(
             "freq_weights must contain only finite values (no NaN or inf)."
         )
-    if len(freq_weights) != len(x):
-        raise ValueError("freq_weights must have the same length as x.")
     if np.any(freq_weights < 0):
         raise ValueError("freq_weights must be non-negative.")
     if freq_weights.sum() == 0:
         raise ValueError("freq_weights must not be all zero.")
     order = np.argsort(x)
     x_unique, first = np.unique(x[order], return_index=True)
-    w_sum = np.add.reduceat(freq_weights[order], first)
-    y = np.cumsum(w_sum) / np.sum(w_sum)
-    xs = np.r_[-np.inf, x_unique]
-    ys = np.r_[0.0, y]
-    return ys[np.searchsorted(xs, query, "right") - 1]
+    weight_sums = np.add.reduceat(freq_weights[order], first)
+    cdf = np.cumsum(weight_sums) / np.sum(weight_sums)
+    knots = np.r_[-np.inf, x_unique]
+    levels = np.r_[0.0, cdf]
+    return levels[np.searchsorted(knots, query, "right") - 1]

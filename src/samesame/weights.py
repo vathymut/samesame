@@ -8,25 +8,21 @@ from typing import Literal
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
-_WeightingMode = Literal["source", "target", "both"]
+ReweightMode = Literal["source", "target", "both"]
 _PROBABILITY_CLIP = 1e-6
 
 
 def _density_ratio(
-    domain_prob: ArrayLike,
+    domain_prob: NDArray[np.float64],
     *,
     group_balance: float,
 ) -> NDArray[np.float64]:
-    probs = _as_probability_vector(domain_prob, name="domain_prob")
-    if not np.isfinite(group_balance) or group_balance <= 0.0:
-        raise ValueError("group_balance must be finite and > 0.")
-    return (probs / (1.0 - probs)) * group_balance
+    """Density ratio ``p(target)/p(source)`` implied by domain probabilities."""
+    return (domain_prob / (1.0 - domain_prob)) * group_balance
 
 
 def _riw(density_ratio_values: NDArray, *, shrinkage: float) -> NDArray[np.float64]:
-    return density_ratio_values / (
-        (1.0 - shrinkage) + shrinkage * density_ratio_values
-    )
+    return density_ratio_values / ((1.0 - shrinkage) + shrinkage * density_ratio_values)
 
 
 def _inverse_riw(
@@ -51,7 +47,7 @@ class EffectiveSampleSize:
     target: float
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, repr=False)
 class ImportanceWeights:
     """Importance weights for Source and Target groups.
 
@@ -80,18 +76,14 @@ class ImportanceWeights:
             _normalize_group_weights(self.target, name="weights.target"),
         )
 
-    def _as_sample_weight(self, *, n_source: int, n_target: int) -> NDArray[np.float64]:
-        source_weight = _check_group_weight_length(
-            self.source,
-            expected_size=n_source,
-            name="weights.source",
+    def __repr__(self) -> str:
+        def render(values: NDArray[np.float64]) -> str:
+            return np.array2string(values, threshold=8, edgeitems=2)
+
+        return (
+            f"{type(self).__name__}("
+            f"source={render(self.source)}, target={render(self.target)})"
         )
-        target_weight = _check_group_weight_length(
-            self.target,
-            expected_size=n_target,
-            name="weights.target",
-        )
-        return np.concatenate([source_weight, target_weight])
 
     def effective_sample_size(self) -> EffectiveSampleSize:
         """Compute effective sample size for source and target weights.
@@ -140,20 +132,6 @@ class ImportanceWeights:
         target_ess = float(target_sum**2 / target_sum_sq)
 
         return EffectiveSampleSize(source=source_ess, target=target_ess)
-
-
-def _check_group_weight_length(
-    sample_weight: NDArray[np.float64],
-    *,
-    expected_size: int,
-    name: str,
-) -> NDArray[np.float64]:
-    if sample_weight.shape[0] != expected_size:
-        raise ValueError(
-            f"{name} has wrong length: expected {expected_size}, "
-            f"got {sample_weight.shape[0]}."
-        )
-    return sample_weight
 
 
 def _as_group_weight_array(
@@ -208,7 +186,7 @@ def _validate_shrinkage(shrinkage: float) -> float:
     return shrinkage_value
 
 
-def _validate_reweight(reweight: str) -> _WeightingMode:
+def _validate_reweight(reweight: str) -> ReweightMode:
     match reweight:
         case "source" | "target" | "both":
             return reweight
@@ -219,7 +197,7 @@ def domain_weights(
     *,
     source: ArrayLike,
     target: ArrayLike,
-    reweight: _WeightingMode = "both",
+    reweight: ReweightMode = "both",
     shrinkage: float = 0.5,
 ) -> ImportanceWeights:
     """Build Importance weights from Domain probabilities.
