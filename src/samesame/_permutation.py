@@ -15,7 +15,7 @@ Seed = int | Rng | None
 
 
 def _resolve_rng(rng: Seed) -> Rng:
-    """Return a Generator/RandomState; accepts int seed for ergonomic UX."""
+    """Normalize *rng* to a ``Generator`` or ``RandomState``."""
     if rng is None:
         return np.random.default_rng()
     if isinstance(rng, np.random.Generator | np.random.RandomState):
@@ -25,6 +25,11 @@ def _resolve_rng(rng: Seed) -> Rng:
     raise TypeError(
         "rng must be an int seed, numpy.random.Generator, numpy.random.RandomState, or None."
     )
+
+
+def _check_finite(arr: NDArray[np.float64], *, name: str) -> None:
+    if not np.all(np.isfinite(arr)):
+        raise ValueError(f"{name} must contain only finite values (no NaN or inf).")
 
 
 def _as_scores(values: ArrayLike, *, name: str) -> NDArray[np.float64]:
@@ -39,8 +44,7 @@ def _as_scores(values: ArrayLike, *, name: str) -> NDArray[np.float64]:
     if not (np.issubdtype(arr.dtype, np.number) or np.issubdtype(arr.dtype, np.bool_)):
         raise ValueError(f"{name} must be a one-dimensional numeric array.")
     arr = arr.astype(np.float64, copy=False)
-    if not np.all(np.isfinite(arr)):
-        raise ValueError(f"{name} must contain only finite values (no NaN or inf).")
+    _check_finite(arr, name=name)
     return arr
 
 

@@ -50,7 +50,8 @@ It takes two main controls:
 
 - `source` and `target`, passed separately as domain-classifier probabilities that estimate
   `P(target | observation)`. These are not the raw source and target observations or test scores.
-- `reweight`, which decides whether to reweight source, target, or both (default `"both"`)
+- `reweight`, which decides whether to reweight source, target, or both (default `"both"`).
+  Accepts a plain string or :class:`ReweightMode` (`ss.ReweightMode.SOURCE`, etc.).
 - `shrinkage`, which trades off correction strength against stability
 
 Probabilities must be in `[0, 1]`. Values at 0 or 1 are automatically clipped away
@@ -60,9 +61,9 @@ from the boundaries before weights are calculated.
 
 | Mode | What it emphasizes |
 |------|--------------------|
-| `reweight="source"` | overlap from the source side |
-| `reweight="target"` | overlap from the target side |
-| `reweight="both"` | common support from both sides (default) |
+| `reweight="source"` (`ReweightMode.SOURCE`) | overlap from the source side |
+| `reweight="target"` (`ReweightMode.TARGET`) | overlap from the target side |
+| `reweight="both"` (`ReweightMode.BOTH`) | common support from both sides (default) |
 
 `shrinkage=0.5` is a practical default. Lower values correct more aggressively. Higher values produce
 weights closer to uniform.

@@ -3,13 +3,37 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal
+from enum import StrEnum
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
-ReweightMode = Literal["source", "target", "both"]
 _CLIP = 1e-6
+
+
+class ReweightMode(StrEnum):
+    """Which group(s) to reweight toward common support.
+
+    Attributes
+    ----------
+    SOURCE : ReweightMode
+        Reweight source samples to match target.
+    TARGET : ReweightMode
+        Reweight target samples to match source.
+    BOTH : ReweightMode
+        Reweight both groups (common-support comparison).
+    """
+
+    SOURCE = "source"
+    TARGET = "target"
+    BOTH = "both"
+
+
+def _coerce_reweight(value: ReweightMode | str) -> ReweightMode:
+    try:
+        return ReweightMode(value)
+    except ValueError:
+        raise ValueError("reweight must be one of 'source', 'target', 'both'.") from None
 
 
 # ---------------------------------------------------------------------------
@@ -50,7 +74,11 @@ def _as_weight_array(values: ArrayLike, *, name: str) -> NDArray[np.float64]:
 
 def _normalize(weights: NDArray[np.float64]) -> NDArray[np.float64]:
     """Scale weights to sum to len(weights)."""
-    return weights / weights.sum() * len(weights)
+    total = float(weights.sum())
+    # _as_weight_array already guards against zero-sum, but keep safe.
+    if total == 0:
+        raise ValueError("weights must not be all zero.")
+    return weights / total * len(weights)
 
 
 # ---------------------------------------------------------------------------
@@ -143,7 +171,7 @@ def domain_weights(
     *,
     source: ArrayLike,
     target: ArrayLike,
-    reweight: ReweightMode = "both",
+    reweight: ReweightMode | str = ReweightMode.BOTH,
     shrinkage: float = 0.5,
 ) -> ImportanceWeights:
     """Build RIW weights from domain probabilities.
@@ -158,8 +186,9 @@ def domain_weights(
         ``[1e-6, 1 - 1e-6]`` before weighting.
     target : ArrayLike
         Domain probabilities for target observations in [0, 1].
-    reweight : {'source', 'target', 'both'}, optional
-        Which group(s) to reweight. Default ``'both'``.
+    reweight : {'source', 'target', 'both'} or ReweightMode, optional
+        Which group(s) to reweight. Default ``'both'``. Accepts a plain
+        string or :class:`ReweightMode`.
     shrinkage : float, optional
         RIW shrinkage in [0, 1]. ``0`` = plain density ratio, ``1`` = uniform.
         Default ``0.5``.
@@ -185,6 +214,7 @@ def domain_weights(
     >>> np.round(w.source, 4)
     array([0.7692, 1.2308])
     """
+    reweight_enum = _coerce_reweight(reweight)
     source_p = _as_prob_vector(source, name="source")
     target_p = _as_prob_vector(target, name="target")
 
@@ -194,8 +224,6 @@ def domain_weights(
     lam = float(shrinkage)
     if not np.isfinite(lam) or lam < 0.0 or lam > 1.0:
         raise ValueError("shrinkage must be in [0, 1] and finite.")
-    if reweight not in ("source", "target", "both"):
-        raise ValueError("reweight must be one of 'source', 'target', 'both'.")
 
     n_source, n_target = len(source_p), len(target_p)
     prior_ratio = n_source / n_target
@@ -209,12 +237,12 @@ def domain_weights(
     out_source = np.ones(n_source, dtype=np.float64)
     out_target = np.ones(n_target, dtype=np.float64)
 
-    if reweight in ("source", "both"):
+    if reweight_enum in (ReweightMode.SOURCE, ReweightMode.BOTH):
         out_source = source_r / ((1.0 - lam) + lam * source_r)
-    if reweight in ("target", "both"):
+    if reweight_enum in (ReweightMode.TARGET, ReweightMode.BOTH):
         out_target = 1.0 / (lam + (1.0 - lam) * target_r)
 
     return ImportanceWeights(source=out_source, target=out_target)
 
 
-__all__ = ["EffectiveSampleSize", "ImportanceWeights", "domain_weights"]
+__all__ = ["EffectiveSampleSize", "ImportanceWeights", "ReweightMode", "domain_weights"]

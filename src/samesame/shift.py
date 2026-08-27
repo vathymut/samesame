@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal
+from enum import StrEnum
 
+import numpy as np
 from numpy.typing import ArrayLike, NDArray
 from sklearn.metrics import roc_auc_score
 
@@ -12,7 +13,27 @@ from samesame._permutation import Seed, _permutation_test
 from samesame._statistics import harmful_shift_statistic
 from samesame.weights import ImportanceWeights
 
-Worse = Literal["higher", "lower"]
+
+class Worse(StrEnum):
+    """Polarity that defines harmful movement.
+
+    Attributes
+    ----------
+    HIGHER : Worse
+        Larger scores indicate harm (e.g., predicted risk).
+    LOWER : Worse
+        Smaller scores indicate harm (e.g., confidence, accuracy).
+    """
+
+    HIGHER = "higher"
+    LOWER = "lower"
+
+
+def _coerce_worse(value: Worse | str) -> Worse:
+    try:
+        return Worse(value)
+    except ValueError:
+        raise ValueError("worse must be either 'higher' or 'lower'.") from None
 
 
 def _fmt(v: object) -> str:
@@ -56,17 +77,17 @@ class HarmfulShiftResult(ShiftResult):
         Permutation p-value (one-sided, greater).
     null_distribution : NDArray[np.float64]
         Null distribution of the statistic.
-    worse : {'higher', 'lower'}
+    worse : Worse
         Declared harmful direction.
     """
 
-    worse: Worse  # type: ignore[assignment]
+    worse: Worse
 
     def __repr__(self) -> str:
         return (
             f"{type(self).__name__}("
             f"statistic={_fmt(self.statistic)}, pvalue={_fmt(self.pvalue)}, "
-            f"worse={self.worse!r})"
+            f"worse={self.worse.value!r})"
         )
 
 
@@ -152,7 +173,7 @@ def test_harmful_shift(
     source: ArrayLike,
     target: ArrayLike,
     *,
-    worse: Worse,
+    worse: Worse | str,
     n_resamples: int = 9999,
     rng: Seed = None,
     weights: ImportanceWeights | None = None,
@@ -168,9 +189,9 @@ def test_harmful_shift(
         Scores from the source (reference) group.
     target : ArrayLike
         Scores from the target (evaluation) group.
-    worse : {'higher', 'lower'}
+    worse : {'higher', 'lower'} or Worse
         Whether larger (``'higher'``) or smaller (``'lower'``) scores
-        indicate harm.
+        indicate harm. Accepts a plain string or :class:`Worse`.
     n_resamples : int, optional
         Number of permutation resamples. Default 9999.
     rng : int | np.random.Generator | np.random.RandomState | None, optional
@@ -183,10 +204,9 @@ def test_harmful_shift(
     HarmfulShiftResult
         Observed statistic, p-value, harm direction, and null distribution.
     """
-    if worse not in ("higher", "lower"):
-        raise ValueError("worse must be either 'higher' or 'lower'.")
+    worse_enum = _coerce_worse(worse)
 
-    metric = _harm_metric_factory(worse)
+    metric = _harm_metric_factory(worse_enum)
 
     statistic, pvalue, null_distribution = _permutation_test(
         source,
@@ -200,9 +220,9 @@ def test_harmful_shift(
     return HarmfulShiftResult(
         statistic=statistic,
         pvalue=pvalue,
-        worse=worse,
+        worse=worse_enum,
         null_distribution=null_distribution,
     )
 
 
-__all__ = ["HarmfulShiftResult", "ShiftResult", "test_harmful_shift", "test_shift"]
+__all__ = ["HarmfulShiftResult", "ShiftResult", "Worse", "test_harmful_shift", "test_shift"]

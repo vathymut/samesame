@@ -23,8 +23,11 @@ All functions accept:
 
 `shift.test_harmful_shift(...)` also requires `worse`:
 
-- `worse="higher"` when larger scores mean harm
-- `worse="lower"` when smaller scores mean harm
+- `worse="higher"` (or `Worse.HIGHER`) when larger scores mean harm
+- `worse="lower"` (or `Worse.LOWER`) when smaller scores mean harm
+
+Both plain strings and the :class:`Worse` enum are accepted. The enum gives
+autocomplete and guards against typos: `ss.Worse.HIGHER`.
 
 ## What you get back
 
@@ -59,3 +62,5 @@ how they were generated.
 ::: samesame.shift.ShiftResult
 
 ::: samesame.shift.HarmfulShiftResult
+
+::: samesame.shift.Worse

@@ -44,17 +44,23 @@ def _weighted_ecdf(
         freq_weights = np.ones(len(x), dtype=np.float64)
     else:
         freq_weights = np.asarray(freq_weights, dtype=np.float64)
+        if freq_weights.ndim != 1:
+            raise ValueError("freq_weights must be one-dimensional.")
+        if len(freq_weights) != len(x):
+            raise ValueError("freq_weights must have the same length as x.")
+        if not np.all(np.isfinite(freq_weights)):
+            raise ValueError(
+                "freq_weights must contain only finite values (no NaN or inf)."
+            )
+        if np.any(freq_weights < 0):
+            raise ValueError("freq_weights must be non-negative.")
+        if freq_weights.sum() == 0:
+            raise ValueError("freq_weights must not be all zero.")
 
-    if len(freq_weights) != len(x):
-        raise ValueError("freq_weights must have the same length as x.")
-    if not np.all(np.isfinite(freq_weights)):
-        raise ValueError(
-            "freq_weights must contain only finite values (no NaN or inf)."
-        )
-    if np.any(freq_weights < 0):
-        raise ValueError("freq_weights must be non-negative.")
-    if freq_weights.sum() == 0:
-        raise ValueError("freq_weights must not be all zero.")
+    if x.ndim != 1:
+        raise ValueError("x must be one-dimensional.")
+    if query.ndim != 1:
+        raise ValueError("query must be one-dimensional.")
 
     # Sort and collapse duplicates so the ECDF is constant between distinct values.
     order = np.argsort(x)
@@ -64,11 +70,14 @@ def _weighted_ecdf(
     # Unique values + sum of weights per distinct value
     x_unique, first_idx = np.unique(x_sorted, return_index=True)
     weight_per_unique = np.add.reduceat(w_sorted, first_idx)
-    cdf_at_unique = np.cumsum(weight_per_unique) / weight_per_unique.sum()
+    total = float(weight_per_unique.sum())
+    cdf_at_unique = np.cumsum(weight_per_unique) / total
 
     # Step function: 0 below min, cdf_at_unique between values, 1 above max.
     knots = np.r_[-np.inf, x_unique]
     levels = np.r_[0.0, cdf_at_unique]
-    # searchsorted right gives interval containing each query
     pos = np.searchsorted(knots, query, side="right") - 1
     return levels[pos]
+
+
+__all__ = ["_weighted_ecdf", "harmful_shift_statistic"]

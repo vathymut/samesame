@@ -20,7 +20,10 @@ def test_root_exports() -> None:
     assert ss.shift is shift
     assert ss.weights is ss.weights
     assert set(ss.__all__) == {
+        "EffectiveSampleSize",
         "ImportanceWeights",
+        "ReweightMode",
+        "Worse",
         "test_harmful_shift",
         "test_shift",
         "domain_weights",
