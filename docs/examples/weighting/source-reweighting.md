@@ -54,10 +54,10 @@ rf_bad.fit(X_train, y_train_binary)
 train_risk = rf_bad.oob_decision_function_[:, 1].ravel()
 deployment_risk = rf_bad.predict_proba(X_deployment)[:, 1].ravel()
 
-unweighted = ss.detect_harm(
+unweighted = ss.detect_harmful_shift(
     source=train_risk,
     target=deployment_risk,
-    worse="higher",
+    higher_is_worse=True,
     random_state=12345,
 )
 ```
@@ -67,24 +67,24 @@ unweighted = ss.detect_harm(
 ## Step 2 - Build source-side importance weights
 
 ```python
-from samesame.weights import domain_weights
+from samesame.weights import common_support_weights
 
 source_prob = domain_prob[split.values == 0]
 target_prob = domain_prob[split.values == 1]
 
-weights = domain_weights(
+weights = common_support_weights(
     source_prob=source_prob,
     target_prob=target_prob,
     mode="source",
     lambda_=0.5,
 )
 
-weighted = ss.detect_harm(
+weighted = ss.detect_harmful_shift(
     source=train_risk,
     target=deployment_risk,
-    worse="higher",
+    higher_is_worse=True,
     weights=weights,
-    rng=12345,
+    rng=np.random.default_rng(12345),
 )
 
 print(f"Unweighted p-value: {unweighted.pvalue:.4f}")

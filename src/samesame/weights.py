@@ -113,10 +113,10 @@ class ImportanceWeights:
         Examples
         --------
         >>> import numpy as np
-        >>> from samesame.weights import domain_weights
+        >>> from samesame.weights import common_support_weights
         >>> source_prob = np.array([0.25, 0.4])
         >>> target_prob = np.array([0.6, 0.75])
-        >>> weights = domain_weights(
+        >>> weights = common_support_weights(
         ...     source_prob=source_prob,
         ...     target_prob=target_prob,
         ...     mode="both"
@@ -207,7 +207,7 @@ def _validate_mode(mode: str) -> WeightingMode:
     raise ValueError("mode must be one of 'source', 'target', 'both'.")
 
 
-def domain_weights(
+def common_support_weights(
     *,
     source_prob: ArrayLike,
     target_prob: ArrayLike,
@@ -271,15 +271,15 @@ def domain_weights(
     Examples
     --------
     >>> import numpy as np
-    >>> from samesame.weights import domain_weights
+    >>> from samesame.weights import common_support_weights
     >>> source_prob = np.array([0.25, 0.4])
     >>> target_prob = np.array([0.6, 0.75])
-    >>> w = domain_weights(source_prob=source_prob, target_prob=target_prob)
+    >>> w = common_support_weights(source_prob=source_prob, target_prob=target_prob)
     >>> np.round(w.source, 4)
     array([0.7692, 1.2308])
     >>> np.round(w.target, 4)
     array([1.2308, 0.7692])
-    >>> w2 = domain_weights(source_prob=source_prob, target_prob=target_prob, mode="source")
+    >>> w2 = common_support_weights(source_prob=source_prob, target_prob=target_prob, mode="source")
     >>> np.round(w2.source, 4)
     array([0.7692, 1.2308])
     >>> np.round(w2.target, 4)
@@ -314,5 +314,5 @@ __all__ = [
     "EffectiveSampleSize",
     "ImportanceWeights",
     "WeightingMode",
-    "domain_weights",
+    "common_support_weights",
 ]

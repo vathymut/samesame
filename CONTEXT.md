@@ -44,20 +44,20 @@ distribution under evaluation (typically current deployment).
 
 **Harmful shift**: A directional distributional change where the target group
 shows movement toward a worse outcome. Detected via
-`shift.detect_harm(source_scores, target_scores, worse=...)`.
+`shift.detect_harmful_shift(source_scores, target_scores, higher_is_worse=...)`.
 
-**worse**: The polarity parameter that defines harmful movement. Use
-`worse="higher"` when larger scores indicate harm (e.g., predicted risk).
-Use `worse="lower"` when smaller scores indicate harm (e.g., lower confidence).
+**higher_is_worse**: The polarity parameter that defines harmful movement. Use
+`higher_is_worse=True` when larger scores indicate harm (e.g., predicted risk).
+Use `higher_is_worse=False` when smaller scores indicate harm (e.g., lower confidence).
 
 ### Weighting terms
 
 **Domain probability**: The probability, output by a domain classifier, that an
 observation belongs to the target group. Passed as separate `source_prob` and
-`target_prob` arrays to `domain_weights(...)`. The prior ratio is
+`target_prob` arrays to `common_support_weights(...)`. The prior ratio is
 always inferred from group sizes.
 
-**Mode**: The weighting policy passed to `domain_weights(...)`:
+**Mode**: The weighting policy passed to `common_support_weights(...)`:
 - `"source"`: reweight source samples to match target
 - `"target"`: reweight target samples to match source
 - `"both"`: reweight both groups (common-support comparison)
@@ -68,7 +68,7 @@ bias-variance tradeoff in RIW (Relative Importance Weight) estimation.
 weights; `lambda_=0.5` is the recommended default.
 
 **ImportanceWeights**: A frozen dataclass holding `.source` and `.target` weight
-arrays, typically built via `domain_weights(...)`. Weights are
+arrays, typically built via `common_support_weights(...)`. Weights are
 normalized so each group sums to its sample size.
 
 ### Example-specific terms

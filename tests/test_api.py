@@ -9,19 +9,21 @@ import pytest
 import samesame as ss
 from samesame import shift
 from samesame.shift import HarmResult, ShiftResult
-from samesame.weights import ImportanceWeights, domain_weights
+from samesame.weights import ImportanceWeights, common_support_weights
 
 
 def test_root_exports() -> None:
     assert ss.detect_shift is shift.detect_shift
-    assert ss.detect_harm is shift.detect_harm
-    assert ss.domain_weights is domain_weights
+    assert ss.detect_harmful_shift is shift.detect_harmful_shift
+    assert ss.common_support_weights is common_support_weights
     assert ss.ImportanceWeights is ImportanceWeights
     assert ss.shift is shift
     assert ss.weights is ss.weights
     assert "detect_shift" in ss.__all__
-    assert "detect_harm" in ss.__all__
-    assert "domain_weights" in ss.__all__
+    assert "detect_harmful_shift" in ss.__all__
+    assert "common_support_weights" in ss.__all__
+    assert not hasattr(ss, "detect_harm")
+    assert not hasattr(ss, "domain_weights")
     assert not hasattr(ss, "from_domain_probabilities")
     assert "ImportanceWeights" in ss.__all__
     assert "shift" in ss.__all__
@@ -33,6 +35,7 @@ def test_root_exports() -> None:
     assert not hasattr(ss, "adverse_shift_posterior")
     assert not hasattr(shift, "as_bf")
     assert not hasattr(shift, "infer_harm")
+    assert not hasattr(shift, "detect_harm")
     assert not hasattr(shift, "BayesianHarmResult")
     assert not hasattr(shift, "detect_harm_bayesian")
     assert not hasattr(shift, "ShiftStatistic")
@@ -46,11 +49,11 @@ def test_detect_shift_signature_is_minimal() -> None:
 
 
 def test_detect_harm_signature_is_minimal() -> None:
-    params = set(inspect.signature(shift.detect_harm).parameters)
+    params = set(inspect.signature(shift.detect_harmful_shift).parameters)
     assert params == {
         "source",
         "target",
-        "worse",
+        "higher_is_worse",
         "n_resamples",
         "batch",
         "rng",
@@ -76,14 +79,14 @@ def test_batch_rejects_invalid_values(
 def test_flat_harm_detection_matches_namespace(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
-    flat = ss.detect_harm(
+    flat = ss.detect_harmful_shift(
         **confidence_samples,
-        worse="lower",
+        higher_is_worse=False,
         n_resamples=64,
     )
-    namespaced = shift.detect_harm(
+    namespaced = shift.detect_harmful_shift(
         **confidence_samples,
-        worse="lower",
+        higher_is_worse=False,
         n_resamples=64,
     )
     assert flat.statistic == namespaced.statistic
@@ -92,7 +95,7 @@ def test_flat_harm_detection_matches_namespace(
 
 def test_signatures_take_positional_source_target() -> None:
     shift_sig = inspect.signature(shift.detect_shift)
-    harm_sig = inspect.signature(shift.detect_harm)
+    harm_sig = inspect.signature(shift.detect_harmful_shift)
     assert (
         shift_sig.parameters["source"].kind is inspect.Parameter.POSITIONAL_OR_KEYWORD
     )
@@ -122,48 +125,50 @@ def test_results_are_frozen(shift_samples: dict[str, np.ndarray]) -> None:
         result.pvalue = 0.0  # type: ignore[misc]
 
 
-def test_detect_harm_requires_worse(
+def test_detect_harmful_shift_requires_higher_is_worse(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
     with pytest.raises(TypeError):
-        shift.detect_harm(**confidence_samples)
+        shift.detect_harmful_shift(**confidence_samples)
 
 
-def test_detect_harm_accepts_worse(
+def test_detect_harmful_shift_accepts_higher_is_worse(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
-    result = shift.detect_harm(
+    result = shift.detect_harmful_shift(
         **confidence_samples,
-        worse="lower",
+        higher_is_worse=False,
         n_resamples=64,
     )
     assert isinstance(result, HarmResult)
-    assert result.worse == "lower"
+    assert result.higher_is_worse is False
 
 
-def test_detect_harm_rejects_invalid_worse(
+def test_detect_harm_rejects_non_bool_higher_is_worse(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
-    with pytest.raises(ValueError, match="worse must be"):
-        shift.detect_harm(**confidence_samples, worse="sideways")  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="higher_is_worse must be a bool"):
+        shift.detect_harmful_shift(
+            **confidence_samples, higher_is_worse="sideways"  # type: ignore[arg-type]
+        )
 
 
 def test_detect_harm_handles_higher_is_better(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
-    primary = shift.detect_harm(
+    primary = shift.detect_harmful_shift(
         **confidence_samples,
-        worse="lower",
+        higher_is_worse=False,
         n_resamples=64,
     )
-    mirrored = shift.detect_harm(
+    mirrored = shift.detect_harmful_shift(
         source=-confidence_samples["source"],
         target=-confidence_samples["target"],
-        worse="higher",
+        higher_is_worse=True,
         n_resamples=64,
     )
     assert isinstance(primary, HarmResult)
-    assert primary.worse == "lower"
+    assert primary.higher_is_worse is False
     assert np.isclose(primary.statistic, mirrored.statistic)
     assert np.isclose(primary.pvalue, mirrored.pvalue)
 
@@ -230,7 +235,7 @@ def test_shift_supports_contextual_weights(
     source, target = shift_samples["source"], shift_samples["target"]
     source_prob = rng.uniform(0.2, 0.5, size=len(source))
     target_prob = rng.uniform(0.5, 0.8, size=len(target))
-    weights = domain_weights(
+    weights = common_support_weights(
         source_prob=source_prob, target_prob=target_prob, mode="source"
     )
     base = shift.detect_shift(**shift_samples, n_resamples=64)
@@ -242,11 +247,11 @@ def test_shift_supports_contextual_weights(
 def test_detect_harm_has_no_posterior_fields(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
-    result = shift.detect_harm(
+    result = shift.detect_harmful_shift(
         **confidence_samples,
-        worse="lower",
+        higher_is_worse=False,
         n_resamples=64,
-        rng=0,
+        rng=np.random.default_rng(0),
     )
     assert isinstance(result, HarmResult)
     assert not hasattr(result, "posterior")
@@ -260,15 +265,15 @@ def test_harm_detection_supports_importance_weights(
     source, target = confidence_samples["source"], confidence_samples["target"]
     source_prob = rng.uniform(0.2, 0.5, size=len(source))
     target_prob = rng.uniform(0.5, 0.8, size=len(target))
-    weights = domain_weights(
+    weights = common_support_weights(
         source_prob=source_prob, target_prob=target_prob, mode="target"
     )
-    base = shift.detect_harm(
-        **confidence_samples, worse="lower", n_resamples=64
+    base = shift.detect_harmful_shift(
+        **confidence_samples, higher_is_worse=False, n_resamples=64
     )
-    contextual = shift.detect_harm(
+    contextual = shift.detect_harmful_shift(
         **confidence_samples,
-        worse="lower",
+        higher_is_worse=False,
         n_resamples=64,
         weights=weights,
     )
@@ -287,30 +292,24 @@ def test_shift_result_repr_omits_null_distribution(
     assert "pvalue=" in rendered
 
 
-def test_harm_result_repr_includes_worse(
+def test_harm_result_repr_includes_higher_is_worse(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
-    result = shift.detect_harm(
+    result = shift.detect_harmful_shift(
         **confidence_samples,
-        worse="higher",
+        higher_is_worse=True,
         n_resamples=64,
     )
-    assert "worse='higher'" in repr(result)
+    assert "higher_is_worse=True" in repr(result)
 
 
-def test_significant_uses_pvalue_alpha(shift_samples: dict[str, np.ndarray]) -> None:
-    result = shift.detect_shift(**shift_samples, n_resamples=64)
-    assert result.significant() == (result.pvalue <= 0.05)
-    assert result.significant(alpha=0.5) == (result.pvalue <= 0.5)
+def test_rng_rejects_integer_seed(shift_samples: dict[str, np.ndarray]) -> None:
+    with pytest.raises(TypeError, match="rng must be"):
+        shift.detect_shift(**shift_samples, rng=42)  # type: ignore[arg-type]
 
 
-def test_significant_rejects_invalid_alpha(
+def test_results_do_not_expose_significant_method(
     shift_samples: dict[str, np.ndarray],
 ) -> None:
     result = shift.detect_shift(**shift_samples, n_resamples=64)
-    with pytest.raises(ValueError, match="alpha must be in"):
-        result.significant(alpha=0.0)
-    with pytest.raises(ValueError, match="alpha must be in"):
-        result.significant(alpha=1.0)
-    with pytest.raises(ValueError, match="alpha must be in"):
-        result.significant(alpha=np.nan)
+    assert not hasattr(result, "significant")

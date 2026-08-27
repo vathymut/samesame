@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, fields
-from numbers import Integral
 from typing import Literal
 
 import numpy as np
@@ -19,8 +18,7 @@ from samesame._comparison import (
 from samesame._statistics import harmful_shift_statistic
 from samesame.weights import ImportanceWeights
 
-Rng = int | np.random.RandomState | np.random.Generator | None
-Worse = Literal["higher", "lower"]
+Rng = np.random.RandomState | np.random.Generator | None
 
 
 @dataclass(frozen=True)
@@ -41,29 +39,6 @@ class TestResult:
     pvalue: float
     null_distribution: NDArray[np.float64]
 
-    def significant(self, alpha: float = 0.05) -> bool:
-        """Return whether ``pvalue`` is significant at level ``alpha``.
-
-        Parameters
-        ----------
-        alpha : float, optional
-            Significance level. Default is 0.05.
-
-        Returns
-        -------
-        bool
-            True when ``pvalue <= alpha``.
-
-        Raises
-        ------
-        ValueError
-            If ``alpha`` is not in the open interval (0, 1).
-        """
-        alpha_value = float(alpha)
-        if not np.isfinite(alpha_value) or not 0.0 < alpha_value < 1.0:
-            raise ValueError("alpha must be in the open interval (0, 1).")
-        return self.pvalue <= alpha_value
-
     def __repr__(self) -> str:
         rendered = ", ".join(
             f"{field.name}={getattr(self, field.name)!r}"
@@ -82,13 +57,7 @@ class ShiftResult(TestResult):
 class HarmResult(TestResult):
     """Result of harmful-shift detection."""
 
-    worse: Worse
-
-
-def _validate_worse(worse: str) -> Worse:
-    if worse not in ("higher", "lower"):
-        raise ValueError("worse must be either 'higher' or 'lower'.")
-    return worse  # type: ignore[return-value]
+    higher_is_worse: bool
 
 
 def _resolve_rng(rng: Rng) -> RandomNumberGenerator:
@@ -96,16 +65,14 @@ def _resolve_rng(rng: Rng) -> RandomNumberGenerator:
         return np.random.default_rng()
     if isinstance(rng, np.random.Generator | np.random.RandomState):
         return rng
-    if isinstance(rng, Integral):
-        return np.random.default_rng(int(rng))
     raise TypeError(
-        "rng must be an int, numpy.random.Generator, "
+        "rng must be a numpy.random.Generator, "
         "numpy.random.RandomState, or None."
     )
 
 
-def _scores_for_worse(scores: NDArray, worse: Worse) -> NDArray:
-    if worse == "lower":
+def _scores_for_worse(scores: NDArray, higher_is_worse: bool) -> NDArray:
+    if not higher_is_worse:
         return -scores
     return scores
 
@@ -147,19 +114,20 @@ def _run_harm_test(
     source: ArrayLike,
     target: ArrayLike,
     *,
-    worse: Worse,
+    higher_is_worse: bool,
     n_resamples: int,
     batch: int | None,
     rng: Rng,
     weights: ImportanceWeights | None,
 ) -> HarmResult:
     """Prepare arrays and run the harmful-shift permutation test."""
-    validated_worse = _validate_worse(worse)
+    if not isinstance(higher_is_worse, bool):
+        raise TypeError("higher_is_worse must be a bool.")
     result = _run_shift_test(
         source,
         target,
         metric=harmful_shift_statistic,
-        transform=lambda values: _scores_for_worse(values, validated_worse),
+        transform=lambda values: _scores_for_worse(values, higher_is_worse),
         alternative="greater",
         n_resamples=n_resamples,
         batch=batch,
@@ -169,7 +137,7 @@ def _run_harm_test(
     return HarmResult(
         statistic=result.statistic,
         pvalue=result.pvalue,
-        worse=validated_worse,
+        higher_is_worse=higher_is_worse,
         null_distribution=result.null_distribution,
     )
 
@@ -202,8 +170,10 @@ def detect_shift(
     batch : int or None, optional
         Number of permutations processed at once. Controls memory usage and
         runtime, not the number of resamples. Default is None.
-    rng : int | np.random.RandomState | np.random.Generator | None, optional
-        Random seed or generator for the permutation test.
+    rng : np.random.RandomState | np.random.Generator | None, optional
+        Random generator for the permutation test. Integer seeds are not
+        accepted; use ``np.random.default_rng(seed)`` when reproducibility
+        from a seed is needed.
     weights : ImportanceWeights | None, optional
         Importance weights for the source and target groups.
 
@@ -235,11 +205,11 @@ def detect_shift(
     )
 
 
-def detect_harm(
+def detect_harmful_shift(
     source: ArrayLike,
     target: ArrayLike,
     *,
-    worse: Worse,
+    higher_is_worse: bool,
     n_resamples: int = 9999,
     batch: int | None = None,
     rng: Rng = None,
@@ -259,34 +229,37 @@ def detect_harm(
         When scores come from a fitted model, generate them out of sample
         with cross-validation, out-of-bag predictions, or a held-out set.
         In-sample predictions can invalidate the test interpretation.
-    worse : {'higher', 'lower'}
-        Whether higher or lower scores indicate worse outcomes.
+    higher_is_worse : bool
+        Whether higher scores indicate worse outcomes. If false, lower
+        scores indicate worse outcomes.
     n_resamples : int, optional
         Number of permutation resamples. Default is 9999.
     batch : int or None, optional
         Number of permutations processed at once. Controls memory usage and
         runtime, not the number of resamples. Default is None.
-    rng : int | np.random.RandomState | np.random.Generator | None, optional
-        Random seed or generator for the permutation test.
+    rng : np.random.RandomState | np.random.Generator | None, optional
+        Random generator for the permutation test. Integer seeds are not
+        accepted; use ``np.random.default_rng(seed)`` when reproducibility
+        from a seed is needed.
     weights : ImportanceWeights | None, optional
         Importance weights for the source and target groups.
 
     Returns
     -------
     HarmResult
-        Observed statistic, p-value, worse direction, and null distribution.
+        Observed statistic, p-value, and harm direction.
 
     Raises
     ------
     ValueError
         If ``n_resamples`` is not positive.
     ValueError
-        If ``worse`` is not ``"higher"`` or ``"lower"``.
+        If ``higher_is_worse`` is not a bool.
     """
     return _run_harm_test(
         source,
         target,
-        worse=worse,
+        higher_is_worse=higher_is_worse,
         n_resamples=n_resamples,
         batch=batch,
         rng=rng,
@@ -298,7 +271,6 @@ __all__ = [
     "HarmResult",
     "ShiftResult",
     "TestResult",
-    "Worse",
-    "detect_harm",
+    "detect_harmful_shift",
     "detect_shift",
 ]

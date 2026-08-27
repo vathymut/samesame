@@ -1,10 +1,10 @@
 # Why the harm statistic is not just AUC
 
-`detect_shift` and `detect_harm` both compare a source group to a target group, and both run on a
+`detect_shift` and `detect_harmful_shift` both compare a source group to a target group, and both run on a
 permutation null. They answer different questions because they use different statistics.
 
 - `detect_shift` asks **did anything change?** It uses ROC AUC under a two-sided alternative.
-- `detect_harm` asks **did the target distribution shift toward worse outcomes?** It uses a directional,
+- `detect_harmful_shift` asks **did the target distribution shift toward worse outcomes?** It uses a directional,
   source-anchored statistic under a one-sided (`greater`) alternative.
 
 This page explains what the harm statistic measures and why it is not redundant with AUC.
@@ -13,10 +13,10 @@ This page explains what the harm statistic measures and why it is not redundant 
 
 You declare the harmful direction with `worse`:
 
-- `worse="higher"` — larger raw scores mean harm (e.g., predicted risk).
-- `worse="lower"` — smaller raw scores mean harm (e.g., confidence, accuracy).
+- `higher_is_worse=True` — larger raw scores mean harm (e.g., predicted risk).
+- `higher_is_worse=False` — smaller raw scores mean harm (e.g., confidence, accuracy).
 
-Internally, `worse="lower"` negates the scores. After that transform, **larger always means
+Internally, `higher_is_worse=False` negates the scores. After that transform, **larger always means
 worse**, regardless of which polarity you chose. Everything below assumes transformed scores.
 
 ## What the harm statistic integrates
@@ -64,7 +64,7 @@ distributions, only that the labels are exchangeable under the null.
 
 ## AUC vs. the harm statistic
 
-| | `detect_shift` (AUC) | `detect_harm` (harm statistic) |
+| | `detect_shift` (AUC) | `detect_harmful_shift` (harm statistic) |
 |---|---|---|
 | Question | Did anything change? | Did the target distribution shift toward worse outcomes? |
 | Statistic | $\int TPR \, dFPR$ | $\int TPR \cdot (1-FPR)^{2} \, dFPR$ |
@@ -73,7 +73,7 @@ distributions, only that the labels are exchangeable under the null.
 | Sensitive to | any separability | directional excess over source support |
 
 Use `detect_shift` when you only need to know whether the source and target distributions differ.
-Use `detect_harm` once you can declare what "worse" means for your signal. It will not flag a change
+Use `detect_harmful_shift` once you can declare what "worse" means for your signal. It will not flag a change
 that shifts in a better or neutral direction.
 
 For the worked examples, see

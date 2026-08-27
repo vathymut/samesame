@@ -66,31 +66,31 @@ target_scores = risk_score[group == 1]
 
 ```python
 import samesame as ss
-from samesame.weights import domain_weights
+from samesame.weights import common_support_weights
 
 source_prob = domain_prob[group == 0]
 target_prob = domain_prob[group == 1]
 
-weights = domain_weights(
+weights = common_support_weights(
     source_prob=source_prob,
     target_prob=target_prob,
     mode="source",
     lambda_=0.5,
 )
 
-unweighted = ss.detect_harm(
+unweighted = ss.detect_harmful_shift(
     source_scores,
     target_scores,
-    worse="higher",
-    rng=123_456,
+    higher_is_worse=True,
+    rng=np.random.default_rng(123_456),
 )
 
-weighted = ss.detect_harm(
+weighted = ss.detect_harmful_shift(
     source_scores,
     target_scores,
-    worse="higher",
+    higher_is_worse=True,
     weights=weights,
-    rng=123_456,
+    rng=np.random.default_rng(123_456),
 )
 
 print(f"Unweighted p-value: {unweighted.pvalue:.4f}")

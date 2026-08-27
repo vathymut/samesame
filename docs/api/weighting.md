@@ -9,11 +9,11 @@ source and target have common support.
 |-----------|------------|
 | No weighting needed | Omit `weights` |
 | You already have sample weights | Wrap them in `ImportanceWeights(source=..., target=...)` |
-| You have domain-classifier probabilities | Build weights with `domain_weights(...)` |
+| You have domain-classifier probabilities | Build weights with `common_support_weights(...)` |
 
 ```python
 import samesame as ss
-from samesame.weights import ImportanceWeights, domain_weights
+from samesame.weights import ImportanceWeights, common_support_weights
 
 result = ss.detect_shift(source_scores, target_scores)
 
@@ -26,21 +26,21 @@ result = ss.detect_shift(
     ),
 )
 
-weights = domain_weights(
+weights = common_support_weights(
     source_prob=source_domain_probs,
     target_prob=target_domain_probs,
     mode="both",
 )
 
-result = ss.detect_harm(
+result = ss.detect_harmful_shift(
     source_scores,
     target_scores,
-    worse="higher",
+    higher_is_worse=True,
     weights=weights,
 )
 ```
 
-## When `domain_weights(...)` helps
+## When `common_support_weights(...)` helps
 
 Use it when source and target do not overlap well and you want the comparison to emphasize common
 support rather than low-overlap observations.

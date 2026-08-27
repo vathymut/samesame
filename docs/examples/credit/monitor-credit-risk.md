@@ -10,7 +10,7 @@ familiarity with fitting a scikit-learn classifier and calling `predict_proba(..
 ## Why this signal works well
 
 Predicted default probability is already meaningful. Larger values are directly worse, so it is a
-natural signal for `ss.detect_harm(...)`.
+natural signal for `ss.detect_harmful_shift(...)`.
 
 This guide uses the HELOC dataset and simulates deployment by training on lower-risk customers and
 testing on higher-risk customers.
@@ -101,10 +101,10 @@ rf_bad.fit(X_train, loan_status)
 train_risk = rf_bad.oob_decision_function_[:, 1].ravel()
 deployment_risk = rf_bad.predict_proba(X_deployment)[:, 1].ravel()
 
-harm = ss.detect_harm(
+harm = ss.detect_harmful_shift(
     source=train_risk,
     target=deployment_risk,
-    worse="higher",
+    higher_is_worse=True,
 )
 
 print(f"Statistic: {harm.statistic:.4f}")
@@ -119,7 +119,7 @@ different, but also shows higher predicted risk according to the model.
 Using both tests together gives a clearer picture than either test alone. Call a result
 **significant** when its p-value is small (typically `<= 0.05`); otherwise call it **not significant**.
 
-| `detect_shift` | `detect_harm` | What it usually means |
+| `detect_shift` | `detect_harmful_shift` | What it usually means |
 |----------------|----------------|------------------------|
 | significant | significant | the population changed **and** predicted risk worsened |
 | significant | not significant | the population changed, but not in a clearly harmful way |

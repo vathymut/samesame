@@ -13,7 +13,7 @@ Prediction errors turn model quality into a numeric signal:
 - **Log-loss** penalizes confident mistakes more heavily
 
 For both, larger values mean worse predictions, so they work naturally with
-`ss.detect_harm(...)`.
+`ss.detect_harmful_shift(...)`.
 
 ## Setup
 
@@ -38,7 +38,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     y_binary,
     test_size=0.30,
     stratify=y_binary,
-    rng=12345,
+    rng=np.random.default_rng(12345),
 )
 ```
 
@@ -50,7 +50,7 @@ Use out-of-bag predictions for training so the training-side errors are not arti
 rf = RandomForestClassifier(
     n_estimators=500,
     oob_score=True,
-    rng=12345,
+    rng=np.random.default_rng(12345),
     min_samples_leaf=10,
 )
 rf.fit(X_train, y_train)
@@ -82,16 +82,16 @@ logloss_test = -(
 ## Step 3 - Test whether errors are worse on the test set
 
 ```python
-harm_brier = ss.detect_harm(
+harm_brier = ss.detect_harmful_shift(
     source=brier_train,
     target=brier_test,
-    worse="higher",
+    higher_is_worse=True,
 )
 
-harm_logloss = ss.detect_harm(
+harm_logloss = ss.detect_harmful_shift(
     source=logloss_train,
     target=logloss_test,
-    worse="higher",
+    higher_is_worse=True,
 )
 
 print(f"Brier p-value:   {harm_brier.pvalue:.4f}")
@@ -106,7 +106,7 @@ result when training and test come from the same population.
 - Small p-values mean the test set contains a disproportionate share of higher-error predictions.
 - Large p-values mean there is not enough evidence that the model performs worse on the test set.
 
-It is common for Brier score and log-loss to tell a similar story here. `ss.detect_harm(...)`
+It is common for Brier score and log-loss to tell a similar story here. `ss.detect_harmful_shift(...)`
 is rank-based, so signals that order observations in a similar way often produce similar results.
 
 Use this guide when labels are available. If they are not, use
