@@ -1,2 +1,2 @@
 !!! warning "Scores from a fitted model must be out-of-sample"
-    `samesame` only sees scores — not how they were made. If scores come from a fitted model, generate them out-of-sample (cross-validation, OOB, or hold-out). In-sample scores create false separation and invalidate the test.
+    `samesame` only sees scores — not how they were made. If scores come from a fitted model, generate them out of sample (cross-validation, OOB, or held-out set). In-sample scores create false separation and invalidate the test.

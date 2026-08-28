@@ -1,14 +1,12 @@
 # Tutorial: Detect any distributional shift
 
-Use this tutorial for your first end-to-end shift test between a reference group and a new group.
+Your first end-to-end shift test. You will:
 
-By the end, you will know how to:
+- turn two datasets into a comparable score
+- keep that score honest with out-of-sample predictions
+- run `ss.test_shift` and read the result
 
-- turn two datasets into a comparable signal
-- keep that signal honest with out-of-sample predictions
-- run `ss.test_shift` and interpret the result
-
-The workflow: train a classifier to distinguish **source** from **target**. If its out-of-sample probabilities `P(target | x)` separate the two groups more than chance, the datasets differ.
+Idea: train a classifier to distinguish **source** from **target**. If its out-of-sample `P(target | x)` separates the groups better than chance, they differ.
 
 ## What you need
 
@@ -16,9 +14,9 @@ The workflow: train a classifier to distinguish **source** from **target**. If i
 - any scikit-learn classifier with `predict_proba`
 - out-of-sample predictions for that classifier
 
-## Step 1 — Create a simple source and target example
+## Step 1 — Create a source and target example
 
-We create a synthetic target group with a slight shift on the first feature.
+We create a synthetic target with a slight shift on the first feature.
 
 ```python
 import numpy as np
@@ -32,11 +30,11 @@ X = np.vstack([source, target])
 labels = np.r_[np.zeros(len(source), dtype=int), np.ones(len(target), dtype=int)]
 ```
 
-In a real workflow, `source` might be training data and `target` might be production data.
+In production, `source` might be training data and `target` production data.
 
-## Step 2 — Estimate how much each observation looks like target
+## Step 2 — Score each observation out of sample
 
-Each observation must be scored by a model that did not train on it. `cross_val_predict` is a good default; for bagged forests you can also use `oob_decision_function_` (see [Monitor predicted credit risk](../credit/monitor-credit-risk.md) for the OOB variant).
+Each observation must be scored by a model that didn't train on it. `cross_val_predict` is a good default; for bagged forests you can use `oob_decision_function_` (see [Monitor predicted credit risk](../credit/monitor-credit-risk.md) for the OOB variant).
 
 ```python
 from sklearn.ensemble import HistGradientBoostingClassifier
@@ -51,7 +49,7 @@ domain_prob = cross_val_predict(
 )[:, 1]
 ```
 
-`domain_prob` is the domain probability `P(target | x)` — the model's estimate that each observation belongs to target. It is used to *compare* source vs target, not as an outlier score of the monitored model.
+`domain_prob` is `P(target | x)` — the model's estimate that each row belongs to target. It is the signal for the *shift* test only, not an outlier score of the monitored model.
 
 --8<-- "snippets/honest-scores.txt"
 
@@ -69,17 +67,17 @@ print(f"AUC statistic: {shift.statistic:.3f}")
 print(f"p-value:       {shift.pvalue:.4f}")
 ```
 
-On this example, expect a large AUC and a very small p-value — the deliberately shifted target is easy to separate.
+On this shifted example, expect large AUC and very small p-value — the target is easy to separate.
 
 ## How to read the result
 
-- **Small p-value (typically ≤ 0.05)** — evidence against the null that source and target are the same.
-- **Large p-value** — not enough evidence to say the groups differ.
-- **Statistic (ROC AUC)** — `0.5` means no separability; values farther from `0.5` mean stronger separation. `test_shift` is two-sided, so AUC `0.2` also rejects — it just means the classifier's ordering is reversed.
+- **Small p-value (typically ≤ 0.05)** — evidence source and target differ.
+- **Large p-value** — not enough evidence to say they differ.
+- **Statistic (ROC AUC)** — `0.5` is chance; farther from `0.5` means stronger separation. `test_shift` is two-sided, so AUC `0.2` also rejects — it just means ordering is reversed.
 
-`ss.test_shift` answers only "did anything change?" It does not say whether the change is harmful.
+`ss.test_shift` answers only "did anything change?" It says nothing about harm.
 
-If direction matters, continue to [Test whether the shift is harmful](check-shift-harm.md).
+Next: [Test whether the shift is harmful](check-shift-harm.md) when direction matters.
 
 ??? tip "Reproducibility"
     Pass `rng=np.random.default_rng(12345)` for reproducible p-values. Use `n_resamples=999` while exploring and `9999` (default) for the final result.

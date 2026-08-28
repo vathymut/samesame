@@ -1,28 +1,26 @@
 # Why the harm statistic is not just AUC
 
-`test_shift` and `test_harmful_shift` both compare source vs target on a permutation null, but they answer different questions because they use different statistics.
+`test_shift` and `test_harmful_shift` share a permutation null but answer different questions because they use different statistics.
 
 - `test_shift` — **did anything change?** Two-sided ROC AUC.
-- `test_harmful_shift` — **did target shift toward worse outcomes?** One-sided, source-anchored.
+- `test_harmful_shift` — **did target move toward worse outcomes?** One-sided, source-anchored.
 
 This page explains what the harm statistic measures and why it isn't redundant with AUC.
 
 ## At a glance
 
-AUC averages separability uniformly across the ROC curve. The harm statistic weights the curve to emphasize the harmful tail — the high thresholds that source rarely exceeds but target clears. If target piles mass in that tail, the harm statistic grows; if target shifts elsewhere, it doesn't.
+AUC averages separability uniformly across the ROC curve. The harm statistic weights the curve to emphasize the **harmful tail** — high thresholds that source rarely exceeds but target clears. If target piles mass there, the harm statistic grows; if target shifts elsewhere, it doesn't.
 
-> **TL;DR** — `AUC = ∫ TPR dFPR` (uniform). Harm = `∫ TPR·(1-FPR)² dFPR` (favours low `FPR`, i.e., the harmful tail). Same permutation null, different weighting.
+> **TL;DR** — `AUC = ∫ TPR dFPR` (uniform). Harm = `∫ TPR·(1-FPR)² dFPR` (favours low `FPR`, the harmful tail). Same permutation null, different weighting.
 
---8<-- "snippets/honest-scores.txt"
+## Direction: `worse` always means "larger" after the transform
 
-## The direction transform makes "worse" always mean "larger"
+Declare the harmful direction once:
 
-Declare the harmful direction with `worse`:
+- `worse="higher"` (or `ss.Worse.HIGHER`) — larger raw scores mean harm (risk, error, atypicality). Used as is.
+- `worse="lower"` (or `ss.Worse.LOWER`) — smaller raw scores mean harm (confidence, accuracy). Scores are negated internally (`-scores`).
 
-- `worse="higher"` (or `ss.Worse.HIGHER`) — larger raw scores mean harm (e.g., risk). Used as is.
-- `worse="lower"` (or `ss.Worse.LOWER`) — smaller raw scores mean harm (e.g., confidence). Scores are negated internally (`-scores`).
-
-After the transform, **larger always means worse**, regardless of polarity. Everything below assumes transformed scores.
+After the transform, larger always means worse. Everything below assumes transformed scores.
 
 ```python
 # inside samesame (src/samesame/shift.py)
@@ -46,7 +44,7 @@ $$
 - `∫ TPR dFPR` = AUC (uniform weight).
 - `∫ TPR · (1-FPR)² dFPR` = harm statistic (weight `(1-FPR)²` favours low `FPR`).
 
-The weight `(1-FPR)²` is largest at low `FPR` — high thresholds source rarely exceeds — and falls to zero at `FPR=1`. Target that clears a high bar source stays below gets a large `T`.
+`(1-FPR)²` is largest at low `FPR` — high thresholds source rarely exceeds — and decays to zero at `FPR=1`. Target that clears a high bar source stays below gets a large `T`.
 
 ### Visual intuition
 
@@ -73,17 +71,17 @@ Computation is `O(n log n)` via `roc_curve` + trapezoidal rule (`src/samesame/_s
 ## What that buys you
 
 - **Directional.** Excess mass in the harmful tail → `TPR` stays high where `FPR` is small → large `T`. If `TPR ≈ FPR` throughout, `T` is small.
-- **Source-anchored.** The weight is `F̂_source`, so the comparison is calibrated to where the reference distribution lies, not an arbitrary score range.
-- **Less sensitive to symmetric/beneficial change.** A shift away from source on the *better* side inflates AUC but not `T`.
+- **Source-anchored.** The weight is `F̂_source`, so the reference distribution calibrates the comparison, not an arbitrary score range.
+- **Less sensitive to symmetric or beneficial change.** A shift away from source on the *better* side inflates AUC but not `T`.
 
 ## How inference works
 
 - **Null:** exchangeability — source and target come from the same distribution, so labels carry no information.
-- **Procedure:** permute labels `n_resamples` times, recompute `T` each time. Scores (and, if given, importance weights) stay fixed; only labels move (`src/samesame/_permutation.py`).
+- **Procedure:** permute labels `n_resamples` times, recompute `T` each time. Scores (and importance weights, if given) stay fixed; only labels move (`src/samesame/_permutation.py`).
 - **p-value:** one-sided `greater` — fraction of null `T` at least as large as observed. Small p (typically ≤ 0.05) means the directional excess is unlikely under no shift.
-- No parametric form for the score distributions is assumed — only exchangeability under the null. Weighted permutations permute the *concatenated* weight vector with labels, preserving the source/target weight lengths.
+- No parametric form for the scores is assumed — only exchangeability under the null. Weighted permutations permute the *concatenated* weight vector with labels, preserving the source/target lengths.
 
-Permutation p-values use +1 smoothing (Phipson & Smyth) and are bounded in `(0, 1]`; doubling for two-sided `test_shift` is capped at `1`.
+Permutation p-values use +1 smoothing (Phipson & Smyth) and lie in `(0, 1]`; doubling for two-sided `test_shift` is capped at `1`.
 
 ??? example "Weighted permutation in code"
     ```python
@@ -105,7 +103,7 @@ Permutation p-values use +1 smoothing (Phipson & Smyth) and are bounded in `(0, 
 | Alternative | two-sided | one-sided `greater` |
 | Sensitive to | any separability | directional excess over source support |
 
-Use `test_shift` when you only need "are they different?" Use `test_harmful_shift` once you can declare `worse` (via `worse="higher"` / `ss.Worse.HIGHER` or `worse="lower"` / `ss.Worse.LOWER`). It will not flag a shift in a better or neutral direction.
+Use `test_shift` when you only need "are they different?" Use `test_harmful_shift` once you can declare `worse` (`worse="higher"` / `ss.Worse.HIGHER` or `worse="lower"` / `ss.Worse.LOWER`). It will not flag a shift that is better or neutral.
 
 For a worked example, see [Test whether the shift is harmful](../examples/tutorials/check-shift-harm.md). For the API, see [Shift testing](../api/testing.md).
 

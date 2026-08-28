@@ -1,20 +1,20 @@
 # Tutorial: Adjust for covariate shift with importance weights
 
-Use this tutorial when source and target do not cover the same feature space well and you want your test to focus on the region where they overlap.
+Use this when source and target don't cover the same feature space well and you want the test to focus where they overlap.
 
-By the end, you will know how to:
+You will:
 
 - estimate domain probabilities `P(target | x)` with a domain classifier
-- keep weighting inputs separate from the signal you want to test
+- keep weighting inputs separate from the score you test
 - compare unweighted and weighted harmful-shift results
 
-Importance weights help when a plain test is driven by observations that sit where the other group almost never goes. Weighting narrows the comparison to common support.
+Weighting helps when a plain test is driven by points that sit where the other group almost never goes.
 
 ## What you need
 
 - source and target observations
-- a domain classifier for estimating `P(target | x)`
-- a *separate* score for the harmful-shift test
+- a domain classifier for `P(target | x)`
+- a *separate* harm score (don't reuse `P(target | x)`)
 
 ## Step 1 — Estimate domain probabilities
 
@@ -42,11 +42,11 @@ domain_prob = cross_val_predict(
 )[:, 1]
 ```
 
-`domain_prob` pooled is split into `source_prob` and `target_prob` below. The prior ratio `n_source / n_target` is inferred from group sizes.
+The pooled `domain_prob` is split into `source` and `target` below; the prior ratio `n_source / n_target` is inferred from group sizes.
 
-## Step 2 — Build the outcome score to monitor
+## Step 2 — Build the harm score
 
-This must be a separate signal. Do not reuse `domain_prob` as the harmful-shift input — that would test the domain classifier against itself.
+This must be a separate signal. Don't reuse `domain_prob`.
 
 ```python
 rng = np.random.default_rng(12345)
@@ -62,9 +62,9 @@ source_scores = risk_score[group == 0]
 target_scores = risk_score[group == 1]
 ```
 
---8<-- "snippets/honest-scores.txt"
+--8<-- "snippets/honest-scores-ref.txt"
 
-## Step 3 — Build weights and compare the test
+## Step 3 — Build weights and compare
 
 ```python
 import samesame as ss
@@ -97,15 +97,14 @@ print(f"Weighted   p-value: {weighted.pvalue:.4f}")
 
 ## How to read the result
 
-- **Unweighted** — uses every observation at full strength.
-- **Weighted** — emphasizes the region where the two groups overlap.
-- If a strong unweighted result weakens substantially after weighting, the apparent shift was concentrated in low-overlap regions.
+- **Unweighted** — every observation at full strength.
+- **Weighted** — emphasizes overlap (here: source reweighted toward target).
+- If a strong unweighted signal weakens after weighting, the shift was concentrated in low-overlap regions.
 - If both stay strong, the signal persists on common support.
 
-`shrinkage=0.5` is the default — it balances correction against variance (see [When importance weights help](../../explanation/importance-weights-rationale.md)). Use `reweight="both"` (or `ss.ReweightMode.BOTH`) when both groups contain low-overlap observations.
+`shrinkage=0.5` is the default — it balances correction against variance (see [When importance weights help](../../explanation/importance-weights-rationale.md)). Use `reweight="both"` (or `ss.ReweightMode.BOTH`) when both groups have low-overlap regions.
 
 ??? tip "Keep `worse` consistent"
-    Use the same `worse` for unweighted and weighted calls so the comparison is about weighting, not direction.
+    Use the same `worse` for unweighted and weighted calls so you compare weighting, not direction.
 
-For how to pick `reweight` and `shrinkage`, see [When importance weights help](../../explanation/importance-weights-rationale.md).
-For a worked HELOC example, see [Focus harmful-shift testing on common support](../weighting/source-reweighting.md).
+For how to choose `reweight` and `shrinkage`, see [When importance weights help](../../explanation/importance-weights-rationale.md). For a HELOC example, see [Focus harmful-shift testing on common support](../weighting/source-reweighting.md).

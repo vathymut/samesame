@@ -1,0 +1,1 @@
+> **Honest scores:** if your scores come from a fitted model, they must be out of sample (cross-validation, OOB, or held-out). In-sample scores invalidate the test — see [Glossary](../../explanation/glossary.md#honest-out-of-sample-scores) and the [first tutorial](../tutorials/detect-distribution-shift.md).

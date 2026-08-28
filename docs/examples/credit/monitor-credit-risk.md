@@ -1,12 +1,12 @@
 # How to: Monitor predicted credit risk
 
-Use this guide when the model output already has business meaning and you want two answers: does deployment look different from training, and is predicted default risk higher?
+Use this when the model output already has business meaning and you want two answers: does deployment look different from training, and is predicted default risk higher?
 
-If you are new to `samesame`, start with the tutorials first. This guide assumes familiarity with `predict_proba`.
+New to `samesame`? Start with the [tutorials](../tutorials/detect-distribution-shift.md) first. This guide assumes familiarity with `predict_proba`.
 
-## Why this signal works well
+## Why this signal
 
-Predicted default probability is directly interpretable — larger values are worse — so it is a natural signal for `ss.test_harmful_shift(..., worse="higher")` (or `ss.Worse.HIGHER`).
+Predicted default probability is directly interpretable — larger is worse — so it fits `ss.test_harmful_shift(..., worse="higher")` (or `ss.Worse.HIGHER`).
 
 This guide uses the HELOC dataset and simulates deployment by training on lower-risk customers and testing on higher-risk ones.
 
@@ -18,13 +18,13 @@ The HELOC split is shared across the credit guides. We include it as a snippet s
 --8<-- "snippets/heloc-split.py:heloc-split"
 ```
 
-`fetch_openml` needs internet access. Cache the dataset locally if you run offline.
+`fetch_openml` needs internet. Cache the dataset locally if you run offline.
 
---8<-- "snippets/honest-scores.txt"
+--8<-- "snippets/honest-scores-ref.txt"
 
-## Step 1 — Check whether deployment looks different
+## Step 1 — Is deployment different?
 
-Train a domain classifier to distinguish training from deployment. Each training observation is scored out of sample via `oob_decision_function_` (bagged forests). For other classifiers, use `cross_val_predict` as in the [first tutorial](../tutorials/detect-distribution-shift.md).
+Train a domain classifier to distinguish training from deployment. Training observations are scored out of sample via `oob_decision_function_` (bagged forests). For other classifiers, use `cross_val_predict` as in the [first tutorial](../tutorials/detect-distribution-shift.md).
 
 ```python
 import numpy as np
@@ -42,7 +42,7 @@ print(f"AUC statistic: {shift.statistic:.4f}")
 print(f"p-value:       {shift.pvalue:.4f}")
 ```
 
-On this split you should see AUC close to `1.0` and a very small p-value — deployment looks clearly different from training.
+On this split you should see AUC ≈ `1.0` and a very small p-value — deployment is clearly different from training.
 
 Quick diagnostic — what changed:
 
@@ -55,9 +55,9 @@ feature_importance = (
 print(feature_importance.head(5))
 ```
 
-## Step 2 — Check whether predicted risk increased
+## Step 2 — Did predicted risk rise?
 
-Now train the actual credit model. Use out-of-bag predictions for training and standard predictions for deployment.
+Now train the credit model. Use out-of-bag predictions for training and standard predictions for deployment.
 
 ```python
 --8<-- "snippets/heloc-split.py:heloc-risk-model"
@@ -75,24 +75,94 @@ print(f"p-value:   {harm.pvalue:.4f}")
 
 Expect a very small p-value — deployment not only differs but carries higher predicted risk.
 
-## Step 3 — Interpret the result
+## Step 3 — Read the result
 
-A small p-value (typically ≤ 0.05) is evidence against the null. Start with `.pvalue` for evidence; use `.statistic` for magnitude.
+Small p-value (typically ≤ 0.05) is evidence against the null. Read `.pvalue` first; `.statistic` for magnitude.
 
 | `test_shift` | `test_harmful_shift` | What it usually means |
 |--------------|----------------------|-----------------------|
 | significant (p ≤ 0.05) | significant | population changed **and** predicted risk worsened |
 | significant | not significant | population changed, but not in a clearly harmful way |
-| not significant | significant | rare — directional signal is strong where two-sided is not, investigate directly |
+| not significant | significant | rare — directional signal is strong where two-sided is not; investigate |
 | not significant | not significant | no clear evidence of harmful shift |
 
-On this HELOC split both tests are significant — investigate retraining, recalibration, or a deployment policy change.
+On this HELOC split both tests are significant — consider retraining, recalibration, or a deployment policy change.
+
+??? example "Full script — copy and run"
+    ```python
+    import re
+
+    import numpy as np
+    import pandas as pd
+    from sklearn.datasets import fetch_openml
+    from sklearn.ensemble import RandomForestClassifier
+
+    import samesame as ss
+
+    # --- HELOC split: lower-risk vs higher-risk (simulated deployment)
+    fico = fetch_openml(data_id=45554, as_frame=True)
+    X, y = fico.data, fico.target
+
+    re_obj = re.compile(r"external.*risk.*estimate", flags=re.I)
+    col_split = next((c for c in X.columns if re_obj.search(c)), None)
+    mask_high = X[col_split].astype(float) > 63
+
+    X_train = X[mask_high].reset_index(drop=True)
+    y_train = y[mask_high].reset_index(drop=True)
+    X_deployment = X[~mask_high].reset_index(drop=True)
+
+    # --- Step 1: domain classifier — is deployment different? (OOB, so honest)
+    split = pd.Series([0] * len(X_train) + [1] * len(X_deployment))
+    X_concat = pd.concat([X_train, X_deployment], ignore_index=True)
+
+    rf_domain = RandomForestClassifier(
+        n_estimators=500, oob_score=True, random_state=12345, min_samples_leaf=10,
+    )
+    rf_domain.fit(X_concat, split)
+    domain_prob = rf_domain.oob_decision_function_[:, 1]
+
+    shift = ss.test_shift(
+        source=domain_prob[split.values == 0],
+        target=domain_prob[split.values == 1],
+        rng=np.random.default_rng(12345),
+    )
+    print(f"AUC statistic: {shift.statistic:.4f}")
+    print(f"p-value:       {shift.pvalue:.4f}")
+    print(
+        pd.Series(rf_domain.feature_importances_, index=X_concat.columns)
+        .sort_values(ascending=False)
+        .head(5)
+    )
+
+    # --- Step 2: credit risk model — did predicted risk rise?
+    y_train_binary = y_train.map({"Good": 0, "Bad": 1}).values
+
+    rf_bad = RandomForestClassifier(
+        n_estimators=500, oob_score=True, random_state=12345, min_samples_leaf=10,
+    )
+    rf_bad.fit(X_train, y_train_binary)
+
+    train_risk = rf_bad.oob_decision_function_[:, 1].ravel()
+    deployment_risk = rf_bad.predict_proba(X_deployment)[:, 1].ravel()
+
+    harm = ss.test_harmful_shift(
+        source=train_risk,
+        target=deployment_risk,
+        worse="higher",
+        rng=np.random.default_rng(12345),
+    )
+    print(f"Statistic: {harm.statistic:.4f}")
+    print(f"p-value:   {harm.pvalue:.4f}")
+    ```
+
+    Scores from a fitted model must be out of sample — here `oob_decision_function_` for
+    training rows and `predict_proba` for deployment rows. See [Glossary](../../explanation/glossary.md#honest-out-of-sample-scores).
 
 ## Next steps
 
-- For a separate certainty view, see [Monitor model confidence](monitor-model-confidence.md).
+- For a certainty view, see [Monitor model confidence](monitor-model-confidence.md).
 - If labels are available, see [Monitor prediction errors once labels arrive](monitor-prediction-errors.md).
 - If overlap is poor, see [Focus harmful-shift testing on common support](../weighting/source-reweighting.md).
 
 ??? tip "Why OOB here?"
-    OOB predictions are free for `RandomForestClassifier(oob_score=True)` and are out-of-sample by construction. For `HistGradientBoostingClassifier` or other estimators, use `cross_val_predict(cv=10, method="predict_proba")` — same interpretation, different estimator.
+    OOB predictions are free for `RandomForestClassifier(oob_score=True)` and out-of-sample by construction. For `HistGradientBoostingClassifier` or other estimators, use `cross_val_predict(cv=10, method="predict_proba")` — same interpretation, different estimator.
