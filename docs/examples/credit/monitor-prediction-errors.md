@@ -1,8 +1,8 @@
 # How to: Monitor prediction errors once labels arrive
 
-Use this when you have ground truth for both groups and want a direct answer about whether the model performs worse.
+Use this when you have ground truth for both groups and want to know: is the model worse on target?
 
-With labels, prediction error is often the cleanest signal.
+With labels, prediction error is the cleanest signal.
 
 ## Why this signal
 
@@ -11,11 +11,11 @@ Prediction errors turn quality into a numeric score:
 - **Brier score** — squared error on the predicted probability
 - **Log-loss** — penalizes confident mistakes more heavily
 
-For both, larger is worse, so they fit `ss.test_harmful_shift(..., worse="higher")` (or `ss.Worse.HIGHER`).
+For both, larger is worse, so they fit `ss.test_harmful_shift(..., worse="higher")` (or `ss.Worse.HIGHER`). See [Glossary: `worse`](../../explanation/glossary.md#worse).
 
 ## Setup
 
-This guide uses HELOC with a stratified random split. Unlike the risk/confidence guides (which split by risk level), both groups here come from the same population — so the null is true and p-values should be large.
+This guide uses HELOC with a stratified random split. Unlike the risk/confidence guides (which split by risk level), both groups here come from the same population — the null is true and p-values should be large. **Source** = training split; **Target** = test split. See [Glossary](../../explanation/glossary.md#source-and-target).
 
 ```python
 import numpy as np
@@ -43,7 +43,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 ## Step 1 — Fit the model and get honest predictions
 
-Use out-of-bag predictions for training so errors aren't optimistic.
+Use out-of-bag predictions for source so errors aren't optimistic (see [honest scores](../../explanation/glossary.md#honest-out-of-sample-scores)).
 
 ```python
 rf = RandomForestClassifier(
@@ -78,12 +78,12 @@ logloss_test = -(
 )
 ```
 
-## Step 3 — Are errors worse on test?
+## Step 3 — Are errors worse on target?
 
 ```python
 harm_brier = ss.test_harmful_shift(
-    source=brier_train,
-    target=brier_test,
+    source=brier_train,  # training errors
+    target=brier_test,   # test errors — the target you are evaluating
     worse="higher",
     rng=np.random.default_rng(12345),
 )
@@ -99,14 +99,13 @@ print(f"Brier p-value:    {harm_brier.pvalue:.4f}")
 print(f"Log-loss p-value: {harm_logloss.pvalue:.4f}")
 ```
 
-On this stratified random split, expect non-significant p-values (typically > 0.05) — no evidence the model is worse on test when both groups come from the same population.
+On this random split, expect large p-values — no evidence the model is worse on target.
 
 ## Read the result
 
-- **Small p-value (≤ 0.05)** — test carries a disproportionate share of high-error predictions.
-- **Large p-value** — not enough evidence the model is worse on test.
+--8<-- "snippets/pvalue-guidance.txt"
 
-Brier and log-loss often tell a similar story here. `ss.test_harmful_shift` is rank-based, so similarly ordered signals give similar p-values.
+Brier and log-loss often agree here. `ss.test_harmful_shift` is rank-based, so similarly ordered signals give similar p-values.
 
 ??? example "Full script — copy and run"
     ```python
@@ -155,5 +154,5 @@ Brier and log-loss often tell a similar story here. `ss.test_harmful_shift` is r
 - Without labels, use [Monitor predicted credit risk](monitor-credit-risk.md) or [Monitor model confidence](monitor-model-confidence.md).
 - If overlap is poor, see [Focus harmful-shift testing on common support](../weighting/source-reweighting.md).
 
-??? tip "Why clip probabilities?"
-    Log-loss uses `log(p)`. Clipping to `[1e-10, 1-1e-10]` avoids `log(0)` without changing the ranking the test uses.
+??? tip "Why clip probabilities here vs domain weights?"
+    Log-loss uses `log(p)` — clipping to `[1e-10, 1-1e-10]` avoids `log(0)` without changing the ranking the test uses. This is *separate* from `domain_weights` clipping to `[1e-6, 1-1e-6]` (which keeps density ratios finite).

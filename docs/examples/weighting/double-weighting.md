@@ -1,8 +1,8 @@
 # How to: Restrict testing to common support on both sides
 
-Use this when both source and target have low-overlap regions and source-only reweighting isn't enough.
+Use this when both groups have low-overlap regions and source-only reweighting isn't enough. This reweights **both** groups and can substantially change the comparison — use only when low overlap occurs on both sides.
 
-This reweights **both** groups and can substantially change the comparison. Use it only when low-overlap occurs on both sides.
+See [Glossary: Reweight](../../explanation/glossary.md#reweight).
 
 ## Step 1 — Start from the source-reweighting setup
 
@@ -81,15 +81,9 @@ If the signal shrinks only after doubly-weighting, target-side low-overlap point
 
 ## Choosing `shrinkage` (λ)
 
-`shrinkage` trades correction strength against stability:
+--8<-- "snippets/shrinkage-table.txt"
 
-- `shrinkage=0.0` — plain density ratio. Strongest correction, highest variance.
-- `shrinkage=0.5` — default. Good balance.
-- `shrinkage=1.0` — uniform weights. No correction.
-
-Lower corrects more aggressively. Start at `0.5`, inspect [effective sample size](diagnose-weight-concentration.md), and only lower it when domain probabilities and overlap are reliable.
-
-For the formulas, see [When importance weights help](../../explanation/importance-weights-rationale.md).
+Inspect ESS before lowering — see [Diagnose weight concentration](diagnose-weight-concentration.md). For formulas, see [When importance weights help](../../explanation/importance-weights-rationale.md).
 
 ??? example "Full script — copy and run (continues from source-reweighting setup)"
     ```python
@@ -138,5 +132,8 @@ For the formulas, see [When importance weights help](../../explanation/importanc
 
 ## Next steps
 
-- Diagnose concentration with [Diagnose weight concentration](diagnose-weight-concentration.md) — regroup when `ESS < n/4`.
+- Diagnose concentration with [Diagnose weight concentration](diagnose-weight-concentration.md):
+
+--8<-- "snippets/ess-rule.txt"
+
 - For the API, see [Importance weights](../../api/weighting.md).

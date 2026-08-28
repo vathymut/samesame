@@ -43,21 +43,13 @@ where `λ = shrinkage` in `[0, 1]`. You don't compute these by hand — `ss.doma
 
 ## What `shrinkage` (λ) does
 
-| `shrinkage` | Effect |
-|-------------|--------|
-| `0.0` | Plain density ratio. Strongest correction, highest variance. |
-| `0.5` | Default. Good balance. |
-| `1.0` | Uniform weights. No correction. |
+--8<-- "snippets/shrinkage-table.txt"
 
-Lower = more aggressive; higher = more conservative. Start at `0.5` and check [ESS](../examples/weighting/diagnose-weight-concentration.md) before lowering.
+See [Diagnose weight concentration](../examples/weighting/diagnose-weight-concentration.md) and [Glossary: Shrinkage](glossary.md#shrinkage).
 
 ## Choosing what to reweight
 
-| Mode | What it does | Use when |
-|------|--------------|----------|
-| `reweight="source"` (`ss.ReweightMode.SOURCE`) | reweights source toward target; target unchanged | source has observations outside target support |
-| `reweight="target"` (`ss.ReweightMode.TARGET`) | reweights target toward source; source unchanged | target has observations outside source support |
-| `reweight="both"` (`ss.ReweightMode.BOTH`, default) | reweights both toward mutual support | both groups have low-overlap regions |
+--8<-- "snippets/reweight-table.txt"
 
 In all cases, `ss.domain_weights` normalizes each *active* group so weights sum to that group's size. Inactive groups get `1` for every observation (normalized to `n`, so uniform).
 

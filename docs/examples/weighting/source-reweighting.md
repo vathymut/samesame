@@ -1,8 +1,8 @@
 # How to: Focus harmful-shift testing on common support
 
-Use this when source contains observations deployment will rarely see and you want the test to focus on comparable cases.
+Down-weight source observations that rarely occur in target. Target unchanged; source points unlikely under target get low weight.
 
-This is source-side reweighting: target unchanged, source points unlikely under target are down-weighted.
+Use this when your source (training) contains cases the target (deployment) will rarely see and you want the test to focus on comparable cases. See [Glossary: Common support](../../explanation/glossary.md#common-support).
 
 ## Step 1 — Baseline
 
@@ -57,12 +57,14 @@ print(f"Weighted   p-value: {weighted.pvalue:.4f}")
 
 ## Step 3 — Read the difference
 
+--8<-- "snippets/pvalue-guidance.txt"
+
 - **Unweighted** — every observation at full strength.
 - **Weighted** — source points unlikely under target are down-weighted (common support from the source side).
-- If the result weakens after weighting, the signal was driven by training regions not representative of deployment.
-- If it stays strong, the shift persists on common support. Read `.pvalue` for evidence; `.statistic` for magnitude.
+- If the result weakens after weighting, the signal was driven by source regions not representative of target.
+- If it stays strong, the shift persists on common support.
 
-Use this mode when training contains outliers or edge cases not representative of the population you now care about.
+Use this mode when source contains outliers not representative of the population you now care about.
 
 ??? example "Full script — copy and run"
     ```python
@@ -114,8 +116,12 @@ Use this mode when training contains outliers or edge cases not representative o
 
 ## Next steps
 
-- If deployment also has low-overlap regions, see [Restrict testing to common support on both sides](double-weighting.md).
-- Check concentration with [Diagnose weight concentration](diagnose-weight-concentration.md) — worry when `ESS < n/4`.
+- If target also has low-overlap regions, see [Restrict testing to common support on both sides](double-weighting.md).
+- Check concentration before trusting the weighted result:
+
+--8<-- "snippets/ess-rule.txt"
+
+See [Diagnose weight concentration](diagnose-weight-concentration.md).
 
 ??? tip "Check weight concentration"
-    After building weights, call `weights.effective_sample_size()` to ensure the correction isn't driven by a handful of points.
+    After building weights, call `weights.effective_sample_size()` — compare each ESS to its `n`.

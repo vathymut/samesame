@@ -1,8 +1,8 @@
 # How to: Monitor model confidence
 
-Use this when you want a certainty signal alongside business risk, or when the model output itself isn't what you want to monitor.
+Use this when you want a certainty signal alongside business risk — or when the model output isn't what you want to monitor.
 
-This guide uses the same HELOC setup as [Monitor predicted credit risk](monitor-credit-risk.md), but asks a different question.
+This guide uses the same HELOC split as [Monitor predicted credit risk](monitor-credit-risk.md) — **source** = training (lower-risk), **target** = deployment (higher-risk) — but asks a different question.
 
 ## Why confidence is separate
 
@@ -13,7 +13,7 @@ Predicted risk and model confidence are not the same.
 
 They can move independently. A model can become more confident while predicting riskier outcomes.
 
-In `samesame` terms, confidence is an **outlier score** where higher = more in-distribution / more certain. `outlier_scores_from_probabilities` follows that naming — larger means higher confidence.
+In `samesame` terms, confidence is an **outlier score** where higher = more in-distribution / more certain. See [Glossary: Score](../../explanation/glossary.md#score). The helper `outlier_scores_from_probabilities` follows that naming — larger means higher confidence.
 
 ## Setup
 
@@ -48,21 +48,21 @@ We use `LogitGap` — the gap between the top logit and the mean of the rest. La
 import numpy as np
 import samesame as ss
 
---8<-- "_code/monitor_model_confidence_example.py:imports"
---8<-- "_code/monitor_model_confidence_example.py:logit-gap"
---8<-- "_code/monitor_model_confidence_example.py:outlier-scores"
+--8<-- "examples/credit/_code/monitor_model_confidence_example.py:imports"
+--8<-- "examples/credit/_code/monitor_model_confidence_example.py:logit-gap"
+--8<-- "examples/credit/_code/monitor_model_confidence_example.py:outlier-scores"
 
-train_probabilities = rf_bad.oob_decision_function_
-deployment_probabilities = rf_bad.predict_proba(X_deployment)
+train_probabilities = rf_bad.oob_decision_function_  # source, out-of-sample
+deployment_probabilities = rf_bad.predict_proba(X_deployment)  # target
 
 train_confidence = outlier_scores_from_probabilities(train_probabilities)
 deployment_confidence = outlier_scores_from_probabilities(deployment_probabilities)
 
-print(f"Training mean confidence:   {train_confidence.mean():.3f}")
-print(f"Deployment mean confidence: {deployment_confidence.mean():.3f}")
+print(f"Source (training) mean confidence:   {train_confidence.mean():.3f}")
+print(f"Target (deployment) mean confidence: {deployment_confidence.mean():.3f}")
 ```
 
-On this HELOC split, deployment confidence is higher than training confidence across the distribution.
+On this split, target confidence is higher than source confidence across the distribution.
 
 ## Step 3 — Did confidence drop?
 
@@ -84,12 +84,14 @@ Expect a large p-value — confidence shifts toward *higher* scores here, so no 
 
 ## Read the result
 
-Small p-value (typically ≤ 0.05) is evidence against the null. This doesn't contradict the credit-risk guide — it answers a different question.
+--8<-- "snippets/pvalue-guidance.txt"
+
+This doesn't contradict the credit-risk guide — it answers a different question:
 
 - In [Monitor predicted credit risk](monitor-credit-risk.md), predicted default risk rises.
-- Here, confidence also rises — the model is not less certain on deployment.
+- Here, confidence also rises — the model is not less certain on target.
 
-That's possible: a model can be confidently risky, confidently wrong, or confidently stable. Confidence is context, not a substitute for a business signal.
+A model can be confidently risky, confidently wrong, or confidently stable. Confidence is context, not a substitute for a business signal.
 
 ??? example "Full script — copy and run"
     ```python

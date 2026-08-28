@@ -1,14 +1,14 @@
 # How to: Monitor predicted credit risk
 
-Use this when the model output already has business meaning and you want two answers: does deployment look different from training, and is predicted default risk higher?
+Use this when your model output already has business meaning and you need two answers: did the target shift, and did predicted risk get worse?
 
 New to `samesame`? Start with the [tutorials](../tutorials/detect-distribution-shift.md) first. This guide assumes familiarity with `predict_proba`.
 
 ## Why this signal
 
-Predicted default probability is directly interpretable — larger is worse — so it fits `ss.test_harmful_shift(..., worse="higher")` (or `ss.Worse.HIGHER`).
+Predicted default probability is directly interpretable — larger is worse — so it fits `ss.test_harmful_shift(..., worse="higher")` (or `ss.Worse.HIGHER`). See [Glossary: `worse`](../../explanation/glossary.md#worse).
 
-This guide uses the HELOC dataset and simulates deployment by training on lower-risk customers and testing on higher-risk ones.
+This guide uses the HELOC dataset. **Source** = lower-risk customers (training); **Target** = higher-risk customers (simulated deployment). From here we use **source/target** consistently — see [Glossary](../../explanation/glossary.md#source-and-target).
 
 ## Setup
 
@@ -22,9 +22,9 @@ The HELOC split is shared across the credit guides. We include it as a snippet s
 
 --8<-- "snippets/honest-scores-ref.txt"
 
-## Step 1 — Is deployment different?
+## Step 1 — Is the target different?
 
-Train a domain classifier to distinguish training from deployment. Training observations are scored out of sample via `oob_decision_function_` (bagged forests). For other classifiers, use `cross_val_predict` as in the [first tutorial](../tutorials/detect-distribution-shift.md).
+Train a domain classifier to distinguish source from target. Source observations are scored out-of-sample via `oob_decision_function_` (bagged forests). For other estimators, use `cross_val_predict` as in the [first tutorial](../tutorials/detect-distribution-shift.md).
 
 ```python
 import numpy as np
@@ -42,7 +42,7 @@ print(f"AUC statistic: {shift.statistic:.4f}")
 print(f"p-value:       {shift.pvalue:.4f}")
 ```
 
-On this split you should see AUC ≈ `1.0` and a very small p-value — deployment is clearly different from training.
+On this split expect AUC ≈ `1.0` and a very small p-value — source and target separate clearly.
 
 Quick diagnostic — what changed:
 
@@ -57,7 +57,7 @@ print(feature_importance.head(5))
 
 ## Step 2 — Did predicted risk rise?
 
-Now train the credit model. Use out-of-bag predictions for training and standard predictions for deployment.
+Train the credit model. Use out-of-bag predictions for source and standard predictions for target.
 
 ```python
 --8<-- "snippets/heloc-split.py:heloc-risk-model"
@@ -73,11 +73,11 @@ print(f"Statistic: {harm.statistic:.4f}")
 print(f"p-value:   {harm.pvalue:.4f}")
 ```
 
-Expect a very small p-value — deployment not only differs but carries higher predicted risk.
+Expect a very small p-value — target not only differs but carries higher predicted risk.
 
 ## Step 3 — Read the result
 
-Small p-value (typically ≤ 0.05) is evidence against the null. Read `.pvalue` first; `.statistic` for magnitude.
+--8<-- "snippets/pvalue-guidance.txt"
 
 | `test_shift` | `test_harmful_shift` | What it usually means |
 |--------------|----------------------|-----------------------|

@@ -9,42 +9,28 @@
 [![Downloads](https://static.pepy.tech/badge/samesame)](https://pepy.tech/project/samesame)
 [![Static Badge](https://img.shields.io/badge/docs-link-blue)](https://vathymut.github.io/samesame/)
 [![UAI 2022](https://img.shields.io/badge/paper-UAI%202022-yellow)](https://arxiv.org/abs/2107.02990)
-[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v2.json)](https://github.com/astral-sh/uv)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 <!-- badges: end -->
 
 **Did the target shift? Did it get worse?**
 
-`samesame` tests any scalar score — predicted risk, prediction error, or outlier score — for change between a **source** (reference: training or past batch) and a **target** (evaluation: production or new batch).
+`samesame` tests one number per observation — predicted risk, prediction error, or outlier score — for change between a **source** (reference: training or past batch) and a **target** (evaluation: current batch in production).
 
 Two questions, two functions:
 
 - **Did anything change?** `samesame.test_shift` — two-sided, any difference.
-- **Did it get worse?** `samesame.test_harmful_shift` — one-sided, needs `worse="higher"` or `worse="lower"`.
+- **Did it get worse?** `samesame.test_harmful_shift` — one-sided, needs `worse="higher"` or `worse="lower"` (or `ss.Worse.HIGHER` / `ss.Worse.LOWER`).
 
 ## Quick example
 
 ```python
-import numpy as np
-import samesame as ss
-
-rng = np.random.default_rng(12345)
-source_scores = rng.normal(loc=0.0, scale=1.0, size=600)
-target_scores = rng.normal(loc=0.6, scale=1.0, size=600)
-
-shift = ss.test_shift(source=source_scores, target=target_scores, rng=rng)
-harm = ss.test_harmful_shift(
-    source=source_scores,
-    target=target_scores,
-    worse="higher",  # larger = more harm (e.g., risk)
-    rng=rng,
-)
-
-print(f"Shift statistic: {shift.statistic:.3f}, p-value: {shift.pvalue:.4f}")
-print(f"Harm  statistic: {harm.statistic:.3f}, p-value: {harm.pvalue:.4f}")
+--8<-- "snippets/quick-example.py:quick-example"
 ```
 
-Small p-value (typically ≤ 0.05) is evidence against the null. Read `.pvalue` first; use `.statistic` for magnitude. `test_shift` rejects for any difference; `test_harmful_shift` rejects only for excess mass in the harmful tail you declared.
+--8<-- "snippets/pvalue-guidance.txt"
+
+`test_shift` rejects for any difference; `test_harmful_shift` rejects only for excess mass in the harmful tail you declared.
 
 --8<-- "snippets/honest-scores.txt"
 
@@ -52,44 +38,44 @@ Small p-value (typically ≤ 0.05) is evidence against the null. Read `.pvalue` 
 
 | Signal | What it measures | `worse` |
 |--------|------------------|---------|
-| Predicted risk | business impact | `higher` |
-| Prediction error (Brier, log-loss) | accuracy once labels arrive | `higher` |
-| Outlier score — confidence (`LogitGap`) | certainty / typicality | `lower` |
-| Outlier score — atypicality | distance from source | `higher` |
+| Predicted risk | business impact | `worse="higher"` |
+| Prediction error (Brier, log-loss) | accuracy once labels arrive | `worse="higher"` |
+| Outlier score — confidence (`LogitGap`) | certainty / typicality | `worse="lower"` |
+| Outlier score — atypicality | distance from source | `worse="higher"` |
 
-Domain probability `P(target | x)` is not a harm signal — use it to build weights (below), not as the score you test for harm.
+Domain probability `P(target | x)` is not a harm signal — use it to build importance weights, not as the score you test for harm.
 
 Any scalar score works; `samesame` provides only the test.
 
 ## The workflow
 
-1. **Build a score** for source and target.
+1. **Build a score** — one number per observation — for source and target.
 2. **Test any change** with `ss.test_shift`.
-3. **Test harm** with `ss.test_harmful_shift(..., worse=...)` when direction matters.
+3. **Test harm** with `ss.test_harmful_shift(..., worse=...)` when you can declare which direction is worse.
 
-Both tests are permutation-based (default `n_resamples=9999`; `999` while exploring, `19999` for `p < 0.001`; `O(n log n)` per resample). When source and target cover different feature regions, `ss.domain_weights` focuses the comparison on [common support](explanation/importance-weights-rationale.md).
+When source and target cover different feature regions, `ss.domain_weights` focuses the comparison on [common support](explanation/importance-weights-rationale.md).
+
+??? note "Permutation details"
+    Both tests permute labels, not scores.
+
+    --8<-- "snippets/n-resamples.txt"
+
+    See [Glossary](explanation/glossary.md#permutation-test).
 
 ## Decide what to run
 
-```mermaid
-flowchart TD
-    A["Build a score<br/>one number per row"] --> B{"Do you know what<br/><em>worse</em> means?"}
-    B -->|No| C["ss.test_shift<br/><em>Did anything change?</em><br/>two-sided AUC"]
-    B -->|Yes<br/>worse=higher / lower| D["ss.test_harmful_shift<br/><em>Did it get worse?</em><br/>one-sided, source-anchored"]
-    C --> E{"Overlap concern?"}
-    D --> E
-    E -->|No| F["Run unweighted<br/>omit <code>weights</code>"]
-    E -->|Source outliers| G["reweight='source'<br/>down-weight source outside target"]
-    E -->|Target outliers| H["reweight='target'<br/>down-weight target outside source"]
-    E -->|Both| I["reweight='both'<br/>common-support comparison"]
-    G --> J["Check ESS<br/>worry if ESS < n/4"]
-    H --> J
-    I --> J
-    F --> K["Read .pvalue first<br/>.statistic second"]
-    J --> K
-```
+**Rule:** run unweighted first. Use `test_shift` when direction is unknown; use `test_harmful_shift` when you can declare `worse`. Add weights only when you have a domain classifier and low overlap.
 
-If the diagram doesn't render, the rule is: **unweighted first, `test_shift` when direction is unknown, `test_harmful_shift` when you can declare `worse`, and weight only when you have a domain classifier and low overlap.** See [Glossary](explanation/glossary.md) and [When importance weights help](explanation/importance-weights-rationale.md).
+- **No overlap concern** → omit `weights`.
+- **Source outliers** (training has cases production never sees) → `reweight="source"`.
+- **Target outliers** (production has cases training never saw) → `reweight="target"`.
+- **Both** → `reweight="both"` for common-support comparison.
+
+A weighted test is trustworthy only when [effective sample size](explanation/glossary.md#effective-sample-size-ess) stays healthy:
+
+--8<-- "snippets/ess-rule.txt"
+
+For the full flow, see [Glossary](explanation/glossary.md) and [When importance weights help](explanation/importance-weights-rationale.md).
 
 ## Where to go next
 

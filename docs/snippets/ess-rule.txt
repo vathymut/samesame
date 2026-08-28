@@ -1,0 +1,1 @@
+Rule of thumb: worry when `ESS < n/4` for either group (not a hard cutoff). A significant weighted result with healthy ESS is convincing; with `ESS ≈ 1` it may be driven by one or two observations.

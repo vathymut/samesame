@@ -1,12 +1,10 @@
 # Tutorial: Detect any distributional shift
 
-Your first end-to-end shift test. You will:
+Learn the full loop in 5 minutes: build a score, keep it honest, run `ss.test_shift`.
 
-- turn two datasets into a comparable score
-- keep that score honest with out-of-sample predictions
-- run `ss.test_shift` and read the result
+**Source** is the reference (e.g., training). **Target** is the evaluation batch (e.g., production). See [Glossary](../../explanation/glossary.md#source-and-target).
 
-Idea: train a classifier to distinguish **source** from **target**. If its out-of-sample `P(target | x)` separates the groups better than chance, they differ.
+Idea: train a classifier to distinguish source from target. If its out-of-sample `P(target | x)` separates the groups better than chance, they differ.
 
 ## What you need
 
@@ -71,13 +69,13 @@ On this shifted example, expect large AUC and very small p-value — the target 
 
 ## How to read the result
 
-- **Small p-value (typically ≤ 0.05)** — evidence source and target differ.
-- **Large p-value** — not enough evidence to say they differ.
-- **Statistic (ROC AUC)** — `0.5` is chance; farther from `0.5` means stronger separation. `test_shift` is two-sided, so AUC `0.2` also rejects — it just means ordering is reversed.
+--8<-- "snippets/pvalue-guidance.txt"
 
-`ss.test_shift` answers only "did anything change?" It says nothing about harm.
+- **Statistic (ROC AUC)** — `0.5` is chance; farther from `0.5` means stronger separation. `test_shift` is two-sided, so AUC `0.2` also rejects — ordering is reversed.
 
-Next: [Test whether the shift is harmful](check-shift-harm.md) when direction matters.
+`ss.test_shift` answers only "did anything change?" It says nothing about harm. For harm, see [Test whether the shift is harmful](check-shift-harm.md).
 
 ??? tip "Reproducibility"
-    Pass `rng=np.random.default_rng(12345)` for reproducible p-values. Use `n_resamples=999` while exploring and `9999` (default) for the final result.
+    Pass `rng=np.random.default_rng(12345)` for reproducible p-values.
+
+    --8<-- "snippets/n-resamples.txt"

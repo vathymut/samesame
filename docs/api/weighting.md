@@ -53,13 +53,9 @@ Probabilities at `0` or `1` are clipped to `[1e-6, 1 − 1e-6]` before weighting
 
 ## Choosing what to reweight
 
-| Mode | What it does | Use when |
-|------|--------------|----------|
-| `reweight="source"` (`ss.ReweightMode.SOURCE`) | reweights source to look like target; target unchanged | source has low-overlap observations outside target support |
-| `reweight="target"` (`ss.ReweightMode.TARGET`) | reweights target to look like source; source unchanged | target has low-overlap observations outside source support |
-| `reweight="both"` (`ss.ReweightMode.BOTH`) | reweights both toward mutual support (default) | both groups have low-overlap regions |
+--8<-- "snippets/reweight-table.txt"
 
-Inactive groups get weight `1` for every observation (normalized to `n`, so uniform). Start with `shrinkage=0.5`; lower is stronger but higher variance. Check [ESS](../examples/weighting/diagnose-weight-concentration.md) before lowering.
+Inactive groups get weight `1` for every observation (normalized to `n`, so uniform). Start with `shrinkage=0.5`; lower is stronger but higher variance. Check ESS before lowering — see [Diagnose weight concentration](../examples/weighting/diagnose-weight-concentration.md) and [Glossary](../explanation/glossary.md#effective-sample-size-ess).
 
 ## Effective sample size
 
@@ -70,7 +66,7 @@ ess = weights.effective_sample_size()
 print(ess.source, ess.target)  # compare each to its n
 ```
 
-Worry when `ESS < n/4` (rule of thumb). A significant weighted result with healthy ESS is convincing; with `ESS ≈ 1` it may be driven by one or two observations.
+--8<-- "snippets/ess-rule.txt"
 
 For a worked sweep, see [Diagnose weight concentration](../examples/weighting/diagnose-weight-concentration.md). For intuition, see [When importance weights help](../explanation/importance-weights-rationale.md). For a full tutorial, see [Adjust for covariate shift with importance weights](../examples/tutorials/adjust-for-covariate-shift.md).
 

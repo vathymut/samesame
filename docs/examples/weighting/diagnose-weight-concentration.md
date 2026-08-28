@@ -78,12 +78,14 @@ shrinkage=1.0   source ESS= 400.00  target ESS= 400.00
 
 ## How to read it
 
-- Compare ESS to `n` for *each* group, not across groups. Rule of thumb: worry when `ESS < n/4`.
+--8<-- "snippets/ess-rule.txt"
+
+- Compare ESS to `n` for *each* group, not across groups.
 - The collapse from `400` to `6.53` at `shrinkage=0.0` shows plain density-ratio weights are highly concentrated here — one source observation carries weight > `100`.
 - `shrinkage=0.5` recovers most of the sample while still correcting for overlap — that's why it's the default.
-- If ESS stays low even at `shrinkage=0.5`, groups barely overlap. Skip weighting or collect more comparable data rather than pushing `shrinkage` higher.
+- If ESS stays low even at `0.5`, groups barely overlap. Skip weighting or collect more comparable data rather than pushing `shrinkage` higher.
 
-ESS is diagnostic, not a verdict. Use it with the weighted p-value: significant (`p ≤ 0.05`) with healthy ESS is convincing; significant with `ESS ≈ 1` may be driven by one or two points.
+ESS is diagnostic, not a verdict. Use it with the weighted p-value: significant with healthy ESS is convincing; significant with `ESS ≈ 1` may be driven by one or two points. See [Glossary: ESS](../../explanation/glossary.md#effective-sample-size-ess).
 
 ??? example "Full script — copy and run (synthetic, no HELOC needed)"
     ```python

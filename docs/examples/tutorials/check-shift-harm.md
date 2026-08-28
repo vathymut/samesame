@@ -1,12 +1,12 @@
 # Tutorial: Test whether the shift is harmful
 
-Use this when you have a signal with a clear direction and want to know whether target moved toward the harmful end. You will:
+Is a shift harmful — not just different? In 5 minutes you will:
 
 - distinguish "different" from "worse"
 - choose the correct `worse` direction
-- run `ss.test_harmful_shift` and read the p-value
+- run `ss.test_harmful_shift` and read the result
 
-`ss.test_shift` asks whether source and target differ *at all* (two-sided, AUC). `ss.test_harmful_shift` asks the narrower question: did target shift toward the harmful tail (one-sided)?
+`ss.test_shift` asks whether [source and target](../../explanation/glossary.md#source-and-target) differ at all (two-sided, AUC). `ss.test_harmful_shift` asks the narrower question: did target shift toward the harmful tail (one-sided)? See [Glossary: `worse`](../../explanation/glossary.md#worse).
 
 ## What you need
 
@@ -67,14 +67,12 @@ Target is slightly lower — a harmful shift for a higher-is-better signal.
 
 ## How to read the result
 
-- Small `test_shift` p-value (≤ 0.05) — groups differ.
-- Small `test_harmful_shift` p-value (≤ 0.05) — target also shifted toward the harmful direction you declared.
-- Read `.pvalue` for evidence; `.statistic` for magnitude.
+--8<-- "snippets/pvalue-guidance.txt"
 
-| Signal | Worse when | Use |
-|--------|------------|-----|
-| Predicted risk, error, atypicality | larger | `worse="higher"` (or `ss.Worse.HIGHER`) |
-| Confidence, accuracy, quality | smaller | `worse="lower"` (or `ss.Worse.LOWER`) |
+- Small `test_shift` p-value — groups differ.
+- Small `test_harmful_shift` p-value — target also shifted toward the harmful direction you declared.
+
+--8<-- "snippets/worse-table.txt"
 
 --8<-- "snippets/honest-scores-ref.txt"
 

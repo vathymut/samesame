@@ -1,0 +1,4 @@
+| Signal | Worse when | Use |
+|--------|------------|-----|
+| Predicted risk, error, atypicality | larger | `worse="higher"` (or `ss.Worse.HIGHER`) |
+| Confidence, accuracy, quality | smaller | `worse="lower"` (or `ss.Worse.LOWER`) |

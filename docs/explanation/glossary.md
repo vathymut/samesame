@@ -27,7 +27,7 @@ Polarity parameter that defines harmful direction. Declared once per `test_harmf
 - `worse="higher"` (or `ss.Worse.HIGHER`) — larger scores mean harm (risk, error, atypicality).
 - `worse="lower"` (or `ss.Worse.LOWER`) — smaller scores mean harm (confidence, accuracy).
 
-Internally scores are transformed so larger always means worse (`polarity = scores if worse == "higher" else -scores` in `src/samesame/shift.py:113`).
+Internally scores are transformed so larger always means worse (`polarity = scores if worse == "higher" else -scores`). See [Shift testing](../api/testing.md).
 
 ## Harmful shift
 
@@ -45,9 +45,7 @@ Region of feature space where both source and target have non-negligible density
 
 ## Importance weights
 
-`ImportanceWeights` — frozen dataclass with `.source` and `.target` arrays, normalized so each group sums to its size. Built via `domain_weights(...)` from domain probabilities or constructed directly from custom weights.
-
-See `src/samesame/weights.py:106`.
+`ImportanceWeights` — frozen dataclass with `.source` and `.target` arrays, normalized so each group sums to its size. Built via `domain_weights(...)` from domain probabilities or constructed directly from custom weights. See [Importance weights](../api/weighting.md).
 
 ## Reweight
 
@@ -61,20 +59,26 @@ Inactive groups get weight `1` (uniform after normalization).
 
 ## Shrinkage
 
-`shrinkage` (λ) in `[0, 1]` — RIW (Relative Importance Weight) shrinkage trading correction strength against stability (Yamada et al. 2013). `0` = plain density ratio (strongest, highest variance); `1` = uniform (no correction); `0.5` = default balance. See `src/samesame/weights.py:170`.
+`shrinkage` (λ) in `[0, 1]` — RIW (Relative Importance Weight) shrinkage trading correction strength against stability (Yamada et al. 2013). `0` = plain density ratio (strongest, highest variance); `1` = uniform (no correction); `0.5` = default balance. See [When importance weights help](importance-weights-rationale.md).
 
 ## Effective sample size (ESS)
 
-Kish's ESS per group: `(sum w)² / sum w²`. `ESS = n` for uniform weights; `→ 1` when one point dominates. Call `weights.effective_sample_size()` — it returns `.source` and `.target`. Rule of thumb: worry when `ESS < n/4` (not a hard cutoff). See `src/samesame/weights.py:136`.
+Kish's ESS per group: `(sum w)² / sum w²`. `ESS = n` for uniform weights; `→ 1` when one point dominates. Call `weights.effective_sample_size()` — it returns `.source` and `.target`.
+
+--8<-- "snippets/ess-rule.txt"
+
+See [Diagnose weight concentration](../examples/weighting/diagnose-weight-concentration.md) and `EffectiveSampleSize`.
 
 ## Permutation test
 
-Label-permutation null. Scores (and weights, if given) stay fixed; only labels are permuted `n_resamples` times. See `src/samesame/_permutation.py:92`.
+Label-permutation null. Scores (and weights, if given) stay fixed; only labels are permuted `n_resamples` times.
 
 - `test_shift` — two-sided on ROC AUC; doubling capped at `1`.
 - `test_harmful_shift` — one-sided `greater` on the harm statistic.
 
-p-values use +1 smoothing (Phipson & Smyth) and lie in `(0, 1]`. Default `n_resamples=9999` (`999` while exploring, `19999` for `p < 0.001`). Cost `O(n log n)` per resample.
+p-values use +1 smoothing (Phipson & Smyth) and lie in `(0, 1]`.
+
+--8<-- "snippets/n-resamples.txt"
 
 ## Honest (out-of-sample) scores
 

@@ -1,0 +1,5 @@
+| Mode | What it does | Use when |
+|------|--------------|----------|
+| `reweight="source"` (`ss.ReweightMode.SOURCE`) | reweights source toward target; target unchanged | source has low-overlap observations outside target support |
+| `reweight="target"` (`ss.ReweightMode.TARGET`) | reweights target toward source; source unchanged | target has low-overlap observations outside source support |
+| `reweight="both"` (`ss.ReweightMode.BOTH`, default) | reweights both toward mutual support | both groups have low-overlap regions |

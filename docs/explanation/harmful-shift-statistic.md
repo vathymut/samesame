@@ -17,15 +17,9 @@ AUC averages separability uniformly across the ROC curve. The harm statistic wei
 
 Declare the harmful direction once:
 
-- `worse="higher"` (or `ss.Worse.HIGHER`) — larger raw scores mean harm (risk, error, atypicality). Used as is.
-- `worse="lower"` (or `ss.Worse.LOWER`) — smaller raw scores mean harm (confidence, accuracy). Scores are negated internally (`-scores`).
+--8<-- "snippets/worse-table.txt"
 
-After the transform, larger always means worse. Everything below assumes transformed scores.
-
-```python
-# inside samesame (src/samesame/shift.py)
-polarity = scores if worse == "higher" else -scores
-```
+Internally scores are transformed so larger always means worse (`polarity = scores if worse == "higher" else -scores`). Everything below assumes transformed scores.
 
 ## What the harm statistic integrates
 
@@ -48,25 +42,65 @@ $$
 
 ### Visual intuition
 
-```
-ROC for a harmful shift          ROC for a beneficial shift
-(upper-left bulge)               (lower-right bulge)
+<div style="display:flex; gap:24px; flex-wrap:wrap; justify-content:center; margin:16px 0;">
 
-TPR ↑  ╭──●                      TPR ↑  ╭
-      ╱ │ heavily weighted       ╱ ─┤  lightly weighted
-     ╱  │ (1-FPR)² large         ╱   │  (1-FPR)² small
-    ╱   │                       ╱    │
-   ╱────┘                      ╱─────╯
-  └──────────→ FPR             └──────────→ FPR
-   0    1                       0    1
+<div style="flex:1; min-width:260px; max-width:380px; text-align:center;">
 
-Harm statistic: LARGE            Harm statistic: small
-AUC: large                       AUC: large (but on the wrong side)
-```
+**Harmful shift** — excess mass at low `FPR`
 
-A shift toward *better* outcomes (lower transformed scores) inflates two-sided AUC but not `T`, because the action is at high `FPR` where the weight is tiny. That's why `test_harmful_shift` is directional.
+<svg viewBox="0 0 220 180" width="100%" style="max-width:320px; border:1px solid #e5e7eb; border-radius:8px; background:white;">
+  <!-- axes -->
+  <line x1="30" y1="150" x2="190" y2="150" stroke="#111" stroke-width="1.5"/>
+  <line x1="30" y1="150" x2="30" y2="20" stroke="#111" stroke-width="1.5"/>
+  <text x="105" y="172" font-size="11" fill="#555" text-anchor="middle">FPR →</text>
+  <text x="12" y="85" font-size="11" fill="#555" text-anchor="middle" transform="rotate(-90 12 85)">TPR ↑</text>
+  <!-- heavily weighted region -->
+  <rect x="30" y="20" width="48" height="130" fill="#3b82f6" opacity="0.12"/>
+  <text x="54" y="35" font-size="8" fill="#1d4ed8" text-anchor="middle">(1−FPR)² large</text>
+  <!-- diagonal -->
+  <line x1="30" y1="150" x2="190" y2="20" stroke="#9ca3af" stroke-width="1" stroke-dasharray="4 3"/>
+  <!-- harmful ROC: steep early rise -->
+  <path d="M 30 150 C 50 70, 60 30, 190 20" fill="none" stroke="#1d4ed8" stroke-width="2.5"/>
+  <circle cx="68" cy="42" r="4" fill="#1d4ed8"/>
+  <!-- weight indicator -->
+  <text x="68" y="58" font-size="7" fill="#1d4ed8" text-anchor="middle">heavily</text>
+  <text x="68" y="66" font-size="7" fill="#1d4ed8" text-anchor="middle">weighted</text>
+  <text x="30" y="165" font-size="9" fill="#6b7280">0</text>
+  <text x="185" y="165" font-size="9" fill="#6b7280">1</text>
+</svg>
 
-Computation is `O(n log n)` via `roc_curve` + trapezoidal rule (`src/samesame/_statistics.py`).
+<div style="font-size:12px; color:#1e40af; margin-top:6px;"><strong>Harm statistic: LARGE</strong> &middot; AUC: large</div>
+</div>
+
+<div style="flex:1; min-width:260px; max-width:380px; text-align:center;">
+
+**Beneficial / symmetric shift** — mass at high `FPR`
+
+<svg viewBox="0 0 220 180" width="100%" style="max-width:320px; border:1px solid #e5e7eb; border-radius:8px; background:white;">
+  <line x1="30" y1="150" x2="190" y2="150" stroke="#111" stroke-width="1.5"/>
+  <line x1="30" y1="150" x2="30" y2="20" stroke="#111" stroke-width="1.5"/>
+  <text x="105" y="172" font-size="11" fill="#555" text-anchor="middle">FPR →</text>
+  <text x="12" y="85" font-size="11" fill="#555" text-anchor="middle" transform="rotate(-90 12 85)">TPR ↑</text>
+  <!-- lightly weighted region -->
+  <rect x="30" y="20" width="48" height="130" fill="#9ca3af" opacity="0.07"/>
+  <text x="54" y="35" font-size="8" fill="#6b7280" text-anchor="middle">(1−FPR)² small</text>
+  <line x1="30" y1="150" x2="190" y2="20" stroke="#9ca3af" stroke-width="1" stroke-dasharray="4 3"/>
+  <!-- beneficial ROC: late rise -->
+  <path d="M 30 150 C 70 140, 140 130, 190 20" fill="none" stroke="#6b7280" stroke-width="2.5"/>
+  <text x="152" y="110" font-size="7" fill="#6b7280" text-anchor="middle">lightly</text>
+  <text x="152" y="118" font-size="7" fill="#6b7280" text-anchor="middle">weighted</text>
+  <text x="30" y="165" font-size="9" fill="#6b7280">0</text>
+  <text x="185" y="165" font-size="9" fill="#6b7280">1</text>
+</svg>
+
+<div style="font-size:12px; color:#4b5563; margin-top:6px;"><strong>Harm statistic: small</strong> &middot; AUC: large (wrong side)</div>
+</div>
+
+</div>
+
+A shift toward *better* outcomes (lower transformed scores) inflates two-sided AUC but not `T`, because the action is at high `FPR` where the weight `≈ 0`. That's why `test_harmful_shift` is directional.
+
+Computation is `O(n log n)` via `roc_curve` + trapezoidal rule.
 
 ## What that buys you
 
@@ -77,11 +111,19 @@ Computation is `O(n log n)` via `roc_curve` + trapezoidal rule (`src/samesame/_s
 ## How inference works
 
 - **Null:** exchangeability — source and target come from the same distribution, so labels carry no information.
-- **Procedure:** permute labels `n_resamples` times, recompute `T` each time. Scores (and importance weights, if given) stay fixed; only labels move (`src/samesame/_permutation.py`).
-- **p-value:** one-sided `greater` — fraction of null `T` at least as large as observed. Small p (typically ≤ 0.05) means the directional excess is unlikely under no shift.
-- No parametric form for the scores is assumed — only exchangeability under the null. Weighted permutations permute the *concatenated* weight vector with labels, preserving the source/target lengths.
+- **Procedure:** permute labels `n_resamples` times, recompute `T` each time. Scores (and importance weights, if given) stay fixed; only labels move.
+- **p-value:** one-sided `greater` — fraction of null `T` at least as large as observed.
+
+--8<-- "snippets/pvalue-guidance.txt"
+
+No parametric form for the scores is assumed — only exchangeability under the null. Weighted permutations permute the *concatenated* weight vector with labels, preserving the source/target lengths.
 
 Permutation p-values use +1 smoothing (Phipson & Smyth) and lie in `(0, 1]`; doubling for two-sided `test_shift` is capped at `1`.
+
+--8<-- "snippets/n-resamples.txt"
+
+??? tip "Plot the null"
+    Compare `result.statistic` to `result.null_distribution`. If observed lies beyond `quantile(null, 0.95)`, `p < 0.05`. For AUC, `0.5` is chance; for the harm statistic, compare to the null median — no fixed `0.5` reference.
 
 ??? example "Weighted permutation in code"
     ```python

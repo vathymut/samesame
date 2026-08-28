@@ -1,14 +1,12 @@
 # Tutorial: Adjust for covariate shift with importance weights
 
-Use this when source and target don't cover the same feature space well and you want the test to focus where they overlap.
+Focus the test on **common support** — the region where [source and target](../../explanation/glossary.md#source-and-target) overlap. Use this when a plain test is driven by low-overlap points the other group rarely contains.
 
 You will:
 
-- estimate domain probabilities `P(target | x)` with a domain classifier
-- keep weighting inputs separate from the score you test
+- estimate domain probabilities `P(target | x)` with a domain classifier (for weighting only)
+- keep weighting inputs separate from the harm score
 - compare unweighted and weighted harmful-shift results
-
-Weighting helps when a plain test is driven by points that sit where the other group almost never goes.
 
 ## What you need
 
@@ -97,14 +95,18 @@ print(f"Weighted   p-value: {weighted.pvalue:.4f}")
 
 ## How to read the result
 
+--8<-- "snippets/pvalue-guidance.txt"
+
 - **Unweighted** — every observation at full strength.
 - **Weighted** — emphasizes overlap (here: source reweighted toward target).
 - If a strong unweighted signal weakens after weighting, the shift was concentrated in low-overlap regions.
 - If both stay strong, the signal persists on common support.
 
-`shrinkage=0.5` is the default — it balances correction against variance (see [When importance weights help](../../explanation/importance-weights-rationale.md)). Use `reweight="both"` (or `ss.ReweightMode.BOTH`) when both groups have low-overlap regions.
-
 ??? tip "Keep `worse` consistent"
     Use the same `worse` for unweighted and weighted calls so you compare weighting, not direction.
 
-For how to choose `reweight` and `shrinkage`, see [When importance weights help](../../explanation/importance-weights-rationale.md). For a HELOC example, see [Focus harmful-shift testing on common support](../weighting/source-reweighting.md).
+For `shrinkage` and `reweight` choices, see [When importance weights help](../../explanation/importance-weights-rationale.md). For `shrinkage` values:
+
+--8<-- "snippets/shrinkage-table.txt"
+
+Check [ESS](../weighting/diagnose-weight-concentration.md) before lowering. For a HELOC example, see [Focus harmful-shift testing on common support](../weighting/source-reweighting.md).

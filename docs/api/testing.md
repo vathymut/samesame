@@ -1,6 +1,6 @@
 # Shift testing
 
-Scores only — turn raw features into one numeric score per group first.
+Scores only — turn raw features into one numeric score per group first. See [Glossary](../explanation/glossary.md#score).
 
 --8<-- "snippets/honest-scores.txt"
 
@@ -15,28 +15,27 @@ Useful harm signals: predicted risk, prediction error (Brier/log-loss), or outli
 
 ## Common controls
 
-All functions accept:
+All functions accept `rng`, `weights`, and `n_resamples`:
 
-- `n_resamples` — permutation resamples. Default `9999`. Use `999` while exploring, `9999` for the final result, `19999` if you need `p < 0.001` resolution. Cost is `O(n log n)` per resample, `O(n)` memory.
+--8<-- "snippets/n-resamples.txt"
+
 - `rng` — reproducibility. Accepts `int` seed, `np.random.Generator`/`RandomState`, or `None`.
 - `weights` — `ImportanceWeights` from `ss.domain_weights` or constructed directly. Must match `len(source)` and `len(target)`.
 
-`ss.test_harmful_shift` also requires `worse`:
+`ss.test_harmful_shift` also requires `worse` (string or `ss.Worse` — interchangeable; enum gives autocomplete):
 
-- `worse="higher"` (or `ss.Worse.HIGHER`) — larger scores mean harm (risk, error, atypicality).
-- `worse="lower"` (or `ss.Worse.LOWER`) — smaller scores mean harm (confidence, accuracy).
-
-Strings and `ss.Worse` are interchangeable; the enum gives autocomplete and typo protection.
+--8<-- "snippets/worse-table.txt"
 
 ## What you get back
 
 - `ss.test_shift` → `ShiftResult` (`.statistic` is ROC AUC, two-sided p-value)
 - `ss.test_harmful_shift` → `HarmfulShiftResult` (`.statistic` is harm statistic, one-sided `greater` p-value, plus `.worse`)
 
-Both include `.null_distribution` when you need the full permutation output. `.pvalue` is in `(0, 1]` with +1 smoothing (Phipson & Smyth); two-sided doubling is capped at `1`. Read `.pvalue` for evidence, `.statistic` for magnitude.
+Both include `.null_distribution` when you need the full permutation output. `.pvalue` is in `(0, 1]` with +1 smoothing (Phipson & Smyth); two-sided doubling is capped at `1`.
 
-??? tip "Which result to read first?"
-    Start with `.pvalue` (evidence). Use `.statistic` to describe magnitude — AUC ≈ `0.5` is chance; harm statistic has no fixed scale, compare observed vs null median. See [Why the harm statistic is not just AUC](../explanation/harmful-shift-statistic.md).
+--8<-- "snippets/pvalue-vs-statistic.txt"
+
+See [Why the harm statistic is not just AUC](../explanation/harmful-shift-statistic.md) for the harm scale.
 
 ## API
 
