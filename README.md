@@ -13,16 +13,16 @@
 
 **Did the target shift? Did it get worse?**
 
-Monitoring every feature is difficult to interpret, and labels may arrive too
-late to provide an early warning. `samesame` compares one meaningful score per
-observation - predicted risk, prediction error, confidence, or an outlier
-score - between **source** (the reference) and **target** (the current
-deployment).
+Feature-level monitoring can produce alerts that are difficult to interpret,
+and labels may arrive too late to support early action. `samesame` focuses
+monitoring on a meaningful score per observation - such as predicted risk,
+prediction error, confidence, or an outlier score - and compares it between
+**source** (the reference) and **target** (the current deployment).
 
-It answers two different questions:
+It separates two questions:
 
-- `ss.test_shift` - can the score distinguish source from target? Two-sided AUC.
-- `ss.test_harmful_shift(..., worse="higher"|"lower")` - did target move into the harmful tail you name? One-sided and tail-focused.
+- **Any shift?** Use `ss.test_shift` to ask whether the score distribution changed between source and target. This is a two-sided AUC test.
+- **Harmful shift?** Use `ss.test_harmful_shift(..., worse="higher"|"lower")` to ask whether the target moved in a specified harmful direction. This is a one-sided test based on the weighted AUC.
 
 ## Quick example
 
@@ -46,24 +46,30 @@ print(f"Shift statistic: {shift.statistic:.3f}, p-value: {shift.pvalue:.4f}")
 print(f"Harm  statistic: {harm.statistic:.3f}, p-value: {harm.pvalue:.4f}")
 ```
 
-Read the p-value as evidence against the relevant null, then inspect the
-statistic and score distributions. A significant shift is not automatically a
-harmful shift, and a p-value is not a measure of business impact.
+Interpret p-values alongside the statistic and score distributions: evidence of
+a shift is not evidence of harm, and statistical significance is not business
+impact.
 
-> **Toy scores vs real scores:** synthetic normals for brevity. With real features, build a score with a domain classifier and generate it out of sample (`cross_val_predict`, `oob_decision_function_`, or held-out) — see [Get started](https://vathymut.github.io/samesame/examples/tutorials/get-started.md).
+> **Toy scores vs. real scores:** The example uses synthetic normal scores for
+> brevity. For real features, build the score with a domain classifier and
+> generate it out of sample - using `cross_val_predict`,
+> `oob_decision_function_`, or held-out data - to avoid in-sample bias. See
+> [Get started](https://vathymut.github.io/samesame/examples/tutorials/get-started.md).
 
 ## Workflow
 
-1. **One score per observation** — out of sample if from a fitted model.
-2. **Any change?** `ss.test_shift`
-3. **Harmful?** `ss.test_harmful_shift(..., worse=...)`
-4. **Poor overlap?** `ss.domain_weights` — and only then.
+1. Build **one score per observation**, generating it out of sample if it comes from a fitted model.
+2. Test for **any shift** with `ss.test_shift`.
+3. Test for **harmful shift** with `ss.test_harmful_shift(..., worse=...)`.
+4. If source and target have poor overlap, use `ss.domain_weights` to reweight the comparison.
 
-Full docs: https://vathymut.github.io/samesame/
+**Explore the documentation:**
 
-- [Get started](https://vathymut.github.io/samesame/examples/tutorials/get-started.md) — 5 minutes, both tests.
-- [Monitor a credit model](https://vathymut.github.io/samesame/examples/credit/monitor-credit.md) — HELOC: risk, confidence, errors.
-- [Weight for common support](https://vathymut.github.io/samesame/examples/weighting/weight-for-common-support.md) — when feature support differs.
+- [Get started](https://vathymut.github.io/samesame/examples/tutorials/get-started.md) - learn the workflow and run both tests in five minutes.
+- [Monitor a credit model](https://vathymut.github.io/samesame/examples/credit/monitor-credit.md) - work through risk, confidence, and error monitoring with HELOC data.
+- [Weight for common support](https://vathymut.github.io/samesame/examples/weighting/weight-for-common-support.md) - learn when and how to reweight comparisons.
+
+[Read the full documentation](https://vathymut.github.io/samesame/).
 
 ## Installation
 
@@ -71,4 +77,6 @@ Full docs: https://vathymut.github.io/samesame/
 python -m pip install samesame
 ```
 
-Requires Python 3.12+, `numpy`, `scipy`, `scikit-learn`. Not for randomized experiments, subgroup discovery, or sequential alarming.
+Requires Python 3.12+, `numpy`, `scipy`, and `scikit-learn`.
+
+For supported use cases and limitations, see the [full documentation](https://vathymut.github.io/samesame/).

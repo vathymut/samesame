@@ -1,26 +1,29 @@
 # Get started
 
-This tutorial builds the smallest useful monitoring workflow. You will turn
-observations into one score each, test whether source and target differ, and
-then test a declared harmful direction.
+In this tutorial, you will build a minimal monitoring workflow: create one score
+per observation, test for a difference between source and target, and test
+whether the change moved in a declared harmful direction.
 
-Use **source** for the reference distribution (for example, training data or a
-past deployment) and **target** for the current deployment. The score can be
-predicted risk, prediction error, confidence, or an outlier score.
+In this tutorial, **source** is the reference distribution, such as training
+data or a past deployment, and **target** is the distribution you want to
+evaluate, typically the current deployment. Compare them using one meaningful
+score for each observation, such as predicted risk, prediction error,
+confidence, or an outlier score.
 
-- `ss.test_shift` — did anything change? Two-sided AUC. `0.5` is chance.
-- `ss.test_harmful_shift(..., worse="higher"|"lower")` — did target move into the harmful tail you declare? One-sided. Larger always means worse (`worse="lower"` flips the sign).
+- **Any shift?** Use `ss.test_shift` to ask whether the score distinguishes source from target. This is a two-sided AUC test; an AUC of `0.5` is chance.
+- **Harmful shift?** Use `ss.test_harmful_shift(..., worse="higher"|"lower")` to ask whether the target moved toward the harmful tail you specify. This is a one-sided test based on the weighted AUC, with the score oriented so that larger values mean worse outcomes (`worse="lower"` flips the sign).
 
-`test_shift` is a broad, two-sided screen. `test_harmful_shift` is a focused,
-one-sided test: it asks whether target puts more mass beyond thresholds that
-few source observations exceed, after orienting the score so that larger means
-worse. The same overall shift can therefore be harmless, harmful, or even
-beneficial depending on where it occurs. See [How the harm test works](../../explanation/harmful-shift-statistic.md) for the intuition and formula.
+`test_shift` is a broad, two-sided screen for whether source and target differ.
+`test_harmful_shift` is a focused, one-sided test for whether the target moved
+into the harmful tail, after orienting the score so that larger values mean
+worse outcomes. These tests can reach different conclusions because a shift
+may be harmless, harmful, or even beneficial depending on where it occurs. See
+[How the harm test works](../../explanation/harmful-shift-statistic.md) for the
+intuition and formula.
 
-Read `.pvalue` as evidence against the relevant null, then inspect the
-statistic and the distributions. A small p-value says the observed pattern is
-unlikely under label exchangeability; it does not say the change is large or
-caused by deployment.
+Interpret `.pvalue` alongside the statistic and the distributions: a small
+p-value indicates evidence against label exchangeability, i.e. the assumption
+that the two samples can be swapped, not the size or cause of the change.
 
 ## 1 — Make source and target
 
@@ -33,15 +36,18 @@ X = np.vstack([source, target])
 labels = np.r_[np.zeros(len(source), dtype=int), np.ones(len(target), dtype=int)]
 ```
 
-In production, source might be training rows and target deployment rows. The
-choice should match the operational question: every conclusion is relative to
-the source reference you selected.
+In production, the source and target should represent the two populations
+relevant to your monitoring question - for example, training data versus a
+current deployment. Choose the source carefully: every conclusion describes
+the target relative to that reference.
 
 ## 2 — Score out of sample
 
-Each row must be scored by a model that did not see that row. Here a domain
-classifier estimates `P(target|x)`, the probability that a row looks like it
-came from target. This is a useful generic score for detecting *any* shift:
+Each row must be scored by a model that did not see that row. Here, a domain
+classifier estimates `P(target|x)`, the probability that the row belongs to the
+target rather than the source. Differences in this probability indicate how
+well the features distinguish the two distributions, making it a useful
+generic score for detecting *any* shift:
 
 ```python
 from sklearn.ensemble import HistGradientBoostingClassifier
@@ -54,9 +60,12 @@ domain_prob = cross_val_predict(
 ```
 
 !!! warning "Honest scores"
-    `samesame` only sees scores — not how they were made. If scores come from a fitted model, generate them out of sample (`cross_val_predict`, `oob_decision_function_`, or held-out set). In-sample predictions create false separation and invalidate the test.
+    `samesame` only sees scores, not how they were made. If scores come from a fitted model, generate them out of sample using `cross_val_predict`, `oob_decision_function_`, or a held-out set. In-sample predictions let the model separate source from target using information it has already seen, which can produce misleading results and invalidate the test.
 
-For harm tests on your own business score (risk, error, confidence), keep the domain probability separate — use it to build weights, not as the harm score.
+When testing a score with a clear interpretation of what constitutes a good or
+bad outcome, keep it separate from the domain probability. Domain probability
+describes distributional membership, not outcome quality. Use it to build
+weights, and use the interpretable score as the harm score.
 
 ## 3 — Did anything change?
 
@@ -68,11 +77,15 @@ shift = ss.test_shift(source=source_scores, target=target_scores, rng=rng)
 print(f"AUC {shift.statistic:.3f} p={shift.pvalue:.4f}")  # → 0.611, 0.0002
 ```
 
-Farther from `0.5` = stronger separation. Two-sided, so both `0.8` and `0.2` reject.
+An AUC near `0.5` indicates little separation, while values farther from `0.5`
+indicate stronger separation. Because `test_shift` is two-sided, separation in
+either direction - for example, `0.8` or `0.2` - can reject the null.
 
 ## 4 — Did it get worse?
 
-Declare the harmful direction once — string or `ss.Worse` (interchangeable):
+Before running the test, declare whether higher or lower scores represent worse
+outcomes. Pass this choice as a string or as `ss.Worse`; the two forms are
+interchangeable.
 
 --8<-- "snippets/worse-table.txt"
 
@@ -95,15 +108,17 @@ Declare the harmful direction once — string or `ss.Worse` (interchangeable):
     print(f"Harm p={harm.pvalue:.4f}")  # → 0.0001
     ```
 
-- Small `test_shift` p - the score distributions differ.
-- Small `test_harmful_shift` p - target also shifted toward the tail you
-  declared.
+- A small `test_shift` p-value provides evidence that the score distributions
+  differ.
+- A small `test_harmful_shift` p-value provides evidence that the target shifted
+  toward the harmful tail you declared, not merely that some shift occurred.
 
-Flip `worse` and the conclusion can disappear: the test is directional by
-design. Choose `worse` from the meaning of the score before looking at the
-result, rather than choosing whichever direction gives a smaller p-value.
+The test is directional by design: changing `worse` changes the harmful
+direction being tested. Decide whether higher or lower values are worse before
+looking at the result; do not choose the direction based on whichever gives a
+smaller p-value.
 
 ??? tip "Reproducibility"
-    Pass `rng=np.random.default_rng(12345)` for deterministic p-values. Default `n_resamples=9999` (`999` while exploring, `19999` for `p < 0.001`).
+    Pass `rng=np.random.default_rng(12345)` to make the permutation-based p-values reproducible. The default is `n_resamples=9999`; `999` is useful while exploring, while `19999` gives better resolution for p-values below `0.001`.
 
-When feature support differs, see [Weight for common support](../weighting/weight-for-common-support.md).
+If source and target have poor overlap in feature space, see [Weight for common support](../weighting/weight-for-common-support.md) to learn how to reweight the comparison.

@@ -1,24 +1,30 @@
 # Monitor a credit model
 
-Monitoring should connect a statistical alarm to the outcome you actually
-care about. This example uses one HELOC split to show three signals for the
-same model. They are not interchangeable in meaning: each supports a
-different operational question and becomes available at a different time.
+A useful monitoring alarm should connect a statistical signal to the outcome you
+care about. Using one HELOC split, this example compares predicted risk,
+confidence, and prediction error from the same model. These signals are not
+interchangeable: they answer different operational questions and become
+available at different times.
 
-| Signal | Needs labels? | Harm is… | `worse` |
-|--------|---------------|----------|---------|
-| Predicted risk | No | higher risk | `higher` |
-| Confidence (`LogitGap`) | No | lower certainty | `lower` |
-| Prediction error (Brier) | Yes | larger error | `higher` |
+| Signal | Requires labels? | Harmful direction | `worse` |
+|--------|-------------------|-------------------|---------|
+| Predicted risk | No | Higher risk | `"higher"` |
+| Confidence (`LogitGap`) | No | Lower certainty | `"lower"` |
+| Prediction error (Brier) | Yes | Larger error | `"higher"` |
 
-Start with risk if your model output already represents harm. Use confidence
-for an early warning when labels are delayed, and errors for the clearest
-post-outcome check. **Source** is the reference (training or past deployment);
-**target** is the current deployment. New here? Start with [Get started](../tutorials/get-started.md).
+Start with predicted risk when the model output already represents a harmful
+outcome. Use confidence for an early warning when labels are delayed, and
+prediction error for the clearest post-outcome check. **Source** is the
+reference distribution, such as training data or a past deployment; **target**
+is the current deployment. If you are new to `samesame`, start with [Get
+started](../tutorials/get-started.md).
 
 ## Setup
 
-Same split for all — source = higher-risk slice, target = simulated deployment. Errors use a separate random split where the null is true.
+The same split is used for the risk and confidence examples: source is the
+higher-risk slice and target is the simulated deployment. The error example
+uses a separate random split where the null hypothesis is true, making it a
+check of the test's behavior when errors have not shifted.
 
 ```python
 --8<-- "snippets/heloc-split.py:heloc-split"
@@ -28,7 +34,7 @@ Same split for all — source = higher-risk slice, target = simulated deployment
 
 === "Risk — no labels needed"
 
-    Directly business-relevant.
+    Predicted risk is the model's estimated probability of default, so higher values represent a worse outcome.
 
     ```python
     import numpy as np
@@ -56,15 +62,16 @@ Same split for all — source = higher-risk slice, target = simulated deployment
     | sig. | not sig. | changed, not clearly harmful |
     | not sig. | not sig. | no clear shift |
 
-Both tests are significant here: the risk distribution changed and the change
-is consistent with higher risk. That is evidence to investigate, not an
-automatic retraining decision. AUC `0.5` is chance; harm has no fixed scale -
-compare it with the null distribution and the business scale of risk
-([How it works](../../explanation/harmful-shift-statistic.md)).
+Both tests provide evidence that the risk distribution changed and that the
+change is consistent with higher risk. This is a reason to investigate, not an
+automatic retraining decision. An AUC of `0.5` represents chance performance.
+The harmful-shift statistic has no universal scale, so interpret it using its
+null distribution and the model's risk scale. See [How it
+works](../../explanation/harmful-shift-statistic.md).
 
 === "Confidence — no labels needed"
 
-    An **outlier score** where larger = more certain. `LogitGap` = gap between the top logit and the mean of the rest.
+    `LogitGap` is an **outlier score** for confidence: larger values mean greater certainty. It is the gap between the top logit and the mean of the remaining logits.
 
     ```python
     --8<-- "examples/credit/_code/monitor_model_confidence_example.py:imports"
@@ -82,17 +89,11 @@ compare it with the null distribution and the business scale of risk
     print(f"Harm {harm.statistic:.4f} p={harm.pvalue:.4f}")  # → 0.04, 0.90
     ```
 
-    Large `p` means this test found no evidence of a harmful confidence drop;
-    it does not prove confidence is unchanged. Risk can rise while confidence
-    also rises (confidently risky). Assumes `X_train`/`X_deployment`/`rf_bad`
-    from Setup.
+    The large `p`-value provides no evidence of a harmful confidence drop in this test, but it does not prove that confidence is unchanged. Confidence and risk can move together: a model may become more confident while also becoming more risky. This example assumes `X_train`, `X_deployment`, and `rf_bad` from Setup.
 
 === "Errors — needs labels"
 
-    This is the most direct accuracy check once ground truth is available. The
-    random split here is constructed so the null is true, so a large p-value
-    is expected. In a real deployment comparison, a small p-value would be
-    evidence that errors increased in target.
+    Once ground truth is available, prediction error provides the most direct accuracy check. The random split in this example is deliberately constructed under the null hypothesis of no error shift, so a large p-value is expected. In a real deployment comparison, a small p-value would provide evidence that prediction errors increased in the target.
 
     ```python
     import numpy as np
@@ -118,14 +119,14 @@ compare it with the null distribution and the business scale of risk
     print(f"Brier p={harm.pvalue:.4f}")  # → ~0.60
     ```
 
-    No evidence errors got worse. Brier and log-loss usually agree; either works.
+    This example provides no evidence that errors got worse. Brier score and log loss usually lead to similar conclusions, so either metric can be used for this comparison.
 
-Full runnable scripts: `examples/credit/_code/`.
+To reproduce these examples end to end, see the full runnable scripts in `examples/credit/_code/`.
 
 ## Which signal when?
 
-- **Risk** — default, closest to business harm.
-- **Confidence** — early warning before labels arrive; use alongside risk.
-- **Errors** — cleanest once labels arrive, but delayed.
+- **Predicted risk** — use when the model output already represents the harmful outcome.
+- **Confidence** — use for an early warning when labels are not yet available.
+- **Prediction error** — use for the clearest post-outcome accuracy check.
 
-Poor overlap? See [Weight for common support](../weighting/weight-for-common-support.md).
+If source and target have poor overlap in feature space, see [Weight for common support](../weighting/weight-for-common-support.md).

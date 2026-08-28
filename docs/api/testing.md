@@ -1,14 +1,15 @@
 # Shift testing
 
-These tests compare distributions of scores, not raw feature tables. First
-turn each observation into a scalar that represents the question you care
-about: predicted risk, prediction error, confidence, or an outlier score.
+These tests compare distributions of one score per observation, not raw feature
+tables. First, choose a score that represents the question you care about - such
+as predicted risk, prediction error, confidence, or an outlier score - and
+compute it for every observation.
 
 The distinction between the functions is important. `test_shift` detects any
 change in the score distribution. `test_harmful_shift` deliberately ignores
 some changes and looks for movement toward a declared harmful tail. Use the
-first as a broad screen and the second when you can defend the meaning of
-"worse" for the score.
+first as a broad screen and the second when you can defend what "worse" means
+for the score.
 
 `P(target|x)` from a domain classifier can be a useful score for detecting any
 shift, but do not reuse it as the harm score. It describes how target-like an
@@ -20,39 +21,40 @@ when you need a common-support comparison.
 ## Which function?
 
 | Function | Answers | When |
-|----------|-----------------|-------------|
-| `ss.test_shift` | Did anything change? | direction unknown |
-| `ss.test_harmful_shift` | Did target shift toward worse? | you can declare `worse` |
+|----------|---------|------|
+| `ss.test_shift` | Do source and target differ? | Any score distributional change matters |
+| `ss.test_harmful_shift` | Did target move toward the specified harmful tail? | You can declare `worse` in advance |
 
-`worse` is the polarity — string or `ss.Worse` (interchangeable):
+Declare the harmful direction from the meaning of the score before testing.
+Pass it as a string or as `ss.Worse`; the two forms are interchangeable:
 
 --8<-- "snippets/worse-table.txt"
 
 ## Reading results
 
-Both return `.statistic`, `.pvalue`, and `.null_distribution`. The
-null distribution is produced by permuting group labels while keeping scores
-and weights fixed. In other words, it represents what values are plausible if
-the source and target labels were interchangeable.
+Both return `.statistic`, `.pvalue`, and `.null_distribution`. The null
+distribution is produced by permuting group labels while keeping scores and
+weights fixed. In other words, it represents what values are plausible if the
+source and target labels were interchangeable.
 
-Read `.pvalue` as evidence against that null, not as the probability that the
-null is true and not as an effect size. Two-sided `test_shift` doubles the
-smaller tail (capped at 1); `test_harmful_shift` uses the one-sided `greater`
+Interpret `.pvalue` as evidence against that null, not as the probability that
+the null is true and not as an effect size. Two-sided `test_shift` doubles the
+smaller tail, capped at 1; `test_harmful_shift` uses the one-sided `greater`
 alternative. A +1 correction keeps permutation p-values above zero.
 
-- `test_shift`: `.statistic` is AUC. `0.5` means the score does not separate
-  the groups; values farther from `0.5` indicate stronger separation.
+- `test_shift`: `.statistic` is AUC. An AUC of `0.5` means the score does not
+  separate the groups; values farther from `0.5` indicate stronger separation.
 - `test_harmful_shift`: `.statistic` has no universal interpretation like AUC.
   Compare it with `result.null_distribution` and examine the score scale. The
   result also records `.worse`.
 
-For honest p-values, scores from a fitted model must be out of sample
+For honest p-values, scores from a fitted model must be generated out of sample
 (`cross_val_predict`, `oob_decision_function_`, or a held-out set). In-sample
-predictions can make the source and target look more separable simply because
-the scoring model has memorised its inputs.
+predictions can make source and target look more separable simply because the
+scoring model has memorised its inputs.
 
 ??? tip "Reproducibility"
-    `rng` accepts `int`, `np.random.Generator`/`RandomState`, or `None`. Prefer `rng=np.random.default_rng(12345)`. `n_resamples` default `9999` (`999` while exploring, `19999` for `p < 0.001`).
+    Pass `rng=np.random.default_rng(12345)` to make the permutation-based p-values reproducible. The default is `n_resamples=9999`; `999` is useful while exploring, while `19999` gives better resolution for p-values below `0.001`.
 
 ## API
 

@@ -2,41 +2,47 @@
 
 ## The question
 
-A distribution can change without becoming worse. For example, a credit
-portfolio may contain fewer very safe applicants and more medium-risk
-applicants, while the high-risk tail stays unchanged. A generic shift test can
-detect that redistribution, but it cannot decide whether it matters to your
-harm definition.
+A distributional change is not necessarily a harmful change. For example, a
+credit portfolio may contain fewer very safe applicants and more medium-risk
+applicants while the high-risk tail remains unchanged. A generic shift test can
+detect this redistribution, but it cannot determine whether the change is
+harmful according to the outcome you care about.
 
-The harmful-shift test answers a narrower question: after orienting the score
-so that larger values mean worse outcomes, does target have excess mass beyond
-thresholds that source rarely exceeds? This is why the API requires an
-explicit `worse` argument. Choose the direction from domain meaning, not from
-whichever direction happens to produce a smaller p-value.
+The harmful-shift test asks a narrower question: after orienting the score so
+that larger values mean worse outcomes, does the target place more mass beyond
+thresholds that the source rarely exceeds? The API therefore requires an
+explicit `worse` argument. Choose `worse` from the meaning of the score before
+looking at the result, not from whichever direction produces a smaller p-value.
 
 ## What the tests average
 
-Both tests permute labels with scores (and weights) fixed. They differ in what they average over thresholds:
+Both tests use permutations to assess the same source-versus-target comparison,
+keeping scores and weights fixed. `test_shift` treats all thresholds equally and
+measures overall separation with AUC. `test_harmful_shift` emphasizes
+thresholds that are rare in the source, so it is sensitive to target mass in the
+harmful tail. Their exact statistics are:
 
-- `test_shift` — uniform weight. Statistic is AUC (`∫ TPR dFPR`).
-- `test_harmful_shift` — low-FPR weight. Statistic is `∫ TPR·(1−FPR)² dFPR`. Harm is large only when target piles mass past thresholds source rarely clears.
+- `test_shift`: `∫ TPR dFPR`
+- `test_harmful_shift`: `∫ TPR·(1−FPR)² dFPR`
 
 ## AUC vs harm
 
 |  | `test_shift` | `test_harmful_shift` |
 |---|---|---|
-| Question | Did anything change? | Did target shift toward worse? |
-| Statistic | `∫ TPR dFPR` (AUC) | `∫ TPR·(1−FPR)² dFPR` |
-| Weight | uniform | favours low `FPR` (source-rare tail) |
-| Alternative | two-sided | one-sided `greater` |
+| Question | Do source and target differ? | Did target move toward the specified harmful tail? |
+| Statistic | AUC: `∫ TPR dFPR` | Weighted AUC: `∫ TPR·(1−FPR)² dFPR` |
+| Threshold emphasis | Uniform | Low `FPR` (source-rare tail) |
+| Direction | Two-sided | One-sided (`greater`) |
 
-Use `test_shift` when direction is unknown or when any change matters. Use
-`test_harmful_shift` when you can define the harmful direction in advance and
-want to prioritise the harmful tail. For AUC, `0.5` is chance. Harm has no
-fixed scale: compare the observed statistic with
-`result.null_distribution`, and use the p-value for evidence against the null.
+Use `test_shift` for a two-sided test when any score distributional change
+matters. Use `test_harmful_shift` for a one-sided test when you can define the
+harmful direction in advance and want to focus on the harmful tail. Interpret
+AUC relative to its chance value of `0.5`; interpret the harmful-shift statistic
+relative to `result.null_distribution`, using the p-value as evidence against
+the null.
 
-Declare the direction once — string or `ss.Worse` (interchangeable):
+Declare the harmful direction from the meaning of the score before testing.
+Pass it as a string or as `ss.Worse`; the two forms are interchangeable.
 
 --8<-- "snippets/worse-table.txt"
 
@@ -52,29 +58,38 @@ xychart-beta
     line "diagonal" [0, 0.2, 0.4, 0.6, 0.8, 1]
 ```
 
-Early rise (left, weighted) means that many target observations cross a
-threshold that almost no source observations cross: harm is large. A late rise
-means the groups differ mainly where source already has substantial mass: AUC
-can still be large, but the harmful statistic is smaller.
+When the ROC curve rises early, many target observations exceed thresholds that
+are rare in the source, so the harmful statistic is large. When it rises late,
+the groups differ mainly in regions where the source already has substantial
+mass. AUC can still be large in that case, but the harmful statistic is smaller.
 
-The ROC picture is a ranking intuition, not a claim that the score is a
-classifier used in production. It asks how well the score ranks target above
-source across all possible thresholds. AUC weights those thresholds uniformly;
-the harmful statistic gives more weight to low source false-positive rates.
+Here, the ROC curve is an analysis tool for visualizing how a monitoring score
+ranks target relative to source across thresholds. AUC summarizes performance
+across all thresholds equally; the harmful statistic emphasizes thresholds
+rarely exceeded by source observations.
 
 ??? details "Formula (experts)"
 
-    Let `S` be the polarity-adjusted score (`scores if worse=="higher" else -scores`), target = positive class, threshold `t`:
+    First orient the score so that larger values mean worse outcomes: let
+    `S=scores` when `worse=="higher"` and `S=-scores` when `worse=="lower"`.
+    For threshold `t`, treat target as the positive class:
 
     - `FPR(t)=P(S>t|source)`, `TPR(t)=P(S>t|target)`
-    - `1−FPR = F̂_source(t)` (source ECDF), so:
+    - `1−FPR = F̂_source(t)` (the source ECDF), so:
 
     $$
     T = \int TPR\cdot(1-FPR)^2\,dFPR = \int TPR\cdot\hat{F}_{\text{source}}(t)^2\,dFPR.
     $$
 
-    Uniform weight gives AUC. Harm peaks at low `FPR` and decays to 0 at `FPR=1`. Cost is `O(n log n)` per resample, `O(n)` memory.
+    The factor `(1−FPR)^2` emphasizes thresholds that are rarely exceeded by
+    source observations. Without this factor, uniform weighting gives AUC. Harm
+    therefore peaks at low `FPR` and decays to `0` at `FPR=1`. The computation
+    costs `O(n log n)` per resample and `O(n)` memory.
 
 ## References
 
-- Kamulete, V. M. (2022). Test for non-negligible adverse shifts. *Proceedings of the 38th Conference on Uncertainty in Artificial Intelligence (UAI)*. [arXiv:2107.02990](https://arxiv.org/abs/2107.02990).
+For the statistical foundation of the harmful-shift test, see:
+
+Kamulete, V. M. (2022). *Test for non-negligible adverse shifts*. *Proceedings
+of the 38th Conference on Uncertainty in Artificial Intelligence (UAI)*.
+[arXiv:2107.02990](https://arxiv.org/abs/2107.02990).

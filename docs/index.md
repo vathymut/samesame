@@ -28,7 +28,7 @@ It separates two questions that should not be conflated:
 The first test is two-sided and reports ROC AUC. The second is one-sided and
 weights the part of the score range where target exceeds thresholds that few
 source observations exceed. This makes it sensitive to a harmful tail rather
-than to every kind of redistribution.
+than to every kind of distribution shift.
 
 ```python
 --8<-- "snippets/quick-example.py:quick-example"
