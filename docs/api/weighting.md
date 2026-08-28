@@ -57,7 +57,7 @@ Probabilities at `0` or `1` are clipped to `[1e-6, 1 − 1e-6]` before weighting
 
 --8<-- "snippets/reweight-table.txt"
 
-Inactive groups get weight `1` for every observation (normalized to `n`, so uniform). Start with `shrinkage=0.5`; lower is stronger but higher variance. Check ESS before lowering — see [Diagnose weight concentration](../examples/weighting/diagnose-weight-concentration.md) and [Glossary](../explanation/glossary.md#effective-sample-size-ess).
+Inactive groups get weight `1` (normalized to `n`, so uniform). Start with `shrinkage=0.5`; lower is stronger but higher variance. Check ESS before lowering — see [Weight for common support](../examples/weighting/weight-for-common-support.md) and [Glossary](../explanation/glossary.md#effective-sample-size-ess).
 
 ## Effective sample size
 
@@ -70,7 +70,7 @@ print(ess.source, ess.target)  # compare each to its n
 
 --8<-- "snippets/ess-rule.txt"
 
-For a worked sweep, see [Diagnose weight concentration](../examples/weighting/diagnose-weight-concentration.md). For intuition, see [When importance weights help](../explanation/importance-weights-rationale.md). For a full tutorial, see [Adjust for covariate shift with importance weights](../examples/tutorials/adjust-for-covariate-shift.md).
+For a worked sweep, see [Weight for common support](../examples/weighting/weight-for-common-support.md). For intuition, see [When importance weights help](../explanation/importance-weights-rationale.md).
 
 ## API
 

@@ -56,7 +56,7 @@ Full docs: https://vathymut.github.io/samesame/
 
 - [Detect any distributional shift](https://vathymut.github.io/samesame/examples/tutorials/detect-distribution-shift.md) — your first shift test.
 - [Test whether the shift is harmful](https://vathymut.github.io/samesame/examples/tutorials/check-shift-harm.md) — add `worse` and interpret direction.
-- [Adjust for covariate shift with importance weights](https://vathymut.github.io/samesame/examples/tutorials/adjust-for-covariate-shift.md) — when feature support differs.
+- [Weight for common support](https://vathymut.github.io/samesame/examples/weighting/weight-for-common-support.md) — when feature support differs (synthetic + HELOC).
 
 ## Installation
 
