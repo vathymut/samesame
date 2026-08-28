@@ -8,7 +8,7 @@ This mode reweights **both** groups and can substantially change the comparison.
 
 This guide continues from [Focus harmful-shift testing on common support](source-reweighting.md). At that point you already have:
 
-- `source_prob` and `target_prob` — domain probabilities `P(target|x)` from the domain classifier
+- `source_prob` and `target_prob` — domain probabilities `P(target | x)` from the domain classifier
 - `train_risk` and `deployment_risk` — the harmful-shift signal (predicted risk)
 
 See that page for the full setup snippet — the code below continues from it.
@@ -21,7 +21,7 @@ import samesame as ss
 weights_both = ss.domain_weights(
     source=source_prob,
     target=target_prob,
-    reweight="both",
+    reweight="both",  # or ss.ReweightMode.BOTH
     shrinkage=0.5,
 )
 
@@ -90,3 +90,8 @@ If the signal shrinks only after doubly-weighting, target-side low-overlap point
 Lower values correct more aggressively. Start at `0.5`, inspect [effective sample size](diagnose-weight-concentration.md), and only lower it when domain probabilities and overlap are reliable.
 
 For the formulas behind this, see [When importance weights help](../../explanation/importance-weights-rationale.md).
+
+## Next steps
+
+- Diagnose concentration with [Diagnose weight concentration](diagnose-weight-concentration.md) — regroup when `ESS < n/4`.
+- For the API, see [Importance weights](../../api/weighting.md).

@@ -19,12 +19,12 @@ import samesame as ss
 unweighted = ss.test_harmful_shift(
     source=train_risk,
     target=deployment_risk,
-    worse="higher",
+    worse="higher",  # or ss.Worse.HIGHER
     rng=np.random.default_rng(12345),
 )
 ```
 
-`domain_prob` (`P(target|x)`) is for weighting only. The harmful-shift signal is still predicted default risk. Do not reuse `domain_prob` as the harm score.
+`domain_prob` (`P(target | x)`) is for weighting only. The harmful-shift signal is still predicted default risk. Do not reuse `domain_prob` as the harm score.
 
 --8<-- "snippets/honest-scores.txt"
 
@@ -37,7 +37,7 @@ target_prob = domain_prob[split.values == 1]
 weights = ss.domain_weights(
     source=source_prob,
     target=target_prob,
-    reweight="source",
+    reweight="source",  # or ss.ReweightMode.SOURCE
     shrinkage=0.5,
 )
 
@@ -60,11 +60,14 @@ print(f"Weighted   p-value: {weighted.pvalue:.4f}")
 - **Unweighted** — every observation at full strength.
 - **Weighted** — source points unlikely under target are down-weighted (emphasizes common support from the source side).
 - If the result weakens substantially after weighting, the original signal was driven by parts of training not representative of deployment.
-- If the result stays strong, the shift persists on common support.
+- If the result stays strong, the shift persists on common support. Start with `.pvalue` for evidence; use `.statistic` for magnitude.
 
 Use this mode when training contains outliers or edge cases not representative of the population you now care about.
 
-If deployment also contains low-overlap cases, continue to [Restrict testing to common support on both sides](double-weighting.md).
+## Next steps
+
+- If deployment also contains low-overlap cases, continue to [Restrict testing to common support on both sides](double-weighting.md).
+- Check concentration with [Diagnose weight concentration](diagnose-weight-concentration.md) — worry when `ESS < n/4`.
 
 ??? tip "Check weight concentration"
-    After building weights, call `weights.effective_sample_size()` to ensure the correction is not driven by a handful of points. See [Diagnose weight concentration](diagnose-weight-concentration.md).
+    After building weights, call `weights.effective_sample_size()` to ensure the correction is not driven by a handful of points.

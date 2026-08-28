@@ -2,11 +2,11 @@
 
 Use this guide when the model output already has business meaning and you want two answers: does deployment look different from training, and is predicted default risk higher?
 
-If you are new to `samesame`, start with the two tutorials first. This guide assumes familiarity with `predict_proba`.
+If you are new to `samesame`, start with the tutorials first. This guide assumes familiarity with `predict_proba`.
 
 ## Why this signal works well
 
-Predicted default probability is directly interpretable — larger values are worse — so it is a natural signal for `ss.test_harmful_shift(..., worse="higher")`.
+Predicted default probability is directly interpretable — larger values are worse — so it is a natural signal for `ss.test_harmful_shift(..., worse="higher")` (or `ss.Worse.HIGHER`).
 
 This guide uses the HELOC dataset and simulates deployment by training on lower-risk customers and testing on higher-risk ones.
 
@@ -60,14 +60,12 @@ print(feature_importance.head(5))
 Now train the actual credit model. Use out-of-bag predictions for training and standard predictions for deployment.
 
 ```python
-import samesame as ss
-
 --8<-- "snippets/heloc-split.py:heloc-risk-model"
 
 harm = ss.test_harmful_shift(
     source=train_risk,
     target=deployment_risk,
-    worse="higher",
+    worse="higher",  # larger = worse (or ss.Worse.HIGHER)
     rng=np.random.default_rng(12345),
 )
 
@@ -77,20 +75,24 @@ print(f"p-value:   {harm.pvalue:.4f}")
 
 Expect a very small p-value — deployment not only differs but carries higher predicted risk.
 
-## Step 3 — Decide what to do
+## Step 3 — Interpret the result
 
-Call a result **significant** when `p ≤ 0.05`; otherwise **not significant**.
+A small p-value (typically ≤ 0.05) is evidence against the null. Start with `.pvalue` for evidence; use `.statistic` for magnitude.
 
 | `test_shift` | `test_harmful_shift` | What it usually means |
 |--------------|----------------------|-----------------------|
-| significant | significant | population changed **and** predicted risk worsened |
+| significant (p ≤ 0.05) | significant | population changed **and** predicted risk worsened |
 | significant | not significant | population changed, but not in a clearly harmful way |
 | not significant | significant | rare — directional signal is strong where two-sided is not, investigate directly |
 | not significant | not significant | no clear evidence of harmful shift |
 
 On this HELOC split both tests are significant — investigate retraining, recalibration, or a deployment policy change.
 
-If you want a separate certainty view, see [Monitor model confidence](monitor-model-confidence.md). If labels are available, see [Monitor prediction errors once labels arrive](monitor-prediction-errors.md).
+## Next steps
+
+- For a separate certainty view, see [Monitor model confidence](monitor-model-confidence.md).
+- If labels are available, see [Monitor prediction errors once labels arrive](monitor-prediction-errors.md).
+- If overlap is poor, see [Focus harmful-shift testing on common support](../weighting/source-reweighting.md).
 
 ??? tip "Why OOB here?"
     OOB predictions are free for `RandomForestClassifier(oob_score=True)` and are out-of-sample by construction. For `HistGradientBoostingClassifier` or other estimators, use `cross_val_predict(cv=10, method="predict_proba")` — same interpretation, different estimator.

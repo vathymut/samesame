@@ -11,11 +11,11 @@ Prediction errors turn model quality into a numeric score:
 - **Brier score** — squared error on the predicted probability
 - **Log-loss** — penalizes confident mistakes more heavily
 
-For both, larger values mean worse predictions, so they work naturally with `ss.test_harmful_shift(..., worse="higher")`.
+For both, larger values mean worse predictions, so they work naturally with `ss.test_harmful_shift(..., worse="higher")` (or `ss.Worse.HIGHER`).
 
 ## Setup
 
-This guide uses the HELOC dataset with a stratified random split (unlike the risk/confidence guides, both groups here come from the same population).
+This guide uses the HELOC dataset with a stratified random split. Unlike the risk/confidence guides (which split by risk level), both groups here come from the same population — so the null is true and p-values should be large.
 
 ```python
 import numpy as np
@@ -99,16 +99,19 @@ print(f"Brier p-value:    {harm_brier.pvalue:.4f}")
 print(f"Log-loss p-value: {harm_logloss.pvalue:.4f}")
 ```
 
-On this stratified random split, expect non-significant p-values — no evidence that the model performs worse on test when both groups come from the same population.
+On this stratified random split, expect non-significant p-values (typically > 0.05) — no evidence that the model performs worse on test when both groups come from the same population.
 
-## Interpreting the outcome
+## Interpret the outcome
 
-- Small `p ≤ 0.05` — test set carries a disproportionate share of high-error predictions.
-- Large p-value — not enough evidence that the model performs worse on test.
+- **Small p-value (≤ 0.05)** — evidence that test carries a disproportionate share of high-error predictions.
+- **Large p-value** — not enough evidence that the model performs worse on test.
 
-Brier and log-loss often tell a similar story here. `ss.test_harmful_shift` is rank-based, so signals that order observations similarly produce similar results.
+Brier and log-loss often tell a similar story here. `ss.test_harmful_shift` is rank-based, so signals that order observations similarly produce similar p-values.
 
-Use this guide when labels are available. Otherwise use [Monitor predicted credit risk](monitor-credit-risk.md) or [Monitor model confidence](monitor-model-confidence.md).
+## Next steps
+
+- Without labels, use [Monitor predicted credit risk](monitor-credit-risk.md) or [Monitor model confidence](monitor-model-confidence.md).
+- If overlap is poor, see [Focus harmful-shift testing on common support](../weighting/source-reweighting.md).
 
 ??? tip "Why clip probabilities?"
     Log-loss uses `log(p)`. Clipping to `[1e-10, 1-1e-10]` avoids `log(0)` without changing the ranking that the test uses.

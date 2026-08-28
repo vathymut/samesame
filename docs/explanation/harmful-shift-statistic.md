@@ -11,19 +11,21 @@ This page explains what the harm statistic measures and why it isn't redundant w
 
 AUC averages separability uniformly across the ROC curve. The harm statistic weights the curve to emphasize the harmful tail — the high thresholds that source rarely exceeds but target clears. If target piles mass in that tail, the harm statistic grows; if target shifts elsewhere, it doesn't.
 
+> **TL;DR** — `AUC = ∫ TPR dFPR` (uniform). Harm = `∫ TPR·(1-FPR)² dFPR` (favours low `FPR`, i.e., the harmful tail). Same permutation null, different weighting.
+
 --8<-- "snippets/honest-scores.txt"
 
 ## The direction transform makes "worse" always mean "larger"
 
 Declare the harmful direction with `worse`:
 
-- `worse="higher"` — larger raw scores mean harm (e.g., risk). Used as is.
-- `worse="lower"` — smaller raw scores mean harm (e.g., confidence). Scores are negated internally (`-scores`).
+- `worse="higher"` (or `ss.Worse.HIGHER`) — larger raw scores mean harm (e.g., risk). Used as is.
+- `worse="lower"` (or `ss.Worse.LOWER`) — smaller raw scores mean harm (e.g., confidence). Scores are negated internally (`-scores`).
 
-After the transform, **larger always means worse**, regardless of polarity. Everything below assumes transformed scores. `ss.Worse.HIGHER` / `ss.Worse.LOWER` are enum aliases.
+After the transform, **larger always means worse**, regardless of polarity. Everything below assumes transformed scores.
 
 ```python
-# inside samesame: src/samesame/shift.py:113
+# inside samesame (src/samesame/shift.py)
 polarity = scores if worse == "higher" else -scores
 ```
 
@@ -66,7 +68,7 @@ AUC: large                       AUC: large (but on the wrong side)
 
 A shift toward *better* outcomes (lower transformed scores) inflates two-sided AUC but not `T`, because the action is at high `FPR` where the weight is tiny. That's why `test_harmful_shift` is directional.
 
-Computation is `O(n log n)` via `roc_curve` + trapezoidal rule (`src/samesame/_statistics.py:11`).
+Computation is `O(n log n)` via `roc_curve` + trapezoidal rule (`src/samesame/_statistics.py`).
 
 ## What that buys you
 
@@ -77,15 +79,15 @@ Computation is `O(n log n)` via `roc_curve` + trapezoidal rule (`src/samesame/_s
 ## How inference works
 
 - **Null:** exchangeability — source and target come from the same distribution, so labels carry no information.
-- **Procedure:** permute labels `n_resamples` times, recompute `T` each time. Scores (and, if given, importance weights) stay fixed; only labels move (`src/samesame/_permutation.py:132`).
-- **p-value:** one-sided `greater` — fraction of null `T` at least as large as observed. Small p means the directional excess is unlikely under no shift.
+- **Procedure:** permute labels `n_resamples` times, recompute `T` each time. Scores (and, if given, importance weights) stay fixed; only labels move (`src/samesame/_permutation.py`).
+- **p-value:** one-sided `greater` — fraction of null `T` at least as large as observed. Small p (typically ≤ 0.05) means the directional excess is unlikely under no shift.
 - No parametric form for the score distributions is assumed — only exchangeability under the null. Weighted permutations permute the *concatenated* weight vector with labels, preserving the source/target weight lengths.
 
 Permutation p-values use +1 smoothing (Phipson & Smyth) and are bounded in `(0, 1]`; doubling for two-sided `test_shift` is capped at `1`.
 
 ??? example "Weighted permutation in code"
     ```python
-    # src/samesame/_permutation.py:119
+    # src/samesame/_permutation.py
     sample_weight = np.concatenate((weights.source, weights.target))
     observed = metric(labels, scores, sample_weight)
     for i in range(n_resamples):
@@ -103,9 +105,9 @@ Permutation p-values use +1 smoothing (Phipson & Smyth) and are bounded in `(0, 
 | Alternative | two-sided | one-sided `greater` |
 | Sensitive to | any separability | directional excess over source support |
 
-Use `test_shift` when you only need "are they different?" Use `test_harmful_shift` once you can declare `worse`. It will not flag a shift in a better or neutral direction.
+Use `test_shift` when you only need "are they different?" Use `test_harmful_shift` once you can declare `worse` (via `worse="higher"` / `ss.Worse.HIGHER` or `worse="lower"` / `ss.Worse.LOWER`). It will not flag a shift in a better or neutral direction.
 
-For a worked example, see [Check whether target shifted toward worse outcomes](../examples/tutorials/check-shift-harm.md). For the API, see [Shift testing](../api/testing.md).
+For a worked example, see [Test whether the shift is harmful](../examples/tutorials/check-shift-harm.md). For the API, see [Shift testing](../api/testing.md).
 
 ## References
 

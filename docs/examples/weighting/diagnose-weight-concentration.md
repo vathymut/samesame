@@ -8,7 +8,7 @@ ESS is bounded above by `n`. Uniform weights give `ESS = n`; concentrated weight
 
 ## What you need
 
-- `source_prob` and `target_prob` — domain probabilities `P(target|x)` from a domain classifier (see [Focus harmful-shift testing on common support](source-reweighting.md) for the full setup)
+- `source_prob` and `target_prob` — domain probabilities `P(target | x)` from a domain classifier (see [Focus harmful-shift testing on common support](source-reweighting.md) for the full setup)
 - a reason to suspect concentration: low overlap, or `shrinkage` close to `0.0`
 
 ## Step 1 — Build the weights
@@ -31,7 +31,7 @@ source_prob[:8] = rng.uniform(0.97, 0.999, size=8)
 weights = ss.domain_weights(
     source=source_prob,
     target=target_prob,
-    reweight="both",
+    reweight="both",  # or ss.ReweightMode.BOTH
     shrinkage=0.0,
 )
 ```
@@ -83,7 +83,7 @@ shrinkage=1.0   source ESS= 400.00  target ESS= 400.00
 - `shrinkage=0.5` recovers most of the sample while still correcting for overlap — that is why it is the default.
 - If ESS stays low even at `shrinkage=0.5`, the groups barely overlap. Skip weighting or collect more comparable data rather than pushing `shrinkage` higher.
 
-ESS is a diagnostic, not a verdict. Use it alongside the weighted p-value: a significant weighted result with healthy ESS is convincing; a significant weighted result with `ESS ≈ 1` may be driven by one or two observations.
+ESS is a diagnostic, not a verdict. Use it alongside the weighted p-value: a significant weighted result (`p ≤ 0.05`) with healthy ESS is convincing; a significant weighted result with `ESS ≈ 1` may be driven by one or two observations.
 
 For the formulas, see [When importance weights help](../../explanation/importance-weights-rationale.md). For the API, see [Importance weights](../../api/weighting.md).
 

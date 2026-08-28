@@ -1,4 +1,4 @@
-# Tutorial: Focus on common support with importance weights
+# Tutorial: Adjust for covariate shift with importance weights
 
 Use this tutorial when source and target do not cover the same feature space well and you want your test to focus on the region where they overlap.
 
@@ -75,18 +75,18 @@ target_prob = domain_prob[group == 1]
 weights = ss.domain_weights(
     source=source_prob,
     target=target_prob,
-    reweight="source",
+    reweight="source",  # or ss.ReweightMode.SOURCE
     shrinkage=0.5,
 )
 
 rng = np.random.default_rng(12345)
 unweighted = ss.test_harmful_shift(
-    source_scores, target_scores, worse="higher", rng=rng,
+    source=source_scores, target=target_scores, worse="higher", rng=rng,
 )
 
 rng = np.random.default_rng(12345)
 weighted = ss.test_harmful_shift(
-    source_scores, target_scores, worse="higher", weights=weights, rng=rng,
+    source=source_scores, target=target_scores, worse="higher", weights=weights, rng=rng,
 )
 
 print(f"Unweighted p-value: {unweighted.pvalue:.4f}")
@@ -102,7 +102,7 @@ print(f"Weighted   p-value: {weighted.pvalue:.4f}")
 - If a strong unweighted result weakens substantially after weighting, the apparent shift was concentrated in low-overlap regions.
 - If both stay strong, the signal persists on common support.
 
-`shrinkage=0.5` is the default — it balances correction against variance (see [When importance weights help](../../explanation/importance-weights-rationale.md)). Use `reweight="both"` when both groups contain low-overlap observations.
+`shrinkage=0.5` is the default — it balances correction against variance (see [When importance weights help](../../explanation/importance-weights-rationale.md)). Use `reweight="both"` (or `ss.ReweightMode.BOTH`) when both groups contain low-overlap observations.
 
 ??? tip "Keep `worse` consistent"
     Use the same `worse` for unweighted and weighted calls so the comparison is about weighting, not direction.

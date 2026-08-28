@@ -13,8 +13,6 @@
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 <!-- badges: end -->
 
-> Same, same but different ...
-
 `samesame` compares a source and a target group and asks whether their score distributions differ — and whether the target moved toward worse outcomes. It is built for monitoring ML systems across time, domains, and contexts.
 
 **Source** is the reference (usually training or a past batch); **target** is the evaluation group (usually production or a new batch). Each group is represented by a single numeric score — predicted risk, prediction error, or an outlier score such as confidence.
@@ -22,7 +20,7 @@
 Two questions, two functions:
 
 - **Did anything change?** `samesame.test_shift` — two-sided, flags any distributional difference.
-- **Did it get worse?** `samesame.test_harmful_shift` — one-sided, flags a directional shift once you declare what "worse" means.
+- **Did it get worse?** `samesame.test_harmful_shift` — one-sided, flags a directional shift once you declare what "worse" means via `worse="higher"` or `worse="lower"`.
 
 ## Quick example
 
@@ -34,14 +32,14 @@ rng = np.random.default_rng(12345)
 source_scores = rng.normal(loc=0.0, scale=1.0, size=600)
 target_scores = rng.normal(loc=0.6, scale=1.0, size=600)
 
-shift = ss.test_shift(source_scores, target_scores, rng=rng)
-harm = ss.test_harmful_shift(source_scores, target_scores, worse="higher", rng=rng)
+shift = ss.test_shift(source=source_scores, target=target_scores, rng=rng)
+harm = ss.test_harmful_shift(source=source_scores, target=target_scores, worse="higher", rng=rng)
 
 print(f"Shift statistic: {shift.statistic:.3f}, p-value: {shift.pvalue:.4f}")
 print(f"Harm  statistic: {harm.statistic:.3f}, p-value: {harm.pvalue:.4f}")
 ```
 
-A small p-value (typically ≤ 0.05) is evidence that the groups differ. `test_harmful_shift` additionally requires `worse="higher"` (larger = harm, e.g., risk) or `worse="lower"` (smaller = harm, e.g., confidence).
+A small p-value (typically ≤ 0.05) is evidence against the null. Start with `.pvalue` for evidence; use `.statistic` for magnitude. `test_shift` rejects for any difference; `test_harmful_shift` rejects only when target carries excess mass in the harmful tail you declared.
 
 When scores come from a fitted model, generate them out of sample (cross-validation, OOB, or held-out set) — in-sample predictions invalidate the test.
 
@@ -49,9 +47,9 @@ When scores come from a fitted model, generate them out of sample (cross-validat
 
 Full docs: https://vathymut.github.io/samesame/
 
-- [Detect whether two datasets differ](https://vathymut.github.io/samesame/examples/tutorials/detect-distribution-shift.md)
-- [Check whether target shifted toward worse outcomes](https://vathymut.github.io/samesame/examples/tutorials/check-shift-harm.md)
-- [Focus on common support with importance weights](https://vathymut.github.io/samesame/examples/tutorials/adjust-for-covariate-shift.md)
+- [Detect any distributional shift](https://vathymut.github.io/samesame/examples/tutorials/detect-distribution-shift.md)
+- [Test whether the shift is harmful](https://vathymut.github.io/samesame/examples/tutorials/check-shift-harm.md)
+- [Adjust for covariate shift with importance weights](https://vathymut.github.io/samesame/examples/tutorials/adjust-for-covariate-shift.md)
 
 ## Installation
 

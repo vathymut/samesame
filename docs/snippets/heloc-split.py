@@ -14,9 +14,6 @@ mask_high = X[col_split].astype(float) > 63
 X_train = X[mask_high].reset_index(drop=True)
 y_train = y[mask_high].reset_index(drop=True)
 X_deployment = X[~mask_high].reset_index(drop=True)
-
-print(f"Training set:   {len(X_train)} samples")
-print(f"Deployment set: {len(X_deployment)} samples")
 # --8<-- [end:heloc-split]
 
 # --8<-- [start:heloc-domain]

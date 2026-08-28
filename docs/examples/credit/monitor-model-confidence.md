@@ -13,7 +13,7 @@ Predicted risk and model confidence are not the same thing.
 
 Those signals can move together or independently. A model can become more confident while still predicting riskier outcomes.
 
-In `samesame` terminology, confidence is treated as an **outlier score** where higher means "more in-distribution / more certain." The helper below is called `outlier_scores_from_probabilities` for that reason — here larger scores mean higher confidence.
+In `samesame` terminology, confidence is an **outlier score** where higher means "more in-distribution / more certain." The helper `outlier_scores_from_probabilities` follows that naming — larger scores mean higher confidence.
 
 ## Setup
 
@@ -26,7 +26,6 @@ In `samesame` terminology, confidence is treated as an **outlier score** where h
 ## Step 1 — Train the model
 
 ```python
-import samesame as ss
 from sklearn.ensemble import RandomForestClassifier
 
 bad_mapping = {"Good": 0, "Bad": 1}
@@ -47,6 +46,7 @@ We use `LogitGap`, the gap between the top logit and the mean of the rest. Large
 
 ```python
 import numpy as np
+import samesame as ss
 
 --8<-- "_code/monitor_model_confidence_example.py:imports"
 --8<-- "_code/monitor_model_confidence_example.py:logit-gap"
@@ -69,13 +69,10 @@ On this HELOC split, deployment confidence is higher than training confidence ac
 Higher confidence is better, so a harmful shift is toward *lower* scores.
 
 ```python
-source_scores = train_confidence
-target_scores = deployment_confidence
-
 harm = ss.test_harmful_shift(
-    source=source_scores,
-    target=target_scores,
-    worse="lower",  # lower confidence = harm
+    source=train_confidence,
+    target=deployment_confidence,
+    worse="lower",  # lower confidence = harm (or ss.Worse.LOWER)
     rng=np.random.default_rng(12345),
 )
 
@@ -85,14 +82,19 @@ print(f"p-value:   {harm.pvalue:.4f}")
 
 Expect a large p-value here — deployment confidence shifts toward *higher* scores, so we do not flag a harmful confidence drop.
 
-## What this tells you
+## Interpret the result
 
-This does not contradict the credit-risk guide. It answers a different question.
+A small p-value (typically ≤ 0.05) is evidence against the null. This does not contradict the credit-risk guide — it answers a different question.
 
 - In [Monitor predicted credit risk](monitor-credit-risk.md), predicted default risk rises.
 - Here, confidence also rises — the model does not look less certain on deployment.
 
-That combination is entirely possible: a model can be confidently risky, confidently wrong, or confidently stable. Confidence is useful context, but not a substitute for a business signal when one exists. If labels are available, see [Monitor prediction errors once labels arrive](monitor-prediction-errors.md).
+That combination is entirely possible: a model can be confidently risky, confidently wrong, or confidently stable. Confidence is useful context, but not a substitute for a business signal when one exists.
+
+## Next steps
+
+- If labels are available, see [Monitor prediction errors once labels arrive](monitor-prediction-errors.md).
+- If overlap is poor, see [Focus harmful-shift testing on common support](../weighting/source-reweighting.md).
 
 ??? note "Why `outlier_scores_from_probabilities`?"
-    The package calls anomaly-like scalars **outlier scores** (`CONTEXT.md` terminology). Confidence fits that recipe: it is an outlier score where higher = more typical. The function name reflects the general recipe, not just this confidence use-case.
+    The package calls anomaly-like scalars **outlier scores**. Confidence fits that recipe: it is an outlier score where higher = more typical. The function name reflects the general recipe, not just this confidence use-case.

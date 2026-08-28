@@ -7,7 +7,7 @@ Importance weights help when source and target differ for two reasons at once:
 
 Without weighting, those low-overlap observations can dominate the comparison. Weighting narrows it to **common support**.
 
-For code, see [Focus on common support with importance weights](../examples/tutorials/adjust-for-covariate-shift.md).
+For code, see [Adjust for covariate shift with importance weights](../examples/tutorials/adjust-for-covariate-shift.md).
 
 ## The basic problem
 
@@ -55,9 +55,9 @@ Lower = more aggressive; higher = more conservative. Start at `0.5` and check [E
 
 | Mode | Emphasizes | Use when |
 |------|-----------|----------|
-| `reweight="source"` | overlap from the source side; target unchanged | source contains observations outside target's common support |
-| `reweight="target"` | overlap from the target side; source unchanged | target contains observations outside source's common support |
-| `reweight="both"` | common support from both sides (default) | both groups contain low-overlap observations |
+| `reweight="source"` (`ss.ReweightMode.SOURCE`) | overlap from the source side; target unchanged | source contains observations outside target's common support |
+| `reweight="target"` (`ss.ReweightMode.TARGET`) | overlap from the target side; source unchanged | target contains observations outside source's common support |
+| `reweight="both"` (`ss.ReweightMode.BOTH`, default) | common support from both sides | both groups contain low-overlap observations |
 
 In all cases, `ss.domain_weights` normalizes each *active* group so weights sum to that group's sample size. Inactive groups get `1` for every observation (normalized to `n`, so they are uniform).
 

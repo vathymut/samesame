@@ -2,23 +2,25 @@ site_name: samesame
 repo_url: https://github.com/vathymut/samesame
 repo_name: vathymut/samesame
 site_url: https://vathymut.github.io/samesame/
-site_description: Statistical tests for deciding whether a new population differs from a reference population, and whether the change is harmful.
+site_description: Statistical tests for comparing source and target score distributions — and whether the target moved toward worse outcomes.
 site_author: Vathy M. Kamulete
 copyright: Copyright &copy; Vathy M. Kamulete
 
 nav:
   - Home: index.md
   - Tutorials:
-    - Detect whether two datasets differ: examples/tutorials/detect-distribution-shift.md
-    - Check whether target shifted toward worse outcomes: examples/tutorials/check-shift-harm.md
-    - Focus on common support with importance weights: examples/tutorials/adjust-for-covariate-shift.md
+    - Detect any distributional shift: examples/tutorials/detect-distribution-shift.md
+    - Test whether the shift is harmful: examples/tutorials/check-shift-harm.md
+    - Adjust for covariate shift with importance weights: examples/tutorials/adjust-for-covariate-shift.md
   - How-to guides:
-    - Monitor predicted credit risk: examples/credit/monitor-credit-risk.md
-    - Monitor model confidence: examples/credit/monitor-model-confidence.md
-    - Monitor prediction errors once labels arrive: examples/credit/monitor-prediction-errors.md
-    - Focus harmful-shift testing on common support: examples/weighting/source-reweighting.md
-    - Restrict testing to common support on both sides: examples/weighting/double-weighting.md
-    - Diagnose weight concentration with effective sample size: examples/weighting/diagnose-weight-concentration.md
+    - Credit monitoring:
+      - Monitor predicted credit risk: examples/credit/monitor-credit-risk.md
+      - Monitor model confidence: examples/credit/monitor-model-confidence.md
+      - Monitor prediction errors once labels arrive: examples/credit/monitor-prediction-errors.md
+    - Common support:
+      - Focus harmful-shift testing on common support: examples/weighting/source-reweighting.md
+      - Restrict testing to common support on both sides: examples/weighting/double-weighting.md
+      - Diagnose weight concentration with effective sample size: examples/weighting/diagnose-weight-concentration.md
   - Explanation:
     - When importance weights help: explanation/importance-weights-rationale.md
     - Why the harm statistic is not just AUC: explanation/harmful-shift-statistic.md

@@ -1,4 +1,4 @@
-# Tutorial: Check whether target shifted toward worse outcomes
+# Tutorial: Test whether the shift is harmful
 
 Use this tutorial when you already have a signal with a clear direction and want to know whether target moved toward the harmful end.
 
@@ -39,12 +39,12 @@ Target is slightly lower, so it illustrates a harmful shift for a higher-is-bett
     ```python
     import samesame as ss
 
-    shift = ss.test_shift(source_quality, target_quality, rng=rng)
+    shift = ss.test_shift(source=source_quality, target=target_quality, rng=rng)
 
     harm = ss.test_harmful_shift(
-        source_quality,
-        target_quality,
-        worse="lower",  # smaller = worse for confidence
+        source=source_quality,
+        target=target_quality,
+        worse="lower",  # smaller = worse for confidence (or ss.Worse.LOWER)
         rng=rng,
     )
 
@@ -59,28 +59,27 @@ Target is slightly lower, so it illustrates a harmful shift for a higher-is-bett
     ```python
     import samesame as ss
 
-    # higher risk = worse
     rng = np.random.default_rng(12345)
     source_risk = rng.normal(loc=0.20, scale=0.07, size=400)
     target_risk = rng.normal(loc=0.28, scale=0.07, size=400)
 
-    harm = ss.test_harmful_shift(source_risk, target_risk, worse="higher", rng=rng)
+    harm = ss.test_harmful_shift(source=source_risk, target=target_risk, worse="higher", rng=rng)
     print(f"Harm p-value: {harm.pvalue:.4f}")
     ```
 
+    `worse="higher"` (or `ss.Worse.HIGHER`) means larger scores are worse — use it for risk, error, and anomaly scores.
+
 ## How to read the result
 
-- Small `test_shift` p-value — groups differ.
-- Small `test_harmful_shift` p-value — target also shifted toward the harmful direction you declared.
-- If your signal already uses larger = worse, use `worse="higher"`.
+- Small `test_shift` p-value (≤ 0.05) — evidence that groups differ.
+- Small `test_harmful_shift` p-value (≤ 0.05) — evidence that target also shifted toward the harmful direction you declared.
+- Start with `.pvalue` for evidence; use `.statistic` for magnitude.
 
 | Signal | Worse when | Use |
 |--------|------------|-----|
-| Predicted risk, error, anomaly level | larger | `worse="higher"` |
-| Confidence, accuracy, quality | smaller | `worse="lower"` |
-
-`ss.Worse.HIGHER` / `ss.Worse.LOWER` are enum aliases that give autocomplete and guard against typos.
+| Predicted risk, error, anomaly level | larger | `worse="higher"` (or `ss.Worse.HIGHER`) |
+| Confidence, accuracy, quality | smaller | `worse="lower"` (or `ss.Worse.LOWER`) |
 
 --8<-- "snippets/honest-scores.txt"
 
-For the statistic behind the test, see [Why the harm statistic is not just AUC](../../explanation/harmful-shift-statistic.md). For the full API, see [Shift testing](../../api/testing.md). When source and target don't share the same feature support, continue to [Focus on common support with importance weights](adjust-for-covariate-shift.md).
+For the statistic behind the test, see [Why the harm statistic is not just AUC](../../explanation/harmful-shift-statistic.md). For the full API, see [Shift testing](../../api/testing.md). When source and target don't share the same feature support, continue to [Adjust for covariate shift with importance weights](adjust-for-covariate-shift.md).
