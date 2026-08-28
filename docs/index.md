@@ -15,10 +15,12 @@
 
 **Did the target shift? Did it get worse?**
 
-`samesame` tests whether a single score per observation — e.g., predicted risk, prediction error, or outlier score — has shifted between **source** (reference) and **target** (evaluation).
+`samesame` compares one score per observation — predicted risk, prediction error, or outlier score — between **source** (reference: training or past deployment) and **target** (current deployment).
 
-- `ss.test_shift` — did anything change? Two-sided.
-- `ss.test_harmful_shift(..., worse="higher"|"lower")` — did it move toward worse outcomes? One-sided.
+- `ss.test_shift` — did the distribution change at all? Two-sided.
+- `ss.test_harmful_shift(..., worse="higher"|"lower")` — did it move toward worse outcomes? One-sided. You declare the harmful direction.
+
+Scores and weights stay fixed; only labels are permuted to build the null.
 
 ## Quick example
 
@@ -26,21 +28,19 @@
 --8<-- "snippets/quick-example.py:quick-example"
 ```
 
-Small `p` (≤0.05) is evidence against the null — see [Get started](examples/tutorials/get-started.md) for how to read results.
+Small `p` (≤ 0.05) is evidence against the null. Read `.pvalue` first, `.statistic` second — see [Get started](examples/tutorials/get-started.md) for how to interpret each.
 
 ## Workflow
 
-1. **Build a score** — a single score per observation, source and target.
+1. **Build one score per observation** — source and target. If the score comes from a fitted model, generate it out of sample (cross-validation, OOB, or held-out set).
 2. **Test any change** — `ss.test_shift`.
-3. **Test harm** — `ss.test_harmful_shift(..., worse=...)` when you can declare the direction.
-4. **Weight** — `ss.domain_weights` if you need to focus on common support.
-
-Scores and weights stay fixed — only labels are permuted.
+3. **Test harm** — `ss.test_harmful_shift(..., worse=...)` once you can name the harmful direction.
+4. **Weight (only if needed)** — `ss.domain_weights` to focus on common support when overlap is poor.
 
 ## Where to go next
 
-- **[Get started](examples/tutorials/get-started.md)** — 5 min: build a score, run both tests.
-- **[Monitor credit](examples/credit/monitor-credit.md)** — real HELOC data: risk, confidence, and errors.
+- **[Get started](examples/tutorials/get-started.md)** — 5 minutes, synthetic data, both tests end-to-end.
+- **[Monitor a credit model](examples/credit/monitor-credit.md)** — real HELOC data: risk, confidence, errors.
 - **[Weight for common support](examples/weighting/weight-for-common-support.md)** — when and how to reweight.
 - **[How the harm test works](explanation/harmful-shift-statistic.md)** · **[API](api/testing.md)**
 
