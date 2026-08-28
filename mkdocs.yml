@@ -80,6 +80,7 @@ markdown_extensions:
   - admonition
   - pymdownx.details
 extra:
+  version: 0.4.0
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/vathymut/samesame
