@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Statistical tests for deciding whether a new population differs from a reference population, and whether the change is harmful.">
+        <meta name="description" content="Statistical tests for comparing source and target score distributions — and whether the target moved toward worse outcomes.">
       
       
         <meta name="author" content="Vathy M. Kamulete">
@@ -60,6 +60,8 @@
   
     
     
+      
+    
     
     
     
@@ -111,7 +113,33 @@
     </div>
     
       
+        <form class="md-header__option" data-md-component="palette">
+  
     
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
     
     
     
@@ -202,14 +230,35 @@
   
   
   
+    <li class="md-tabs__item">
+      <a href="/samesame/examples/tutorials/get-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Get started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
     
     
       <li class="md-tabs__item">
-        <a href="/samesame/examples/tutorials/detect-distribution-shift/" class="md-tabs__link">
+        <a href="/samesame/examples/credit/monitor-credit/" class="md-tabs__link">
           
   
   
-  Tutorials
+    
+  
+  Guides
 
         </a>
       </li>
@@ -225,29 +274,11 @@
     
     
       <li class="md-tabs__item">
-        <a href="/samesame/examples/credit/monitor-credit-risk/" class="md-tabs__link">
+        <a href="/samesame/explanation/harmful-shift-statistic/" class="md-tabs__link">
           
   
   
-  How-to guides
-
-        </a>
-      </li>
     
-  
-
-      
-        
-  
-  
-  
-  
-    
-    
-      <li class="md-tabs__item">
-        <a href="/samesame/explanation/importance-weights-rationale/" class="md-tabs__link">
-          
-  
   
   Explanation
 
@@ -269,7 +300,9 @@
           
   
   
-  API reference
+    
+  
+  Reference
 
         </a>
       </li>
@@ -303,7 +336,9 @@
   
 
 
-<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="/samesame/." title="samesame" class="md-nav__button md-logo" aria-label="samesame" data-md-component="logo">
       
@@ -356,58 +391,13 @@
   
   
   
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    Tutorials
-    
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2">
-            <span class="md-nav__icon md-icon"></span>
-            Tutorials
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
     <li class="md-nav__item">
-      <a href="/samesame/examples/tutorials/detect-distribution-shift/" class="md-nav__link">
+      <a href="/samesame/examples/tutorials/get-started/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Detect Whether Two Datasets Differ
+    Get started
     
   </span>
   
@@ -416,68 +406,20 @@
     </li>
   
 
-              
-            
-              
-                
+    
+      
+      
   
   
   
   
-    <li class="md-nav__item">
-      <a href="/samesame/examples/tutorials/check-shift-harm/" class="md-nav__link">
+    
+    
+      
         
-  
-  
-  <span class="md-ellipsis">
-    Check Whether a Change Points in a Worse Direction
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/samesame/examples/tutorials/adjust-for-covariate-shift/" class="md-nav__link">
+      
         
-  
-  
-  <span class="md-ellipsis">
-    Focus on Shared Support with Importance Weights
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
       
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
     
     
     
@@ -501,7 +443,7 @@
   
   
   <span class="md-ellipsis">
-    How-to guides
+    Guides
     
   </span>
   
@@ -512,7 +454,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
-            How-to guides
+            Guides
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -523,12 +465,12 @@
   
   
     <li class="md-nav__item">
-      <a href="/samesame/examples/credit/monitor-credit-risk/" class="md-nav__link">
+      <a href="/samesame/examples/credit/monitor-credit/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Monitor Predicted Credit Risk
+    Monitor a credit model
     
   </span>
   
@@ -546,81 +488,12 @@
   
   
     <li class="md-nav__item">
-      <a href="/samesame/examples/credit/monitor-model-confidence/" class="md-nav__link">
+      <a href="/samesame/examples/weighting/weight-for-common-support/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Monitor Model Confidence
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/samesame/examples/credit/monitor-prediction-errors/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Monitor Prediction Errors Once Labels Arrive
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/samesame/examples/weighting/source-reweighting/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Focus Harmful-Shift Testing on Shared Support
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/samesame/examples/weighting/double-weighting/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Restrict Testing to Common Support on Both Sides
+    Weight for common support
     
   </span>
   
@@ -645,6 +518,10 @@
   
   
     
+    
+      
+        
+      
     
     
     
@@ -690,12 +567,12 @@
   
   
     <li class="md-nav__item">
-      <a href="/samesame/explanation/importance-weights-rationale/" class="md-nav__link">
+      <a href="/samesame/explanation/harmful-shift-statistic/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    When Importance Weights Help
+    How the harm test works
     
   </span>
   
@@ -721,6 +598,12 @@
   
     
     
+      
+        
+      
+        
+      
+    
     
     
       
@@ -743,7 +626,7 @@
   
   
   <span class="md-ellipsis">
-    API reference
+    Reference
     
   </span>
   
@@ -754,7 +637,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
-            API reference
+            Reference
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -770,7 +653,7 @@
   
   
   <span class="md-ellipsis">
-    Shift Testing
+    Testing
     
   </span>
   
@@ -793,7 +676,7 @@
   
   
   <span class="md-ellipsis">
-    Importance Weights
+    Weighting
     
   </span>
   
@@ -818,22 +701,6 @@
               </div>
             
             
-              
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-</nav>
-                  </div>
-                </div>
-              </div>
-            
           
           
             <div class="md-content" data-md-component="content">
@@ -845,6 +712,8 @@
             </div>
           
           
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
         
@@ -909,14 +778,16 @@
     
     
       
-      <script id="__config" type="application/json">{"base": "/samesame/", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "content.code.copy"], "search": "/samesame/assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "/samesame/", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.action.view"], "search": "/samesame/assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="/samesame/assets/javascripts/bundle.92b07e13.min.js"></script>
       
-        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-      
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+      
+        <script src="/samesame/javascripts/mermaid-init.js"></script>
       
     
   </body>

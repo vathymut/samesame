@@ -1,0 +1,1130 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Statistical tests for comparing source and target score distributions — and whether the target moved toward worse outcomes.">
+      
+      
+        <meta name="author" content="Vathy M. Kamulete">
+      
+      
+        <link rel="canonical" href="https://vathymut.github.io/samesame/examples/weighting/weight-for-common-support/">
+      
+      
+        <link rel="prev" href="../../credit/monitor-credit/">
+      
+      
+        <link rel="next" href="../../../explanation/harmful-shift-statistic/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.18">
+    
+    
+      
+        <title>Weight for common support - samesame</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.7e37652d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#weight-for-common-support" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="samesame" class="md-header__button md-logo" aria-label="samesame" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M249.9 66.8c10.4-14.3 7.2-34.3-7.1-44.7s-34.3-7.2-44.7 7.1l-106 145.7-37.5-37.5c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l64 64c6.6 6.6 15.8 10 25.1 9.3s17.9-5.5 23.4-13.1l128-176zm128 136c10.4-14.3 7.2-34.3-7.1-44.7s-34.3-7.2-44.7 7.1l-170 233.7-69.5-69.5c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l96 96c6.6 6.6 15.8 10 25.1 9.3s17.9-5.5 23.4-13.1l192-264z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            samesame
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Weight for common support
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/vathymut/samesame" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    vathymut/samesame
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../tutorials/get-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Get started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../credit/monitor-credit/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../explanation/harmful-shift-statistic/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Explanation
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../api/testing/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="samesame" class="md-nav__button md-logo" aria-label="samesame" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M249.9 66.8c10.4-14.3 7.2-34.3-7.1-44.7s-34.3-7.2-44.7 7.1l-106 145.7-37.5-37.5c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l64 64c6.6 6.6 15.8 10 25.1 9.3s17.9-5.5 23.4-13.1l128-176zm128 136c10.4-14.3 7.2-34.3-7.1-44.7s-34.3-7.2-44.7 7.1l-170 233.7-69.5-69.5c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l96 96c6.6 6.6 15.8 10 25.1 9.3s17.9-5.5 23.4-13.1l192-264z"/></svg>
+
+    </a>
+    samesame
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/vathymut/samesame" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    vathymut/samesame
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/get-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Get started
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    Guides
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Guides
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../credit/monitor-credit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Monitor a credit model
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Weight for common support
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Weight for common support
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-weight" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why weight?
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#synthetic-check-no-download" class="md-nav__link">
+    <span class="md-ellipsis">
+      Synthetic check (no download)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#heloc-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      HELOC example
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Explanation
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Explanation
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../explanation/harmful-shift-statistic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    How the harm test works
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Testing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api/weighting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Weighting
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+    
+      
+    
+    <a href="https://github.com/vathymut/samesame/raw/master/docs/examples/weighting/weight-for-common-support.md" title="View source of this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
+    </a>
+  
+
+
+<h1 id="weight-for-common-support">Weight for common support<a class="headerlink" href="#weight-for-common-support" title="Permanent link">&para;</a></h1>
+<p>Start with an unweighted comparison. Use weighting only when source and target
+have poor overlap, because weighting changes the question: it focuses the test
+on the region where both groups have support.</p>
+<h2 id="why-weight">Why weight?<a class="headerlink" href="#why-weight" title="Permanent link">&para;</a></h2>
+<p>A few low-overlap observations can dominate the permutation test, even if the
+region you care about has genuinely changed. Weighting reduces their influence
+and focuses the test on the narrower question of whether the shift is present
+where source and target overlap.</p>
+<blockquote>
+<p>Training has many 20-year-old students production never sees; production has retirees never seen in training. Unweighted is swayed by extremes; weighted focuses on the 30–60 overlap.</p>
+</blockquote>
+<p>A domain classifier estimates <code>p̂(x)=P(target|x)</code>. After accounting for the
+source and target sample sizes, the odds correction
+<code>p̂/(1-p̂)·n_source/n_target</code> estimates relative density and produces importance
+weights. This correction can be unstable when the groups separate well,
+because a few observations may receive huge weights. <code>samesame</code> stabilises the
+weights with shrinkage, λ, which blends them toward uniform weights (default
+<code>0.5</code>):</p>
+<table>
+<thead>
+<tr>
+<th><code>shrinkage</code></th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0.0</code></td>
+<td>Plain density ratio. Strongest correction, highest variance.</td>
+</tr>
+<tr>
+<td><code>0.5</code></td>
+<td>Default. Good balance.</td>
+</tr>
+<tr>
+<td><code>1.0</code></td>
+<td>Uniform weights. No correction.</td>
+</tr>
+</tbody>
+</table>
+<p>Lower = more aggressive; higher = more conservative. Start at <code>0.5</code> and check ESS before lowering.</p>
+<p><strong>Rule:</strong> Use the domain probability to measure how observations differ between
+source and target, and to build weights. Use a separate score with a clear
+good/bad interpretation for the harm test. A domain probability describes
+distributional membership, not outcome quality.</p>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>What it does</th>
+<th>Use when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>reweight="source"</code></td>
+<td>reweights source toward target; target unchanged</td>
+<td>source has low-overlap observations outside target support</td>
+</tr>
+<tr>
+<td><code>reweight="target"</code></td>
+<td>reweights target toward source; source unchanged</td>
+<td>target has low-overlap observations outside source support</td>
+</tr>
+<tr>
+<td><code>reweight="both"</code> (default)</td>
+<td>reweights both toward mutual support</td>
+<td>both groups have low-overlap regions</td>
+</tr>
+</tbody>
+</table>
+<h2 id="synthetic-check-no-download">Synthetic check (no download)<a class="headerlink" href="#synthetic-check-no-download" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_classification</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">HistGradientBoostingClassifier</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">cross_val_predict</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ss</span>
+
+<span class="n">X</span><span class="p">,</span> <span class="n">group</span> <span class="o">=</span> <span class="n">make_classification</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">n_features</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">n_classes</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">12345</span><span class="p">)</span>
+<span class="n">domain_prob</span> <span class="o">=</span> <span class="n">cross_val_predict</span><span class="p">(</span>
+    <span class="n">HistGradientBoostingClassifier</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">12345</span><span class="p">),</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;predict_proba&quot;</span><span class="p">,</span>
+<span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>  <span class="c1"># pooled P(target|x) — for weighting only</span>
+
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">)</span>
+<span class="n">risk_score</span> <span class="o">=</span> <span class="mf">0.9</span><span class="o">*</span><span class="n">X</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.6</span><span class="o">*</span><span class="n">X</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.4</span><span class="o">*</span><span class="n">X</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">scale</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">group</span><span class="p">))</span>
+<span class="n">source_scores</span><span class="p">,</span> <span class="n">target_scores</span> <span class="o">=</span> <span class="n">risk_score</span><span class="p">[</span><span class="n">group</span> <span class="o">==</span> <span class="mi">0</span><span class="p">],</span> <span class="n">risk_score</span><span class="p">[</span><span class="n">group</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
+
+<span class="n">source_prob</span><span class="p">,</span> <span class="n">target_prob</span> <span class="o">=</span> <span class="n">domain_prob</span><span class="p">[</span><span class="n">group</span> <span class="o">==</span> <span class="mi">0</span><span class="p">],</span> <span class="n">domain_prob</span><span class="p">[</span><span class="n">group</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
+<span class="n">weights</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">domain_weights</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_prob</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_prob</span><span class="p">,</span> <span class="n">reweight</span><span class="o">=</span><span class="s2">&quot;source&quot;</span><span class="p">,</span> <span class="n">shrinkage</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">)</span>
+<span class="n">unweighted</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_scores</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_scores</span><span class="p">,</span> <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">)</span>
+<span class="n">weighted</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_scores</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_scores</span><span class="p">,</span> <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unweighted p=</span><span class="si">{</span><span class="n">unweighted</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> Weighted p=</span><span class="si">{</span><span class="n">weighted</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># → 1.0, 0.62</span>
+</code></pre></div>
+<p>Use the same <code>worse</code> value for both comparisons so that they test the same
+harmful direction. If a strong unweighted result becomes weak after weighting,
+the evidence was concentrated in low-overlap regions. If the result persists,
+the harmful shift is also present in the common-support region.</p>
+<h2 id="heloc-example">HELOC example<a class="headerlink" href="#heloc-example" title="Permanent link">&para;</a></h2>
+<p>This example uses the same source and target split as <a href="../../credit/monitor-credit/">Monitor a credit model</a>.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ss</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">fetch_openml</span>
+
+<span class="n">fico</span> <span class="o">=</span> <span class="n">fetch_openml</span><span class="p">(</span><span class="n">data_id</span><span class="o">=</span><span class="mi">45554</span><span class="p">,</span> <span class="n">as_frame</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">fico</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">fico</span><span class="o">.</span><span class="n">target</span>
+
+<span class="n">re_obj</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;external.*risk.*estimate&quot;</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">)</span>
+<span class="n">col_split</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">X</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">re_obj</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">c</span><span class="p">)),</span> <span class="kc">None</span><span class="p">)</span>
+<span class="n">mask_high</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">col_split</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">63</span>
+
+<span class="n">X_train</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">mask_high</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">y_train</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">mask_high</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">X_deployment</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="o">~</span><span class="n">mask_high</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>  <span class="c1"># kept for snippet self-containment when included alone</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestClassifier</span>
+
+<span class="n">split</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_deployment</span><span class="p">))</span>
+<span class="n">X_concat</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">X_train</span><span class="p">,</span> <span class="n">X_deployment</span><span class="p">],</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">rf_domain</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span>
+    <span class="n">n_estimators</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+    <span class="n">oob_score</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">12345</span><span class="p">,</span>
+    <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">rf_domain</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_concat</span><span class="p">,</span> <span class="n">split</span><span class="p">)</span>
+<span class="n">domain_prob</span> <span class="o">=</span> <span class="n">rf_domain</span><span class="o">.</span><span class="n">oob_decision_function_</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestClassifier</span>
+
+<span class="n">y_train_binary</span> <span class="o">=</span> <span class="n">y_train</span><span class="o">.</span><span class="n">map</span><span class="p">({</span><span class="s2">&quot;Good&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Bad&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span><span class="o">.</span><span class="n">values</span>
+
+<span class="n">rf_bad</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span>
+    <span class="n">n_estimators</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+    <span class="n">oob_score</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">12345</span><span class="p">,</span>
+    <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">rf_bad</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train_binary</span><span class="p">)</span>
+
+<span class="n">train_risk</span> <span class="o">=</span> <span class="n">rf_bad</span><span class="o">.</span><span class="n">oob_decision_function_</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+<span class="n">deployment_risk</span> <span class="o">=</span> <span class="n">rf_bad</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_deployment</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+<span class="n">source_prob</span> <span class="o">=</span> <span class="n">domain_prob</span><span class="p">[</span><span class="n">split</span><span class="o">.</span><span class="n">values</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">target_prob</span> <span class="o">=</span> <span class="n">domain_prob</span><span class="p">[</span><span class="n">split</span><span class="o">.</span><span class="n">values</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
+
+<span class="n">unweighted</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">train_risk</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">deployment_risk</span><span class="p">,</span> <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">))</span>
+<span class="n">w_src</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">domain_weights</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_prob</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_prob</span><span class="p">,</span> <span class="n">reweight</span><span class="o">=</span><span class="s2">&quot;source&quot;</span><span class="p">,</span> <span class="n">shrinkage</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">w_both</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">domain_weights</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_prob</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_prob</span><span class="p">,</span> <span class="n">reweight</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">shrinkage</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">p_src</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">train_risk</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">deployment_risk</span><span class="p">,</span> <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">w_src</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">))</span>
+<span class="n">p_both</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">train_risk</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">deployment_risk</span><span class="p">,</span> <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">w_both</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unweighted p=</span><span class="si">{</span><span class="n">unweighted</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> Source p=</span><span class="si">{</span><span class="n">p_src</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> Both p=</span><span class="si">{</span><span class="n">p_both</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># → all 0.0001 — persists on common support</span>
+</code></pre></div>
+<p>Use <code>source</code> when source has low-overlap cases and you want to represent the
+target region. Use <code>target</code> for the reverse. Use <code>both</code> when both groups have
+low-overlap regions and the intended comparison is their mutual support.</p>
+<details class="details">
+<summary>Diagnose weight concentration (ESS)</summary>
+<p>Weighting can concentrate the comparison on a few observations. Check the effective sample size (ESS) to see whether the weighted result is supported by enough information.</p>
+<div class="highlight"><pre><span></span><code><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">source_prob_demo</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">beta</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
+<span class="n">target_prob_demo</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">beta</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
+<span class="n">source_prob_demo</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.97</span><span class="p">,</span> <span class="mf">0.999</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+
+<span class="n">weights</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">domain_weights</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_prob_demo</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_prob_demo</span><span class="p">,</span> <span class="n">reweight</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">shrinkage</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="n">ess</span> <span class="o">=</span> <span class="n">weights</span><span class="o">.</span><span class="n">effective_sample_size</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;source ESS </span><span class="si">{</span><span class="n">ess</span><span class="o">.</span><span class="n">source</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> / 400&quot;</span><span class="p">)</span>  <span class="c1"># → 6.5 — concentrated</span>
+</code></pre></div>
+<p>Lower <code>shrinkage</code> gives a stronger correction but higher-variance weights;
+higher <code>shrinkage</code> gives more stable, more uniform weights. The default
+<code>shrinkage=0.5</code> is empirically supported as a good tradeoff between
+correction strength and stability.</p>
+<div class="highlight"><pre><span></span><code><span class="k">for</span> <span class="n">lam</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]:</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">domain_weights</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_prob_demo</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_prob_demo</span><span class="p">,</span> <span class="n">reweight</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">shrinkage</span><span class="o">=</span><span class="n">lam</span><span class="p">)</span>
+    <span class="n">e</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">effective_sample_size</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;shrinkage=</span><span class="si">{</span><span class="n">lam</span><span class="si">:</span><span class="s2">&lt;4</span><span class="si">}</span><span class="s2">  source ESS=</span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">source</span><span class="si">:</span><span class="s2">7.2f</span><span class="si">}</span><span class="s2">  target ESS=</span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">target</span><span class="si">:</span><span class="s2">7.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>Treat <code>ESS &lt; n/4</code> for either group as a warning sign, not a hard cutoff. If ESS remains low even at the default <code>shrinkage=0.5</code>, the groups have insufficient common support for reliable weighting; consider leaving the comparison unweighted.</p>
+</details>
+<p>Full scripts: <code>examples/weighting/_code/</code> · Reference: <a href="../../../api/weighting/">Importance weights</a>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../../credit/monitor-credit/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Monitor a credit model">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Monitor a credit model
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../../explanation/harmful-shift-statistic/" class="md-footer__link md-footer__link--next" aria-label="Next: How the harm test works">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                How the harm test works
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; Vathy M. Kamulete
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/vathymut/samesame" target="_blank" rel="noopener" title="GitHub" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://pypi.org/project/samesame/" target="_blank" rel="noopener" title="PyPI" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M439.8 200.5c-7.7-30.9-22.3-54.2-53.4-54.2h-40.1v47.4c0 36.8-31.2 67.8-66.8 67.8H172.7c-29.2 0-53.4 25-53.4 54.3v101.8c0 29 25.2 46 53.4 54.3 33.8 9.9 66.3 11.7 106.8 0 26.9-7.8 53.4-23.5 53.4-54.3v-40.7H226.2v-13.6h160.2c31.1 0 42.6-21.7 53.4-54.2 11.2-33.5 10.7-65.7 0-108.6M286.2 444.7a20.4 20.4 0 1 1 0-40.7 20.4 20.4 0 1 1 0 40.7M167.8 248.1h106.8c29.7 0 53.4-24.5 53.4-54.3V91.9c0-29-24.4-50.7-53.4-55.6-35.8-5.9-74.7-5.6-106.8.1-45.2 8-53.4 24.7-53.4 55.6v40.7h106.9v13.6h-147c-31.1 0-58.3 18.7-66.8 54.2-9.8 40.7-10.2 66.1 0 108.6 7.6 31.6 25.7 54.2 56.8 54.2H101v-48.8c0-35.3 30.5-66.4 66.8-66.4m-6.6-183.4a20.4 20.4 0 1 1 0 40.8 20.4 20.4 0 1 1 0-40.8"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.action.view"], "search": "../../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.92b07e13.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+      
+        <script src="../../../javascripts/mermaid-init.js"></script>
+      
+    
+  </body>
+</html>

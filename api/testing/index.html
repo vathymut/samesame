@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Statistical tests for deciding whether a new population differs from a reference population, and whether the change is harmful.">
+        <meta name="description" content="Statistical tests for comparing source and target score distributions — and whether the target moved toward worse outcomes.">
       
       
         <meta name="author" content="Vathy M. Kamulete">
@@ -15,7 +15,7 @@
         <link rel="canonical" href="https://vathymut.github.io/samesame/api/testing/">
       
       
-        <link rel="prev" href="../../explanation/importance-weights-rationale/">
+        <link rel="prev" href="../../explanation/harmful-shift-statistic/">
       
       
         <link rel="next" href="../weighting/">
@@ -26,7 +26,7 @@
     
     
       
-        <title>Shift Testing - samesame</title>
+        <title>Testing - samesame</title>
       
     
     
@@ -65,6 +65,8 @@
   
   
     
+    
+      
     
     
     
@@ -114,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Shift Testing
+              Testing
             
           </span>
         </div>
@@ -122,7 +124,33 @@
     </div>
     
       
+        <form class="md-header__option" data-md-component="palette">
+  
     
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
     
     
     
@@ -213,14 +241,35 @@
   
   
   
+    <li class="md-tabs__item">
+      <a href="../../examples/tutorials/get-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Get started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
     
     
       <li class="md-tabs__item">
-        <a href="../../examples/tutorials/detect-distribution-shift/" class="md-tabs__link">
+        <a href="../../examples/credit/monitor-credit/" class="md-tabs__link">
           
   
   
-  Tutorials
+    
+  
+  Guides
 
         </a>
       </li>
@@ -236,29 +285,11 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../examples/credit/monitor-credit-risk/" class="md-tabs__link">
+        <a href="../../explanation/harmful-shift-statistic/" class="md-tabs__link">
           
   
   
-  How-to guides
-
-        </a>
-      </li>
     
-  
-
-      
-        
-  
-  
-  
-  
-    
-    
-      <li class="md-tabs__item">
-        <a href="../../explanation/importance-weights-rationale/" class="md-tabs__link">
-          
-  
   
   Explanation
 
@@ -282,7 +313,9 @@
           
   
   
-  API reference
+    
+  
+  Reference
 
         </a>
       </li>
@@ -316,7 +349,9 @@
   
 
 
-<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="samesame" class="md-nav__button md-logo" aria-label="samesame" data-md-component="logo">
       
@@ -369,58 +404,13 @@
   
   
   
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    Tutorials
-    
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2">
-            <span class="md-nav__icon md-icon"></span>
-            Tutorials
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
     <li class="md-nav__item">
-      <a href="../../examples/tutorials/detect-distribution-shift/" class="md-nav__link">
+      <a href="../../examples/tutorials/get-started/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Detect Whether Two Datasets Differ
+    Get started
     
   </span>
   
@@ -429,68 +419,20 @@
     </li>
   
 
-              
-            
-              
-                
+    
+      
+      
   
   
   
   
-    <li class="md-nav__item">
-      <a href="../../examples/tutorials/check-shift-harm/" class="md-nav__link">
+    
+    
+      
         
-  
-  
-  <span class="md-ellipsis">
-    Check Whether a Change Points in a Worse Direction
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../examples/tutorials/adjust-for-covariate-shift/" class="md-nav__link">
+      
         
-  
-  
-  <span class="md-ellipsis">
-    Focus on Shared Support with Importance Weights
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
       
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
     
     
     
@@ -514,7 +456,7 @@
   
   
   <span class="md-ellipsis">
-    How-to guides
+    Guides
     
   </span>
   
@@ -525,7 +467,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
-            How-to guides
+            Guides
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -536,12 +478,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../examples/credit/monitor-credit-risk/" class="md-nav__link">
+      <a href="../../examples/credit/monitor-credit/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Monitor Predicted Credit Risk
+    Monitor a credit model
     
   </span>
   
@@ -559,81 +501,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../examples/credit/monitor-model-confidence/" class="md-nav__link">
+      <a href="../../examples/weighting/weight-for-common-support/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Monitor Model Confidence
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../examples/credit/monitor-prediction-errors/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Monitor Prediction Errors Once Labels Arrive
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../examples/weighting/source-reweighting/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Focus Harmful-Shift Testing on Shared Support
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../examples/weighting/double-weighting/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Restrict Testing to Common Support on Both Sides
+    Weight for common support
     
   </span>
   
@@ -658,6 +531,10 @@
   
   
     
+    
+      
+        
+      
     
     
     
@@ -703,12 +580,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../explanation/importance-weights-rationale/" class="md-nav__link">
+      <a href="../../explanation/harmful-shift-statistic/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    When Importance Weights Help
+    How the harm test works
     
   </span>
   
@@ -736,6 +613,12 @@
   
     
     
+      
+        
+      
+        
+      
+    
     
     
       
@@ -759,7 +642,7 @@
   
   
   <span class="md-ellipsis">
-    API reference
+    Reference
     
   </span>
   
@@ -770,7 +653,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
-            API reference
+            Reference
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -795,7 +678,7 @@
   
   
   <span class="md-ellipsis">
-    Shift Testing
+    Testing
     
   </span>
   
@@ -808,7 +691,7 @@
   
   
   <span class="md-ellipsis">
-    Shift Testing
+    Testing
     
   </span>
   
@@ -831,36 +714,18 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#choose-the-function" class="md-nav__link">
+  <a href="#which-function" class="md-nav__link">
     <span class="md-ellipsis">
-      Choose the function
+      Which function?
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#common-controls" class="md-nav__link">
+  <a href="#reading-results" class="md-nav__link">
     <span class="md-ellipsis">
-      Common controls
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#what-you-get-back" class="md-nav__link">
-    <span class="md-ellipsis">
-      What you get back
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#posterior-evidence-for-harmful-shift" class="md-nav__link">
-    <span class="md-ellipsis">
-      Posterior evidence for harmful shift
+      Reading results
     </span>
   </a>
   
@@ -876,18 +741,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#samesame.shift.detect_shift" class="md-nav__link">
+  <a href="#samesame.shift.test_shift" class="md-nav__link">
     <span class="md-ellipsis">
-      detect_shift
+      test_shift
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#samesame.shift.detect_harm" class="md-nav__link">
+  <a href="#samesame.shift.test_harmful_shift" class="md-nav__link">
     <span class="md-ellipsis">
-      detect_harm
+      test_harmful_shift
     </span>
   </a>
   
@@ -912,18 +777,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#samesame.shift.HarmResult" class="md-nav__link">
+  <a href="#samesame.shift.HarmfulShiftResult" class="md-nav__link">
     <span class="md-ellipsis">
-      HarmResult
+      HarmfulShiftResult
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#samesame.shift.TestResult" class="md-nav__link">
+  <a href="#samesame.shift.Worse" class="md-nav__link">
     <span class="md-ellipsis">
-      TestResult
+      Worse
     </span>
   </a>
   
@@ -950,7 +815,7 @@
   
   
   <span class="md-ellipsis">
-    Importance Weights
+    Weighting
     
   </span>
   
@@ -975,131 +840,6 @@
               </div>
             
             
-              
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#choose-the-function" class="md-nav__link">
-    <span class="md-ellipsis">
-      Choose the function
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#common-controls" class="md-nav__link">
-    <span class="md-ellipsis">
-      Common controls
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#what-you-get-back" class="md-nav__link">
-    <span class="md-ellipsis">
-      What you get back
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#posterior-evidence-for-harmful-shift" class="md-nav__link">
-    <span class="md-ellipsis">
-      Posterior evidence for harmful shift
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#api" class="md-nav__link">
-    <span class="md-ellipsis">
-      API
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#samesame.shift.detect_shift" class="md-nav__link">
-    <span class="md-ellipsis">
-      detect_shift
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#samesame.shift.detect_harm" class="md-nav__link">
-    <span class="md-ellipsis">
-      detect_harm
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#result-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Result types
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#samesame.shift.ShiftResult" class="md-nav__link">
-    <span class="md-ellipsis">
-      ShiftResult
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#samesame.shift.HarmResult" class="md-nav__link">
-    <span class="md-ellipsis">
-      HarmResult
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#samesame.shift.TestResult" class="md-nav__link">
-    <span class="md-ellipsis">
-      TestResult
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-                  </div>
-                </div>
-              </div>
-            
           
           
             <div class="md-content" data-md-component="content">
@@ -1110,77 +850,112 @@
 
   
   
+    
+      
+    
+    <a href="https://github.com/vathymut/samesame/raw/master/docs/api/testing.md" title="View source of this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
+    </a>
+  
 
 
 <h1 id="shift-testing">Shift testing<a class="headerlink" href="#shift-testing" title="Permanent link">&para;</a></h1>
-<p>Use this page when you already have a numeric signal for a source group and a target group.</p>
-<h2 id="choose-the-function">Choose the function<a class="headerlink" href="#choose-the-function" title="Permanent link">&para;</a></h2>
+<p>These tests compare distributions of one score per observation, not raw feature
+tables. First, choose a score that represents the question you care about - such
+as predicted risk, prediction error, confidence, or an outlier score - and
+compute it for every observation.</p>
+<p>The distinction between the functions is important. <code>test_shift</code> detects any
+change in the score distribution. <code>test_harmful_shift</code> deliberately ignores
+some changes and looks for movement toward a declared harmful tail. Use the
+first as a broad screen and the second when you can defend what "worse" means
+for the score.</p>
+<p><code>P(target|x)</code> from a domain classifier can be a useful score for detecting any
+shift, but do not reuse it as the harm score. It describes how target-like an
+observation is, not whether its outcome is harmful. Use it to build weights
+when you need a common-support comparison.</p>
+<blockquote>
+<p>Source: <code>src/samesame/shift.py</code> · <code>src/samesame/_permutation.py</code> · <code>src/samesame/_statistics.py</code></p>
+</blockquote>
+<h2 id="which-function">Which function?<a class="headerlink" href="#which-function" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
 <th>Function</th>
-<th>What it answers</th>
-<th>Use it when</th>
+<th>Answers</th>
+<th>When</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>shift.detect_shift(...)</code></td>
-<td>Did anything change?</td>
-<td>you want to detect any difference between source and target</td>
+<td><code>ss.test_shift</code></td>
+<td>Do source and target differ?</td>
+<td>Any score distributional change matters</td>
 </tr>
 <tr>
-<td><code>shift.detect_harm(...)</code></td>
-<td>Did the target group move in a worse direction?</td>
-<td>you know what "worse" means for your signal</td>
+<td><code>ss.test_harmful_shift</code></td>
+<td>Did target move toward the specified harmful tail?</td>
+<td>You can declare <code>worse</code> in advance</td>
 </tr>
 </tbody>
 </table>
-<p>Examples of useful signals include predicted risk, prediction error, model confidence, and domain
-classifier probabilities.</p>
-<h2 id="common-controls">Common controls<a class="headerlink" href="#common-controls" title="Permanent link">&para;</a></h2>
-<p>Both functions accept:</p>
+<p>Declare the harmful direction from the meaning of the score before testing.
+Pass it as a string or as <code>ss.Worse</code>; the two forms are interchangeable:</p>
+<table>
+<thead>
+<tr>
+<th>Signal</th>
+<th>What it measures</th>
+<th><code>worse</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Predicted risk</td>
+<td>business impact</td>
+<td><code>worse="higher"</code></td>
+</tr>
+<tr>
+<td>Prediction error (Brier, log-loss)</td>
+<td>accuracy once labels arrive</td>
+<td><code>worse="higher"</code></td>
+</tr>
+<tr>
+<td>Outlier score — confidence (<code>LogitGap</code>)</td>
+<td>certainty / typicality</td>
+<td><code>worse="lower"</code></td>
+</tr>
+<tr>
+<td>Outlier score — atypicality</td>
+<td>distance from source</td>
+<td><code>worse="higher"</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="reading-results">Reading results<a class="headerlink" href="#reading-results" title="Permanent link">&para;</a></h2>
+<p>Both return <code>.statistic</code>, <code>.pvalue</code>, and <code>.null_distribution</code>. The null
+distribution is produced by permuting group labels while keeping scores and
+weights fixed. In other words, it represents what values are plausible if the
+source and target labels were interchangeable.</p>
+<p>Interpret <code>.pvalue</code> as evidence against that null, not as the probability that
+the null is true and not as an effect size. Two-sided <code>test_shift</code> doubles the
+smaller tail, capped at 1; <code>test_harmful_shift</code> uses the one-sided <code>greater</code>
+alternative. A +1 correction keeps permutation p-values above zero.</p>
 <ul>
-<li><code>n_resamples</code> to control the number of permutation resamples</li>
-<li><code>batch</code> to limit memory use during the permutation test</li>
-<li><code>random_state</code> for reproducibility</li>
-<li><code>weights</code> for weighted testing with <code>ImportanceWeights</code></li>
+<li><code>test_shift</code>: <code>.statistic</code> is AUC. An AUC of <code>0.5</code> means the score does not
+  separate the groups; values farther from <code>0.5</code> indicate stronger separation.</li>
+<li><code>test_harmful_shift</code>: <code>.statistic</code> has no universal interpretation like AUC.
+  Compare it with <code>result.null_distribution</code> and examine the score scale. The
+  result also records <code>.worse</code>.</li>
 </ul>
-<p><code>shift.detect_harm(...)</code> also requires <code>direction</code>, which must be one of:</p>
-<ul>
-<li><code>"higher-is-worse"</code></li>
-<li><code>"higher-is-better"</code></li>
-</ul>
-<h2 id="what-you-get-back">What you get back<a class="headerlink" href="#what-you-get-back" title="Permanent link">&para;</a></h2>
-<ul>
-<li><code>shift.detect_shift(...)</code> returns <code>ShiftResult</code></li>
-<li><code>shift.detect_harm(...)</code> returns <code>HarmResult</code></li>
-</ul>
-<p>In both cases, the fields most users look at first are:</p>
-<ul>
-<li><code>.statistic</code></li>
-<li><code>.pvalue</code></li>
-</ul>
-<p><code>ShiftResult</code> also includes <code>.statistic_name</code>.
-<code>HarmResult</code> also includes <code>.direction</code>.
-Both results include <code>.null_distribution</code> when you need the full permutation output.</p>
-<h2 id="posterior-evidence-for-harmful-shift">Posterior evidence for harmful shift<a class="headerlink" href="#posterior-evidence-for-harmful-shift" title="Permanent link">&para;</a></h2>
-<p>If you want posterior draws and a Bayes factor alongside the p-value, set
-<code>include_posterior=True</code>.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ss</span>
-
-<span class="n">result</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">shift</span><span class="o">.</span><span class="n">detect_harm</span><span class="p">(</span>
-    <span class="n">source_scores</span><span class="p">,</span>
-    <span class="n">target_scores</span><span class="p">,</span>
-    <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;higher-is-worse&quot;</span><span class="p">,</span>
-    <span class="n">include_posterior</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;p-value:      </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Bayes factor: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">bayes_factor</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</code></pre></div>
-<p><code>threshold</code> is only valid when <code>include_posterior=True</code>. Otherwise <code>detect_harm(...)</code> raises a
-<code>ValueError</code>.</p>
+<p>For honest p-values, scores from a fitted model must be generated out of sample
+(<code>cross_val_predict</code>, <code>oob_decision_function_</code>, or a held-out set). In-sample
+predictions can make source and target look more separable simply because the
+scoring model has memorised its inputs.</p>
+<details class="tip">
+<summary>Reproducibility</summary>
+<p>Pass <code>rng=np.random.default_rng(12345)</code> to make the permutation-based p-values reproducible. The default is <code>n_resamples=9999</code>; <code>999</code> is useful while exploring, while <code>19999</code> gives better resolution for p-values below <code>0.001</code>.</p>
+</details>
 <h2 id="api">API<a class="headerlink" href="#api" title="Permanent link">&para;</a></h2>
 
 
@@ -1188,15 +963,643 @@ Both results include <code>.null_distribution</code> when you need the full perm
 
 
 
-<a id="samesame.shift.detect_shift"></a>
+<a id="samesame.shift.test_shift"></a>
     <div class="doc doc-contents first">
 
-        <p>Detect whether Source and Target Outlier score distributions differ.</p>
+        <p>Broad screen — do source and target scores differ at all?</p>
+<p>Any shift? Start here. Give it one score per observation — predicted
+risk, prediction error, confidence, or an outlier score — and it
+measures how well that score separates target from source with ROC AUC,
+then shuffles labels to see whether the separation is unusual. A small
+p-value is evidence that the distributions differ, not that the shift
+is harmful, large, or causal.</p>
+<p>Pick the score that answers your monitoring question before testing.
+If the score comes from a fitted model, generate it out of sample with
+<code>cross_val_predict</code>, <code>oob_decision_function_</code>, or a held-out set;
+in-sample scores can make source and target look spuriously separable
+because the model has already seen the data.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>source</code>
+            </td>
+            <td>
+                  <code><span title="numpy.typing.ArrayLike">ArrayLike</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Scores for the source (reference) group — e.g., training data or a
+past deployment.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>target</code>
+            </td>
+            <td>
+                  <code><span title="numpy.typing.ArrayLike">ArrayLike</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Scores for the target (evaluation) group — e.g., the current
+deployment.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>n_resamples</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of label permutations. Default <code>9999</code>. Use <code>999</code> while
+exploring and <code>19999</code> for finer resolution below <code>0.001</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>9999</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>rng</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span> | <span title="numpy.random.Generator">Generator</span> | <span title="numpy.random.RandomState">RandomState</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Random state for reproducibility. Pass <code>np.random.default_rng(12345)</code>
+or an <code>int</code> seed. Default <code>None</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>weights</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="ImportanceWeights (samesame.weights.ImportanceWeights)" href="../weighting/#samesame.weights.ImportanceWeights">ImportanceWeights</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Per-observation importance weights aligned to <code>source</code> and
+<code>target</code>. Omit to compare the full populations; supply when the
+comparison should focus on common support (see
+:func:<code>samesame.weights.domain_weights</code>).</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="ShiftResult (samesame.shift.ShiftResult)" href="#samesame.shift.ShiftResult">ShiftResult</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Observed AUC, two-sided p-value, and null distribution. The null is
+formed by permuting group labels while keeping scores and weights
+fixed.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <ul>
+<li>The p-value doubles the smaller tail (capped at <code>1</code>) and adds <code>+1</code>
+  smoothing so it is never exactly zero — permutation p-values stay
+  above zero.</li>
+<li>Interpret <code>statistic</code> relative to <code>0.5</code> (chance; <code>0.8</code> or
+  <code>0.2</code> both signal strong separation) and <code>pvalue</code> as evidence
+  against exchangeability — not as harm or business impact.</li>
+<li>For honest p-values, scores from a fitted model must be out of
+  sample. In-sample predictions can inflate separation because the
+  scoring model has memorised its inputs.</li>
+</ul>
+</details>
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <p>test_harmful_shift : Directional test when you can declare the harmful tail.
+samesame.weights.domain_weights : Build weights from <code>P(target|x)</code>.
+samesame.weights.ImportanceWeights : Container for per-group weights.</p>
+</details>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ss</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">source</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.6</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_shift</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mf">0.5</span> <span class="o">&lt;</span> <span class="n">res</span><span class="o">.</span><span class="n">statistic</span> <span class="o">&lt;=</span> <span class="mf">1.0</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">pvalue</span> <span class="o">&lt;</span> <span class="mf">0.01</span>
+<span class="go">True</span>
+</code></pre></div>
 
 
             <details class="quote">
               <summary>Source code in <code>src/samesame/shift.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">362</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_shift</span><span class="p">(</span>
+    <span class="n">source</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+    <span class="n">target</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">n_resamples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">9999</span><span class="p">,</span>
+    <span class="n">rng</span><span class="p">:</span> <span class="n">Seed</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">weights</span><span class="p">:</span> <span class="n">ImportanceWeights</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ShiftResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Broad screen — do source and target scores differ at all?</span>
+
+<span class="sd">    Any shift? Start here. Give it one score per observation — predicted</span>
+<span class="sd">    risk, prediction error, confidence, or an outlier score — and it</span>
+<span class="sd">    measures how well that score separates target from source with ROC AUC,</span>
+<span class="sd">    then shuffles labels to see whether the separation is unusual. A small</span>
+<span class="sd">    p-value is evidence that the distributions differ, not that the shift</span>
+<span class="sd">    is harmful, large, or causal.</span>
+
+<span class="sd">    Pick the score that answers your monitoring question before testing.</span>
+<span class="sd">    If the score comes from a fitted model, generate it out of sample with</span>
+<span class="sd">    ``cross_val_predict``, ``oob_decision_function_``, or a held-out set;</span>
+<span class="sd">    in-sample scores can make source and target look spuriously separable</span>
+<span class="sd">    because the model has already seen the data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    source : ArrayLike</span>
+<span class="sd">        Scores for the source (reference) group — e.g., training data or a</span>
+<span class="sd">        past deployment.</span>
+<span class="sd">    target : ArrayLike</span>
+<span class="sd">        Scores for the target (evaluation) group — e.g., the current</span>
+<span class="sd">        deployment.</span>
+<span class="sd">    n_resamples : int, optional</span>
+<span class="sd">        Number of label permutations. Default ``9999``. Use ``999`` while</span>
+<span class="sd">        exploring and ``19999`` for finer resolution below ``0.001``.</span>
+<span class="sd">    rng : int | np.random.Generator | np.random.RandomState | None, optional</span>
+<span class="sd">        Random state for reproducibility. Pass ``np.random.default_rng(12345)``</span>
+<span class="sd">        or an ``int`` seed. Default ``None``.</span>
+<span class="sd">    weights : ImportanceWeights | None, optional</span>
+<span class="sd">        Per-observation importance weights aligned to ``source`` and</span>
+<span class="sd">        ``target``. Omit to compare the full populations; supply when the</span>
+<span class="sd">        comparison should focus on common support (see</span>
+<span class="sd">        :func:`samesame.weights.domain_weights`).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ShiftResult</span>
+<span class="sd">        Observed AUC, two-sided p-value, and null distribution. The null is</span>
+<span class="sd">        formed by permuting group labels while keeping scores and weights</span>
+<span class="sd">        fixed.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    * The p-value doubles the smaller tail (capped at ``1``) and adds ``+1``</span>
+<span class="sd">      smoothing so it is never exactly zero — permutation p-values stay</span>
+<span class="sd">      above zero.</span>
+<span class="sd">    * Interpret ``statistic`` relative to ``0.5`` (chance; ``0.8`` or</span>
+<span class="sd">      ``0.2`` both signal strong separation) and ``pvalue`` as evidence</span>
+<span class="sd">      against exchangeability — not as harm or business impact.</span>
+<span class="sd">    * For honest p-values, scores from a fitted model must be out of</span>
+<span class="sd">      sample. In-sample predictions can inflate separation because the</span>
+<span class="sd">      scoring model has memorised its inputs.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    test_harmful_shift : Directional test when you can declare the harmful tail.</span>
+<span class="sd">    samesame.weights.domain_weights : Build weights from ``P(target|x)``.</span>
+<span class="sd">    samesame.weights.ImportanceWeights : Container for per-group weights.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; import samesame as ss</span>
+<span class="sd">    &gt;&gt;&gt; rng = np.random.default_rng(12345)</span>
+<span class="sd">    &gt;&gt;&gt; source = rng.normal(0, 1, size=300)</span>
+<span class="sd">    &gt;&gt;&gt; target = rng.normal(0.6, 1, size=300)</span>
+<span class="sd">    &gt;&gt;&gt; res = ss.test_shift(source, target, rng=rng)</span>
+<span class="sd">    &gt;&gt;&gt; 0.5 &lt; res.statistic &lt;= 1.0</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; res.pvalue &lt; 0.01</span>
+<span class="sd">    True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">statistic</span><span class="p">,</span> <span class="n">pvalue</span><span class="p">,</span> <span class="n">null_distribution</span> <span class="o">=</span> <span class="n">_permutation_test</span><span class="p">(</span>
+        <span class="n">source</span><span class="p">,</span>
+        <span class="n">target</span><span class="p">,</span>
+        <span class="n">metric</span><span class="o">=</span><span class="n">_auc_metric</span><span class="p">,</span>
+        <span class="n">alternative</span><span class="o">=</span><span class="s2">&quot;two-sided&quot;</span><span class="p">,</span>
+        <span class="n">n_resamples</span><span class="o">=</span><span class="n">n_resamples</span><span class="p">,</span>
+        <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">,</span>
+        <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">ShiftResult</span><span class="p">(</span>
+        <span class="n">statistic</span><span class="o">=</span><span class="n">statistic</span><span class="p">,</span> <span class="n">pvalue</span><span class="o">=</span><span class="n">pvalue</span><span class="p">,</span> <span class="n">null_distribution</span><span class="o">=</span><span class="n">null_distribution</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<a id="samesame.shift.test_harmful_shift"></a>
+    <div class="doc doc-contents first">
+
+        <p>Focused check — did target move toward the harmful tail you care about?</p>
+<p>A small <code>test_shift</code> p-value says <em>something</em> changed. This test asks
+the narrower question: after orienting the score so larger means worse
+(<code>worse="lower"</code> flips the sign), does target put more mass beyond
+thresholds that source rarely exceeds? Thresholds the source rarely
+exceeds get more weight, so the test leans into the harmful tail. A
+small p-value is evidence for that directional movement — not for
+arbitrary shift.</p>
+<p>Decide <code>worse</code> from what the score means before looking at results;
+do not pick the direction that gives the smaller p-value.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>source</code>
+            </td>
+            <td>
+                  <code><span title="numpy.typing.ArrayLike">ArrayLike</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Scores for the source (reference) group — e.g., training data or a
+past deployment.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>target</code>
+            </td>
+            <td>
+                  <code><span title="numpy.typing.ArrayLike">ArrayLike</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Scores for the target (evaluation) group — e.g., the current
+deployment.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>worse</code>
+            </td>
+            <td>
+                  <code>(&#39;higher&#39;, &#39;lower&#39;)</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Which tail is harmful. <code>"higher"</code> when larger scores mean harm
+(e.g., predicted risk, prediction error, atypicality outlier
+score); <code>"lower"</code> when smaller scores mean harm (e.g.,
+confidence via <code>LogitGap</code>). Accepts a plain string or
+:class:<code>Worse</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;higher&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>n_resamples</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of label permutations. Default <code>9999</code>. Use <code>999</code> while
+exploring and <code>19999</code> for finer resolution below <code>0.001</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>9999</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>rng</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span> | <span title="numpy.random.Generator">Generator</span> | <span title="numpy.random.RandomState">RandomState</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Random state for reproducibility. Pass <code>np.random.default_rng(12345)</code>
+or an <code>int</code> seed. Default <code>None</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>weights</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="ImportanceWeights (samesame.weights.ImportanceWeights)" href="../weighting/#samesame.weights.ImportanceWeights">ImportanceWeights</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Per-observation importance weights aligned to <code>source</code> and
+<code>target</code>. Omit to compare the full populations; supply when the
+comparison should focus on common support (see
+:func:<code>samesame.weights.domain_weights</code>).</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="HarmfulShiftResult (samesame.shift.HarmfulShiftResult)" href="#samesame.shift.HarmfulShiftResult">HarmfulShiftResult</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Observed weighted-AUC, one-sided p-value, declared <code>worse</code>, and
+null distribution. The null is formed by permuting group labels
+while keeping scores and weights fixed.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <ul>
+<li>One-sided <code>greater</code> alternative with <code>+1</code> smoothing (never zero).</li>
+<li>The statistic has no universal chance value. Compare it to
+  <code>null_distribution</code> and the score's own scale, not to <code>0.5</code>.
+  See :doc:<code>How the harm test works
+  &lt;../explanation/harmful-shift-statistic&gt;</code> for the ROC intuition and
+  the <code>∫ TPR·(1−FPR)² dFPR</code> form.</li>
+</ul>
+</details>
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <p>test_shift : Broad, two-sided screen when any change matters.
+samesame.weights.domain_weights : Build weights from <code>P(target|x)</code>.
+Worse : The <code>"higher"</code> / <code>"lower"</code> choice in plain language.</p>
+</details>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ss</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">source</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.20</span><span class="p">,</span> <span class="mf">0.07</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.28</span><span class="p">,</span> <span class="mf">0.07</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>  <span class="c1"># higher risk = worse</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">pvalue</span> <span class="o">&lt;</span> <span class="mf">0.05</span>
+<span class="go">True</span>
+</code></pre></div>
+
+
+            <details class="quote">
+              <summary>Source code in <code>src/samesame/shift.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
 <span class="normal">363</span>
 <span class="normal">364</span>
 <span class="normal">365</span>
@@ -1226,167 +1629,110 @@ Both results include <code>.null_distribution</code> when you need the full perm
 <span class="normal">389</span>
 <span class="normal">390</span>
 <span class="normal">391</span>
-<span class="normal">392</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">detect_shift</span><span class="p">(</span>
-    <span class="n">source</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
-    <span class="n">target</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
-    <span class="o">*</span><span class="p">,</span>
-    <span class="n">statistic</span><span class="p">:</span> <span class="n">ShiftStatistic</span> <span class="o">=</span> <span class="s2">&quot;roc_auc&quot;</span><span class="p">,</span>
-    <span class="n">alternative</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;less&quot;</span><span class="p">,</span> <span class="s2">&quot;greater&quot;</span><span class="p">,</span> <span class="s2">&quot;two-sided&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;two-sided&quot;</span><span class="p">,</span>
-    <span class="n">n_resamples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">9999</span><span class="p">,</span>
-    <span class="n">batch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">random_state</span><span class="p">:</span> <span class="n">RandomState</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">weights</span><span class="p">:</span> <span class="n">ImportanceWeights</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ShiftResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Detect whether Source and Target Outlier score distributions differ.&quot;&quot;&quot;</span>
-    <span class="n">prepared</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_prepare_two_sample_test</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">)</span>
-    <span class="n">statistic_name</span><span class="p">,</span> <span class="n">metric</span> <span class="o">=</span> <span class="n">_get_shift_statistic</span><span class="p">(</span><span class="n">statistic</span><span class="p">)</span>
-    <span class="n">_validate_shift_scores</span><span class="p">(</span><span class="n">statistic_name</span><span class="p">,</span> <span class="n">prepared</span><span class="o">.</span><span class="n">scores</span><span class="p">)</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="n">_run_permutation_test</span><span class="p">(</span>
-        <span class="n">prepared</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span>
-        <span class="n">prepared</span><span class="o">.</span><span class="n">scores</span><span class="p">,</span>
-        <span class="n">metric</span><span class="p">,</span>
-        <span class="n">n_resamples</span><span class="o">=</span><span class="n">n_resamples</span><span class="p">,</span>
-        <span class="n">alternative</span><span class="o">=</span><span class="n">alternative</span><span class="p">,</span>
-        <span class="n">sample_weight</span><span class="o">=</span><span class="n">prepared</span><span class="o">.</span><span class="n">sample_weight</span><span class="p">,</span>
-        <span class="n">rng</span><span class="o">=</span><span class="n">_resolve_random_state</span><span class="p">(</span><span class="n">random_state</span><span class="p">),</span>
-        <span class="n">batch</span><span class="o">=</span><span class="n">batch</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="k">return</span> <span class="n">ShiftResult</span><span class="p">(</span>
-        <span class="n">statistic</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">statistic</span><span class="p">),</span>
-        <span class="n">pvalue</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">pvalue</span><span class="p">),</span>
-        <span class="n">statistic_name</span><span class="o">=</span><span class="n">statistic_name</span><span class="p">,</span>
-        <span class="n">null_distribution</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">null_distribution</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
-    <span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-
-<a id="samesame.shift.detect_harm"></a>
-    <div class="doc doc-contents first">
-
-        <p>Detect whether Target is harmfully shifted relative to Source.</p>
-
-
-            <details class="quote">
-              <summary>Source code in <code>src/samesame/shift.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">395</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
 <span class="normal">396</span>
-<span class="normal">397</span>
-<span class="normal">398</span>
-<span class="normal">399</span>
-<span class="normal">400</span>
-<span class="normal">401</span>
-<span class="normal">402</span>
-<span class="normal">403</span>
-<span class="normal">404</span>
-<span class="normal">405</span>
-<span class="normal">406</span>
-<span class="normal">407</span>
-<span class="normal">408</span>
-<span class="normal">409</span>
-<span class="normal">410</span>
-<span class="normal">411</span>
-<span class="normal">412</span>
-<span class="normal">413</span>
-<span class="normal">414</span>
-<span class="normal">415</span>
-<span class="normal">416</span>
-<span class="normal">417</span>
-<span class="normal">418</span>
-<span class="normal">419</span>
-<span class="normal">420</span>
-<span class="normal">421</span>
-<span class="normal">422</span>
-<span class="normal">423</span>
-<span class="normal">424</span>
-<span class="normal">425</span>
-<span class="normal">426</span>
-<span class="normal">427</span>
-<span class="normal">428</span>
-<span class="normal">429</span>
-<span class="normal">430</span>
-<span class="normal">431</span>
-<span class="normal">432</span>
-<span class="normal">433</span>
-<span class="normal">434</span>
-<span class="normal">435</span>
-<span class="normal">436</span>
-<span class="normal">437</span>
-<span class="normal">438</span>
-<span class="normal">439</span>
-<span class="normal">440</span>
-<span class="normal">441</span>
-<span class="normal">442</span>
-<span class="normal">443</span>
-<span class="normal">444</span>
-<span class="normal">445</span>
-<span class="normal">446</span>
-<span class="normal">447</span>
-<span class="normal">448</span>
-<span class="normal">449</span>
-<span class="normal">450</span>
-<span class="normal">451</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">detect_harm</span><span class="p">(</span>
+<span class="normal">397</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_harmful_shift</span><span class="p">(</span>
     <span class="n">source</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
     <span class="n">target</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">direction</span><span class="p">:</span> <span class="n">Direction</span><span class="p">,</span>
+    <span class="n">worse</span><span class="p">:</span> <span class="n">Worse</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">n_resamples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">9999</span><span class="p">,</span>
-    <span class="n">batch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">random_state</span><span class="p">:</span> <span class="n">RandomState</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">rng</span><span class="p">:</span> <span class="n">Seed</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">weights</span><span class="p">:</span> <span class="n">ImportanceWeights</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">include_posterior</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HarmResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Detect whether Target is harmfully shifted relative to Source.&quot;&quot;&quot;</span>
-    <span class="n">prepared</span><span class="p">,</span> <span class="n">validated_direction</span> <span class="o">=</span> <span class="n">_prepare_two_sample_test</span><span class="p">(</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HarmfulShiftResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Focused check — did target move toward the harmful tail you care about?</span>
+
+<span class="sd">    A small ``test_shift`` p-value says *something* changed. This test asks</span>
+<span class="sd">    the narrower question: after orienting the score so larger means worse</span>
+<span class="sd">    (``worse=&quot;lower&quot;`` flips the sign), does target put more mass beyond</span>
+<span class="sd">    thresholds that source rarely exceeds? Thresholds the source rarely</span>
+<span class="sd">    exceeds get more weight, so the test leans into the harmful tail. A</span>
+<span class="sd">    small p-value is evidence for that directional movement — not for</span>
+<span class="sd">    arbitrary shift.</span>
+
+<span class="sd">    Decide ``worse`` from what the score means before looking at results;</span>
+<span class="sd">    do not pick the direction that gives the smaller p-value.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    source : ArrayLike</span>
+<span class="sd">        Scores for the source (reference) group — e.g., training data or a</span>
+<span class="sd">        past deployment.</span>
+<span class="sd">    target : ArrayLike</span>
+<span class="sd">        Scores for the target (evaluation) group — e.g., the current</span>
+<span class="sd">        deployment.</span>
+<span class="sd">    worse : {&#39;higher&#39;, &#39;lower&#39;} or Worse</span>
+<span class="sd">        Which tail is harmful. ``&quot;higher&quot;`` when larger scores mean harm</span>
+<span class="sd">        (e.g., predicted risk, prediction error, atypicality outlier</span>
+<span class="sd">        score); ``&quot;lower&quot;`` when smaller scores mean harm (e.g.,</span>
+<span class="sd">        confidence via ``LogitGap``). Accepts a plain string or</span>
+<span class="sd">        :class:`Worse`.</span>
+<span class="sd">    n_resamples : int, optional</span>
+<span class="sd">        Number of label permutations. Default ``9999``. Use ``999`` while</span>
+<span class="sd">        exploring and ``19999`` for finer resolution below ``0.001``.</span>
+<span class="sd">    rng : int | np.random.Generator | np.random.RandomState | None, optional</span>
+<span class="sd">        Random state for reproducibility. Pass ``np.random.default_rng(12345)``</span>
+<span class="sd">        or an ``int`` seed. Default ``None``.</span>
+<span class="sd">    weights : ImportanceWeights | None, optional</span>
+<span class="sd">        Per-observation importance weights aligned to ``source`` and</span>
+<span class="sd">        ``target``. Omit to compare the full populations; supply when the</span>
+<span class="sd">        comparison should focus on common support (see</span>
+<span class="sd">        :func:`samesame.weights.domain_weights`).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    HarmfulShiftResult</span>
+<span class="sd">        Observed weighted-AUC, one-sided p-value, declared ``worse``, and</span>
+<span class="sd">        null distribution. The null is formed by permuting group labels</span>
+<span class="sd">        while keeping scores and weights fixed.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    * One-sided ``greater`` alternative with ``+1`` smoothing (never zero).</span>
+<span class="sd">    * The statistic has no universal chance value. Compare it to</span>
+<span class="sd">      ``null_distribution`` and the score&#39;s own scale, not to ``0.5``.</span>
+<span class="sd">      See :doc:`How the harm test works</span>
+<span class="sd">      &lt;../explanation/harmful-shift-statistic&gt;` for the ROC intuition and</span>
+<span class="sd">      the ``∫ TPR·(1−FPR)² dFPR`` form.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    test_shift : Broad, two-sided screen when any change matters.</span>
+<span class="sd">    samesame.weights.domain_weights : Build weights from ``P(target|x)``.</span>
+<span class="sd">    Worse : The ``&quot;higher&quot;`` / ``&quot;lower&quot;`` choice in plain language.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; import samesame as ss</span>
+<span class="sd">    &gt;&gt;&gt; rng = np.random.default_rng(12345)</span>
+<span class="sd">    &gt;&gt;&gt; source = rng.normal(0.20, 0.07, size=300)</span>
+<span class="sd">    &gt;&gt;&gt; target = rng.normal(0.28, 0.07, size=300)  # higher risk = worse</span>
+<span class="sd">    &gt;&gt;&gt; res = ss.test_harmful_shift(source, target, worse=&quot;higher&quot;, rng=rng)</span>
+<span class="sd">    &gt;&gt;&gt; res.pvalue &lt; 0.05</span>
+<span class="sd">    True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">worse_enum</span> <span class="o">=</span> <span class="n">_coerce_worse</span><span class="p">(</span><span class="n">worse</span><span class="p">)</span>
+
+    <span class="n">metric</span> <span class="o">=</span> <span class="n">_harm_metric_factory</span><span class="p">(</span><span class="n">worse_enum</span><span class="p">)</span>
+
+    <span class="n">statistic</span><span class="p">,</span> <span class="n">pvalue</span><span class="p">,</span> <span class="n">null_distribution</span> <span class="o">=</span> <span class="n">_permutation_test</span><span class="p">(</span>
         <span class="n">source</span><span class="p">,</span>
         <span class="n">target</span><span class="p">,</span>
-        <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span>
-        <span class="n">direction</span><span class="o">=</span><span class="n">direction</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="k">assert</span> <span class="n">validated_direction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-    <span class="n">posterior_threshold</span> <span class="o">=</span> <span class="n">_resolve_posterior_threshold</span><span class="p">(</span>
-        <span class="n">include_posterior</span><span class="o">=</span><span class="n">include_posterior</span><span class="p">,</span>
-        <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="n">_run_permutation_test</span><span class="p">(</span>
-        <span class="n">prepared</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span>
-        <span class="n">prepared</span><span class="o">.</span><span class="n">scores</span><span class="p">,</span>
-        <span class="n">_wauc</span><span class="p">,</span>
-        <span class="n">n_resamples</span><span class="o">=</span><span class="n">n_resamples</span><span class="p">,</span>
+        <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">,</span>
         <span class="n">alternative</span><span class="o">=</span><span class="s2">&quot;greater&quot;</span><span class="p">,</span>
-        <span class="n">sample_weight</span><span class="o">=</span><span class="n">prepared</span><span class="o">.</span><span class="n">sample_weight</span><span class="p">,</span>
-        <span class="n">rng</span><span class="o">=</span><span class="n">_resolve_random_state</span><span class="p">(</span><span class="n">random_state</span><span class="p">),</span>
-        <span class="n">batch</span><span class="o">=</span><span class="n">batch</span><span class="p">,</span>
+        <span class="n">n_resamples</span><span class="o">=</span><span class="n">n_resamples</span><span class="p">,</span>
+        <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">,</span>
+        <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">posterior</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">bayes_factor</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">if</span> <span class="n">include_posterior</span><span class="p">:</span>
-        <span class="n">posterior</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
-            <span class="n">_bayesian_posterior</span><span class="p">(</span>
-                <span class="n">prepared</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span>
-                <span class="n">prepared</span><span class="o">.</span><span class="n">scores</span><span class="p">,</span>
-                <span class="n">_wauc</span><span class="p">,</span>
-                <span class="n">n_resamples</span><span class="o">=</span><span class="n">n_resamples</span><span class="p">,</span>
-                <span class="n">rng</span><span class="o">=</span><span class="n">_resolve_random_state</span><span class="p">(</span><span class="n">random_state</span><span class="p">),</span>
-                <span class="n">base_weight</span><span class="o">=</span><span class="n">prepared</span><span class="o">.</span><span class="n">sample_weight</span><span class="p">,</span>
-            <span class="p">),</span>
-            <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">bayes_factor</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">_bayes_factor</span><span class="p">(</span><span class="n">posterior</span><span class="p">,</span> <span class="n">posterior_threshold</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">HarmResult</span><span class="p">(</span>
-        <span class="n">statistic</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">statistic</span><span class="p">),</span>
-        <span class="n">pvalue</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">pvalue</span><span class="p">),</span>
-        <span class="n">direction</span><span class="o">=</span><span class="n">validated_direction</span><span class="p">,</span>
-        <span class="n">null_distribution</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">null_distribution</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
-        <span class="n">posterior</span><span class="o">=</span><span class="n">posterior</span><span class="p">,</span>
-        <span class="n">bayes_factor</span><span class="o">=</span><span class="n">bayes_factor</span><span class="p">,</span>
+    <span class="k">return</span> <span class="n">HarmfulShiftResult</span><span class="p">(</span>
+        <span class="n">statistic</span><span class="o">=</span><span class="n">statistic</span><span class="p">,</span>
+        <span class="n">pvalue</span><span class="o">=</span><span class="n">pvalue</span><span class="p">,</span>
+        <span class="n">worse</span><span class="o">=</span><span class="n">worse_enum</span><span class="p">,</span>
+        <span class="n">null_distribution</span><span class="o">=</span><span class="n">null_distribution</span><span class="p">,</span>
     <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -1401,12 +1747,72 @@ Both results include <code>.null_distribution</code> when you need the full perm
 
 <a id="samesame.shift.ShiftResult"></a>
     <div class="doc doc-contents first">
-            <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="TestResult (samesame.shift.TestResult)" href="#samesame.shift.TestResult">TestResult</a></code></p>
 
 
-        <p>Result of generic shift detection.</p>
+        <p>Result of :func:<code>test_shift</code> — a two-sided permutation result.</p>
+<p>The statistic is ROC AUC: how well the score separates target from
+source (<code>0.5</code> is chance, like a coin flip; <code>0.8</code> or <code>0.2</code> both
+signal strong separation in opposite directions). The p-value is
+evidence against label exchangeability — that source and target labels
+could be swapped — not an effect size, not business impact, and not
+the probability that the null is true.</p>
 
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="samesame.shift.ShiftResult.statistic">statistic</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Observed ROC AUC, weighted when <code>weights</code> were supplied.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="samesame.shift.ShiftResult.pvalue">pvalue</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Two-sided permutation p-value with +1 smoothing (always &gt; 0;
+doubling the smaller tail, capped at 1).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="samesame.shift.ShiftResult.null_distribution">null_distribution</span></code></td>
+            <td>
+                  <code><span title="numpy.typing.NDArray">NDArray</span>[<span title="numpy.float64">float64</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Null distribution of the statistic (length <code>n_resamples</code>),
+produced by permuting group labels while keeping scores and
+weights fixed.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <p>test_harmful_shift : When you can name the harmful tail in advance.
+samesame.weights.domain_weights : If poor overlap is a real concern.</p>
+</details>
 
 
 
@@ -1416,17 +1822,81 @@ Both results include <code>.null_distribution</code> when you need the full perm
 
               <details class="quote">
                 <summary>Source code in <code>src/samesame/shift.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">38</span>
-<span class="normal">39</span>
-<span class="normal">40</span>
-<span class="normal">41</span>
-<span class="normal">42</span>
-<span class="normal">43</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">ShiftResult</span><span class="p">(</span><span class="n">TestResult</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Result of generic shift detection.&quot;&quot;&quot;</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ShiftResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Result of :func:`test_shift` — a two-sided permutation result.</span>
 
-    <span class="n">statistic_name</span><span class="p">:</span> <span class="nb">str</span>
+<span class="sd">    The statistic is ROC AUC: how well the score separates target from</span>
+<span class="sd">    source (``0.5`` is chance, like a coin flip; ``0.8`` or ``0.2`` both</span>
+<span class="sd">    signal strong separation in opposite directions). The p-value is</span>
+<span class="sd">    evidence against label exchangeability — that source and target labels</span>
+<span class="sd">    could be swapped — not an effect size, not business impact, and not</span>
+<span class="sd">    the probability that the null is true.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    statistic : float</span>
+<span class="sd">        Observed ROC AUC, weighted when ``weights`` were supplied.</span>
+<span class="sd">    pvalue : float</span>
+<span class="sd">        Two-sided permutation p-value with +1 smoothing (always &gt; 0;</span>
+<span class="sd">        doubling the smaller tail, capped at 1).</span>
+<span class="sd">    null_distribution : NDArray[np.float64]</span>
+<span class="sd">        Null distribution of the statistic (length ``n_resamples``),</span>
+<span class="sd">        produced by permuting group labels while keeping scores and</span>
+<span class="sd">        weights fixed.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    test_harmful_shift : When you can name the harmful tail in advance.</span>
+<span class="sd">    samesame.weights.domain_weights : If poor overlap is a real concern.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">statistic</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">pvalue</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">null_distribution</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;statistic=</span><span class="si">{</span><span class="n">_fmt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">statistic</span><span class="p">)</span><span class="si">}</span><span class="s2">, pvalue=</span><span class="si">{</span><span class="n">_fmt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pvalue</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -1455,13 +1925,267 @@ Both results include <code>.null_distribution</code> when you need the full perm
 
 
 
-<a id="samesame.shift.HarmResult"></a>
+<a id="samesame.shift.HarmfulShiftResult"></a>
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="TestResult (samesame.shift.TestResult)" href="#samesame.shift.TestResult">TestResult</a></code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="ShiftResult (samesame.shift.ShiftResult)" href="#samesame.shift.ShiftResult">ShiftResult</a></code></p>
 
 
-        <p>Result of harmful-shift detection.</p>
+        <p>Result of :func:<code>test_harmful_shift</code> — a one-sided tail result.</p>
+<p>The statistic is a weighted AUC <code>∫ TPR·(1−FPR)² dFPR</code> that leans
+into thresholds the source rarely exceeds, after orienting the score
+so larger means worse (<code>worse="lower"</code> flips the sign). Unlike AUC
+it has no universal chance value like <code>0.5</code> — read it against
+<code>null_distribution</code> and the score's own scale. See
+:doc:<code>How the harm test works &lt;../explanation/harmful-shift-statistic&gt;</code>
+for the ROC intuition.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="samesame.shift.HarmfulShiftResult.statistic">statistic</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Observed harmful-shift statistic.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="samesame.shift.HarmfulShiftResult.pvalue">pvalue</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>One-sided (<code>greater</code>) permutation p-value with +1 smoothing
+(always &gt; 0).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="samesame.shift.HarmfulShiftResult.null_distribution">null_distribution</span></code></td>
+            <td>
+                  <code><span title="numpy.typing.NDArray">NDArray</span>[<span title="numpy.float64">float64</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Null distribution of the statistic (length <code>n_resamples</code>),
+produced by permuting group labels while keeping scores and
+weights fixed.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="samesame.shift.HarmfulShiftResult.worse">worse</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="Worse (samesame.shift.Worse)" href="#samesame.shift.Worse">Worse</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The declared harmful direction that was tested.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <p>test_shift : Broad screen when any change matters.
+Worse : <code>"higher"</code> vs <code>"lower"</code> in plain language.</p>
+</details>
+
+
+
+
+
+
+
+              <details class="quote">
+                <summary>Source code in <code>src/samesame/shift.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">HarmfulShiftResult</span><span class="p">(</span><span class="n">ShiftResult</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Result of :func:`test_harmful_shift` — a one-sided tail result.</span>
+
+<span class="sd">    The statistic is a weighted AUC ``∫ TPR·(1−FPR)² dFPR`` that leans</span>
+<span class="sd">    into thresholds the source rarely exceeds, after orienting the score</span>
+<span class="sd">    so larger means worse (``worse=&quot;lower&quot;`` flips the sign). Unlike AUC</span>
+<span class="sd">    it has no universal chance value like ``0.5`` — read it against</span>
+<span class="sd">    ``null_distribution`` and the score&#39;s own scale. See</span>
+<span class="sd">    :doc:`How the harm test works &lt;../explanation/harmful-shift-statistic&gt;`</span>
+<span class="sd">    for the ROC intuition.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    statistic : float</span>
+<span class="sd">        Observed harmful-shift statistic.</span>
+<span class="sd">    pvalue : float</span>
+<span class="sd">        One-sided (``greater``) permutation p-value with +1 smoothing</span>
+<span class="sd">        (always &gt; 0).</span>
+<span class="sd">    null_distribution : NDArray[np.float64]</span>
+<span class="sd">        Null distribution of the statistic (length ``n_resamples``),</span>
+<span class="sd">        produced by permuting group labels while keeping scores and</span>
+<span class="sd">        weights fixed.</span>
+<span class="sd">    worse : Worse</span>
+<span class="sd">        The declared harmful direction that was tested.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    test_shift : Broad screen when any change matters.</span>
+<span class="sd">    Worse : ``&quot;higher&quot;`` vs ``&quot;lower&quot;`` in plain language.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">worse</span><span class="p">:</span> <span class="n">Worse</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;statistic=</span><span class="si">{</span><span class="n">_fmt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">statistic</span><span class="p">)</span><span class="si">}</span><span class="s2">, pvalue=</span><span class="si">{</span><span class="n">_fmt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pvalue</span><span class="p">)</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;worse=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">worse</span><span class="o">.</span><span class="n">value</span><span class="si">!r}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<a id="samesame.shift.Worse"></a>
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="enum.StrEnum">StrEnum</span></code></p>
+
+
+        <p>Which tail is harmful for :func:<code>test_harmful_shift</code>.</p>
+<p>Declare <code>worse</code> from what the score <em>means</em> before looking at
+results — not from whichever direction gives the smaller p-value.
+A plain string <code>"higher"</code> / <code>"lower"</code> is accepted wherever this
+enum is; the two forms are interchangeable.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="samesame.shift.Worse.HIGHER">HIGHER</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="Worse (samesame.shift.Worse)" href="#samesame.shift.Worse">Worse</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Larger scores mean more harm (e.g., predicted risk, prediction
+error, atypicality outlier score).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="samesame.shift.Worse.LOWER">LOWER</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="Worse (samesame.shift.Worse)" href="#samesame.shift.Worse">Worse</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Smaller scores mean more harm (e.g., confidence via <code>LogitGap</code>,
+accuracy).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <p>samesame.shift.test_harmful_shift : The test that consumes this choice.</p>
+</details>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="kn">import</span> <span class="n">Worse</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Worse</span><span class="p">(</span><span class="s2">&quot;higher&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">Worse</span><span class="o">.</span><span class="n">HIGHER</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Worse</span><span class="p">(</span><span class="s2">&quot;lower&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">Worse</span><span class="o">.</span><span class="n">LOWER</span>
+<span class="go">True</span>
+</code></pre></div>
 
 
 
@@ -1479,68 +2203,62 @@ Both results include <code>.null_distribution</code> when you need the full perm
 <span class="normal">50</span>
 <span class="normal">51</span>
 <span class="normal">52</span>
-<span class="normal">53</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">HarmResult</span><span class="p">(</span><span class="n">TestResult</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Result of harmful-shift detection.&quot;&quot;&quot;</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Worse</span><span class="p">(</span><span class="n">StrEnum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Which tail is harmful for :func:`test_harmful_shift`.</span>
 
-    <span class="n">direction</span><span class="p">:</span> <span class="n">Direction</span>
-    <span class="n">null_distribution</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
-    <span class="n">posterior</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">bayes_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-</code></pre></div></td></tr></table></div>
-              </details>
+<span class="sd">    Declare ``worse`` from what the score *means* before looking at</span>
+<span class="sd">    results — not from whichever direction gives the smaller p-value.</span>
+<span class="sd">    A plain string ``&quot;higher&quot;`` / ``&quot;lower&quot;`` is accepted wherever this</span>
+<span class="sd">    enum is; the two forms are interchangeable.</span>
 
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    HIGHER : Worse</span>
+<span class="sd">        Larger scores mean more harm (e.g., predicted risk, prediction</span>
+<span class="sd">        error, atypicality outlier score).</span>
+<span class="sd">    LOWER : Worse</span>
+<span class="sd">        Smaller scores mean more harm (e.g., confidence via ``LogitGap``,</span>
+<span class="sd">        accuracy).</span>
 
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    samesame.shift.test_harmful_shift : The test that consumes this choice.</span>
 
-  <div class="doc doc-children">
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from samesame import Worse</span>
+<span class="sd">    &gt;&gt;&gt; Worse(&quot;higher&quot;) == Worse.HIGHER</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; Worse(&quot;lower&quot;) == Worse.LOWER</span>
+<span class="sd">    True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-
-
-
-
-
-
-
-
-
-
-
-  </div>
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-class">
-
-
-
-<a id="samesame.shift.TestResult"></a>
-    <div class="doc doc-contents first">
-
-
-        <p>Shared fields for all statistical test results.</p>
-
-
-
-
-
-
-
-
-              <details class="quote">
-                <summary>Source code in <code>src/samesame/shift.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">30</span>
-<span class="normal">31</span>
-<span class="normal">32</span>
-<span class="normal">33</span>
-<span class="normal">34</span>
-<span class="normal">35</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">TestResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Shared fields for all statistical test results.&quot;&quot;&quot;</span>
-
-    <span class="n">statistic</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="n">pvalue</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">HIGHER</span> <span class="o">=</span> <span class="s2">&quot;higher&quot;</span>
+    <span class="n">LOWER</span> <span class="o">=</span> <span class="s2">&quot;lower&quot;</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -1581,6 +2299,8 @@ Both results include <code>.null_distribution</code> when you need the full perm
             </div>
           
           
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
         
@@ -1599,7 +2319,7 @@ Both results include <code>.null_distribution</code> when you need the full perm
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../../explanation/importance-weights-rationale/" class="md-footer__link md-footer__link--prev" aria-label="Previous: When Importance Weights Help">
+          <a href="../../explanation/harmful-shift-statistic/" class="md-footer__link md-footer__link--prev" aria-label="Previous: How the harm test works">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1609,20 +2329,20 @@ Both results include <code>.null_distribution</code> when you need the full perm
                 Previous
               </span>
               <div class="md-ellipsis">
-                When Importance Weights Help
+                How the harm test works
               </div>
             </div>
           </a>
         
         
           
-          <a href="../weighting/" class="md-footer__link md-footer__link--next" aria-label="Next: Importance Weights">
+          <a href="../weighting/" class="md-footer__link md-footer__link--next" aria-label="Next: Weighting">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Importance Weights
+                Weighting
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -1683,14 +2403,16 @@ Both results include <code>.null_distribution</code> when you need the full perm
     
     
       
-      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.action.view"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.92b07e13.min.js"></script>
       
-        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-      
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+      
+        <script src="../../javascripts/mermaid-init.js"></script>
       
     
   </body>

@@ -1,0 +1,6 @@
+| Signal | What it measures | `worse` |
+|--------|------------------|---------|
+| Predicted risk | business impact | `worse="higher"` |
+| Prediction error (Brier, log-loss) | accuracy once labels arrive | `worse="higher"` |
+| Outlier score — confidence (`LogitGap`) | certainty / typicality | `worse="lower"` |
+| Outlier score — atypicality | distance from source | `worse="higher"` |

@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Statistical tests for deciding whether a new population differs from a reference population, and whether the change is harmful.">
+        <meta name="description" content="Statistical tests for comparing source and target score distributions — and whether the target moved toward worse outcomes.">
       
       
         <meta name="author" content="Vathy M. Kamulete">
@@ -24,7 +24,7 @@
     
     
       
-        <title>Importance Weights - samesame</title>
+        <title>Weighting - samesame</title>
       
     
     
@@ -63,6 +63,8 @@
   
   
     
+    
+      
     
     
     
@@ -112,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Importance Weights
+              Weighting
             
           </span>
         </div>
@@ -120,7 +122,33 @@
     </div>
     
       
+        <form class="md-header__option" data-md-component="palette">
+  
     
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
     
     
     
@@ -211,14 +239,35 @@
   
   
   
+    <li class="md-tabs__item">
+      <a href="../../examples/tutorials/get-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Get started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
     
     
       <li class="md-tabs__item">
-        <a href="../../examples/tutorials/detect-distribution-shift/" class="md-tabs__link">
+        <a href="../../examples/credit/monitor-credit/" class="md-tabs__link">
           
   
   
-  Tutorials
+    
+  
+  Guides
 
         </a>
       </li>
@@ -234,29 +283,11 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../examples/credit/monitor-credit-risk/" class="md-tabs__link">
+        <a href="../../explanation/harmful-shift-statistic/" class="md-tabs__link">
           
   
   
-  How-to guides
-
-        </a>
-      </li>
     
-  
-
-      
-        
-  
-  
-  
-  
-    
-    
-      <li class="md-tabs__item">
-        <a href="../../explanation/importance-weights-rationale/" class="md-tabs__link">
-          
-  
   
   Explanation
 
@@ -280,7 +311,9 @@
           
   
   
-  API reference
+    
+  
+  Reference
 
         </a>
       </li>
@@ -314,7 +347,9 @@
   
 
 
-<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="../.." title="samesame" class="md-nav__button md-logo" aria-label="samesame" data-md-component="logo">
       
@@ -367,58 +402,13 @@
   
   
   
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    Tutorials
-    
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2">
-            <span class="md-nav__icon md-icon"></span>
-            Tutorials
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
     <li class="md-nav__item">
-      <a href="../../examples/tutorials/detect-distribution-shift/" class="md-nav__link">
+      <a href="../../examples/tutorials/get-started/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Detect Whether Two Datasets Differ
+    Get started
     
   </span>
   
@@ -427,68 +417,20 @@
     </li>
   
 
-              
-            
-              
-                
+    
+      
+      
   
   
   
   
-    <li class="md-nav__item">
-      <a href="../../examples/tutorials/check-shift-harm/" class="md-nav__link">
+    
+    
+      
         
-  
-  
-  <span class="md-ellipsis">
-    Check Whether a Change Points in a Worse Direction
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../examples/tutorials/adjust-for-covariate-shift/" class="md-nav__link">
+      
         
-  
-  
-  <span class="md-ellipsis">
-    Focus on Shared Support with Importance Weights
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
       
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
     
     
     
@@ -512,7 +454,7 @@
   
   
   <span class="md-ellipsis">
-    How-to guides
+    Guides
     
   </span>
   
@@ -523,7 +465,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
-            How-to guides
+            Guides
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -534,12 +476,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../examples/credit/monitor-credit-risk/" class="md-nav__link">
+      <a href="../../examples/credit/monitor-credit/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Monitor Predicted Credit Risk
+    Monitor a credit model
     
   </span>
   
@@ -557,81 +499,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../examples/credit/monitor-model-confidence/" class="md-nav__link">
+      <a href="../../examples/weighting/weight-for-common-support/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Monitor Model Confidence
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../examples/credit/monitor-prediction-errors/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Monitor Prediction Errors Once Labels Arrive
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../examples/weighting/source-reweighting/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Focus Harmful-Shift Testing on Shared Support
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../examples/weighting/double-weighting/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Restrict Testing to Common Support on Both Sides
+    Weight for common support
     
   </span>
   
@@ -656,6 +529,10 @@
   
   
     
+    
+      
+        
+      
     
     
     
@@ -701,12 +578,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../explanation/importance-weights-rationale/" class="md-nav__link">
+      <a href="../../explanation/harmful-shift-statistic/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    When Importance Weights Help
+    How the harm test works
     
   </span>
   
@@ -734,6 +611,12 @@
   
     
     
+      
+        
+      
+        
+      
+    
     
     
       
@@ -757,7 +640,7 @@
   
   
   <span class="md-ellipsis">
-    API reference
+    Reference
     
   </span>
   
@@ -768,7 +651,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
-            API reference
+            Reference
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -784,7 +667,7 @@
   
   
   <span class="md-ellipsis">
-    Shift Testing
+    Testing
     
   </span>
   
@@ -816,7 +699,7 @@
   
   
   <span class="md-ellipsis">
-    Importance Weights
+    Weighting
     
   </span>
   
@@ -829,7 +712,7 @@
   
   
   <span class="md-ellipsis">
-    Importance Weights
+    Weighting
     
   </span>
   
@@ -852,27 +735,36 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#choose-an-approach" class="md-nav__link">
+  <a href="#why-weighting-exists" class="md-nav__link">
     <span class="md-ellipsis">
-      Choose an approach
+      Why weighting exists
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#when-from_domain_probabilities-helps" class="md-nav__link">
+  <a href="#when-to-use" class="md-nav__link">
     <span class="md-ellipsis">
-      When from_domain_probabilities(...) helps
+      When to use
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#choosing-a-mode" class="md-nav__link">
+  <a href="#domain_weights" class="md-nav__link">
     <span class="md-ellipsis">
-      Choosing a mode
+      domain_weights
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#effective-sample-size" class="md-nav__link">
+    <span class="md-ellipsis">
+      Effective sample size
     </span>
   </a>
   
@@ -888,9 +780,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#samesame.weights" class="md-nav__link">
+  <a href="#samesame.weights.domain_weights" class="md-nav__link">
     <span class="md-ellipsis">
-      weights
+      domain_weights
     </span>
   </a>
   
@@ -906,9 +798,27 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#samesame.weights.from_domain_probabilities" class="md-nav__link">
+  <a href="#samesame.weights.ImportanceWeights.effective_sample_size" class="md-nav__link">
     <span class="md-ellipsis">
-      from_domain_probabilities
+      effective_sample_size
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#samesame.weights.ReweightMode" class="md-nav__link">
+    <span class="md-ellipsis">
+      ReweightMode
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#samesame.weights.EffectiveSampleSize" class="md-nav__link">
+    <span class="md-ellipsis">
+      EffectiveSampleSize
     </span>
   </a>
   
@@ -937,95 +847,6 @@
               </div>
             
             
-              
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#choose-an-approach" class="md-nav__link">
-    <span class="md-ellipsis">
-      Choose an approach
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#when-from_domain_probabilities-helps" class="md-nav__link">
-    <span class="md-ellipsis">
-      When from_domain_probabilities(...) helps
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#choosing-a-mode" class="md-nav__link">
-    <span class="md-ellipsis">
-      Choosing a mode
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#api" class="md-nav__link">
-    <span class="md-ellipsis">
-      API
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#samesame.weights" class="md-nav__link">
-    <span class="md-ellipsis">
-      weights
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#samesame.weights.ImportanceWeights" class="md-nav__link">
-    <span class="md-ellipsis">
-      ImportanceWeights
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#samesame.weights.from_domain_probabilities" class="md-nav__link">
-    <span class="md-ellipsis">
-      from_domain_probabilities
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-                  </div>
-                </div>
-              </div>
-            
           
           
             <div class="md-content" data-md-component="content">
@@ -1036,149 +857,595 @@
 
   
   
+    
+      
+    
+    <a href="https://github.com/vathymut/samesame/raw/master/docs/api/weighting.md" title="View source of this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
+    </a>
+  
 
 
 <h1 id="importance-weights">Importance weights<a class="headerlink" href="#importance-weights" title="Permanent link">&para;</a></h1>
-<p>Use <code>samesame.weights</code> when you want a shift test to focus on the part of feature space that source
-and target actually share.</p>
-<h2 id="choose-an-approach">Choose an approach<a class="headerlink" href="#choose-an-approach" title="Permanent link">&para;</a></h2>
+<h2 id="why-weighting-exists">Why weighting exists<a class="headerlink" href="#why-weighting-exists" title="Permanent link">&para;</a></h2>
+<p>An unweighted comparison describes the full source and target samples, including
+regions seen by only one group. This is appropriate when those regions are part
+of the populations you want to compare. But when the groups barely overlap, a
+few observations from these regions can dominate the statistic even though the
+data provide little evidence about the other group's behaviour there.</p>
+<p>Importance weighting changes the question to one about <strong>common support</strong> - the
+regions of feature space represented by both groups. It can make the comparison
+more stable, but it does not create information outside the overlap and is not a
+default correction. Start unweighted and use weights when you have a substantive
+overlap concern.</p>
+<blockquote>
+<p>Source: <code>src/samesame/weights.py</code> · <code>src/samesame/_permutation.py</code></p>
+</blockquote>
+<h2 id="when-to-use">When to use<a class="headerlink" href="#when-to-use" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
 <th>Situation</th>
-<th>What to do</th>
+<th>Recommendation</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>No weighting needed</td>
+<td>No overlap concern</td>
 <td>Omit <code>weights</code></td>
 </tr>
 <tr>
-<td>You already have sample weights</td>
-<td>Wrap them in <code>ImportanceWeights(source=..., target=...)</code></td>
+<td>You have sample weights</td>
+<td>Pass <code>ss.ImportanceWeights(source=..., target=...)</code></td>
 </tr>
 <tr>
-<td>You have domain-classifier probabilities</td>
-<td>Build weights with <code>from_domain_probabilities(...)</code></td>
+<td>You have <code>P(target\|x)</code></td>
+<td>Build weights with <code>ss.domain_weights(source=..., target=...)</code></td>
 </tr>
 </tbody>
 </table>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ss</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">samesame.weights</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImportanceWeights</span><span class="p">,</span> <span class="n">from_domain_probabilities</span>
 
-<span class="n">result</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">shift</span><span class="o">.</span><span class="n">detect_shift</span><span class="p">(</span><span class="n">source_scores</span><span class="p">,</span> <span class="n">target_scores</span><span class="p">)</span>
+<span class="n">ss</span><span class="o">.</span><span class="n">test_shift</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_scores</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_scores</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="mi">12345</span><span class="p">)</span>
+<span class="n">ss</span><span class="o">.</span><span class="n">test_shift</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_scores</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_scores</span><span class="p">,</span>
+              <span class="n">weights</span><span class="o">=</span><span class="n">ss</span><span class="o">.</span><span class="n">ImportanceWeights</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_weights</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_weights</span><span class="p">),</span> <span class="n">rng</span><span class="o">=</span><span class="mi">12345</span><span class="p">)</span>
 
-<span class="n">result</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">shift</span><span class="o">.</span><span class="n">detect_shift</span><span class="p">(</span>
-    <span class="n">source_scores</span><span class="p">,</span>
-    <span class="n">target_scores</span><span class="p">,</span>
-    <span class="n">weights</span><span class="o">=</span><span class="n">ImportanceWeights</span><span class="p">(</span>
-        <span class="n">source</span><span class="o">=</span><span class="n">source_weights</span><span class="p">,</span>
-        <span class="n">target</span><span class="o">=</span><span class="n">target_weights</span><span class="p">,</span>
-    <span class="p">),</span>
-<span class="p">)</span>
-
-<span class="n">weights</span> <span class="o">=</span> <span class="n">from_domain_probabilities</span><span class="p">(</span>
-    <span class="n">source_prob</span><span class="o">=</span><span class="n">source_domain_probs</span><span class="p">,</span>
-    <span class="n">target_prob</span><span class="o">=</span><span class="n">target_domain_probs</span><span class="p">,</span>
-    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;source&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-
-<span class="n">result</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">shift</span><span class="o">.</span><span class="n">detect_harm</span><span class="p">(</span>
-    <span class="n">source_scores</span><span class="p">,</span>
-    <span class="n">target_scores</span><span class="p">,</span>
-    <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;higher-is-worse&quot;</span><span class="p">,</span>
-    <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span>
-<span class="p">)</span>
+<span class="n">weights</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">domain_weights</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_prob</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_prob</span><span class="p">,</span> <span class="n">reweight</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">shrinkage</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_scores</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_scores</span><span class="p">,</span> <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="mi">12345</span><span class="p">)</span>
 </code></pre></div>
-<h2 id="when-from_domain_probabilities-helps">When <code>from_domain_probabilities(...)</code> helps<a class="headerlink" href="#when-from_domain_probabilities-helps" title="Permanent link">&para;</a></h2>
-<p>Use it when source and target do not overlap well and you want the comparison to emphasize common
-support rather than low-overlap outliers.</p>
-<p>It takes three main controls:</p>
+<p>Weights are normalised to sum to each group's size, so the groups retain their
+original nominal sample sizes in the permutation calculation. An inactive group
+gets weight <code>1</code>. Weights change which observations count more; they do not
+repair a poorly estimated domain classifier.</p>
+<h2 id="domain_weights"><code>domain_weights</code><a class="headerlink" href="#domain_weights" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>source_prob</code> and <code>target_prob</code>, passed separately</li>
-<li><code>mode</code>, which decides whether to reweight source, target, or both</li>
-<li><code>lambda_</code>, which trades off correction strength against stability</li>
+<li><code>source</code> / <code>target</code> - separate 1-D arrays of domain probabilities <code>P(target|x)</code> in <code>[0, 1]</code>, aligned to the scores. Estimate these probabilities out of sample or otherwise honestly. The prior ratio <code>n_source/n_target</code> is inferred from the array lengths. Values are clipped to <code>[1e-6, 1 - 1e-6]</code> before ratios to avoid infinities.</li>
+<li><code>reweight</code> - which group(s) to reweight (default <code>"both"</code>):</li>
 </ul>
-<h2 id="choosing-a-mode">Choosing a mode<a class="headerlink" href="#choosing-a-mode" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
 <th>Mode</th>
-<th>What it emphasizes</th>
+<th>What it does</th>
+<th>Use when</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>mode="source"</code></td>
-<td>overlap from the source side</td>
+<td><code>reweight="source"</code></td>
+<td>reweights source toward target; target unchanged</td>
+<td>source has low-overlap observations outside target support</td>
 </tr>
 <tr>
-<td><code>mode="target"</code></td>
-<td>overlap from the target side</td>
+<td><code>reweight="target"</code></td>
+<td>reweights target toward source; source unchanged</td>
+<td>target has low-overlap observations outside source support</td>
 </tr>
 <tr>
-<td><code>mode="both"</code></td>
-<td>common support from both sides</td>
+<td><code>reweight="both"</code> (default)</td>
+<td>reweights both toward mutual support</td>
+<td>both groups have low-overlap regions</td>
 </tr>
 </tbody>
 </table>
-<p><code>lambda_=0.5</code> is a practical default. Lower values correct more aggressively. Higher values move
-closer to uniform weights.</p>
-<p>For a worked example, see
-<a href="../../examples/tutorials/adjust-for-covariate-shift/">Focus on shared support with importance weights</a>.
-For the intuition behind the formulas, see
-<a href="../../explanation/importance-weights-rationale/">When importance weights help</a>.</p>
+<ul>
+<li><code>shrinkage</code> λ in <code>[0, 1]</code> - <code>0</code> gives the plain density ratio (strong, high variance), while <code>1</code> gives uniform weights (no correction). The default is <code>0.5</code>; start there and check ESS before lowering:</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th><code>shrinkage</code></th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0.0</code></td>
+<td>Plain density ratio. Strongest correction, highest variance.</td>
+</tr>
+<tr>
+<td><code>0.5</code></td>
+<td>Default. Good balance.</td>
+</tr>
+<tr>
+<td><code>1.0</code></td>
+<td>Uniform weights. No correction.</td>
+</tr>
+</tbody>
+</table>
+<p>Lower = more aggressive; higher = more conservative. Start at <code>0.5</code> and check ESS before lowering.</p>
+<p>See <a href="../../examples/weighting/weight-for-common-support/">Weight for common support</a> for guidance on diagnosing overlap and weight concentration.</p>
+<h2 id="effective-sample-size">Effective sample size<a class="headerlink" href="#effective-sample-size" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="n">ess</span> <span class="o">=</span> <span class="n">weights</span><span class="o">.</span><span class="n">effective_sample_size</span><span class="p">()</span>  <span class="c1"># Kish (1965): (sum w)² / sum w²</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ess</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="n">ess</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>  <span class="c1"># compare each to its n</span>
+</code></pre></div>
+<p>Effective sample size (ESS) translates unequal weights into an approximate
+number of equally weighted observations. Uniform weights give <code>ESS = n</code>; when
+one or two observations carry most of the mass, ESS approaches <code>1</code>.</p>
+<p>Treat <code>ESS &lt; n/4</code> as a warning rather than a hard cutoff. A low ESS means the
+weighted result is fragile and largely driven by a few observations. If ESS
+remains low after moderate shrinkage, the groups may not have enough common
+support for a reliable weighted comparison.</p>
 <h2 id="api">API<a class="headerlink" href="#api" title="Permanent link">&para;</a></h2>
 
 
-<div class="doc doc-object doc-module">
+<div class="doc doc-object doc-function">
 
 
 
-<a id="samesame.weights"></a>
+<a id="samesame.weights.domain_weights"></a>
     <div class="doc doc-contents first">
 
-        <p>Public importance-weight seam.</p>
+        <p>Turn domain probabilities into weights that focus on where both groups live.</p>
+<p>Give it separate <code>P(target|x)</code> arrays for source and target
+observations — the probability that each row belongs to target rather
+than source, from a domain classifier. The prior ratio
+<code>n_source / n_target</code> is inferred from their lengths, so pass arrays
+aligned to the scores you intend to test. Values are clipped to
+<code>[1e-6, 1 - 1e-6]</code> before ratios to avoid infinities; clipping
+guards the arithmetic but does not rescue a poorly estimated classifier.</p>
+<p>Use the domain probability to build <em>weights</em>; use a separate,
+interpretable score (risk, error, confidence, or outlier score) for
+the harm test. Membership is not outcome quality.</p>
 
 
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>source</code>
+            </td>
+            <td>
+                  <code><span title="numpy.typing.ArrayLike">ArrayLike</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Domain probabilities <code>P(target|x)</code> for source observations, each
+in <code>[0, 1]</code>. Estimate out of sample (e.g., <code>cross_val_predict</code>)
+or otherwise honestly.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>target</code>
+            </td>
+            <td>
+                  <code><span title="numpy.typing.ArrayLike">ArrayLike</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Domain probabilities <code>P(target|x)</code> for target observations, each
+in <code>[0, 1]</code>. Estimate out of sample.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>reweight</code>
+            </td>
+            <td>
+                  <code>(&#39;source&#39;, &#39;target&#39;, &#39;both&#39;)</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Which group(s) to adjust toward common support. Default
+<code>'both'</code> — reweight both toward mutual support. <code>'source'</code>
+reweights source toward target; <code>'target'</code> does the reverse.
+Accepts a plain string or :class:<code>ReweightMode</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;source&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>shrinkage</code>
+            </td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Shrinkage <code>λ</code> in <code>[0, 1]</code> blending RIW (Relative Importance
+Weight) toward uniform weights. <code>0</code> is the plain density ratio
+— strongest correction, highest variance. <code>1</code> is uniform — no
+correction. Default <code>0.5</code> is a well-tested middle ground; check
+ESS before lowering.</p>
+              </div>
+            </td>
+            <td>
+                  <code>0.5</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="ImportanceWeights (samesame.weights.ImportanceWeights)" href="#samesame.weights.ImportanceWeights">ImportanceWeights</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Normalized weights per group, each summing to its sample size.
+Inactive groups keep weight <code>1</code> for every observation.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If probabilities are outside <code>[0, 1]</code>, empty, or non-finite; if
+<code>shrinkage</code> is outside <code>[0, 1]</code> or non-finite; or if
+<code>reweight</code> is invalid.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
+<details class="note" open>
+  <summary>Notes</summary>
+  <ul>
+<li>Start unweighted. Use weights only when you have a substantive
+  overlap concern — weighting changes the population the test
+  describes and is not a default correction.</li>
+<li>Estimate <code>P(target|x)</code> out of sample and keep it separate from
+  the harm score. Domain probability describes membership; it says
+  nothing about whether an outcome is good or bad.</li>
+<li>Call <code>.effective_sample_size()</code> on the result and compare each
+  ESS to its <code>n</code>. <code>ESS &lt; n/4</code> is a warning that a few
+  observations dominate. If ESS stays low at <code>shrinkage=0.5</code>,
+  the groups may not have enough common support for a reliable
+  weighted comparison — consider leaving the comparison unweighted.</li>
+</ul>
+</details>
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <p>ImportanceWeights : Container that normalizes and validates weights.
+EffectiveSampleSize : Per-group ESS and the <code>n/4</code> rule of thumb.
+ReweightMode : <code>"source"</code>, <code>"target"</code>, <code>"both"</code> in plain language.
+samesame.shift.test_shift : Any-shift test that can consume weights.
+samesame.shift.test_harmful_shift : Directional test that can consume weights.</p>
+</details>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">samesame.weights</span><span class="w"> </span><span class="kn">import</span> <span class="n">domain_weights</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">source</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">w</span> <span class="o">=</span> <span class="n">domain_weights</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="go">array([0.7692, 1.2308])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">w</span><span class="o">.</span><span class="n">effective_sample_size</span><span class="p">()</span><span class="o">.</span><span class="n">source</span> <span class="o">&lt;</span> <span class="mf">2.0</span>
+<span class="go">True</span>
+</code></pre></div>
 
 
-  <div class="doc doc-children">
+            <details class="quote">
+              <summary>Source code in <code>src/samesame/weights.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
+<span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">domain_weights</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">source</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+    <span class="n">target</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+    <span class="n">reweight</span><span class="p">:</span> <span class="n">ReweightMode</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">ReweightMode</span><span class="o">.</span><span class="n">BOTH</span><span class="p">,</span>
+    <span class="n">shrinkage</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ImportanceWeights</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Turn domain probabilities into weights that focus on where both groups live.</span>
 
+<span class="sd">    Give it separate ``P(target|x)`` arrays for source and target</span>
+<span class="sd">    observations — the probability that each row belongs to target rather</span>
+<span class="sd">    than source, from a domain classifier. The prior ratio</span>
+<span class="sd">    ``n_source / n_target`` is inferred from their lengths, so pass arrays</span>
+<span class="sd">    aligned to the scores you intend to test. Values are clipped to</span>
+<span class="sd">    ``[1e-6, 1 - 1e-6]`` before ratios to avoid infinities; clipping</span>
+<span class="sd">    guards the arithmetic but does not rescue a poorly estimated classifier.</span>
 
+<span class="sd">    Use the domain probability to build *weights*; use a separate,</span>
+<span class="sd">    interpretable score (risk, error, confidence, or outlier score) for</span>
+<span class="sd">    the harm test. Membership is not outcome quality.</span>
 
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    source : ArrayLike</span>
+<span class="sd">        Domain probabilities ``P(target|x)`` for source observations, each</span>
+<span class="sd">        in ``[0, 1]``. Estimate out of sample (e.g., ``cross_val_predict``)</span>
+<span class="sd">        or otherwise honestly.</span>
+<span class="sd">    target : ArrayLike</span>
+<span class="sd">        Domain probabilities ``P(target|x)`` for target observations, each</span>
+<span class="sd">        in ``[0, 1]``. Estimate out of sample.</span>
+<span class="sd">    reweight : {&#39;source&#39;, &#39;target&#39;, &#39;both&#39;} or ReweightMode, optional</span>
+<span class="sd">        Which group(s) to adjust toward common support. Default</span>
+<span class="sd">        ``&#39;both&#39;`` — reweight both toward mutual support. ``&#39;source&#39;``</span>
+<span class="sd">        reweights source toward target; ``&#39;target&#39;`` does the reverse.</span>
+<span class="sd">        Accepts a plain string or :class:`ReweightMode`.</span>
+<span class="sd">    shrinkage : float, optional</span>
+<span class="sd">        Shrinkage ``λ`` in ``[0, 1]`` blending RIW (Relative Importance</span>
+<span class="sd">        Weight) toward uniform weights. ``0`` is the plain density ratio</span>
+<span class="sd">        — strongest correction, highest variance. ``1`` is uniform — no</span>
+<span class="sd">        correction. Default ``0.5`` is a well-tested middle ground; check</span>
+<span class="sd">        ESS before lowering.</span>
 
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ImportanceWeights</span>
+<span class="sd">        Normalized weights per group, each summing to its sample size.</span>
+<span class="sd">        Inactive groups keep weight ``1`` for every observation.</span>
 
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If probabilities are outside ``[0, 1]``, empty, or non-finite; if</span>
+<span class="sd">        ``shrinkage`` is outside ``[0, 1]`` or non-finite; or if</span>
+<span class="sd">        ``reweight`` is invalid.</span>
 
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    * Start unweighted. Use weights only when you have a substantive</span>
+<span class="sd">      overlap concern — weighting changes the population the test</span>
+<span class="sd">      describes and is not a default correction.</span>
+<span class="sd">    * Estimate ``P(target|x)`` out of sample and keep it separate from</span>
+<span class="sd">      the harm score. Domain probability describes membership; it says</span>
+<span class="sd">      nothing about whether an outcome is good or bad.</span>
+<span class="sd">    * Call ``.effective_sample_size()`` on the result and compare each</span>
+<span class="sd">      ESS to its ``n``. ``ESS &lt; n/4`` is a warning that a few</span>
+<span class="sd">      observations dominate. If ESS stays low at ``shrinkage=0.5``,</span>
+<span class="sd">      the groups may not have enough common support for a reliable</span>
+<span class="sd">      weighted comparison — consider leaving the comparison unweighted.</span>
 
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    ImportanceWeights : Container that normalizes and validates weights.</span>
+<span class="sd">    EffectiveSampleSize : Per-group ESS and the ``n/4`` rule of thumb.</span>
+<span class="sd">    ReweightMode : ``&quot;source&quot;``, ``&quot;target&quot;``, ``&quot;both&quot;`` in plain language.</span>
+<span class="sd">    samesame.shift.test_shift : Any-shift test that can consume weights.</span>
+<span class="sd">    samesame.shift.test_harmful_shift : Directional test that can consume weights.</span>
 
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from samesame.weights import domain_weights</span>
+<span class="sd">    &gt;&gt;&gt; source = np.array([0.25, 0.4])</span>
+<span class="sd">    &gt;&gt;&gt; target = np.array([0.6, 0.75])</span>
+<span class="sd">    &gt;&gt;&gt; w = domain_weights(source=source, target=target)</span>
+<span class="sd">    &gt;&gt;&gt; np.round(w.source, 4)</span>
+<span class="sd">    array([0.7692, 1.2308])</span>
+<span class="sd">    &gt;&gt;&gt; w.effective_sample_size().source &lt; 2.0</span>
+<span class="sd">    True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">reweight_enum</span> <span class="o">=</span> <span class="n">_coerce_reweight</span><span class="p">(</span><span class="n">reweight</span><span class="p">)</span>
+    <span class="n">source_p</span> <span class="o">=</span> <span class="n">_as_prob_vector</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;source&quot;</span><span class="p">)</span>
+    <span class="n">target_p</span> <span class="o">=</span> <span class="n">_as_prob_vector</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;target&quot;</span><span class="p">)</span>
+
+    <span class="n">source_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">source_p</span><span class="p">,</span> <span class="n">_CLIP</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">_CLIP</span><span class="p">)</span>
+    <span class="n">target_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">target_p</span><span class="p">,</span> <span class="n">_CLIP</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">_CLIP</span><span class="p">)</span>
+
+    <span class="n">lam</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">shrinkage</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">lam</span><span class="p">)</span> <span class="ow">or</span> <span class="n">lam</span> <span class="o">&lt;</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">lam</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;shrinkage must be in [0, 1] and finite.&quot;</span><span class="p">)</span>
+
+    <span class="n">n_source</span><span class="p">,</span> <span class="n">n_target</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">source_p</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">target_p</span><span class="p">)</span>
+    <span class="n">prior_ratio</span> <span class="o">=</span> <span class="n">n_source</span> <span class="o">/</span> <span class="n">n_target</span>
+
+    <span class="c1"># density ratio r = p/(1-p) * prior_ratio</span>
+    <span class="n">source_r</span> <span class="o">=</span> <span class="p">(</span><span class="n">source_p</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">source_p</span><span class="p">))</span> <span class="o">*</span> <span class="n">prior_ratio</span>
+    <span class="n">target_r</span> <span class="o">=</span> <span class="p">(</span><span class="n">target_p</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">target_p</span><span class="p">))</span> <span class="o">*</span> <span class="n">prior_ratio</span>
+
+    <span class="c1"># RIW formulas (Yamada et al. 2013)</span>
+    <span class="c1"># source: r / ((1-lam) + lam*r), target: 1 / (lam + (1-lam)*r)</span>
+    <span class="n">out_source</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_source</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">out_target</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_target</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">reweight_enum</span> <span class="ow">in</span> <span class="p">(</span><span class="n">ReweightMode</span><span class="o">.</span><span class="n">SOURCE</span><span class="p">,</span> <span class="n">ReweightMode</span><span class="o">.</span><span class="n">BOTH</span><span class="p">):</span>
+        <span class="n">out_source</span> <span class="o">=</span> <span class="n">source_r</span> <span class="o">/</span> <span class="p">((</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">lam</span><span class="p">)</span> <span class="o">+</span> <span class="n">lam</span> <span class="o">*</span> <span class="n">source_r</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">reweight_enum</span> <span class="ow">in</span> <span class="p">(</span><span class="n">ReweightMode</span><span class="o">.</span><span class="n">TARGET</span><span class="p">,</span> <span class="n">ReweightMode</span><span class="o">.</span><span class="n">BOTH</span><span class="p">):</span>
+        <span class="n">out_target</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">lam</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">lam</span><span class="p">)</span> <span class="o">*</span> <span class="n">target_r</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ImportanceWeights</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">out_source</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">out_target</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
 
 <div class="doc doc-object doc-class">
 
 
 
-<h2 id="samesame.weights.ImportanceWeights" class="doc doc-heading">
-            <code>ImportanceWeights</code>
+<a id="samesame.weights.ImportanceWeights"></a>
+    <div class="doc doc-contents first">
 
 
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
-  </span>
-
-<a href="#samesame.weights.ImportanceWeights" class="headerlink" title="Permanent link">&para;</a></h2>
-
-
-    <div class="doc doc-contents ">
-
-
-        <p>Importance weights for Source and Target groups.</p>
+        <p>Validated, ready-to-use importance weights for source and target.</p>
+<p>Bring your own sample weights, or let :func:<code>domain_weights</code> estimate
+them from domain probabilities <code>P(target|x)</code>. Either way, this class
+validates, normalizes, and carries them to the test.</p>
+<p>Reweighting changes which observations count more; it does not change
+nominal group sizes in the permutation test — each group's weights are
+normalized to sum to that group's size, so the labels still permute
+over <code>n_source + n_target</code> slots.</p>
 
 
 <p><span class="doc-section-title">Attributes:</span></p>
@@ -1198,8 +1465,8 @@ For the intuition behind the formulas, see
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Importance weights for source samples, normalized to sum to
-<code>len(source)</code>.</p>
+                <p>Weights for source observations, normalized to sum to <code>len(source)</code>.
+Inactive groups (per :class:<code>ReweightMode</code>) stay at <code>1</code>.</p>
               </div>
             </td>
           </tr>
@@ -1210,13 +1477,37 @@ For the intuition behind the formulas, see
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Importance weights for target samples, normalized to sum to
-<code>len(target)</code>.</p>
+                <p>Weights for target observations, normalized to sum to <code>len(target)</code>.
+Inactive groups stay at <code>1</code>.</p>
               </div>
             </td>
           </tr>
       </tbody>
     </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>On construction, inputs are coerced to finite one-dimensional float
+arrays, checked for non-negativity, and normalized per group. An
+inactive group keeps weight <code>1</code> for every observation.</p>
+</details>
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <p>domain_weights : Estimate weights from <code>P(target|x)</code>.
+EffectiveSampleSize : Diagnose weight concentration via
+    :meth:<code>effective_sample_size</code>.
+samesame.shift.test_shift : The tests that consume these weights.</p>
+</details>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">samesame.weights</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImportanceWeights</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">w</span> <span class="o">=</span> <span class="n">ImportanceWeights</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">]),</span> <span class="n">target</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">float</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span> <span class="nb">float</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+<span class="go">(2.0, 2.0)</span>
+</code></pre></div>
 
 
 
@@ -1227,7 +1518,446 @@ For the intuition behind the formulas, see
 
               <details class="quote">
                 <summary>Source code in <code>src/samesame/weights.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">43</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ImportanceWeights</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validated, ready-to-use importance weights for source and target.</span>
+
+<span class="sd">    Bring your own sample weights, or let :func:`domain_weights` estimate</span>
+<span class="sd">    them from domain probabilities ``P(target|x)``. Either way, this class</span>
+<span class="sd">    validates, normalizes, and carries them to the test.</span>
+
+<span class="sd">    Reweighting changes which observations count more; it does not change</span>
+<span class="sd">    nominal group sizes in the permutation test — each group&#39;s weights are</span>
+<span class="sd">    normalized to sum to that group&#39;s size, so the labels still permute</span>
+<span class="sd">    over ``n_source + n_target`` slots.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    source : NDArray[np.float64]</span>
+<span class="sd">        Weights for source observations, normalized to sum to ``len(source)``.</span>
+<span class="sd">        Inactive groups (per :class:`ReweightMode`) stay at ``1``.</span>
+<span class="sd">    target : NDArray[np.float64]</span>
+<span class="sd">        Weights for target observations, normalized to sum to ``len(target)``.</span>
+<span class="sd">        Inactive groups stay at ``1``.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    On construction, inputs are coerced to finite one-dimensional float</span>
+<span class="sd">    arrays, checked for non-negativity, and normalized per group. An</span>
+<span class="sd">    inactive group keeps weight ``1`` for every observation.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    domain_weights : Estimate weights from ``P(target|x)``.</span>
+<span class="sd">    EffectiveSampleSize : Diagnose weight concentration via</span>
+<span class="sd">        :meth:`effective_sample_size`.</span>
+<span class="sd">    samesame.shift.test_shift : The tests that consume these weights.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from samesame.weights import ImportanceWeights</span>
+<span class="sd">    &gt;&gt;&gt; w = ImportanceWeights(source=np.array([0.5, 1.5]), target=np.array([1.0, 1.0]))</span>
+<span class="sd">    &gt;&gt;&gt; float(w.source.sum()), float(w.target.sum())</span>
+<span class="sd">    (2.0, 2.0)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">source</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+    <span class="n">target</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">src</span> <span class="o">=</span> <span class="n">_normalize</span><span class="p">(</span><span class="n">_as_weight_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;weights.source&quot;</span><span class="p">))</span>
+        <span class="n">tgt</span> <span class="o">=</span> <span class="n">_normalize</span><span class="p">(</span><span class="n">_as_weight_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;weights.target&quot;</span><span class="p">))</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;source&quot;</span><span class="p">,</span> <span class="n">src</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">,</span> <span class="n">tgt</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_render</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array2string</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">edgeitems</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(source=</span><span class="si">{</span><span class="n">_render</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">)</span><span class="si">}</span><span class="s2">, target=</span><span class="si">{</span><span class="n">_render</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">effective_sample_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EffectiveSampleSize</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;How much independent information remains after weighting.</span>
+
+<span class="sd">        Returns Kish&#39;s ``(sum w)^2 / sum w^2`` per group. Uniform weights</span>
+<span class="sd">        give ``ESS == n``; concentrated weights where a handful dominate</span>
+<span class="sd">        push ESS toward ``1``. A low ESS warns that the weighted result</span>
+<span class="sd">        leans on a few observations.</span>
+
+<span class="sd">        If ESS stays low even at ``shrinkage=0.5``, the groups may lack</span>
+<span class="sd">        enough common support for a reliable weighted comparison — consider</span>
+<span class="sd">        leaving the comparison unweighted.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        EffectiveSampleSize</span>
+<span class="sd">            ESS per group (``.source``, ``.target``).</span>
+
+<span class="sd">        References</span>
+<span class="sd">        ----------</span>
+<span class="sd">        Kish, L. (1965). Survey Sampling. John Wiley &amp; Sons.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from samesame.weights import domain_weights</span>
+<span class="sd">        &gt;&gt;&gt; w = domain_weights(source=np.array([0.25, 0.4]), target=np.array([0.6, 0.75]))</span>
+<span class="sd">        &gt;&gt;&gt; ess = w.effective_sample_size()</span>
+<span class="sd">        &gt;&gt;&gt; round(ess.source, 4)</span>
+<span class="sd">        1.8989</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">src</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+        <span class="n">tgt</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">EffectiveSampleSize</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">src</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">tgt</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="samesame.weights.ImportanceWeights.effective_sample_size" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">effective_sample_size</span><span class="p">()</span></code>
+
+<a href="#samesame.weights.ImportanceWeights.effective_sample_size" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>How much independent information remains after weighting.</p>
+<p>Returns Kish's <code>(sum w)^2 / sum w^2</code> per group. Uniform weights
+give <code>ESS == n</code>; concentrated weights where a handful dominate
+push ESS toward <code>1</code>. A low ESS warns that the weighted result
+leans on a few observations.</p>
+<p>If ESS stays low even at <code>shrinkage=0.5</code>, the groups may lack
+enough common support for a reliable weighted comparison — consider
+leaving the comparison unweighted.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="EffectiveSampleSize (samesame.weights.EffectiveSampleSize)" href="#samesame.weights.EffectiveSampleSize">EffectiveSampleSize</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>ESS per group (<code>.source</code>, <code>.target</code>).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="references" open>
+  <summary>References</summary>
+  <p>Kish, L. (1965). Survey Sampling. John Wiley &amp; Sons.</p>
+</details>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">samesame.weights</span><span class="w"> </span><span class="kn">import</span> <span class="n">domain_weights</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">w</span> <span class="o">=</span> <span class="n">domain_weights</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">]),</span> <span class="n">target</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ess</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">effective_sample_size</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">round</span><span class="p">(</span><span class="n">ess</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="go">1.8989</span>
+</code></pre></div>
+
+
+            <details class="quote">
+              <summary>Source code in <code>src/samesame/weights.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">effective_sample_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EffectiveSampleSize</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;How much independent information remains after weighting.</span>
+
+<span class="sd">    Returns Kish&#39;s ``(sum w)^2 / sum w^2`` per group. Uniform weights</span>
+<span class="sd">    give ``ESS == n``; concentrated weights where a handful dominate</span>
+<span class="sd">    push ESS toward ``1``. A low ESS warns that the weighted result</span>
+<span class="sd">    leans on a few observations.</span>
+
+<span class="sd">    If ESS stays low even at ``shrinkage=0.5``, the groups may lack</span>
+<span class="sd">    enough common support for a reliable weighted comparison — consider</span>
+<span class="sd">    leaving the comparison unweighted.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    EffectiveSampleSize</span>
+<span class="sd">        ESS per group (``.source``, ``.target``).</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Kish, L. (1965). Survey Sampling. John Wiley &amp; Sons.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; from samesame.weights import domain_weights</span>
+<span class="sd">    &gt;&gt;&gt; w = domain_weights(source=np.array([0.25, 0.4]), target=np.array([0.6, 0.75]))</span>
+<span class="sd">    &gt;&gt;&gt; ess = w.effective_sample_size()</span>
+<span class="sd">    &gt;&gt;&gt; round(ess.source, 4)</span>
+<span class="sd">    1.8989</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">src</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+    <span class="n">tgt</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">EffectiveSampleSize</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">src</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">tgt</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<a id="samesame.weights.ReweightMode"></a>
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="enum.StrEnum">StrEnum</span></code></p>
+
+
+        <p>Which group(s) to reweight toward common support.</p>
+<p>Reweighting does not invent information where the groups do not
+overlap — it changes which observations count more. Pick the mode
+that matches where the fringe lives. Pass a member or its plain
+string value to :func:<code>domain_weights</code>.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="samesame.weights.ReweightMode.SOURCE">SOURCE</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="ReweightMode (samesame.weights.ReweightMode)" href="#samesame.weights.ReweightMode">ReweightMode</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Reweight source toward target; target unchanged. Use when source
+has low-overlap observations outside target support.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="samesame.weights.ReweightMode.TARGET">TARGET</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="ReweightMode (samesame.weights.ReweightMode)" href="#samesame.weights.ReweightMode">ReweightMode</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Reweight target toward source; source unchanged. Use when target
+has low-overlap observations outside source support.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="samesame.weights.ReweightMode.BOTH">BOTH</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="ReweightMode (samesame.weights.ReweightMode)" href="#samesame.weights.ReweightMode">ReweightMode</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Reweight both groups toward their mutual support (default).
+Use when both groups have low-overlap regions.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <p>domain_weights : The function that consumes this choice.
+samesame.weights.ImportanceWeights : What you get back.</p>
+</details>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">samesame.weights</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReweightMode</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ReweightMode</span><span class="p">(</span><span class="s2">&quot;both&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">ReweightMode</span><span class="o">.</span><span class="n">BOTH</span>
+<span class="go">True</span>
+</code></pre></div>
+
+
+
+
+
+
+
+
+              <details class="quote">
+                <summary>Source code in <code>src/samesame/weights.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
 <span class="normal">44</span>
 <span class="normal">45</span>
 <span class="normal">46</span>
@@ -1242,22 +1972,48 @@ For the intuition behind the formulas, see
 <span class="normal">55</span>
 <span class="normal">56</span>
 <span class="normal">57</span>
-<span class="normal">58</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">ImportanceWeights</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Importance weights for Source and Target groups.</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ReweightMode</span><span class="p">(</span><span class="n">StrEnum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Which group(s) to reweight toward common support.</span>
+
+<span class="sd">    Reweighting does not invent information where the groups do not</span>
+<span class="sd">    overlap — it changes which observations count more. Pick the mode</span>
+<span class="sd">    that matches where the fringe lives. Pass a member or its plain</span>
+<span class="sd">    string value to :func:`domain_weights`.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
-<span class="sd">    source : NDArray[np.float64]</span>
-<span class="sd">        Importance weights for source samples, normalized to sum to</span>
-<span class="sd">        ``len(source)``.</span>
-<span class="sd">    target : NDArray[np.float64]</span>
-<span class="sd">        Importance weights for target samples, normalized to sum to</span>
-<span class="sd">        ``len(target)``.</span>
+<span class="sd">    SOURCE : ReweightMode</span>
+<span class="sd">        Reweight source toward target; target unchanged. Use when source</span>
+<span class="sd">        has low-overlap observations outside target support.</span>
+<span class="sd">    TARGET : ReweightMode</span>
+<span class="sd">        Reweight target toward source; source unchanged. Use when target</span>
+<span class="sd">        has low-overlap observations outside source support.</span>
+<span class="sd">    BOTH : ReweightMode</span>
+<span class="sd">        Reweight both groups toward their mutual support (default).</span>
+<span class="sd">        Use when both groups have low-overlap regions.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    domain_weights : The function that consumes this choice.</span>
+<span class="sd">    samesame.weights.ImportanceWeights : What you get back.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from samesame.weights import ReweightMode</span>
+<span class="sd">    &gt;&gt;&gt; ReweightMode(&quot;both&quot;) == ReweightMode.BOTH</span>
+<span class="sd">    True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">source</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
-    <span class="n">target</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+    <span class="n">SOURCE</span> <span class="o">=</span> <span class="s2">&quot;source&quot;</span>
+    <span class="n">TARGET</span> <span class="o">=</span> <span class="s2">&quot;target&quot;</span>
+    <span class="n">BOTH</span> <span class="o">=</span> <span class="s2">&quot;both&quot;</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -1282,143 +2038,53 @@ For the intuition behind the formulas, see
 
 </div>
 
-
-<div class="doc doc-object doc-function">
-
-
-<h2 id="samesame.weights.from_domain_probabilities" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">from_domain_probabilities</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">source_prob</span><span class="p">,</span> <span class="n">target_prob</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;source&#39;</span><span class="p">,</span> <span class="n">lambda_</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span></code>
-
-<a href="#samesame.weights.from_domain_probabilities" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc doc-object doc-class">
 
 
-    <div class="doc doc-contents ">
 
-        <p>Build Importance weights from Domain probabilities.</p>
-<p>Computes RIW weights from domain probabilities.
-The prior ratio is always inferred from the lengths of <code>source_prob</code>
-and <code>target_prob</code>.</p>
+<a id="samesame.weights.EffectiveSampleSize"></a>
+    <div class="doc doc-contents first">
 
 
-<p><span class="doc-section-title">Parameters:</span></p>
+        <p>Kish effective sample size — how much information is left after weighting.</p>
+<p>Think of it as the number of equally weighted observations that would
+carry the same information as your unequal weights: <code>(sum w)^2 / sum w^2</code>
+(Kish, 1965). Uniform weights keep every voice — <code>ESS == n</code>. When a
+few observations shout while the rest whisper, ESS slides toward <code>1</code>.</p>
+<p>Compare each value to its <code>n</code>. <code>ESS &lt; n/4</code> is a friendly warning
+that the weighted result is fragile and largely driven by a few
+observations — not a hard cutoff.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
     <table>
       <thead>
         <tr>
           <th>Name</th>
           <th>Type</th>
           <th>Description</th>
-          <th>Default</th>
         </tr>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td>
-                <code>source_prob</code>
-            </td>
-            <td>
-                  <code><span title="numpy.typing.NDArray">NDArray</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Domain probabilities for source samples — probability, output by a
-domain classifier, that each source observation belongs to the target
-group. Must be in the open interval (0, 1).</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>target_prob</code>
-            </td>
-            <td>
-                  <code><span title="numpy.typing.NDArray">NDArray</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Domain probabilities for target samples — probability, output by a
-domain classifier, that each target observation belongs to the target
-group. Must be in the open interval (0, 1).</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>mode</code>
-            </td>
-            <td>
-                  <code>(&#39;source&#39;, &#39;target&#39;, &#39;both&#39;)</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Importance-weighting mode — controls which group's samples are
-reweighted:</p>
-<ul>
-<li><code>'source'</code>: reweight source samples only (default). Use when
-  correcting the source distribution to match target.</li>
-<li><code>'target'</code>: reweight target samples only. Use when correcting
-  the target distribution to match source.</li>
-<li><code>'both'</code>: reweight both groups simultaneously. Use when both
-  groups contain low-overlap outliers.</li>
-</ul>
-              </div>
-            </td>
-            <td>
-                  <code>&#39;source&#39;</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>lambda_</code>
-            </td>
+            <td><code><span title="samesame.weights.EffectiveSampleSize.source">source</span></code></td>
             <td>
                   <code><span title="float">float</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>RIW blending coefficient in [0, 1] controlling the trade-off between
-correction strength and variance stability. <code>0.0</code> gives plain
-density-ratio weights (maximum correction, highest variance); <code>1.0</code>
-gives uniform weights (no correction). Default <code>0.5</code> is a balanced
-starting point for most applications.</p>
+                <p>ESS for the source weights.</p>
               </div>
             </td>
-            <td>
-                  <code>0.5</code>
-            </td>
           </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
           <tr class="doc-section-item">
+            <td><code><span title="samesame.weights.EffectiveSampleSize.target">target</span></code></td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="ImportanceWeights
-
-
-  
-      dataclass
-   (samesame.weights.ImportanceWeights)" href="#samesame.weights.ImportanceWeights">ImportanceWeights</a></code>
+                  <code><span title="float">float</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A frozen dataclass with <code>.source</code> and <code>.target</code> weight arrays.
-Weights for each active group are normalized so they sum to that
-group's sample size. Samples not targeted by <code>mode</code> receive weight 1.</p>
+                <p>ESS for the target weights.</p>
               </div>
             </td>
           </tr>
@@ -1426,144 +2092,26 @@ group's sample size. Samples not targeted by <code>mode</code> receive weight 1.
     </table>
 
 
-<p><span class="doc-section-title">Raises:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="ValueError">ValueError</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>If any value in <code>source_prob</code> or <code>target_prob</code> is outside (0, 1).</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="ValueError">ValueError</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>If <code>lambda_</code> is outside [0, 1].</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="ValueError">ValueError</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>If <code>mode</code> is not one of <code>'source'</code>, <code>'target'</code>, <code>'both'</code>.</p>
-              </div>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                  <code><span title="ValueError">ValueError</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>If <code>source_prob</code> or <code>target_prob</code> is empty.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <p>ImportanceWeights.effective_sample_size : Compute this from weights.
+samesame.weights.domain_weights : Where shrinkage trades bias for stability.</p>
+</details>
+
+<details class="references" open>
+  <summary>References</summary>
+  <p>Kish, L. (1965). Survey Sampling. John Wiley &amp; Sons.</p>
+</details>
 
 
-<p><span class="doc-section-title">Examples:</span></p>
-    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">samesame.weights</span><span class="w"> </span><span class="kn">import</span> <span class="n">from_domain_probabilities</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">source_prob</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">target_prob</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">w</span> <span class="o">=</span> <span class="n">from_domain_probabilities</span><span class="p">(</span><span class="n">source_prob</span><span class="o">=</span><span class="n">source_prob</span><span class="p">,</span> <span class="n">target_prob</span><span class="o">=</span><span class="n">target_prob</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-<span class="go">array([0.7692, 1.2308])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-<span class="go">array([1., 1.])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">w2</span> <span class="o">=</span> <span class="n">from_domain_probabilities</span><span class="p">(</span><span class="n">source_prob</span><span class="o">=</span><span class="n">source_prob</span><span class="p">,</span> <span class="n">target_prob</span><span class="o">=</span><span class="n">target_prob</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">w2</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-<span class="go">array([0.7692, 1.2308])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">w2</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-<span class="go">array([1.2308, 0.7692])</span>
-</code></pre></div>
 
 
-            <details class="quote">
-              <summary>Source code in <code>src/samesame/weights.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 61</span>
-<span class="normal"> 62</span>
-<span class="normal"> 63</span>
-<span class="normal"> 64</span>
-<span class="normal"> 65</span>
-<span class="normal"> 66</span>
-<span class="normal"> 67</span>
-<span class="normal"> 68</span>
-<span class="normal"> 69</span>
-<span class="normal"> 70</span>
-<span class="normal"> 71</span>
-<span class="normal"> 72</span>
-<span class="normal"> 73</span>
-<span class="normal"> 74</span>
-<span class="normal"> 75</span>
-<span class="normal"> 76</span>
-<span class="normal"> 77</span>
-<span class="normal"> 78</span>
-<span class="normal"> 79</span>
-<span class="normal"> 80</span>
-<span class="normal"> 81</span>
-<span class="normal"> 82</span>
-<span class="normal"> 83</span>
-<span class="normal"> 84</span>
-<span class="normal"> 85</span>
-<span class="normal"> 86</span>
-<span class="normal"> 87</span>
-<span class="normal"> 88</span>
-<span class="normal"> 89</span>
-<span class="normal"> 90</span>
-<span class="normal"> 91</span>
-<span class="normal"> 92</span>
-<span class="normal"> 93</span>
-<span class="normal"> 94</span>
-<span class="normal"> 95</span>
-<span class="normal"> 96</span>
-<span class="normal"> 97</span>
-<span class="normal"> 98</span>
-<span class="normal"> 99</span>
-<span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span>
-<span class="normal">103</span>
-<span class="normal">104</span>
-<span class="normal">105</span>
-<span class="normal">106</span>
-<span class="normal">107</span>
-<span class="normal">108</span>
-<span class="normal">109</span>
-<span class="normal">110</span>
-<span class="normal">111</span>
-<span class="normal">112</span>
-<span class="normal">113</span>
-<span class="normal">114</span>
-<span class="normal">115</span>
-<span class="normal">116</span>
-<span class="normal">117</span>
-<span class="normal">118</span>
-<span class="normal">119</span>
-<span class="normal">120</span>
-<span class="normal">121</span>
-<span class="normal">122</span>
-<span class="normal">123</span>
-<span class="normal">124</span>
-<span class="normal">125</span>
+
+
+
+              <details class="quote">
+                <summary>Source code in <code>src/samesame/weights.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">125</span>
 <span class="normal">126</span>
 <span class="normal">127</span>
 <span class="normal">128</span>
@@ -1594,139 +2142,53 @@ group's sample size. Samples not targeted by <code>mode</code> receive weight 1.
 <span class="normal">153</span>
 <span class="normal">154</span>
 <span class="normal">155</span>
-<span class="normal">156</span>
-<span class="normal">157</span>
-<span class="normal">158</span>
-<span class="normal">159</span>
-<span class="normal">160</span>
-<span class="normal">161</span>
-<span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span>
-<span class="normal">165</span>
-<span class="normal">166</span>
-<span class="normal">167</span>
-<span class="normal">168</span>
-<span class="normal">169</span>
-<span class="normal">170</span>
-<span class="normal">171</span>
-<span class="normal">172</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">from_domain_probabilities</span><span class="p">(</span>
-    <span class="o">*</span><span class="p">,</span>
-    <span class="n">source_prob</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
-    <span class="n">target_prob</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
-    <span class="n">mode</span><span class="p">:</span> <span class="n">WeightingMode</span> <span class="o">=</span> <span class="s2">&quot;source&quot;</span><span class="p">,</span>
-    <span class="n">lambda_</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ImportanceWeights</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build Importance weights from Domain probabilities.</span>
+<span class="normal">156</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">EffectiveSampleSize</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Kish effective sample size — how much information is left after weighting.</span>
 
-<span class="sd">    Computes RIW weights from domain probabilities.</span>
-<span class="sd">    The prior ratio is always inferred from the lengths of ``source_prob``</span>
-<span class="sd">    and ``target_prob``.</span>
+<span class="sd">    Think of it as the number of equally weighted observations that would</span>
+<span class="sd">    carry the same information as your unequal weights: ``(sum w)^2 / sum w^2``</span>
+<span class="sd">    (Kish, 1965). Uniform weights keep every voice — ``ESS == n``. When a</span>
+<span class="sd">    few observations shout while the rest whisper, ESS slides toward ``1``.</span>
 
-<span class="sd">    Parameters</span>
+<span class="sd">    Compare each value to its ``n``. ``ESS &lt; n/4`` is a friendly warning</span>
+<span class="sd">    that the weighted result is fragile and largely driven by a few</span>
+<span class="sd">    observations — not a hard cutoff.</span>
+
+<span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
-<span class="sd">    source_prob : NDArray</span>
-<span class="sd">        Domain probabilities for source samples — probability, output by a</span>
-<span class="sd">        domain classifier, that each source observation belongs to the target</span>
-<span class="sd">        group. Must be in the open interval (0, 1).</span>
-<span class="sd">    target_prob : NDArray</span>
-<span class="sd">        Domain probabilities for target samples — probability, output by a</span>
-<span class="sd">        domain classifier, that each target observation belongs to the target</span>
-<span class="sd">        group. Must be in the open interval (0, 1).</span>
-<span class="sd">    mode : {&#39;source&#39;, &#39;target&#39;, &#39;both&#39;}, optional</span>
-<span class="sd">        Importance-weighting mode — controls which group&#39;s samples are</span>
-<span class="sd">        reweighted:</span>
+<span class="sd">    source : float</span>
+<span class="sd">        ESS for the source weights.</span>
+<span class="sd">    target : float</span>
+<span class="sd">        ESS for the target weights.</span>
 
-<span class="sd">        - ``&#39;source&#39;``: reweight source samples only (default). Use when</span>
-<span class="sd">          correcting the source distribution to match target.</span>
-<span class="sd">        - ``&#39;target&#39;``: reweight target samples only. Use when correcting</span>
-<span class="sd">          the target distribution to match source.</span>
-<span class="sd">        - ``&#39;both&#39;``: reweight both groups simultaneously. Use when both</span>
-<span class="sd">          groups contain low-overlap outliers.</span>
-
-<span class="sd">    lambda_ : float, optional</span>
-<span class="sd">        RIW blending coefficient in [0, 1] controlling the trade-off between</span>
-<span class="sd">        correction strength and variance stability. ``0.0`` gives plain</span>
-<span class="sd">        density-ratio weights (maximum correction, highest variance); ``1.0``</span>
-<span class="sd">        gives uniform weights (no correction). Default ``0.5`` is a balanced</span>
-<span class="sd">        starting point for most applications.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    ImportanceWeights</span>
-<span class="sd">        A frozen dataclass with ``.source`` and ``.target`` weight arrays.</span>
-<span class="sd">        Weights for each active group are normalized so they sum to that</span>
-<span class="sd">        group&#39;s sample size. Samples not targeted by ``mode`` receive weight 1.</span>
-
-<span class="sd">    Raises</span>
-<span class="sd">    ------</span>
-<span class="sd">    ValueError</span>
-<span class="sd">        If any value in ``source_prob`` or ``target_prob`` is outside (0, 1).</span>
-<span class="sd">    ValueError</span>
-<span class="sd">        If ``lambda_`` is outside [0, 1].</span>
-<span class="sd">    ValueError</span>
-<span class="sd">        If ``mode`` is not one of ``&#39;source&#39;``, ``&#39;target&#39;``, ``&#39;both&#39;``.</span>
-<span class="sd">    ValueError</span>
-<span class="sd">        If ``source_prob`` or ``target_prob`` is empty.</span>
-
-<span class="sd">    Examples</span>
+<span class="sd">    See Also</span>
 <span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
-<span class="sd">    &gt;&gt;&gt; from samesame.weights import from_domain_probabilities</span>
-<span class="sd">    &gt;&gt;&gt; source_prob = np.array([0.25, 0.4])</span>
-<span class="sd">    &gt;&gt;&gt; target_prob = np.array([0.6, 0.75])</span>
-<span class="sd">    &gt;&gt;&gt; w = from_domain_probabilities(source_prob=source_prob, target_prob=target_prob)</span>
-<span class="sd">    &gt;&gt;&gt; np.round(w.source, 4)</span>
-<span class="sd">    array([0.7692, 1.2308])</span>
-<span class="sd">    &gt;&gt;&gt; np.round(w.target, 4)</span>
-<span class="sd">    array([1., 1.])</span>
-<span class="sd">    &gt;&gt;&gt; w2 = from_domain_probabilities(source_prob=source_prob, target_prob=target_prob, mode=&quot;both&quot;)</span>
-<span class="sd">    &gt;&gt;&gt; np.round(w2.source, 4)</span>
-<span class="sd">    array([0.7692, 1.2308])</span>
-<span class="sd">    &gt;&gt;&gt; np.round(w2.target, 4)</span>
-<span class="sd">    array([1.2308, 0.7692])</span>
+<span class="sd">    ImportanceWeights.effective_sample_size : Compute this from weights.</span>
+<span class="sd">    samesame.weights.domain_weights : Where shrinkage trades bias for stability.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Kish, L. (1965). Survey Sampling. John Wiley &amp; Sons.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">source_prob</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">source_prob</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
-    <span class="n">target_prob</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">target_prob</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
-    <span class="n">n_source</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">source_prob</span><span class="p">)</span>
-    <span class="n">n_target</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">target_prob</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">n_source</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">n_target</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;source_prob and target_prob must both be non-empty.&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">lambda_</span> <span class="o">&lt;</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">lambda_</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;lambda_ must be in [0, 1].&quot;</span><span class="p">)</span>
-    <span class="n">validate_mode</span><span class="p">(</span><span class="n">mode</span><span class="p">)</span>
 
-    <span class="c1"># Prior ratio: how much more likely a random draw is from source vs target.</span>
-    <span class="c1"># Inferred from sample sizes rather than supplied explicitly.</span>
-    <span class="n">group_balance</span> <span class="o">=</span> <span class="n">n_source</span> <span class="o">/</span> <span class="n">n_target</span>
-
-    <span class="c1"># Density ratio r(x) = p(target|x) / p(source|x), derived from the domain</span>
-    <span class="c1"># classifier probability via Bayes&#39; theorem with the inferred prior ratio.</span>
-    <span class="n">source_dr</span> <span class="o">=</span> <span class="n">density_ratio</span><span class="p">(</span><span class="n">source_prob</span><span class="p">,</span> <span class="n">group_balance</span><span class="o">=</span><span class="n">group_balance</span><span class="p">)</span>
-    <span class="n">target_dr</span> <span class="o">=</span> <span class="n">density_ratio</span><span class="p">(</span><span class="n">target_prob</span><span class="p">,</span> <span class="n">group_balance</span><span class="o">=</span><span class="n">group_balance</span><span class="p">)</span>
-
-    <span class="c1"># Default: leave each group with unit weights (no reweighting).</span>
-    <span class="n">out_source</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_source</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
-    <span class="n">out_target</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_target</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;source&quot;</span><span class="p">,</span> <span class="s2">&quot;both&quot;</span><span class="p">):</span>
-        <span class="c1"># RIW formula: r / ((1-λ) + λ·r) blends toward uniform as λ→1.</span>
-        <span class="n">out_source</span> <span class="o">=</span> <span class="n">riw</span><span class="p">(</span><span class="n">source_dr</span><span class="p">,</span> <span class="n">lam</span><span class="o">=</span><span class="n">lambda_</span><span class="p">)</span>
-        <span class="c1"># Normalize so source weights sum to n_source (preserves expected value).</span>
-        <span class="n">out_source</span> <span class="o">=</span> <span class="n">out_source</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_source</span> <span class="o">/</span> <span class="n">out_source</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
-
-    <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;target&quot;</span><span class="p">,</span> <span class="s2">&quot;both&quot;</span><span class="p">):</span>
-        <span class="c1"># Inverse RIW: 1 / (λ + (1-λ)·r) — maps target back to source density.</span>
-        <span class="n">out_target</span> <span class="o">=</span> <span class="n">inverse_riw</span><span class="p">(</span><span class="n">target_dr</span><span class="p">,</span> <span class="n">lam</span><span class="o">=</span><span class="n">lambda_</span><span class="p">)</span>
-        <span class="c1"># Normalize so target weights sum to n_target.</span>
-        <span class="n">out_target</span> <span class="o">=</span> <span class="n">out_target</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_target</span> <span class="o">/</span> <span class="n">out_target</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
-
-    <span class="k">return</span> <span class="n">ImportanceWeights</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">out_source</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">out_target</span><span class="p">)</span>
+    <span class="n">source</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">target</span><span class="p">:</span> <span class="nb">float</span>
 </code></pre></div></td></tr></table></div>
-            </details>
-    </div>
+              </details>
 
-</div>
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1752,6 +2214,8 @@ group's sample size. Samples not targeted by <code>mode</code> receive weight 1.
             </div>
           
           
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
         
@@ -1770,7 +2234,7 @@ group's sample size. Samples not targeted by <code>mode</code> receive weight 1.
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../testing/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Shift Testing">
+          <a href="../testing/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Testing">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1780,7 +2244,7 @@ group's sample size. Samples not targeted by <code>mode</code> receive weight 1.
                 Previous
               </span>
               <div class="md-ellipsis">
-                Shift Testing
+                Testing
               </div>
             </div>
           </a>
@@ -1838,14 +2302,16 @@ group's sample size. Samples not targeted by <code>mode</code> receive weight 1.
     
     
       
-      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.action.view"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.92b07e13.min.js"></script>
       
-        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-      
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+      
+        <script src="../../javascripts/mermaid-init.js"></script>
       
     
   </body>

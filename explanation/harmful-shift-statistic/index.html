@@ -6,34 +6,34 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Statistical tests for deciding whether a new population differs from a reference population, and whether the change is harmful.">
+        <meta name="description" content="Statistical tests for comparing source and target score distributions — and whether the target moved toward worse outcomes.">
       
       
         <meta name="author" content="Vathy M. Kamulete">
       
       
-        <link rel="canonical" href="https://vathymut.github.io/samesame/examples/tutorials/check-shift-harm/">
+        <link rel="canonical" href="https://vathymut.github.io/samesame/explanation/harmful-shift-statistic/">
       
       
-        <link rel="prev" href="../detect-distribution-shift/">
+        <link rel="prev" href="../../examples/weighting/weight-for-common-support/">
       
       
-        <link rel="next" href="../adjust-for-covariate-shift/">
+        <link rel="next" href="../../api/testing/">
       
       
-      <link rel="icon" href="../../../assets/images/favicon.png">
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.18">
     
     
       
-        <title>Check Whether a Change Points in a Worse Direction - samesame</title>
+        <title>How the harm test works - samesame</title>
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.7e37652d.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.7e37652d.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -52,9 +52,9 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -65,6 +65,8 @@
   
   
     
+    
+      
     
     
     
@@ -78,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#tutorial-check-whether-a-change-points-in-a-worse-direction" class="md-skip">
+        <a href="#how-the-harm-test-works" class="md-skip">
           Skip to content
         </a>
       
@@ -94,7 +96,7 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../.." title="samesame" class="md-header__button md-logo" aria-label="samesame" data-md-component="logo">
+    <a href="../.." title="samesame" class="md-header__button md-logo" aria-label="samesame" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M249.9 66.8c10.4-14.3 7.2-34.3-7.1-44.7s-34.3-7.2-44.7 7.1l-106 145.7-37.5-37.5c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l64 64c6.6 6.6 15.8 10 25.1 9.3s17.9-5.5 23.4-13.1l128-176zm128 136c10.4-14.3 7.2-34.3-7.1-44.7s-34.3-7.2-44.7 7.1l-170 233.7-69.5-69.5c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l96 96c6.6 6.6 15.8 10 25.1 9.3s17.9-5.5 23.4-13.1l192-264z"/></svg>
@@ -114,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Check Whether a Change Points in a Worse Direction
+              How the harm test works
             
           </span>
         </div>
@@ -122,7 +124,33 @@
     </div>
     
       
+        <form class="md-header__option" data-md-component="palette">
+  
     
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
     
     
     
@@ -195,7 +223,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../.." class="md-tabs__link">
+      <a href="../.." class="md-tabs__link">
         
   
   
@@ -212,55 +240,58 @@
   
   
   
+  
+    <li class="md-tabs__item">
+      <a href="../../examples/tutorials/get-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Get started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../examples/credit/monitor-credit/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
     
   
   
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="../detect-distribution-shift/" class="md-tabs__link">
+        <a href="./" class="md-tabs__link">
           
   
   
-  Tutorials
-
-        </a>
-      </li>
     
-  
-
-      
-        
-  
-  
-  
-  
-    
-    
-      <li class="md-tabs__item">
-        <a href="../../credit/monitor-credit-risk/" class="md-tabs__link">
-          
-  
-  
-  How-to guides
-
-        </a>
-      </li>
-    
-  
-
-      
-        
-  
-  
-  
-  
-    
-    
-      <li class="md-tabs__item">
-        <a href="../../../explanation/importance-weights-rationale/" class="md-tabs__link">
-          
-  
   
   Explanation
 
@@ -278,11 +309,13 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../api/testing/" class="md-tabs__link">
+        <a href="../../api/testing/" class="md-tabs__link">
           
   
   
-  API reference
+    
+  
+  Reference
 
         </a>
       </li>
@@ -316,9 +349,11 @@
   
 
 
-<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../.." title="samesame" class="md-nav__button md-logo" aria-label="samesame" data-md-component="logo">
+    <a href="../.." title="samesame" class="md-nav__button md-logo" aria-label="samesame" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M249.9 66.8c10.4-14.3 7.2-34.3-7.1-44.7s-34.3-7.2-44.7 7.1l-106 145.7-37.5-37.5c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l64 64c6.6 6.6 15.8 10 25.1 9.3s17.9-5.5 23.4-13.1l128-176zm128 136c10.4-14.3 7.2-34.3-7.1-44.7s-34.3-7.2-44.7 7.1l-170 233.7-69.5-69.5c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l96 96c6.6 6.6 15.8 10 25.1 9.3s17.9-5.5 23.4-13.1l192-264z"/></svg>
@@ -348,7 +383,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../.." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -367,63 +402,15 @@
       
   
   
-    
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
-        
-          
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    Tutorials
-    
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_2">
-            <span class="md-nav__icon md-icon"></span>
-            Tutorials
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
   
   
     <li class="md-nav__item">
-      <a href="../detect-distribution-shift/" class="md-nav__link">
+      <a href="../../examples/tutorials/get-started/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Detect Whether Two Datasets Differ
+    Get started
     
   </span>
   
@@ -432,146 +419,20 @@
     </li>
   
 
-              
-            
-              
-                
+    
+      
+      
+  
+  
   
   
     
-  
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
+    
       
         
       
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Check Whether a Change Points in a Worse Direction
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
         
-  
-  
-  <span class="md-ellipsis">
-    Check Whether a Change Points in a Worse Direction
-    
-  </span>
-  
-
-      </a>
       
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#what-you-need" class="md-nav__link">
-    <span class="md-ellipsis">
-      What you need
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-1-make-a-simple-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      Step 1 - Make a simple example
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-2-compare-any-change-with-harmful-change" class="md-nav__link">
-    <span class="md-ellipsis">
-      Step 2 - Compare any change with harmful change
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#how-to-read-the-result" class="md-nav__link">
-    <span class="md-ellipsis">
-      How to read the result
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../adjust-for-covariate-shift/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Focus on Shared Support with Importance Weights
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
     
     
     
@@ -595,7 +456,7 @@
   
   
   <span class="md-ellipsis">
-    How-to guides
+    Guides
     
   </span>
   
@@ -606,7 +467,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
-            How-to guides
+            Guides
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -617,12 +478,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../credit/monitor-credit-risk/" class="md-nav__link">
+      <a href="../../examples/credit/monitor-credit/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Monitor Predicted Credit Risk
+    Monitor a credit model
     
   </span>
   
@@ -640,81 +501,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../credit/monitor-model-confidence/" class="md-nav__link">
+      <a href="../../examples/weighting/weight-for-common-support/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Monitor Model Confidence
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../credit/monitor-prediction-errors/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Monitor Prediction Errors Once Labels Arrive
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../weighting/source-reweighting/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Focus Harmful-Shift Testing on Shared Support
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../weighting/double-weighting/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Restrict Testing to Common Support on Both Sides
+    Weight for common support
     
   </span>
   
@@ -736,28 +528,35 @@
       
   
   
+    
   
   
+  
+    
+    
+      
+        
+      
     
     
     
-    
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
             
   
   
@@ -770,7 +569,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             Explanation
@@ -781,20 +580,107 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../../explanation/importance-weights-rationale/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    How the harm test works
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
   <span class="md-ellipsis">
-    When Importance Weights Help
+    How the harm test works
     
   </span>
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-question" class="md-nav__link">
+    <span class="md-ellipsis">
+      The question
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-the-tests-average" class="md-nav__link">
+    <span class="md-ellipsis">
+      What the tests average
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#auc-vs-harm" class="md-nav__link">
+    <span class="md-ellipsis">
+      AUC vs harm
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#intuition-from-the-roc-curve" class="md-nav__link">
+    <span class="md-ellipsis">
+      Intuition from the ROC curve
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -814,6 +700,12 @@
   
   
     
+    
+      
+        
+      
+        
+      
     
     
     
@@ -837,7 +729,7 @@
   
   
   <span class="md-ellipsis">
-    API reference
+    Reference
     
   </span>
   
@@ -848,7 +740,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
-            API reference
+            Reference
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -859,12 +751,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../api/testing/" class="md-nav__link">
+      <a href="../../api/testing/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Shift Testing
+    Testing
     
   </span>
   
@@ -882,12 +774,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../api/weighting/" class="md-nav__link">
+      <a href="../../api/weighting/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Importance Weights
+    Weighting
     
   </span>
   
@@ -912,68 +804,6 @@
               </div>
             
             
-              
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#what-you-need" class="md-nav__link">
-    <span class="md-ellipsis">
-      What you need
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-1-make-a-simple-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      Step 1 - Make a simple example
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-2-compare-any-change-with-harmful-change" class="md-nav__link">
-    <span class="md-ellipsis">
-      Step 2 - Compare any change with harmful change
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#how-to-read-the-result" class="md-nav__link">
-    <span class="md-ellipsis">
-      How to read the result
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-                  </div>
-                </div>
-              </div>
-            
           
           
             <div class="md-content" data-md-component="content">
@@ -984,62 +814,147 @@
 
   
   
+    
+      
+    
+    <a href="https://github.com/vathymut/samesame/raw/master/docs/explanation/harmful-shift-statistic.md" title="View source of this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"/></svg>
+    </a>
+  
 
 
-<h1 id="tutorial-check-whether-a-change-points-in-a-worse-direction">Tutorial: Check whether a change points in a worse direction<a class="headerlink" href="#tutorial-check-whether-a-change-points-in-a-worse-direction" title="Permanent link">&para;</a></h1>
-<p>Use this tutorial when you already have a signal with a clear direction and want to know whether
-the target group moved the wrong way.</p>
-<p>By the end, you will know how to:</p>
+<h1 id="how-the-harm-test-works">How the harm test works<a class="headerlink" href="#how-the-harm-test-works" title="Permanent link">&para;</a></h1>
+<h2 id="the-question">The question<a class="headerlink" href="#the-question" title="Permanent link">&para;</a></h2>
+<p>A distributional change is not necessarily a harmful change. For example, a
+credit portfolio may contain fewer very safe applicants and more medium-risk
+applicants while the high-risk tail remains unchanged. A generic shift test can
+detect this redistribution, but it cannot determine whether the change is
+harmful according to the outcome you care about.</p>
+<p>The harmful-shift test asks a narrower question: after orienting the score so
+that larger values mean worse outcomes, does the target place more mass beyond
+thresholds that the source rarely exceeds? The API therefore requires an
+explicit <code>worse</code> argument. Choose <code>worse</code> from the meaning of the score before
+looking at the result, not from whichever direction produces a smaller p-value.</p>
+<h2 id="what-the-tests-average">What the tests average<a class="headerlink" href="#what-the-tests-average" title="Permanent link">&para;</a></h2>
+<p>Both tests use permutations to assess the same source-versus-target comparison,
+keeping scores and weights fixed. <code>test_shift</code> treats all thresholds equally and
+measures overall separation with AUC. <code>test_harmful_shift</code> emphasizes
+thresholds that are rare in the source, so it is sensitive to target mass in the
+harmful tail. Their exact statistics are:</p>
 <ul>
-<li>distinguish "different" from "worse"</li>
-<li>choose the correct <code>direction</code></li>
-<li>run <code>ss.shift.detect_harm(...)</code> and interpret the p-value</li>
+<li><code>test_shift</code>: <code>∫ TPR dFPR</code></li>
+<li><code>test_harmful_shift</code>: <code>∫ TPR·(1−FPR)² dFPR</code></li>
 </ul>
-<p><code>ss.shift.detect_shift(...)</code> asks whether source and target differ at all.
-<code>ss.shift.detect_harm(...)</code> asks a narrower question: did the target group pick up more of the bad
-end of the signal?</p>
-<h2 id="what-you-need">What you need<a class="headerlink" href="#what-you-need" title="Permanent link">&para;</a></h2>
+<h2 id="auc-vs-harm">AUC vs harm<a class="headerlink" href="#auc-vs-harm" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><code>test_shift</code></th>
+<th><code>test_harmful_shift</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Question</td>
+<td>Do source and target differ?</td>
+<td>Did target move toward the specified harmful tail?</td>
+</tr>
+<tr>
+<td>Statistic</td>
+<td>AUC: <code>∫ TPR dFPR</code></td>
+<td>Weighted AUC: <code>∫ TPR·(1−FPR)² dFPR</code></td>
+</tr>
+<tr>
+<td>Threshold emphasis</td>
+<td>Uniform</td>
+<td>Low <code>FPR</code> (source-rare tail)</td>
+</tr>
+<tr>
+<td>Direction</td>
+<td>Two-sided</td>
+<td>One-sided (<code>greater</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>Use <code>test_shift</code> for a two-sided test when any score distributional change
+matters. Use <code>test_harmful_shift</code> for a one-sided test when you can define the
+harmful direction in advance and want to focus on the harmful tail. Interpret
+AUC relative to its chance value of <code>0.5</code>; interpret the harmful-shift statistic
+relative to <code>result.null_distribution</code>, using the p-value as evidence against
+the null.</p>
+<p>Declare the harmful direction from the meaning of the score before testing.
+Pass it as a string or as <code>ss.Worse</code>; the two forms are interchangeable.</p>
+<table>
+<thead>
+<tr>
+<th>Signal</th>
+<th>What it measures</th>
+<th><code>worse</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Predicted risk</td>
+<td>business impact</td>
+<td><code>worse="higher"</code></td>
+</tr>
+<tr>
+<td>Prediction error (Brier, log-loss)</td>
+<td>accuracy once labels arrive</td>
+<td><code>worse="higher"</code></td>
+</tr>
+<tr>
+<td>Outlier score — confidence (<code>LogitGap</code>)</td>
+<td>certainty / typicality</td>
+<td><code>worse="lower"</code></td>
+</tr>
+<tr>
+<td>Outlier score — atypicality</td>
+<td>distance from source</td>
+<td><code>worse="higher"</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="intuition-from-the-roc-curve">Intuition from the ROC curve<a class="headerlink" href="#intuition-from-the-roc-curve" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>xychart-beta
+    title "Same AUC, different harm"
+    x-axis "FPR →" [0, 0.2, 0.4, 0.6, 0.8, 1]
+    y-axis "TPR ↑" 0 --&gt; 1
+    line "harmful (early rise)" [0, 0.75, 0.88, 0.94, 0.98, 1]
+    line "beneficial (late rise)" [0, 0.08, 0.15, 0.30, 0.65, 1]
+    line "diagonal" [0, 0.2, 0.4, 0.6, 0.8, 1]</code></pre>
+<p>When the ROC curve rises early, many target observations exceed thresholds that
+are rare in the source, so the harmful statistic is large. When it rises late,
+the groups differ mainly in regions where the source already has substantial
+mass. AUC can still be large in that case, but the harmful statistic is smaller.</p>
+<p>Here, the ROC curve is an analysis tool for visualizing how a monitoring score
+ranks target relative to source across thresholds. AUC summarizes performance
+across all thresholds equally; the harmful statistic emphasizes thresholds
+rarely exceeded by source observations.</p>
+<details class="details">
+<summary>Formula (experts)</summary>
+<p>First orient the score so that larger values mean worse outcomes: let
+<code>S=scores</code> when <code>worse=="higher"</code> and <code>S=-scores</code> when <code>worse=="lower"</code>.
+For threshold <code>t</code>, treat target as the positive class:</p>
 <ul>
-<li>a source group and a target group</li>
-<li>a numeric signal for each group</li>
-<li>a clear decision about whether larger values are better or worse</li>
+<li><code>FPR(t)=P(S&gt;t|source)</code>, <code>TPR(t)=P(S&gt;t|target)</code></li>
+<li><code>1−FPR = F̂_source(t)</code> (the source ECDF), so:</li>
 </ul>
-<h2 id="step-1-make-a-simple-example">Step 1 - Make a simple example<a class="headerlink" href="#step-1-make-a-simple-example" title="Permanent link">&para;</a></h2>
-<p>Imagine these values are model-quality or confidence scores, where <strong>higher is better</strong>.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-
-<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">123_456</span><span class="p">)</span>
-
-<span class="n">source_quality</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mf">0.80</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.07</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
-<span class="n">target_quality</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mf">0.72</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.07</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
-</code></pre></div>
-<p>The target group is slightly worse on purpose, so this is a good example for learning the test.</p>
-<h2 id="step-2-compare-any-change-with-harmful-change">Step 2 - Compare any change with harmful change<a class="headerlink" href="#step-2-compare-any-change-with-harmful-change" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ss</span>
-
-<span class="n">shift</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">shift</span><span class="o">.</span><span class="n">detect_shift</span><span class="p">(</span><span class="n">source_quality</span><span class="p">,</span> <span class="n">target_quality</span><span class="p">)</span>
-
-<span class="n">harm</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">shift</span><span class="o">.</span><span class="n">detect_harm</span><span class="p">(</span>
-    <span class="n">source_quality</span><span class="p">,</span>
-    <span class="n">target_quality</span><span class="p">,</span>
-    <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;higher-is-better&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Shift p-value: </span><span class="si">{</span><span class="n">shift</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Harm  p-value: </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</code></pre></div>
-<p>Because higher values are better here, we use <code>direction="higher-is-better"</code>. That tells
-<code>samesame</code> to treat a downward move in the target group as harmful.</p>
-<h2 id="how-to-read-the-result">How to read the result<a class="headerlink" href="#how-to-read-the-result" title="Permanent link">&para;</a></h2>
-<ul>
-<li>A small p-value from <code>detect_shift(...)</code> means the groups differ.</li>
-<li>A small p-value from <code>detect_harm(...)</code> means the target group also moved in the worse direction.</li>
-<li>If your signal already uses larger values for worse outcomes, use <code>direction="higher-is-worse"</code> instead.</li>
-</ul>
-<p>Typical examples of <code>higher-is-worse</code> signals are predicted default risk, error, or anomaly level.
-Typical examples of <code>higher-is-better</code> signals are confidence, accuracy, or quality.</p>
-<p>For posterior draws and a Bayes factor alongside the p-value, see
-<a href="../../../api/testing/">Shift testing</a>.</p>
+<div class="arithmatex">\[
+T = \int TPR\cdot(1-FPR)^2\,dFPR = \int TPR\cdot\hat{F}_{\text{source}}(t)^2\,dFPR.
+\]</div>
+<p>The factor <code>(1−FPR)^2</code> emphasizes thresholds that are rarely exceeded by
+source observations. Without this factor, uniform weighting gives AUC. Harm
+therefore peaks at low <code>FPR</code> and decays to <code>0</code> at <code>FPR=1</code>. The computation
+costs <code>O(n log n)</code> per resample and <code>O(n)</code> memory.</p>
+</details>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>For the statistical foundation of the harmful-shift test, see:</p>
+<p>Kamulete, V. M. (2022). <em>Test for non-negligible adverse shifts</em>. <em>Proceedings
+of the 38th Conference on Uncertainty in Artificial Intelligence (UAI)</em>.
+<a href="https://arxiv.org/abs/2107.02990">arXiv:2107.02990</a>.</p>
 
 
 
@@ -1057,6 +972,8 @@ Typical examples of <code>higher-is-better</code> signals are confidence, accura
             </div>
           
           
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
         
@@ -1075,7 +992,7 @@ Typical examples of <code>higher-is-better</code> signals are confidence, accura
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../detect-distribution-shift/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Detect Whether Two Datasets Differ">
+          <a href="../../examples/weighting/weight-for-common-support/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Weight for common support">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1085,20 +1002,20 @@ Typical examples of <code>higher-is-better</code> signals are confidence, accura
                 Previous
               </span>
               <div class="md-ellipsis">
-                Detect Whether Two Datasets Differ
+                Weight for common support
               </div>
             </div>
           </a>
         
         
           
-          <a href="../adjust-for-covariate-shift/" class="md-footer__link md-footer__link--next" aria-label="Next: Focus on Shared Support with Importance Weights">
+          <a href="../../api/testing/" class="md-footer__link md-footer__link--next" aria-label="Next: Testing">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Focus on Shared Support with Importance Weights
+                Testing
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -1159,14 +1076,16 @@ Typical examples of <code>higher-is-better</code> signals are confidence, accura
     
     
       
-      <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.action.view"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.92b07e13.min.js"></script>
-      
-        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      <script src="../../assets/javascripts/bundle.92b07e13.min.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+      
+        <script src="../../javascripts/mermaid-init.js"></script>
       
     
   </body>
