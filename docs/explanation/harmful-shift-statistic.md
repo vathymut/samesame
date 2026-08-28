@@ -1,5 +1,21 @@
 # How the harm test works
 
+## The question
+
+A distribution can change without becoming worse. For example, a credit
+portfolio may contain fewer very safe applicants and more medium-risk
+applicants, while the high-risk tail stays unchanged. A generic shift test can
+detect that redistribution, but it cannot decide whether it matters to your
+harm definition.
+
+The harmful-shift test answers a narrower question: after orienting the score
+so that larger values mean worse outcomes, does target have excess mass beyond
+thresholds that source rarely exceeds? This is why the API requires an
+explicit `worse` argument. Choose the direction from domain meaning, not from
+whichever direction happens to produce a smaller p-value.
+
+## What the tests average
+
 Both tests permute labels with scores (and weights) fixed. They differ in what they average over thresholds:
 
 - `test_shift` — uniform weight. Statistic is AUC (`∫ TPR dFPR`).
@@ -14,13 +30,17 @@ Both tests permute labels with scores (and weights) fixed. They differ in what t
 | Weight | uniform | favours low `FPR` (source-rare tail) |
 | Alternative | two-sided | one-sided `greater` |
 
-Use `test_shift` when direction is unknown; `test_harmful_shift` once you can declare `worse`. For AUC `0.5` is chance; harm has no fixed scale — compare observed to `result.null_distribution` median.
+Use `test_shift` when direction is unknown or when any change matters. Use
+`test_harmful_shift` when you can define the harmful direction in advance and
+want to prioritise the harmful tail. For AUC, `0.5` is chance. Harm has no
+fixed scale: compare the observed statistic with
+`result.null_distribution`, and use the p-value for evidence against the null.
 
 Declare the direction once — string or `ss.Worse` (interchangeable):
 
 --8<-- "snippets/worse-table.txt"
 
-## Visual
+## Intuition from the ROC curve
 
 ```mermaid
 xychart-beta
@@ -32,7 +52,15 @@ xychart-beta
     line "diagonal" [0, 0.2, 0.4, 0.6, 0.8, 1]
 ```
 
-Early rise (left, weighted) → harm large. Late rise (right) → harm small but AUC still large. *Text fallback: harm weights the left side of the ROC (low FPR); AUC weights uniformly.* That's why the test is directional — a shift toward better outcomes inflates AUC but not harm.
+Early rise (left, weighted) means that many target observations cross a
+threshold that almost no source observations cross: harm is large. A late rise
+means the groups differ mainly where source already has substantial mass: AUC
+can still be large, but the harmful statistic is smaller.
+
+The ROC picture is a ranking intuition, not a claim that the score is a
+classifier used in production. It asks how well the score ranks target above
+source across all possible thresholds. AUC weights those thresholds uniformly;
+the harmful statistic gives more weight to low source false-positive rates.
 
 ??? details "Formula (experts)"
 

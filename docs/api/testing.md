@@ -1,6 +1,19 @@
 # Shift testing
 
-Scores only — turn raw features into one score per group first (predicted risk, prediction error, or outlier score). `P(target|x)` is valid for `test_shift`; don't reuse it as the harm score — use it to build weights instead.
+These tests compare distributions of scores, not raw feature tables. First
+turn each observation into a scalar that represents the question you care
+about: predicted risk, prediction error, confidence, or an outlier score.
+
+The distinction between the functions is important. `test_shift` detects any
+change in the score distribution. `test_harmful_shift` deliberately ignores
+some changes and looks for movement toward a declared harmful tail. Use the
+first as a broad screen and the second when you can defend the meaning of
+"worse" for the score.
+
+`P(target|x)` from a domain classifier can be a useful score for detecting any
+shift, but do not reuse it as the harm score. It describes how target-like an
+observation is, not whether its outcome is harmful. Use it to build weights
+when you need a common-support comparison.
 
 > Source: `src/samesame/shift.py` · `src/samesame/_permutation.py` · `src/samesame/_statistics.py`
 
@@ -17,12 +30,26 @@ Scores only — turn raw features into one score per group first (predicted risk
 
 ## Reading results
 
-Both return `.statistic`, `.pvalue`, `.null_distribution`. Read `.pvalue` first (≤ 0.05 is evidence against the null), `.statistic` second. Two-sided `test_shift` doubles the smaller tail (capped at 1); `test_harmful_shift` is one-sided `greater`. +1 smoothing, so `.pvalue` ∈ `(0, 1]` — see `src/samesame/_permutation.py:67`.
+Both return `.statistic`, `.pvalue`, and `.null_distribution`. The
+null distribution is produced by permuting group labels while keeping scores
+and weights fixed. In other words, it represents what values are plausible if
+the source and target labels were interchangeable.
 
-- `test_shift`: `.statistic` is AUC (`0.5` = chance).
-- `test_harmful_shift`: `.statistic` has no fixed scale — compare observed vs `result.null_distribution` median (see [How the harm test works](../explanation/harmful-shift-statistic.md)). Also carries `.worse`.
+Read `.pvalue` as evidence against that null, not as the probability that the
+null is true and not as an effect size. Two-sided `test_shift` doubles the
+smaller tail (capped at 1); `test_harmful_shift` uses the one-sided `greater`
+alternative. A +1 correction keeps permutation p-values above zero.
 
-Labels are permuted; scores and weights stay fixed. For honest p-values, scores from a fitted model must be out of sample (`cross_val_predict`, `oob_decision_function_`, or held-out).
+- `test_shift`: `.statistic` is AUC. `0.5` means the score does not separate
+  the groups; values farther from `0.5` indicate stronger separation.
+- `test_harmful_shift`: `.statistic` has no universal interpretation like AUC.
+  Compare it with `result.null_distribution` and examine the score scale. The
+  result also records `.worse`.
+
+For honest p-values, scores from a fitted model must be out of sample
+(`cross_val_predict`, `oob_decision_function_`, or a held-out set). In-sample
+predictions can make the source and target look more separable simply because
+the scoring model has memorised its inputs.
 
 ??? tip "Reproducibility"
     `rng` accepts `int`, `np.random.Generator`/`RandomState`, or `None`. Prefer `rng=np.random.default_rng(12345)`. `n_resamples` default `9999` (`999` while exploring, `19999` for `p < 0.001`).

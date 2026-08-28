@@ -1,13 +1,26 @@
 # Get started
 
-One score per observation — predicted risk, prediction error, or outlier score — for **source** (reference: training or past deployment) vs **target** (current deployment).
+This tutorial builds the smallest useful monitoring workflow. You will turn
+observations into one score each, test whether source and target differ, and
+then test a declared harmful direction.
+
+Use **source** for the reference distribution (for example, training data or a
+past deployment) and **target** for the current deployment. The score can be
+predicted risk, prediction error, confidence, or an outlier score.
 
 - `ss.test_shift` — did anything change? Two-sided AUC. `0.5` is chance.
 - `ss.test_harmful_shift(..., worse="higher"|"lower")` — did target move into the harmful tail you declare? One-sided. Larger always means worse (`worse="lower"` flips the sign).
 
-The difference is weighting: AUC averages uniformly (`∫ TPR dFPR`); harm emphasizes low `FPR` (`∫ TPR·(1−FPR)² dFPR`) — thresholds few source points clear but many target points do. Same AUC can hide opposite harm; see [How the harm test works](../../explanation/harmful-shift-statistic.md).
+`test_shift` is a broad, two-sided screen. `test_harmful_shift` is a focused,
+one-sided test: it asks whether target puts more mass beyond thresholds that
+few source observations exceed, after orienting the score so that larger means
+worse. The same overall shift can therefore be harmless, harmful, or even
+beneficial depending on where it occurs. See [How the harm test works](../../explanation/harmful-shift-statistic.md) for the intuition and formula.
 
-Read `.pvalue` first (≤ 0.05 is evidence against the null), `.statistic` second.
+Read `.pvalue` as evidence against the relevant null, then inspect the
+statistic and the distributions. A small p-value says the observed pattern is
+unlikely under label exchangeability; it does not say the change is large or
+caused by deployment.
 
 ## 1 — Make source and target
 
@@ -20,11 +33,15 @@ X = np.vstack([source, target])
 labels = np.r_[np.zeros(len(source), dtype=int), np.ones(len(target), dtype=int)]
 ```
 
-In production, source = training rows and target = deployment rows.
+In production, source might be training rows and target deployment rows. The
+choice should match the operational question: every conclusion is relative to
+the source reference you selected.
 
 ## 2 — Score out of sample
 
-Each row must be scored by a model that didn't see it. Here a domain classifier gives `P(target|x)` — a valid score for detecting *any* shift:
+Each row must be scored by a model that did not see that row. Here a domain
+classifier estimates `P(target|x)`, the probability that a row looks like it
+came from target. This is a useful generic score for detecting *any* shift:
 
 ```python
 from sklearn.ensemble import HistGradientBoostingClassifier
@@ -78,10 +95,13 @@ Declare the harmful direction once — string or `ss.Worse` (interchangeable):
     print(f"Harm p={harm.pvalue:.4f}")  # → 0.0001
     ```
 
-- Small `test_shift` p — groups differ.
-- Small `test_harmful_shift` p — target also shifted toward the tail you declared.
+- Small `test_shift` p - the score distributions differ.
+- Small `test_harmful_shift` p - target also shifted toward the tail you
+  declared.
 
-Flip `worse` and p goes to ~1 — the test is directional.
+Flip `worse` and the conclusion can disappear: the test is directional by
+design. Choose `worse` from the meaning of the score before looking at the
+result, rather than choosing whichever direction gives a smaller p-value.
 
 ??? tip "Reproducibility"
     Pass `rng=np.random.default_rng(12345)` for deterministic p-values. Default `n_resamples=9999` (`999` while exploring, `19999` for `p < 0.001`).

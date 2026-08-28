@@ -13,10 +13,16 @@
 
 **Did the target shift? Did it get worse?**
 
-One score per observation — predicted risk, prediction error, or outlier score — for **source** (reference: training or past deployment) vs **target** (current deployment).
+Monitoring every feature is difficult to interpret, and labels may arrive too
+late to provide an early warning. `samesame` compares one meaningful score per
+observation - predicted risk, prediction error, confidence, or an outlier
+score - between **source** (the reference) and **target** (the current
+deployment).
 
-- `ss.test_shift` — did the distribution change at all? Two-sided AUC.
-- `ss.test_harmful_shift(..., worse="higher"|"lower")` — did target move into the harmful tail you name? One-sided, low-FPR weighted.
+It answers two different questions:
+
+- `ss.test_shift` - can the score distinguish source from target? Two-sided AUC.
+- `ss.test_harmful_shift(..., worse="higher"|"lower")` - did target move into the harmful tail you name? One-sided and tail-focused.
 
 ## Quick example
 
@@ -40,7 +46,9 @@ print(f"Shift statistic: {shift.statistic:.3f}, p-value: {shift.pvalue:.4f}")
 print(f"Harm  statistic: {harm.statistic:.3f}, p-value: {harm.pvalue:.4f}")
 ```
 
-Read `.pvalue` first (≤ 0.05 is evidence against the null), `.statistic` second.
+Read the p-value as evidence against the relevant null, then inspect the
+statistic and score distributions. A significant shift is not automatically a
+harmful shift, and a p-value is not a measure of business impact.
 
 > **Toy scores vs real scores:** synthetic normals for brevity. With real features, build a score with a domain classifier and generate it out of sample (`cross_val_predict`, `oob_decision_function_`, or held-out) — see [Get started](https://vathymut.github.io/samesame/examples/tutorials/get-started.md).
 

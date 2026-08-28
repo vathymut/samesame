@@ -12,23 +12,43 @@
 
 **Did the target shift? Did it get worse?**
 
-One score per observation — predicted risk, prediction error, or outlier score — for **source** (reference: training or past deployment) vs **target** (current deployment).
+Production monitoring usually starts with a practical problem: the raw feature
+space is too large to interpret directly, and labels often arrive late. A model
+score gives each observation one meaningful number to monitor: predicted risk,
+prediction error, confidence, or an outlier score.
 
-- `ss.test_shift` — did the distribution change at all? Two-sided AUC.
-- `ss.test_harmful_shift(..., worse="higher"|"lower")` — did target move into the harmful tail you name? One-sided, low-FPR weighted.
+`samesame` compares that score between **source** (the reference, such as
+training data or a past deployment) and **target** (the current deployment).
+It separates two questions that should not be conflated:
+
+- `ss.test_shift` — can the score distinguish source from target at all?
+- `ss.test_harmful_shift(..., worse="higher"|"lower")` — is target unusually
+  concentrated in the harmful direction you specify?
+
+The first test is two-sided and reports ROC AUC. The second is one-sided and
+weights the part of the score range where target exceeds thresholds that few
+source observations exceed. This makes it sensitive to a harmful tail rather
+than to every kind of redistribution.
 
 ```python
 --8<-- "snippets/quick-example.py:quick-example"
 ```
 
-Read `.pvalue` first (≤ 0.05 is evidence against the null), `.statistic` second.
+Read `.pvalue` as evidence against the relevant null, then inspect the
+statistic and the score distributions for practical importance. A small
+`test_shift` p-value means the groups differ, not that the difference is
+harmful. A small harmful-shift p-value means the specified harmful direction
+is supported; it does not measure business impact or prove causality.
 
 ## Workflow
 
-1. **One score per observation** — generate out of sample if the score comes from a fitted model (cross-validation, OOB, or held-out).
-2. **Any change?** `ss.test_shift`
-3. **Harmful?** `ss.test_harmful_shift(..., worse=...)`
-4. **Poor overlap?** `ss.domain_weights` — and only then.
+1. **Choose a score** that represents the outcome you care about. Generate it
+   out of sample if it comes from a fitted model.
+2. **Ask whether anything changed** with `ss.test_shift`.
+3. **Ask whether the change is harmful** with `ss.test_harmful_shift(...,
+   worse=...)`.
+4. **Address poor feature overlap** with `ss.domain_weights` only when it is a
+   real concern; weighting changes the population the comparison describes.
 
 ## Where next
 

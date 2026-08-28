@@ -1,6 +1,9 @@
 # Monitor a credit model
 
-One HELOC split, three interchangeable signals. Pick what fits your data:
+Monitoring should connect a statistical alarm to the outcome you actually
+care about. This example uses one HELOC split to show three signals for the
+same model. They are not interchangeable in meaning: each supports a
+different operational question and becomes available at a different time.
 
 | Signal | Needs labels? | Harm is… | `worse` |
 |--------|---------------|----------|---------|
@@ -8,7 +11,10 @@ One HELOC split, three interchangeable signals. Pick what fits your data:
 | Confidence (`LogitGap`) | No | lower certainty | `lower` |
 | Prediction error (Brier) | Yes | larger error | `higher` |
 
-Start with risk if your model output already means harm. **Source** = reference (training/past) vs **target** = current deployment. New here? Start with [Get started](../tutorials/get-started.md).
+Start with risk if your model output already represents harm. Use confidence
+for an early warning when labels are delayed, and errors for the clearest
+post-outcome check. **Source** is the reference (training or past deployment);
+**target** is the current deployment. New here? Start with [Get started](../tutorials/get-started.md).
 
 ## Setup
 
@@ -50,7 +56,11 @@ Same split for all — source = higher-risk slice, target = simulated deployment
     | sig. | not sig. | changed, not clearly harmful |
     | not sig. | not sig. | no clear shift |
 
-    Both significant here — consider retraining. AUC `0.5` is chance; harm has no fixed scale — compare to null median ([How it works](../../explanation/harmful-shift-statistic.md)).
+Both tests are significant here: the risk distribution changed and the change
+is consistent with higher risk. That is evidence to investigate, not an
+automatic retraining decision. AUC `0.5` is chance; harm has no fixed scale -
+compare it with the null distribution and the business scale of risk
+([How it works](../../explanation/harmful-shift-statistic.md)).
 
 === "Confidence — no labels needed"
 
@@ -72,11 +82,17 @@ Same split for all — source = higher-risk slice, target = simulated deployment
     print(f"Harm {harm.statistic:.4f} p={harm.pvalue:.4f}")  # → 0.04, 0.90
     ```
 
-    Large `p` — confidence actually rose, so no harmful drop. Risk can rise while confidence also rises (confidently risky). Assumes `X_train`/`X_deployment`/`rf_bad` from Setup.
+    Large `p` means this test found no evidence of a harmful confidence drop;
+    it does not prove confidence is unchanged. Risk can rise while confidence
+    also rises (confidently risky). Assumes `X_train`/`X_deployment`/`rf_bad`
+    from Setup.
 
 === "Errors — needs labels"
 
-    Most direct accuracy check when ground truth is available. Random split → null true, expect large `p`.
+    This is the most direct accuracy check once ground truth is available. The
+    random split here is constructed so the null is true, so a large p-value
+    is expected. In a real deployment comparison, a small p-value would be
+    evidence that errors increased in target.
 
     ```python
     import numpy as np

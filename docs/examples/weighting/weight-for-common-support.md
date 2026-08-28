@@ -1,18 +1,29 @@
 # Weight for common support
 
-Start unweighted, then compare. Weighting is for known overlap issues, not a default — it focuses the test where source and target both have density.
+Start unweighted, then compare. Weighting is for a known overlap problem, not
+a default setting: it changes the target population of the test to the region
+where source and target both have support.
 
 ## Why weight?
 
-Even with a real change in the region you care about, points the other group almost never visits can dominate a permutation test.
+Even with a real change in the region you care about, points the other group
+almost never visits can dominate a permutation test. The weighted result is
+therefore not "the corrected answer" in all contexts; it answers a different,
+common-support question.
 
 > Training has many 20-year-old students production never sees; production has retirees never seen in training. Unweighted is swayed by extremes; weighted focuses on the 30–60 overlap.
 
-A domain classifier gives `p̂(x)=P(target|x)`. The plain correction `p̂/(1-p̂)·n_source/n_target` is powerful but unstable — a few points get huge weights when groups separate well. `samesame` stabilises this with shrinkage λ blending toward uniform (default `0.5`):
+A domain classifier gives `p̂(x)=P(target|x)`. Its odds estimate how much more
+target-like an observation is than source-like. The plain correction
+`p̂/(1-p̂)·n_source/n_target` is powerful but unstable: a few points get huge
+weights when groups separate well. `samesame` stabilises this with shrinkage
+λ blending toward uniform (default `0.5`):
 
 --8<-- "snippets/shrinkage-table.txt"
 
-**Rule:** domain probabilities are for *weighting* — don't reuse the same `P(target|x)` as the harm score.
+**Rule:** domain probabilities are for *weighting* - do not reuse the same
+`P(target|x)` as the harm score. A domain probability measures group
+membership, not harm.
 
 --8<-- "snippets/reweight-table.txt"
 
@@ -45,7 +56,9 @@ weighted = ss.test_harmful_shift(source=source_scores, target=target_scores, wor
 print(f"Unweighted p={unweighted.pvalue:.4f} Weighted p={weighted.pvalue:.4f}")  # → 1.0, 0.62
 ```
 
-Same `worse` for both. Strong unweighted but weak weighted → shift was in low-overlap regions.
+Use the same `worse` for both comparisons. If a strong unweighted result
+becomes weak after weighting, the evidence was concentrated in low-overlap
+regions. If it persists, the harmful shift is also present in common support.
 
 ## HELOC example
 
@@ -69,7 +82,9 @@ p_both = ss.test_harmful_shift(source=train_risk, target=deployment_risk, worse=
 print(f"Unweighted p={unweighted.pvalue:.4f} Source p={p_src.pvalue:.4f} Both p={p_both.pvalue:.4f}")  # → all 0.0001 — persists on common support
 ```
 
-Use `source` when source has low-overlap cases; `both` when both sides do.
+Use `source` when source has low-overlap cases and you want to represent the
+target region. Use `target` for the reverse. Use `both` when both groups have
+low-overlap regions and the intended comparison is their mutual support.
 
 ??? details "Diagnose weight concentration (ESS)"
 
