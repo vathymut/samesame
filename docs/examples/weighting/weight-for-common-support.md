@@ -1,11 +1,24 @@
 # How to: Weight for common support
 
-Down-weight low-overlap points so the test focuses on where source and target both have density. Includes the minimal synthetic check (no data download) and the HELOC production example.
+Down-weight low-overlap points so the test focuses where source and target both have density. Synthetic check first, then HELOC. Start with [Get started](../tutorials/get-started.md).
 
-!!! info "Prerequisites"
-    - [Detect any shift](../tutorials/detect-distribution-shift.md) — honest scores and `P(target|x)`.
-    - [Is it harmful?](../tutorials/check-shift-harm.md) — `worse` and direction.
-    - [When weights help](../../explanation/importance-weights-rationale.md) — intuition.
+## Why weight?
+
+Weighting helps when two things coincide: a real change in the region you care about, plus points where the other group almost never goes. Without weighting, those low-overlap points can dominate a permutation test.
+
+> Example: training has many 20-year-old students production never sees; production has retirees never seen in training. Unweighted is swayed by extremes; weighted focuses on the 30–60 overlap.
+
+A domain classifier gives `p̂(x)=P(target|x)`. The plain correction is:
+
+$$
+\hat{r}(x) = \frac{\hat{p}(x)}{1-\hat{p}(x)} \cdot \frac{n_{\text{source}}}{n_{\text{target}}}
+$$
+
+`n_source/n_target` is inferred from sizes. Plain `r̂` is powerful but unstable when groups separate well — a few points get huge weights. `samesame` stabilises with relative importance weighting (Yamada et al.): `shrinkage` λ blends toward uniform. Default `0.5`.
+
+--8<-- "snippets/shrinkage-table.txt"
+
+--8<-- "snippets/clipping-note.txt"
 
 ## When to use which `reweight`
 
@@ -13,9 +26,9 @@ Down-weight low-overlap points so the test focuses on where source and target bo
 
 Start unweighted, then compare weighted. Weighting is for known overlap issues, not a default.
 
-## Minimal synthetic check (no download, 30 seconds)
+## Minimal synthetic check (no download)
 
-Proves the mechanics before you use your own data. Same pattern as the HELOC example below: domain `P(target|x)` is for weighting only — don't reuse it as the harm score.
+Domain `P(target|x)` is for weighting only — don't reuse it as the harm score.
 
 ```python
 import numpy as np
@@ -28,7 +41,7 @@ X, group = make_classification(n_samples=200, n_features=6, n_classes=2, random_
 domain_prob = cross_val_predict(
     HistGradientBoostingClassifier(random_state=12345),
     X, group, cv=10, method="predict_proba",
-)[:, 1]  # pooled P(target|x); prior ratio n_source/n_target inferred from sizes
+)[:, 1]  # pooled P(target|x)
 
 rng = np.random.default_rng(12345)
 risk_score = 0.9*X[:,0] - 0.6*X[:,1] + 0.4*X[:,2] + rng.normal(scale=0.4, size=len(group))
@@ -41,25 +54,16 @@ rng = np.random.default_rng(12345)
 unweighted = ss.test_harmful_shift(source=source_scores, target=target_scores, worse="higher", rng=rng)
 rng = np.random.default_rng(12345)
 weighted = ss.test_harmful_shift(source=source_scores, target=target_scores, worse="higher", weights=weights, rng=rng)
-print(f"Unweighted p={unweighted.pvalue:.4f} Weighted p={weighted.pvalue:.4f}")  # → 1.0, 0.62 — no signal here
+print(f"Unweighted p={unweighted.pvalue:.4f} Weighted p={weighted.pvalue:.4f}")  # → 1.0, 0.62
 ```
 
---8<-- "snippets/pvalue-guidance.txt"
+Use the same `worse` for both. Strong unweighted but weak weighted → shift was in low-overlap regions.
 
-- **Unweighted** — every point at full strength.
-- **Weighted** — emphasizes overlap (here: source reweighted toward target).
-- Strong unweighted but weak weighted → shift was in low-overlap regions.
-
---8<-- "snippets/clipping-note.txt"
-
-Use the same `worse` for both calls.
-
-## HELOC example (production-like)
+## HELOC example
 
 Same split as [Monitor credit](../credit/monitor-credit.md). Domain `P(target|x)` is again for weighting only.
 
 ```python
-import numpy as np
 import samesame as ss
 
 --8<-- "snippets/heloc-split.py:heloc-split"
@@ -69,8 +73,6 @@ import samesame as ss
 source_prob = domain_prob[split.values == 0]
 target_prob = domain_prob[split.values == 1]
 ```
-
---8<-- "snippets/honest-scores-ref.txt"
 
 ### Compare unweighted vs weighted
 
@@ -94,46 +96,35 @@ target_prob = domain_prob[split.values == 1]
     print(f"Doubly-weighted p={weighted_both.pvalue:.4f}")  # → 0.0001
     ```
 
-    Use when both sides have low-overlap regions. If the signal shrinks only here, target-side outliers were still influencing the result.
+    Use when both sides have low-overlap regions.
 
-## Diagnose with effective sample size (ESS)
+??? details "Diagnose with effective sample size (ESS) — check before trusting"
 
-Weighting can pile mass on a few points. Check *before* trusting the result.
+    Weighting can pile mass on a few points.
 
-```python
-rng = np.random.default_rng(7)
-source_prob_demo = rng.beta(a=2, b=5, size=400)
-target_prob_demo = rng.beta(a=5, b=2, size=400)
-source_prob_demo[:8] = rng.uniform(0.97, 0.999, size=8)  # a few highly target-like points
+    ```python
+    rng = np.random.default_rng(7)
+    source_prob_demo = rng.beta(a=2, b=5, size=400)
+    target_prob_demo = rng.beta(a=5, b=2, size=400)
+    source_prob_demo[:8] = rng.uniform(0.97, 0.999, size=8)
 
-weights = ss.domain_weights(source=source_prob_demo, target=target_prob_demo, reweight="both", shrinkage=0.0)
-ess = weights.effective_sample_size()
-print(f"source ESS {ess.source:.1f} / 400")  # → 6.5 / 400 — concentrated
-print(f"target ESS {ess.target:.1f} / 400")  # → 203.6 / 400
-```
+    weights = ss.domain_weights(source=source_prob_demo, target=target_prob_demo, reweight="both", shrinkage=0.0)
+    ess = weights.effective_sample_size()
+    print(f"source ESS {ess.source:.1f} / 400")  # → 6.5 / 400 — concentrated
+    ```
 
-Sweep `shrinkage` — lower = stronger correction but higher variance:
+    Sweep `shrinkage` — lower = stronger but higher variance:
 
-```python
-for lam in [0.0, 0.25, 0.5, 0.75, 1.0]:
-    w = ss.domain_weights(source=source_prob_demo, target=target_prob_demo, reweight="both", shrinkage=lam)
-    e = w.effective_sample_size()
-    print(f"shrinkage={lam:<4}  source ESS={e.source:7.2f}  target ESS={e.target:7.2f}")
-```
+    ```python
+    for lam in [0.0, 0.25, 0.5, 0.75, 1.0]:
+        w = ss.domain_weights(source=source_prob_demo, target=target_prob_demo, reweight="both", shrinkage=lam)
+        e = w.effective_sample_size()
+        print(f"shrinkage={lam:<4}  source ESS={e.source:7.2f}  target ESS={e.target:7.2f}")
+    ```
 
-```text
-shrinkage=0.0   source ESS=   6.53  target ESS= 203.61
-shrinkage=0.25  source ESS= 189.14  target ESS= 258.52
-shrinkage=0.5   source ESS= 283.68  target ESS= 302.34
-shrinkage=0.75  source ESS= 342.03  target ESS= 347.07
-shrinkage=1.0   source ESS= 400.00  target ESS= 400.00
-```
+    --8<-- "snippets/ess-rule.txt"
 
---8<-- "snippets/ess-rule.txt"
-
---8<-- "snippets/shrinkage-table.txt"
-
-If ESS stays low even at `0.5`, groups barely overlap — skip weighting or collect more comparable data.
+    If ESS stays low even at `0.5`, groups barely overlap — skip weighting.
 
 ??? example "Full scripts — copy and run"
     ```python
@@ -143,4 +134,5 @@ If ESS stays low even at `0.5`, groups barely overlap — skip weighting or coll
     --8<-- "examples/weighting/_code/diagnose_weight_concentration_example.py:full"
     ```
 
-See [When weights help](../../explanation/importance-weights-rationale.md) for formulas and [Importance weights API](../../api/weighting.md) for reference.
+See [Importance weights API](../../api/weighting.md) for reference.
+

@@ -15,7 +15,7 @@
 
 **Did the target shift? Did it get worse?**
 
-`samesame` tests one number per observation — predicted risk, prediction error, or outlier score — for change between a **source** (reference: training or past batch) and a **target** (evaluation: current batch in production).
+`samesame` tests whether a single score per observation — e.g., predicted risk, prediction error, or outlier score — has shifted between a **source** (reference: training or past batch) and a **target** (evaluation: current batch in production).
 
 Two questions, two functions:
 
@@ -54,9 +54,9 @@ Small p-value (typically ≤ 0.05) is evidence against the null. Read `.pvalue` 
 
 Full docs: https://vathymut.github.io/samesame/
 
-- [Detect any distributional shift](https://vathymut.github.io/samesame/examples/tutorials/detect-distribution-shift.md) — your first shift test.
-- [Test whether the shift is harmful](https://vathymut.github.io/samesame/examples/tutorials/check-shift-harm.md) — add `worse` and interpret direction.
-- [Weight for common support](https://vathymut.github.io/samesame/examples/weighting/weight-for-common-support.md) — when feature support differs (synthetic + HELOC).
+- [Get started](https://vathymut.github.io/samesame/examples/tutorials/get-started.md) — build a score, run both tests (5 min).
+- [Monitor credit](https://vathymut.github.io/samesame/examples/credit/monitor-credit.md) — risk, confidence, and errors on HELOC.
+- [Weight for common support](https://vathymut.github.io/samesame/examples/weighting/weight-for-common-support.md) — when feature support differs.
 
 ## Installation
 

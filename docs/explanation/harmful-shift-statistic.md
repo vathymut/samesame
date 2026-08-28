@@ -1,4 +1,4 @@
-# Why the harm statistic is not just AUC
+# How the harm test works
 
 `test_shift` and `test_harmful_shift` share a permutation null but answer different questions.
 
@@ -19,22 +19,22 @@ Declare once — string or `ss.Worse` (interchangeable):
 
 --8<-- "snippets/worse-table.txt"
 
-Internally `polarity = scores if worse=="higher" else -scores` so larger always means worse. Everything below assumes transformed scores.
+Internally `scores if worse=="higher" else -scores` so larger always means worse.
 
-## What it integrates
+??? details "What it integrates (experts) — the formula"
 
-Let `S` be the transformed score, target = positive class, threshold `t`:
+    Let `S` be the transformed score, target = positive class, threshold `t`:
 
-- `FPR(t)=P(S>t|source)` (x-axis)
-- `TPR(t)=P(S>t|target)` (y-axis)
+    - `FPR(t)=P(S>t|source)` (x-axis)
+    - `TPR(t)=P(S>t|target)` (y-axis)
 
-Since `1-FPR = P(S≤t|source)=F̂_source(t)` (source ECDF):
+    Since `1-FPR = F̂_source(t)` (source ECDF):
 
-$$
-T = \int TPR\cdot(1-FPR)^2\,dFPR = \int TPR\cdot\hat{F}_{\text{source}}(t)^2\,dFPR
-$$
+    $$
+    T = \int TPR\cdot(1-FPR)^2\,dFPR = \int TPR\cdot\hat{F}_{\text{source}}(t)^2\,dFPR
+    $$
 
-`∫ TPR dFPR` = AUC (uniform) vs `∫ TPR·(1-FPR)² dFPR` = harm (weight peaks at low `FPR`, decays to 0 at `FPR=1`). Target that clears a high bar source stays below gets a large `T`.
+    Uniform weight = AUC. Harm peaks at low `FPR` and decays to 0 at `FPR=1`. Target that clears a high bar source stays below gets a large `T`. `O(n log n)`.
 
 ### Visual intuition
 
@@ -48,29 +48,9 @@ xychart-beta
     line "diagonal" [0, 0.2, 0.4, 0.6, 0.8, 1]
 ```
 
-*Harmful ROC jumps early (left, heavily weighted) → harm LARGE. Beneficial rises late (right, lightly weighted) → harm small but AUC still large.*
+*Harmful ROC jumps early (left, weighted) → harm LARGE. Beneficial rises late (right) → harm small but AUC still large.*
 
-A shift toward *better* outcomes inflates AUC but not `T`. That's why `test_harmful_shift` is directional. Computation is `O(n log n)`.
-
-## Properties
-
-- **Directional** — excess mass at low `FPR` → large `T`.
-- **Source-anchored** — weight is `F̂_source`, so the reference calibrates the comparison.
-- **Robust to beneficial shift** — better-side movement inflates AUC but not `T`.
-
-## Inference
-
-Scores and weights stay fixed — only labels are permuted.
-
-- **Null:** exchangeability — labels carry no information.
-- **Procedure:** permute labels `n_resamples` times, recompute `T`.
-- **p-value:** one-sided `greater` — fraction of null `T` ≥ observed, with +1 smoothing in `(0,1]`.
-
-No parametric assumption. Weighted permutations permute the concatenated weight vector with labels.
-
---8<-- "snippets/n-resamples.txt"
-
-Tip: compare `result.statistic` to `result.null_distribution`. For AUC, `0.5` is chance; for harm, compare to null median.
+A shift toward better outcomes inflates AUC but not `T` — that's why the test is directional.
 
 ## AUC vs harm
 
@@ -80,10 +60,9 @@ Tip: compare `result.statistic` to `result.null_distribution`. For AUC, `0.5` is
 | Statistic | `∫ TPR dFPR` | `∫ TPR·(1-FPR)² dFPR` |
 | Weight | uniform | favours low `FPR` |
 | Alternative | two-sided | one-sided `greater` |
-| Sensitive to | any separability | directional excess over source |
 
-Use `test_shift` when direction is unknown, `test_harmful_shift` once you can declare `worse`. See [Is it harmful?](../examples/tutorials/check-shift-harm.md).
+Use `test_shift` when direction is unknown, `test_harmful_shift` once you can declare `worse`. Scores and weights stay fixed — only labels are permuted; see [API](../api/testing.md). For AUC `0.5` is chance; for harm compare observed to `result.null_distribution` median.
 
 ## References
 
-- Kamulete et al. (2022). Harmful shifts via scoring rules. *UAI*. [arXiv:2107.02990](https://arxiv.org/abs/2107.02990).
+- Kamulete, V. M. (2022). Test for non-negligible adverse shifts. *Proceedings of the 38th Conference on Uncertainty in Artificial Intelligence (UAI)*. [arXiv:2107.02990](https://arxiv.org/abs/2107.02990).

@@ -15,10 +15,10 @@
 
 **Did the target shift? Did it get worse?**
 
-`samesame` tests one score per observation — predicted risk, error, or outlier score — for change between **source** (reference) and **target** (evaluation).
+`samesame` tests whether a single score per observation — e.g., predicted risk, prediction error, or outlier score — has shifted between **source** (reference) and **target** (evaluation).
 
-- `ss.test_shift` — did anything change? Two-sided, any difference.
-- `ss.test_harmful_shift(..., worse="higher"|"lower")` — did it move toward worse outcomes? One-sided, needs a direction.
+- `ss.test_shift` — did anything change? Two-sided.
+- `ss.test_harmful_shift(..., worse="higher"|"lower")` — did it move toward worse outcomes? One-sided.
 
 ## Quick example
 
@@ -26,49 +26,23 @@
 --8<-- "snippets/quick-example.py:quick-example"
 ```
 
---8<-- "snippets/pvalue-guidance.txt"
-
---8<-- "snippets/honest-scores.txt"
-
-> **Toy vs real scores:** the snippet uses synthetic normals. With real data, build a score with a domain classifier — see [Detect any shift](examples/tutorials/detect-distribution-shift.md).
+Small `p` (≤0.05) is evidence against the null — see [Get started](examples/tutorials/get-started.md) for how to read results.
 
 ## Workflow
 
-1. **Build a score** — one number per row, for source and target.
+1. **Build a score** — a single score per observation, source and target.
 2. **Test any change** — `ss.test_shift`.
-3. **Test harm** — `ss.test_harmful_shift(..., worse=...)` when you can declare the harmful direction.
-4. **Weight to common support** — `ss.domain_weights` if source and target cover different regions.
+3. **Test harm** — `ss.test_harmful_shift(..., worse=...)` when you can declare the direction.
+4. **Weight** — `ss.domain_weights` if you need to focus on common support.
 
 Scores and weights stay fixed — only labels are permuted.
 
-## Which test, which weights?
-
-| Situation | What to run |
-|-----------|-------------|
-| Direction unknown | `test_shift` (no `worse`) |
-| Direction known | `test_harmful_shift(..., worse=...)` |
-| No overlap concern | omit `weights` |
-| Source has outliers | `reweight="source"` |
-| Target has outliers | `reweight="target"` |
-| Both have outliers | `reweight="both"` |
-
-Strings and enums are interchangeable (`"higher"` ↔ `ss.Worse.HIGHER`, `"source"` ↔ `ss.ReweightMode.SOURCE`). Weighted results are trustworthy only when [effective sample size](explanation/glossary.md#effective-sample-size-ess) stays healthy:
-
---8<-- "snippets/ess-rule.txt"
-
 ## Where to go next
 
-**Tutorials** — start here (10 min):
-
-- [1. Detect any shift](examples/tutorials/detect-distribution-shift.md) — build a score, run `test_shift`.
-- [2. Is it harmful?](examples/tutorials/check-shift-harm.md) — add `worse` and interpret direction.
-
-**How-to guides** — jump to your task:
-
-- [Monitor credit risk, confidence, and errors](examples/credit/monitor-credit.md) — one page, three signals on HELOC.
-- [Weight for common support](examples/weighting/weight-for-common-support.md) — synthetic check + HELOC, `reweight`/`shrinkage` and ESS.
-
-Details: [When weights help](explanation/importance-weights-rationale.md) · [Why harm ≠ AUC](explanation/harmful-shift-statistic.md) · [Glossary](explanation/glossary.md) · [API](api/testing.md)
+- **[Get started](examples/tutorials/get-started.md)** — 5 min: build a score, run both tests.
+- **[Monitor credit](examples/credit/monitor-credit.md)** — real HELOC data: risk, confidence, and errors.
+- **[Weight for common support](examples/weighting/weight-for-common-support.md)** — when and how to reweight.
+- **[How the harm test works](explanation/harmful-shift-statistic.md)** · **[API](api/testing.md)**
 
 ## Installation
 
@@ -76,4 +50,4 @@ Details: [When weights help](explanation/importance-weights-rationale.md) · [Wh
 python -m pip install samesame
 ```
 
-Requires Python 3.12+ (`StrEnum`), `numpy`, `scipy`, `scikit-learn`.
+Requires Python 3.12+, `numpy`, `scipy`, `scikit-learn`.

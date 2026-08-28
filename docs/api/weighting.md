@@ -1,6 +1,6 @@
 # Importance weights
 
-Use `samesame.weights` when a plain comparison gives too much influence to observations the other group rarely contains. Weighting reframes the question to **common support**.
+Use `samesame.weights` when a plain comparison gives too much influence to points the other group rarely contains. Weighting reframes to **common support**.
 
 > Source: `src/samesame/weights.py` · `src/samesame/_permutation.py`
 
@@ -9,8 +9,8 @@ Use `samesame.weights` when a plain comparison gives too much influence to obser
 | Situation | What to do |
 |-----------|------------|
 | No overlap concern | Omit `weights` |
-| You already have sample weights | Wrap them in `ss.ImportanceWeights(source=..., target=...)` |
-| You have domain probabilities `P(target | x)` | Build weights with `ss.domain_weights` |
+| You already have sample weights | `ss.ImportanceWeights(source=..., target=...)` |
+| You have `P(target\|x)` | `ss.domain_weights(source=..., target=...)` |
 
 ```python
 import samesame as ss
@@ -20,57 +20,47 @@ result = ss.test_shift(source=source_scores, target=target_scores, rng=12345)
 
 # custom weights
 result = ss.test_shift(
-    source=source_scores,
-    target=target_scores,
+    source=source_scores, target=target_scores,
     weights=ss.ImportanceWeights(source=source_weights, target=target_weights),
     rng=12345,
 )
 
 # from a domain classifier
 weights = ss.domain_weights(
-    source=source_domain_prob,  # P(target | x) for source observations
-    target=target_domain_prob,  # P(target | x) for target observations
+    source=source_domain_prob,  # P(target | x) for source
+    target=target_domain_prob,  # P(target | x) for target
     reweight="both",
     shrinkage=0.5,
 )
-
 result = ss.test_harmful_shift(
     source=source_scores, target=target_scores, worse="higher", weights=weights, rng=12345,
 )
 ```
 
---8<-- "snippets/honest-scores.txt"
-
 --8<-- "snippets/clipping-note.txt"
 
 ## How `ss.domain_weights` works
 
-Call it when source and target don't overlap well and you want to emphasize common support.
-
-- `source` and `target` — domain probabilities `P(target | x)` as **separate** 1-D arrays in `[0, 1]`, each aligned to its score array. The prior ratio `n_source / n_target` is inferred from lengths.
-- `reweight` — which group(s) to reweight: `"source"`, `"target"`, or `"both"` (default `"both"`). Accepts string or `ss.ReweightMode` — interchangeable, enum gives autocomplete.
-- `shrinkage` (λ) in `[0, 1]` — RIW shrinkage trading correction strength against stability. `0` = plain ratio, `1` = uniform. Default `0.5`.
-
-Probabilities at `0` or `1` are clipped to `[1e-6, 1 − 1e-6]` before weighting, as noted above.
+- `source` and `target` — domain probabilities `P(target|x)` as **separate** 1-D arrays in `[0, 1]`, aligned to scores. Prior `n_source/n_target` inferred from lengths.
+- `reweight` — `"source"`, `"target"`, or `"both"` (default `"both"`). String or `ss.ReweightMode`.
+- `shrinkage` λ in `[0, 1]` — `0` = plain ratio, `1` = uniform. Default `0.5`.
 
 ## Choosing what to reweight
 
 --8<-- "snippets/reweight-table.txt"
 
-Inactive groups get weight `1` (normalized to `n`, so uniform). Start with `shrinkage=0.5`; lower is stronger but higher variance. Check ESS before lowering — see [Weight for common support](../examples/weighting/weight-for-common-support.md) and [Glossary](../explanation/glossary.md#effective-sample-size-ess).
+Inactive groups get weight `1` (uniform). Start at `0.5`; lower is stronger but higher variance. Check ESS — see [Weight for common support](../examples/weighting/weight-for-common-support.md).
 
 ## Effective sample size
-
-Once you have `ImportanceWeights`, call `.effective_sample_size()` for Kish's ESS per group. ESS ≤ `n`; it drops toward `1` when a few points dominate.
 
 ```python
 ess = weights.effective_sample_size()
 print(ess.source, ess.target)  # compare each to its n
 ```
 
---8<-- "snippets/ess-rule.txt"
+ESS ≤ `n`; `→1` when a few points dominate.
 
-For a worked sweep, see [Weight for common support](../examples/weighting/weight-for-common-support.md). For intuition, see [When importance weights help](../explanation/importance-weights-rationale.md).
+--8<-- "snippets/ess-rule.txt"
 
 ## API
 

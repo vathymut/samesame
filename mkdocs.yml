@@ -8,16 +8,12 @@ copyright: Copyright &copy; Vathy M. Kamulete
 
 nav:
   - Home: index.md
-  - Tutorials:
-    - Detect any distributional shift: examples/tutorials/detect-distribution-shift.md
-    - Test whether the shift is harmful: examples/tutorials/check-shift-harm.md
+  - Get started: examples/tutorials/get-started.md
   - How-to guides:
     - Monitor credit risk, confidence, and errors: examples/credit/monitor-credit.md
     - Weight for common support: examples/weighting/weight-for-common-support.md
   - Explanation:
-    - When importance weights help: explanation/importance-weights-rationale.md
-    - Why the harm statistic is not just AUC: explanation/harmful-shift-statistic.md
-    - Glossary: explanation/glossary.md
+    - How the harm test works: explanation/harmful-shift-statistic.md
   - API reference:
       - Shift testing: api/testing.md
       - Importance weights: api/weighting.md
