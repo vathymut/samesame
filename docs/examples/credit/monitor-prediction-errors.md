@@ -15,7 +15,7 @@ Prediction errors turn quality into a numeric score:
 - **Brier score** — squared error on the predicted probability
 - **Log-loss** — penalizes confident mistakes more heavily
 
-For both, larger is worse, so they fit `ss.test_harmful_shift(..., worse="higher")` (or `ss.Worse.HIGHER`). See [Glossary: `worse`](../../explanation/glossary.md#worse).
+For both, larger is worse, so they fit `ss.test_harmful_shift(..., worse="higher")`. See [Glossary: `worse`](../../explanation/glossary.md#worse). Strings and `ss.Worse` enum are interchangeable.
 
 ## Setup
 
@@ -99,8 +99,8 @@ harm_logloss = ss.test_harmful_shift(
     rng=np.random.default_rng(12345),
 )
 
-print(f"Brier p-value:    {harm_brier.pvalue:.4f}")
-print(f"Log-loss p-value: {harm_logloss.pvalue:.4f}")
+print(f"Brier p-value:    {harm_brier.pvalue:.4f}")    # → ~0.60 (large)
+print(f"Log-loss p-value: {harm_logloss.pvalue:.4f}")  # → ~0.60 (large)
 ```
 
 On this random split, expect large p-values — no evidence the model is worse on target.

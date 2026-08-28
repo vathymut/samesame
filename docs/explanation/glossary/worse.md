@@ -2,12 +2,14 @@
 
 Polarity that declares which direction is harmful. Required once per `test_harmful_shift`.
 
-| Signal | Worse when | Use |
-|--------|------------|-----|
-| Predicted risk, error, atypicality | larger | `worse="higher"` (or `ss.Worse.HIGHER`) |
-| Confidence, accuracy, quality | smaller | `worse="lower"` (or `ss.Worse.LOWER`) |
+| Signal | What it measures | `worse` |
+|--------|------------------|---------|
+| Predicted risk | business impact | `worse="higher"` |
+| Prediction error (Brier, log-loss) | accuracy once labels arrive | `worse="higher"` |
+| Outlier score — confidence (`LogitGap`) | certainty / typicality | `worse="lower"` |
+| Outlier score — atypicality | distance from source | `worse="higher"` |
 
-String or `ss.Worse` — interchangeable; enum gives autocomplete.
+Strings and `ss.Worse` enum are interchangeable (`"higher"` ↔ `ss.Worse.HIGHER`); enum gives autocomplete.
 
 Internally `polarity = scores if worse == "higher" else -scores`, so larger always means worse. Everything in [Why the harm statistic is not just AUC](../harmful-shift-statistic.md) assumes transformed scores.
 

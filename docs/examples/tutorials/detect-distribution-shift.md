@@ -62,10 +62,12 @@ target_scores = domain_prob[labels == 1]
 shift = ss.test_shift(source=source_scores, target=target_scores, rng=rng)
 
 print(f"AUC statistic: {shift.statistic:.3f}")
+# → AUC statistic: 0.611
 print(f"p-value:       {shift.pvalue:.4f}")
+# → p-value:       0.0002
 ```
 
-On this shifted example, expect large AUC and very small p-value — the target is easy to separate.
+On this shifted example, expect AUC ≈ 0.61 and `p < 0.001` — the target separates from source.
 
 ## How to read the result
 

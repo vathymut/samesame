@@ -1,1 +1,2 @@
-> **Honest scores:** if scores come from a fitted model, use out-of-sample predictions (`cross_val_predict`, `oob_decision_function_`, or held-out). In-sample scores invalidate the test — see [Glossary](../../explanation/glossary.md#honest-out-of-sample-scores).
+!!! tip "Honest scores — use out-of-sample"
+    If scores come from a fitted model, use out-of-sample predictions (`cross_val_predict`, `oob_decision_function_`, or held-out). In-sample scores create false separation and invalidate the test.

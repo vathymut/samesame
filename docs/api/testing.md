@@ -2,6 +2,8 @@
 
 Scores only — turn raw features into one numeric score per group first. See [Glossary](../explanation/glossary.md#score).
 
+> Source: `src/samesame/shift.py` · `src/samesame/_permutation.py` · `src/samesame/_statistics.py`
+
 --8<-- "snippets/honest-scores.txt"
 
 ## Choose a function

@@ -14,6 +14,10 @@ ss.test_shift(source=source_scores, target=target_scores, rng=12345)
 
 Use `source=` / `target=` arguments everywhere; `group` / `membership_prob` are historic names.
 
-**Novice:** think *training vs production*. **Expert:** exchangeability under the null assumes source and target are labelled draws from the same mixture; permutation tests the label.
+!!! tip "For newcomers"
+    Think *training vs production*.
+
+??? note "Formal view (for experts)"
+    Exchangeability under the null assumes source and target are labelled draws from the same mixture; permutation tests the label.
 
 See also: [Score](score.md), [Common support](common-support.md), [Glossary overview](../glossary.md).

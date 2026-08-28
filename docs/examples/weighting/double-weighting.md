@@ -25,7 +25,7 @@ import samesame as ss
 weights_both = ss.domain_weights(
     source=source_prob,
     target=target_prob,
-    reweight="both",  # or ss.ReweightMode.BOTH
+    reweight="both",
     shrinkage=0.5,
 )
 
@@ -37,7 +37,7 @@ double_weighted = ss.test_harmful_shift(
     rng=np.random.default_rng(12345),
 )
 
-print(f"Doubly-weighted p-value: {double_weighted.pvalue:.4f}")
+print(f"Doubly-weighted p-value: {double_weighted.pvalue:.4f}")  # → 0.0001
 ```
 
 --8<-- "snippets/clipping-note.txt"
@@ -70,9 +70,9 @@ source_weighted = ss.test_harmful_shift(
     rng=np.random.default_rng(12345),
 )
 
-print(f"Unweighted      p-value: {unweighted.pvalue:.4f}")
-print(f"Source-weighted p-value: {source_weighted.pvalue:.4f}")
-print(f"Doubly-weighted p-value: {double_weighted.pvalue:.4f}")
+print(f"Unweighted      p-value: {unweighted.pvalue:.4f}")       # → 0.0001
+print(f"Source-weighted p-value: {source_weighted.pvalue:.4f}")  # → 0.0001
+print(f"Doubly-weighted p-value: {double_weighted.pvalue:.4f}")  # → 0.0001
 ```
 
 Three views:

@@ -4,9 +4,9 @@ Policy for `domain_weights(..., reweight=...)` — which group(s) to adjust towa
 
 | Mode | What it does | Use when |
 |------|--------------|----------|
-| `reweight="source"` (`ss.ReweightMode.SOURCE`) | reweights source toward target; target unchanged | source has low-overlap points outside target support |
-| `reweight="target"` (`ss.ReweightMode.TARGET`) | reweights target toward source; source unchanged | target has low-overlap points outside source support |
-| `reweight="both"` (`ss.ReweightMode.BOTH`, default) | reweights both toward mutual support | both groups have low-overlap regions |
+| `reweight="source"` | reweights source toward target; target unchanged | source has low-overlap points outside target support |
+| `reweight="target"` | reweights target toward source; source unchanged | target has low-overlap points outside source support |
+| `reweight="both"` (default) | reweights both toward mutual support | both groups have low-overlap regions |
 
 Inactive groups get weight `1` (uniform after normalization; ESS stays `n`).
 

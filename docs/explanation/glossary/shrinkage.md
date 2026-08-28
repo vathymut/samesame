@@ -10,12 +10,12 @@
 
 Lower = more aggressive; higher = more conservative. Start at `0.5` and check ESS before lowering.
 
-RIW formulas (Yamada):
+RIW formulas (Yamada) — with $\hat{p} = P(\text{target} \mid x)$ estimated by the domain classifier and $\hat{r}(x) = \hat{p}(x)/(1-\hat{p}(x)) \cdot n_{\text{source}}/n_{\text{target}}$:
 
-- Source: `w_source = r / ((1-λ) + λ·r)`
-- Target: `w_target = 1 / (λ + (1-λ)·r)`
+- Source: $w_{\text{source}}(x) = \hat{r}(x) / ((1-\lambda) + \lambda \hat{r}(x))$
+- Target: $w_{\text{target}}(x) = 1 / (\lambda + (1-\lambda) \hat{r}(x))$
 
-where `r = p/(1-p) · n_source/n_target` and `p = P(target|x)`. You don't compute these — `ss.domain_weights(..., shrinkage=λ)` does.
+You don't compute these — `ss.domain_weights(..., shrinkage=λ)` does.
 
 If ESS collapses at `λ=0` (see [Diagnose weight concentration](../../examples/weighting/diagnose-weight-concentration.md)), raise `λ` rather than trusting a concentrated weight.
 

@@ -62,8 +62,8 @@ deployment_probabilities = rf_bad.predict_proba(X_deployment)  # target
 train_confidence = outlier_scores_from_probabilities(train_probabilities)
 deployment_confidence = outlier_scores_from_probabilities(deployment_probabilities)
 
-print(f"Source (training) mean confidence:   {train_confidence.mean():.3f}")
-print(f"Target (deployment) mean confidence: {deployment_confidence.mean():.3f}")
+print(f"Source (training) mean confidence:   {train_confidence.mean():.3f}")  # → ~1.2
+print(f"Target (deployment) mean confidence: {deployment_confidence.mean():.3f}")  # → ~1.5 (higher)
 ```
 
 On this split, target confidence is higher than source confidence across the distribution.
@@ -76,12 +76,12 @@ Higher confidence is better, so a harmful shift is toward *lower* scores.
 harm = ss.test_harmful_shift(
     source=train_confidence,
     target=deployment_confidence,
-    worse="lower",  # lower confidence = harm (or ss.Worse.LOWER)
+    worse="lower",  # lower confidence = harm
     rng=np.random.default_rng(12345),
 )
 
-print(f"Statistic: {harm.statistic:.4f}")
-print(f"p-value:   {harm.pvalue:.4f}")
+print(f"Statistic: {harm.statistic:.4f}")  # → ~0.04
+print(f"p-value:   {harm.pvalue:.4f}")     # → ~0.90 (large)
 ```
 
 Expect a large p-value — confidence shifts toward *higher* scores here, so no harmful drop.

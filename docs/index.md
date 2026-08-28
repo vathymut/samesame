@@ -15,7 +15,7 @@
 
 **Did the target shift? Did it get worse?**
 
-`samesame` tests one number per observation — predicted risk, prediction error, or outlier score — for change between a **source** (reference: training or past batch) and a **target** (evaluation: current batch in production).
+`samesame` tests one score per observation for change between **source** (reference: training or past batch) and **target** (evaluation: current batch). Scores are predicted risk, prediction error, or outlier score — you choose.
 
 Two questions, two functions:
 
@@ -33,6 +33,9 @@ Two questions, two functions:
 `test_shift` rejects for any difference; `test_harmful_shift` rejects only for excess mass in the harmful tail you declared. On the HELOC split used throughout the guides, expect `AUC ≈ 1.0` and `harm p < 0.001` — a clear harmful shift.
 
 --8<-- "snippets/honest-scores.txt"
+
+??? note "From toy scores to real scores"
+    The quick example uses synthetic normal scores so you can run it without data. When you have features, build a score with a domain classifier — see [Detect any distributional shift](examples/tutorials/detect-distribution-shift.md) for the full loop.
 
 ## The workflow
 
@@ -52,23 +55,21 @@ Scores and weights stay fixed — only labels are permuted (`n_resamples` times)
 
 ??? example "What score should I use?"
 
-    | Signal | What it measures | `worse` |
-    |--------|------------------|---------|
-    | Predicted risk | business impact | `worse="higher"` (or `ss.Worse.HIGHER`) |
-    | Prediction error (Brier, log-loss) | accuracy once labels arrive | `worse="higher"` (or `ss.Worse.HIGHER`) |
-    | Outlier score — confidence (`LogitGap`) | certainty / typicality | `worse="lower"` (or `ss.Worse.LOWER`) |
-    | Outlier score — atypicality | distance from source | `worse="higher"` (or `ss.Worse.HIGHER`) |
+    --8<-- "snippets/worse-table.txt"
 
-    Domain probability `P(target | x)` can be the score for `test_shift`, but don't reuse it as the harm score when you also weight — use it to build weights. Any scalar works; `samesame` provides only the test.
+    Strings and `ss.Worse` enum are interchangeable (`"higher"` ↔ `ss.Worse.HIGHER`). Domain probability `P(target | x)` can be the score for `test_shift`, but don't reuse it as the harm score when you also weight — use it to build weights. Any scalar works; `samesame` provides only the test.
 
 ## Decide what to run
 
 **Rule:** run unweighted first. Use `test_shift` when direction is unknown; use `test_harmful_shift` when you can declare `worse`. Add weights only when you have a domain classifier and low overlap.
 
 - **No overlap concern** → omit `weights`.
-- **Source outliers** (training has cases production never sees) → `reweight="source"` (or `ss.ReweightMode.SOURCE`).
-- **Target outliers** (production has cases training never saw) → `reweight="target"` (or `ss.ReweightMode.TARGET`).
-- **Both** → `reweight="both"` (or `ss.ReweightMode.BOTH`) for common-support comparison.
+- **Source outliers** (training has cases production never sees) → `reweight="source"`.
+- **Target outliers** (production has cases training never saw) → `reweight="target"`.
+- **Both sides have outliers** → `reweight="both"` for common-support comparison.
+- **Unsure** → start unweighted, then compare weighted.
+
+Strings and `ss.ReweightMode` enum are interchangeable (`"source"` ↔ `ss.ReweightMode.SOURCE`).
 
 A weighted test is trustworthy only when [effective sample size](explanation/glossary.md#effective-sample-size-ess) stays healthy:
 
@@ -77,6 +78,22 @@ A weighted test is trustworthy only when [effective sample size](explanation/glo
 For the full flow, see [Glossary](explanation/glossary.md) and [When importance weights help](explanation/importance-weights-rationale.md).
 
 ## Where to go next
+
+**Path:** 1 → 2 → 3, then pick a how-to. Novices follow the numbers; experts jump to any node.
+
+```mermaid
+graph LR
+    T1[1. Detect any shift] --> T2[2. Is it harmful?]
+    T2 --> T3[3. Adjust for covariate shift]
+    T3 --> C1[Credit: risk]
+    T3 --> C2[Credit: confidence]
+    T3 --> C3[Credit: errors]
+    T3 --> W1[Weights: source]
+    T3 --> W2[Weights: both]
+    T3 --> W3[Weights: ESS]
+    classDef tut fill:#eef2ff,stroke:#4f46e5;
+    class T1,T2,T3 tut;
+```
 
 **Tutorials** — learn the workflow end-to-end (start here if new):
 
@@ -104,4 +121,4 @@ For the full flow, see [Glossary](explanation/glossary.md) and [When importance 
 python -m pip install samesame
 ```
 
-Requires Python 3.12+, `numpy`, `scipy`, `scikit-learn`.
+Requires Python 3.12+ (uses `StrEnum`), `numpy`, `scipy`, `scikit-learn`.

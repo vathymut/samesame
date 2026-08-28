@@ -27,21 +27,19 @@ Plain `r̂` is powerful but unstable: when groups separate well, a few points re
 
 ## How `samesame` stabilises the weights
 
-`samesame` uses relative importance weighting (RIW, Yamada et al. 2013) — a blend of the plain ratio toward uniform. You don't compute these by hand; `ss.domain_weights` does.
+`samesame` uses relative importance weighting (RIW, Yamada et al. 2013) — a blend of the plain ratio toward uniform. You don't compute these by hand; `ss.domain_weights` does. In short: lower `shrinkage` is stronger correction, higher is more stable; `0.5` is the balanced default.
 
-Source weighting:
+??? example "RIW formulas (for experts)"
 
-$$
-w_{\text{source}}(x) = \frac{\hat{r}(x)}{(1 - \lambda) + \lambda \hat{r}(x)}
-$$
+    With $\hat{r}(x)$ from above and $\lambda = $ `shrinkage` in $[0,1]$:
 
-Target weighting:
+    $$
+    w_{\text{source}}(x) = \frac{\hat{r}(x)}{(1 - \lambda) + \lambda \hat{r}(x)}
+    $$
 
-$$
-w_{\text{target}}(x) = \frac{1}{\lambda + (1 - \lambda) \hat{r}(x)}
-$$
-
-where `λ = shrinkage` in `[0, 1]`.
+    $$
+    w_{\text{target}}(x) = \frac{1}{\lambda + (1 - \lambda) \hat{r}(x)}
+    $$
 
 ## What `shrinkage` (λ) does
 
@@ -68,10 +66,12 @@ Weights are for known overlap issues, not a default.
 **Quick decision:**
 
 - No overlap concern → omit `weights`.
-- Source outliers only → `reweight="source"` (or `ss.ReweightMode.SOURCE`).
-- Target outliers only → `reweight="target"` (or `ss.ReweightMode.TARGET`).
-- Both sides have outliers → `reweight="both"` (or `ss.ReweightMode.BOTH`).
+- Source outliers only → `reweight="source"`.
+- Target outliers only → `reweight="target"`.
+- Both sides have outliers → `reweight="both"` for common-support comparison.
 - Unsure → start unweighted, then compare weighted.
+
+Strings and `ss.ReweightMode` enum are interchangeable (`"source"` ↔ `ss.ReweightMode.SOURCE`).
 
 ## References
 

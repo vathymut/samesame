@@ -8,7 +8,7 @@ Use this when your model output already has business meaning and you need two an
 
 ## Why this signal
 
-Predicted default probability is directly interpretable — larger is worse — so it fits `ss.test_harmful_shift(..., worse="higher")` (or `ss.Worse.HIGHER`). See [Glossary: `worse`](../../explanation/glossary.md#worse).
+Predicted default probability is directly interpretable — larger is worse — so it fits `ss.test_harmful_shift(..., worse="higher")`. See [Glossary: `worse`](../../explanation/glossary.md#worse). Strings and `ss.Worse` enum are interchangeable.
 
 This guide uses the HELOC dataset. **Source** = lower-risk customers (training); **Target** = higher-risk customers (simulated deployment). From here we use **source/target** consistently — see [Glossary](../../explanation/glossary.md#source-and-target).
 
@@ -40,8 +40,8 @@ shift = ss.test_shift(
     rng=np.random.default_rng(12345),
 )
 
-print(f"AUC statistic: {shift.statistic:.4f}")
-print(f"p-value:       {shift.pvalue:.4f}")
+print(f"AUC statistic: {shift.statistic:.4f}")  # → 0.9999
+print(f"p-value:       {shift.pvalue:.4f}")     # → 0.0001
 ```
 
 On this split expect AUC ≈ `1.0` and a very small p-value — source and target separate clearly.
@@ -67,15 +67,15 @@ Train the credit model. Use out-of-bag predictions for source and standard predi
 harm = ss.test_harmful_shift(
     source=train_risk,
     target=deployment_risk,
-    worse="higher",  # larger = worse (or ss.Worse.HIGHER)
+    worse="higher",  # larger = worse
     rng=np.random.default_rng(12345),
 )
 
-print(f"Statistic: {harm.statistic:.4f}")
-print(f"p-value:   {harm.pvalue:.4f}")
+print(f"Statistic: {harm.statistic:.4f}")  # → ~0.35
+print(f"p-value:   {harm.pvalue:.4f}")     # → 0.0001
 ```
 
-Expect a very small p-value — target not only differs but carries higher predicted risk.
+Expect `p < 0.001` — target not only differs but carries higher predicted risk.
 
 ## Step 3 — Read the result
 

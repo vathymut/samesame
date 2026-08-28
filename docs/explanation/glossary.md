@@ -3,7 +3,7 @@
 Core terms used across `samesame`. Single source for wording — link here on first use in tutorials and how-to guides.
 
 !!! tip "How to use this page"
-    **Novice first pass:** Source → Target → Score → `worse` → Harmful shift → Honest scores → Statistic vs p-value. **Expert jump:** Shrinkage → ESS → Permutation test → Importance weights. Use the sidebar or table below. Each term links to a focused page with examples and API pointers.
+    **Novice:** Core concepts in order — Source → Score → `worse` → Harmful shift → Honest scores → Statistic vs p-value. **Expert:** jump to Weighting (Shrinkage, ESS, Importance weights) or Inference (Permutation test). Groups match the sidebar; each term links to a focused page.
 
 | Term | One line | Details |
 |------|----------|---------|

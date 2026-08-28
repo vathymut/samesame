@@ -23,7 +23,7 @@ import samesame as ss
 unweighted = ss.test_harmful_shift(
     source=train_risk,
     target=deployment_risk,
-    worse="higher",  # or ss.Worse.HIGHER
+    worse="higher",
     rng=np.random.default_rng(12345),
 )
 ```
@@ -41,7 +41,7 @@ target_prob = domain_prob[split.values == 1]
 weights = ss.domain_weights(
     source=source_prob,
     target=target_prob,
-    reweight="source",  # or ss.ReweightMode.SOURCE
+    reweight="source",
     shrinkage=0.5,
 )
 
@@ -53,8 +53,8 @@ weighted = ss.test_harmful_shift(
     rng=np.random.default_rng(12345),
 )
 
-print(f"Unweighted p-value: {unweighted.pvalue:.4f}")
-print(f"Weighted   p-value: {weighted.pvalue:.4f}")
+print(f"Unweighted p-value: {unweighted.pvalue:.4f}")  # → 0.0001
+print(f"Weighted   p-value: {weighted.pvalue:.4f}")    # → 0.0001 (persists on common support)
 ```
 
 --8<-- "snippets/clipping-note.txt"

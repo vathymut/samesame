@@ -35,7 +35,7 @@ source_prob[:8] = rng.uniform(0.97, 0.999, size=8)
 weights = ss.domain_weights(
     source=source_prob,
     target=target_prob,
-    reweight="both",  # or ss.ReweightMode.BOTH
+    reweight="both",
     shrinkage=0.0,
 )
 ```
@@ -47,8 +47,8 @@ weights = ss.domain_weights(
 ```python
 ess = weights.effective_sample_size()
 
-print(f"source ESS: {ess.source:.1f} / {len(source_prob)}")
-print(f"target ESS: {ess.target:.1f} / {len(target_prob)}")
+print(f"source ESS: {ess.source:.1f} / {len(source_prob)}")  # → 6.5 / 400
+print(f"target ESS: {ess.target:.1f} / {len(target_prob)}")  # → 203.6 / 400
 ```
 
 In this example source ESS collapses to ~`6` of `400` — a handful of source points carry almost all weight.

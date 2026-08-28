@@ -9,7 +9,7 @@
 
 AUC averages separability uniformly across the ROC curve. The harm statistic emphasizes the **harmful tail** — thresholds that source rarely exceeds but target clears. If target piles mass there, harm grows; if it shifts elsewhere, it doesn't.
 
-> **TL;DR** — `AUC = ∫ TPR dFPR` (uniform). Harm = `∫ TPR·(1-FPR)² dFPR` (favours low `FPR`). Same null, different weighting.
+> **Summary** — `AUC = ∫ TPR dFPR` (uniform). Harm = `∫ TPR·(1-FPR)² dFPR` (favours low `FPR`). Same null, different weighting.
 
 ## Direction: `worse` always means "larger" after the transform
 
@@ -40,61 +40,29 @@ $$
 
 ### Visual intuition
 
-<div style="display:flex; gap:24px; flex-wrap:wrap; justify-content:center; margin:16px 0;">
+Harmful tail = low `FPR` (source rarely exceeds). Beneficial/symmetric = high `FPR`. Harm weighting `(1-FPR)²` is large at left, near zero at right.
 
-<div style="flex:1; min-width:260px; max-width:380px; text-align:center;">
+```mermaid
+xychart-beta
+    title "Harmful shift — steep early ROC, heavily weighted"
+    x-axis "FPR →" [0, 0.2, 0.4, 0.6, 0.8, 1]
+    y-axis "TPR ↑" 0 --> 1
+    line "ROC" [0, 0.75, 0.88, 0.94, 0.98, 1]
+    line "diagonal" [0, 0.2, 0.4, 0.6, 0.8, 1]
+```
 
-**Harmful shift** — excess mass at low `FPR`
+*Alt: harmful ROC jumps to TPR≈0.75 at FPR=0.2 (left, heavily weighted) — Harm statistic LARGE, AUC large.*
 
-<svg viewBox="0 0 220 180" width="100%" style="max-width:320px; border:1px solid #e5e7eb; border-radius:8px; background:white;">
-  <!-- axes -->
-  <line x1="30" y1="150" x2="190" y2="150" stroke="#111" stroke-width="1.5"/>
-  <line x1="30" y1="150" x2="30" y2="20" stroke="#111" stroke-width="1.5"/>
-  <text x="105" y="172" font-size="11" fill="#555" text-anchor="middle">FPR →</text>
-  <text x="12" y="85" font-size="11" fill="#555" text-anchor="middle" transform="rotate(-90 12 85)">TPR ↑</text>
-  <!-- heavily weighted region -->
-  <rect x="30" y="20" width="48" height="130" fill="#3b82f6" opacity="0.12"/>
-  <text x="54" y="35" font-size="8" fill="#1d4ed8" text-anchor="middle">(1−FPR)² large</text>
-  <!-- diagonal -->
-  <line x1="30" y1="150" x2="190" y2="20" stroke="#9ca3af" stroke-width="1" stroke-dasharray="4 3"/>
-  <!-- harmful ROC: steep early rise -->
-  <path d="M 30 150 C 50 70, 60 30, 190 20" fill="none" stroke="#1d4ed8" stroke-width="2.5"/>
-  <circle cx="68" cy="42" r="4" fill="#1d4ed8"/>
-  <!-- weight indicator -->
-  <text x="68" y="58" font-size="7" fill="#1d4ed8" text-anchor="middle">heavily</text>
-  <text x="68" y="66" font-size="7" fill="#1d4ed8" text-anchor="middle">weighted</text>
-  <text x="30" y="165" font-size="9" fill="#6b7280">0</text>
-  <text x="185" y="165" font-size="9" fill="#6b7280">1</text>
-</svg>
+```mermaid
+xychart-beta
+    title "Beneficial shift — late ROC rise, lightly weighted"
+    x-axis "FPR →" [0, 0.2, 0.4, 0.6, 0.8, 1]
+    y-axis "TPR ↑" 0 --> 1
+    line "ROC" [0, 0.08, 0.15, 0.30, 0.65, 1]
+    line "diagonal" [0, 0.2, 0.4, 0.6, 0.8, 1]
+```
 
-<div style="font-size:12px; color:#1e40af; margin-top:6px;"><strong>Harm statistic: LARGE</strong> &middot; AUC: large</div>
-</div>
-
-<div style="flex:1; min-width:260px; max-width:380px; text-align:center;">
-
-**Beneficial / symmetric shift** — mass at high `FPR`
-
-<svg viewBox="0 0 220 180" width="100%" style="max-width:320px; border:1px solid #e5e7eb; border-radius:8px; background:white;">
-  <line x1="30" y1="150" x2="190" y2="150" stroke="#111" stroke-width="1.5"/>
-  <line x1="30" y1="150" x2="30" y2="20" stroke="#111" stroke-width="1.5"/>
-  <text x="105" y="172" font-size="11" fill="#555" text-anchor="middle">FPR →</text>
-  <text x="12" y="85" font-size="11" fill="#555" text-anchor="middle" transform="rotate(-90 12 85)">TPR ↑</text>
-  <!-- lightly weighted region -->
-  <rect x="30" y="20" width="48" height="130" fill="#9ca3af" opacity="0.07"/>
-  <text x="54" y="35" font-size="8" fill="#6b7280" text-anchor="middle">(1−FPR)² small</text>
-  <line x1="30" y1="150" x2="190" y2="20" stroke="#9ca3af" stroke-width="1" stroke-dasharray="4 3"/>
-  <!-- beneficial ROC: late rise -->
-  <path d="M 30 150 C 70 140, 140 130, 190 20" fill="none" stroke="#6b7280" stroke-width="2.5"/>
-  <text x="152" y="110" font-size="7" fill="#6b7280" text-anchor="middle">lightly</text>
-  <text x="152" y="118" font-size="7" fill="#6b7280" text-anchor="middle">weighted</text>
-  <text x="30" y="165" font-size="9" fill="#6b7280">0</text>
-  <text x="185" y="165" font-size="9" fill="#6b7280">1</text>
-</svg>
-
-<div style="font-size:12px; color:#4b5563; margin-top:6px;"><strong>Harm statistic: small</strong> &middot; AUC: large (wrong side)</div>
-</div>
-
-</div>
+*Alt: beneficial ROC stays low until FPR≈0.8 (right, lightly weighted) — Harm statistic small, AUC still large (wrong side).*
 
 A shift toward *better* outcomes inflates two-sided AUC but not `T` — the mass is at high `FPR` where the weight `≈ 0`. That's why `test_harmful_shift` is directional.
 
@@ -145,7 +113,7 @@ Permutation p-values use +1 smoothing (Phipson & Smyth) and lie in `(0, 1]`; dou
 | Alternative | two-sided | one-sided `greater` |
 | Sensitive to | any separability | directional excess over source support |
 
-Use `test_shift` for "are they different?" Use `test_harmful_shift` once you can declare `worse` (`worse="higher"` / `ss.Worse.HIGHER` or `worse="lower"` / `ss.Worse.LOWER`). It won't flag neutral or beneficial shifts.
+Use `test_shift` for "are they different?" Use `test_harmful_shift` once you can declare `worse` (`"higher"` or `"lower"`). Strings and `ss.Worse` enum are interchangeable. It won't flag neutral or beneficial shifts.
 
 For a worked example, see [Test whether the shift is harmful](../examples/tutorials/check-shift-harm.md). For the API, see [Shift testing](../api/testing.md).
 

@@ -2,6 +2,8 @@
 
 Use `samesame.weights` when a plain comparison gives too much influence to observations the other group rarely contains. Weighting reframes the question to **common support**.
 
+> Source: `src/samesame/weights.py` · `src/samesame/_permutation.py`
+
 ## When to use
 
 | Situation | What to do |
@@ -28,7 +30,7 @@ result = ss.test_shift(
 weights = ss.domain_weights(
     source=source_domain_prob,  # P(target | x) for source observations
     target=target_domain_prob,  # P(target | x) for target observations
-    reweight="both",  # or ss.ReweightMode.BOTH
+    reweight="both",
     shrinkage=0.5,
 )
 

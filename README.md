@@ -44,7 +44,9 @@ print(f"Shift statistic: {shift.statistic:.3f}, p-value: {shift.pvalue:.4f}")
 print(f"Harm  statistic: {harm.statistic:.3f}, p-value: {harm.pvalue:.4f}")
 ```
 
-Small p-value (typically ≤ 0.05) is evidence against the null. Read `.pvalue` first; use `.statistic` for magnitude. `test_shift` rejects for any difference; `test_harmful_shift` rejects only for excess mass in the harmful tail you declared. On the HELOC split used in the docs, expect `AUC ≈ 1.0` and `harm p < 0.001`.
+Small p-value (typically ≤ 0.05) is evidence against the null. Read `.pvalue` first; use `.statistic` for magnitude. `test_shift` rejects for any difference; `test_harmful_shift` rejects only for excess mass in the harmful tail you declared. On the HELOC split used throughout the guides, expect `AUC ≈ 1.0` and `harm p < 0.001` — a clear harmful shift.
+
+> **Toy scores vs real scores:** the snippet above uses synthetic normals for brevity. With real features, build a score with a domain classifier — see Tutorials in the docs for the full loop.
 
 `samesame` only sees scores — not how they were made. If scores come from a fitted model, generate them out of sample with `cross_val_predict`, `oob_decision_function_`, or a held-out set — in-sample predictions invalidate the test.
 
@@ -62,4 +64,4 @@ Full docs: https://vathymut.github.io/samesame/
 python -m pip install samesame
 ```
 
-Requires Python 3.12+, `numpy`, `scipy`, `scikit-learn`.
+Requires Python 3.12+ (uses `StrEnum`), `numpy`, `scipy`, `scikit-learn`.

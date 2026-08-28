@@ -43,15 +43,15 @@ Target is slightly lower — a harmful shift for a higher-is-better signal.
     harm = ss.test_harmful_shift(
         source=source_quality,
         target=target_quality,
-        worse="lower",  # smaller = worse for confidence (or ss.Worse.LOWER)
+        worse="lower",  # smaller = worse for confidence
         rng=rng,
     )
 
-    print(f"Shift p-value: {shift.pvalue:.4f}")
-    print(f"Harm  p-value: {harm.pvalue:.4f}")
+    print(f"Shift p-value: {shift.pvalue:.4f}")  # → 0.0001
+    print(f"Harm  p-value: {harm.pvalue:.4f}")   # → 0.0001
     ```
 
-    `worse="lower"` means a shift toward *smaller* scores is harmful. Scores are negated internally so larger always means worse.
+    `worse="lower"` means a shift toward *smaller* scores is harmful. Scores are negated internally so larger always means worse. Strings and `ss.Worse` enum are interchangeable.
 
 === "Higher is worse (risk, error, atypicality)"
 
@@ -63,10 +63,10 @@ Target is slightly lower — a harmful shift for a higher-is-better signal.
     target_risk = rng.normal(loc=0.28, scale=0.07, size=400)
 
     harm = ss.test_harmful_shift(source=source_risk, target=target_risk, worse="higher", rng=rng)
-    print(f"Harm p-value: {harm.pvalue:.4f}")
+    print(f"Harm p-value: {harm.pvalue:.4f}")  # → 0.0001
     ```
 
-    `worse="higher"` (or `ss.Worse.HIGHER`) means larger scores are worse — for risk, error, and atypical outlier scores.
+    `worse="higher"` means larger scores are worse — for risk, error, and atypical outlier scores.
 
 ## How to read the result
 

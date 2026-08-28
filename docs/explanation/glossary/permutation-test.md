@@ -11,14 +11,14 @@ Specifics:
 - `test_shift` — two-sided on ROC AUC; doubling capped at `1`.
 - `test_harmful_shift` — one-sided `greater` on the harm statistic `∫ TPR·(1-FPR)² dFPR`.
 
-```python
-# src/samesame/_permutation.py (simplified)
-sample_weight = np.concatenate((weights.source, weights.target)) if weights else None
-observed = metric(labels, scores, sample_weight)
-for i in range(n_resamples):
-    perm_labels = rng.permutation(labels)
-    null[i] = metric(perm_labels, scores, sample_weight)
-```
+??? example "Simplified implementation — `src/samesame/_permutation.py`"
+    ```python
+    sample_weight = np.concatenate((weights.source, weights.target)) if weights else None
+    observed = metric(labels, scores, sample_weight)
+    for i in range(n_resamples):
+        perm_labels = rng.permutation(labels)
+        null[i] = metric(perm_labels, scores, sample_weight)
+    ```
 
 `n_resamples` — permutation resamples. Default `9999`. Use `999` while exploring, `9999` for final, `19999` if you need `p < 0.001` resolution. Cost `O(n log n)` per resample, `O(n)` memory.
 

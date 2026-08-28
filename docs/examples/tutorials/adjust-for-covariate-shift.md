@@ -77,7 +77,7 @@ target_prob = domain_prob[group == 1]
 weights = ss.domain_weights(
     source=source_prob,
     target=target_prob,
-    reweight="source",  # or ss.ReweightMode.SOURCE
+    reweight="source",
     shrinkage=0.5,
 )
 
@@ -91,8 +91,8 @@ weighted = ss.test_harmful_shift(
     source=source_scores, target=target_scores, worse="higher", weights=weights, rng=rng,
 )
 
-print(f"Unweighted p-value: {unweighted.pvalue:.4f}")
-print(f"Weighted   p-value: {weighted.pvalue:.4f}")
+print(f"Unweighted p-value: {unweighted.pvalue:.4f}")  # → 1.0000 on this synthetic split (no signal)
+print(f"Weighted   p-value: {weighted.pvalue:.4f}")    # → 0.62 — still no signal on common support
 ```
 
 --8<-- "snippets/clipping-note.txt"
