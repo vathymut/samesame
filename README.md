@@ -15,30 +15,14 @@
 
 > Same, same but different ...
 
-`samesame` compares a source group with a target group and asks whether their score distributions
-differ, and whether the target moved toward worse outcomes. It is designed for monitoring machine
-learning (ML) systems and model behavior across time, domains, and contexts.
+`samesame` compares a source and a target group and asks whether their score distributions differ — and whether the target moved toward worse outcomes. It is built for monitoring ML systems across time, domains, and contexts.
 
-In the package, the reference group is called **source** and the new group is called **target**.
-That could mean training vs production data, a baseline batch vs a fresh batch, or one segment vs
-another.
+**Source** is the reference (usually training or a past batch); **target** is the evaluation group (usually production or a new batch). Each group is represented by a single numeric score — predicted risk, prediction error, or an outlier score such as confidence.
 
-Each distribution is represented by a relevant score: predicted risk, model confidence, prediction
-error, or a classifier score.
+Two questions, two functions:
 
-The package is built around two practical questions:
-
-- **Did anything change?** Use `test_shift` for a two-sided comparison.
-- **Did the change point in a worse direction?** Use `test_harmful_shift` when you can define what
-  "worse" means for the score.
-
-You answer those questions with the score that matches your use case.
-
-## Start here
-
-- Start with [Detect a distribution shift](examples/tutorials/detect-distribution-shift.md) if you want to know whether two datasets differ at all.
-- Continue to [Check whether target shifted toward worse outcomes](examples/tutorials/check-shift-harm.md) when you know what "worse" means for your signal.
-- Use [Adjust for covariate shift with importance weights](examples/tutorials/adjust-for-covariate-shift.md) when source and target have different feature coverage and you want to focus on their overlap.
+- **Did anything change?** `samesame.test_shift` — two-sided, flags any distributional difference.
+- **Did it get worse?** `samesame.test_harmful_shift` — one-sided, flags a directional shift once you declare what "worse" means.
 
 ## Quick example
 
@@ -46,61 +30,28 @@ You answer those questions with the score that matches your use case.
 import numpy as np
 import samesame as ss
 
-rng = np.random.default_rng(123_456)
+rng = np.random.default_rng(12345)
 source_scores = rng.normal(loc=0.0, scale=1.0, size=600)
 target_scores = rng.normal(loc=0.6, scale=1.0, size=600)
 
 shift = ss.test_shift(source_scores, target_scores, rng=rng)
-harm = ss.test_harmful_shift(
-    source_scores,
-    target_scores,
-    worse="higher",
-    rng=rng,
-)
+harm = ss.test_harmful_shift(source_scores, target_scores, worse="higher", rng=rng)
 
 print(f"Shift statistic: {shift.statistic:.3f}, p-value: {shift.pvalue:.4f}")
 print(f"Harm  statistic: {harm.statistic:.3f}, p-value: {harm.pvalue:.4f}")
 ```
 
-A small p-value from `ss.test_shift(...)` is evidence that the groups differ. A small p-value from
-`ss.test_harmful_shift(...)` is evidence that the target distribution also shifted toward worse
-outcomes according to the declared direction.
+A small p-value (typically ≤ 0.05) is evidence that the groups differ. `test_harmful_shift` additionally requires `worse="higher"` (larger = harm, e.g., risk) or `worse="lower"` (smaller = harm, e.g., confidence).
 
-## Common signals
+When scores come from a fitted model, generate them out of sample (cross-validation, OOB, or held-out set) — in-sample predictions invalidate the test.
 
-Choose the signal that matches the decision you need to make:
+## Start here
 
-- **Predicted risk** when higher values already mean higher business risk.
-- **Prediction error** when labels are available and you want to measure accuracy directly.
-- **Confidence score** when you want to monitor certainty rather than business impact.
-- **Domain-classifier score** when your goal is to detect distribution shift between datasets.
+Full docs: https://vathymut.github.io/samesame/
 
-The package does not force one interpretation on you. It gives you a small set of tests you can
-reuse across these settings.
-
-## The workflow
-
-`samesame` is statistically grounded, but the working model is simple:
-
-1. Build a numeric signal for source and target.
-2. Test for any change with `ss.test_shift(...)`.
-3. Test for directional harm with `ss.test_harmful_shift(...)` when direction matters.
-
-Both tests are permutation-based, which keeps the assumptions light. When source and target differ
-in feature support, `ss.domain_weights(...)` lets you focus the test on the
-region where the two groups are genuinely comparable.
-
-When scores come from a fitted model, generate them out of sample with cross-validation,
-out-of-bag predictions, or a held-out evaluation set. In-sample predictions can create artificial
-separation and invalidate the test interpretation.
-
-## Pick a guide
-
-- [Monitor predicted credit risk](examples/credit/monitor-credit-risk.md) for a label-free business-risk workflow.
-- [Monitor model confidence](examples/credit/monitor-model-confidence.md) when confidence matters more than the raw prediction.
-- [Monitor prediction errors once labels arrive](examples/credit/monitor-prediction-errors.md) for direct accuracy monitoring.
-- [Focus harmful-shift testing on shared support](examples/weighting/source-reweighting.md) when source contains outliers that are irrelevant for deployment.
-- [Restrict testing to common support on both sides](examples/weighting/double-weighting.md) when both groups contain low-overlap outliers.
+- [Detect whether two datasets differ](https://vathymut.github.io/samesame/examples/tutorials/detect-distribution-shift.md)
+- [Check whether target shifted toward worse outcomes](https://vathymut.github.io/samesame/examples/tutorials/check-shift-harm.md)
+- [Focus on common support with importance weights](https://vathymut.github.io/samesame/examples/tutorials/adjust-for-covariate-shift.md)
 
 ## Installation
 

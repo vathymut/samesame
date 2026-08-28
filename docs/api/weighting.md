@@ -1,92 +1,87 @@
 # Importance weights
 
-Use `samesame.weights` when a plain comparison gives too much influence to observations that the
-other group rarely contains. Weighting changes the question: you are comparing the groups mainly
-where they overlap.
+Use `samesame.weights` when a plain comparison gives too much influence to observations the other group rarely contains. Weighting changes the question: you compare groups mainly on **common support**.
 
 ## Choose an approach
 
 | Situation | What to do |
 |-----------|------------|
-| No weighting needed | Omit `weights` |
-| You already have sample weights | Wrap them in `ImportanceWeights(source=..., target=...)` |
-| You have domain-classifier probabilities | Build weights with `domain_weights(...)` |
+| No overlap concern | Omit `weights` |
+| You already have sample weights | Wrap them in `ss.ImportanceWeights(source=..., target=...)` |
+| You have domain probabilities `P(target\|x)` | Build weights with `ss.domain_weights` |
 
 ```python
 import samesame as ss
-from samesame.weights import ImportanceWeights, domain_weights
 
-result = ss.test_shift(source_scores, target_scores)
+# no weighting
+result = ss.test_shift(source_scores, target_scores, rng=12345)
 
+# custom weights
 result = ss.test_shift(
     source_scores,
     target_scores,
-    weights=ImportanceWeights(
-        source=source_weights,
-        target=target_weights,
-    ),
+    weights=ss.ImportanceWeights(source=source_weights, target=target_weights),
+    rng=12345,
 )
 
-weights = domain_weights(
-    source=source_domain_probs,
-    target=target_domain_probs,
+# from a domain classifier
+weights = ss.domain_weights(
+    source=source_domain_prob,  # P(target|x) for source observations
+    target=target_domain_prob,  # P(target|x) for target observations
     reweight="both",
+    shrinkage=0.5,
 )
 
 result = ss.test_harmful_shift(
-    source_scores,
-    target_scores,
-    worse="higher",
-    weights=weights,
+    source_scores, target_scores, worse="higher", weights=weights, rng=12345,
 )
 ```
 
-## When `domain_weights(...)` helps
+--8<-- "snippets/honest-scores.txt"
 
-Use it when source and target do not overlap well and you want the comparison to emphasize common
-support rather than low-overlap observations.
+--8<-- "snippets/clipping-note.txt"
 
-It takes two main controls:
+## When `ss.domain_weights` helps
 
-- `source` and `target`, passed separately as domain-classifier probabilities that estimate
-  `P(target | observation)`. These are not the raw source and target observations or test scores.
-- `reweight`, which decides whether to reweight source, target, or both (default `"both"`).
-  Accepts a plain string or :class:`ReweightMode` (`ss.ReweightMode.SOURCE`, etc.).
-- `shrinkage`, which trades off correction strength against stability
+Use it when source and target don't overlap well and you want the comparison to emphasize common support.
 
-Probabilities must be in `[0, 1]`. Values at 0 or 1 are automatically clipped away
-from the boundaries before weights are calculated.
+It takes:
+
+- `source` and `target` — domain probabilities `P(target|x)` as **separate** 1-D arrays in `[0, 1]`, each aligned to the corresponding score array. The prior ratio `n_source / n_target` is inferred from lengths.
+- `reweight` — whether to reweight `source`, `target`, or `both` (default `"both"`). Accepts string or `ss.ReweightMode`.
+- `shrinkage` (λ) in `[0, 1]` — RIW shrinkage trading correction strength against stability. `0` = plain ratio, `1` = uniform. Default `0.5`.
+
+Probabilities at `0` or `1` are clipped to `[1e-6, 1e-6]` before weighting (see note above).
 
 ## Choosing what to reweight
 
 | Mode | What it emphasizes |
 |------|--------------------|
-| `reweight="source"` (`ReweightMode.SOURCE`) | overlap from the source side |
-| `reweight="target"` (`ReweightMode.TARGET`) | overlap from the target side |
+| `reweight="source"` (`ReweightMode.SOURCE`) | overlap from the source side; target unchanged |
+| `reweight="target"` (`ReweightMode.TARGET`) | overlap from the target side; source unchanged |
 | `reweight="both"` (`ReweightMode.BOTH`) | common support from both sides (default) |
 
-`shrinkage=0.5` is a practical default. Lower values correct more aggressively. Higher values produce
-weights closer to uniform.
+Inactive groups get weight `1` for every observation, then normalized — so they are uniform. Start with `shrinkage=0.5`; lower values are stronger but higher variance. Check [ESS](../examples/weighting/diagnose-weight-concentration.md) before lowering.
 
 ## Effective sample size
 
-Once you have `ImportanceWeights`, call `.effective_sample_size()` to get Kish's ESS for each group.
-ESS is bounded above by the sample size; it drops toward 1 when a few observations carry almost all
-the weight. Use it to assess whether the weights are sufficiently dispersed for the comparison.
+Once you have `ImportanceWeights`, call `.effective_sample_size()` for Kish's ESS per group. ESS ≤ `n`; it drops toward `1` when a few points hog the weight.
 
 ```python
 ess = weights.effective_sample_size()
-print(ess.source, ess.target)
+print(ess.source, ess.target)  # compare each to its n
 ```
 
-For a worked example, see
-[Diagnose weight concentration with effective sample size](../examples/weighting/diagnose-weight-concentration.md).
+Rule of thumb: worry when `ESS < n/4`. A significant weighted result with healthy ESS is convincing; with `ESS ≈ 1` it may be driven by one or two observations.
 
-For a worked example on building weights, see
-[Focus on shared support with importance weights](../examples/tutorials/adjust-for-covariate-shift.md).
-For the intuition behind the formulas, see
-[When importance weights help](../explanation/importance-weights-rationale.md).
+For a worked sweep, see [Diagnose weight concentration](../examples/weighting/diagnose-weight-concentration.md). For the intuition, see [When importance weights help](../explanation/importance-weights-rationale.md). For the full tutorial, see [Focus on common support](../examples/tutorials/adjust-for-covariate-shift.md).
 
 ## API
 
-::: samesame.weights
+::: samesame.weights.domain_weights
+
+::: samesame.weights.ImportanceWeights
+
+::: samesame.weights.ReweightMode
+
+::: samesame.weights.EffectiveSampleSize

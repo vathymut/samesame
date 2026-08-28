@@ -1,0 +1,2 @@
+!!! warning "Generate scores out of sample"
+    `samesame` only sees scores — it cannot tell how they were made. When scores come from a fitted model, generate them out of sample with cross-validation, out-of-bag predictions, or a held-out set. In-sample predictions create artificial separation and invalidate the test.

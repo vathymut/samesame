@@ -62,11 +62,10 @@ always inferred from group sizes.
 - `"target"`: reweight target samples to match source
 - `"both"`: reweight both groups (common-support comparison)
 
-**Shrinkage**: The shrinkage parameter in [0, 1] (called lambda in the method)
-that controls the
+**Shrinkage**: The shrinkage parameter `shrinkage` (λ) in [0, 1] that controls the
 bias-variance tradeoff in RIW (Relative Importance Weight) estimation.
 `shrinkage=0` gives plain density-ratio weights; `shrinkage=1` gives uniform
-weights; `lambda_=0.5` is the recommended default.
+weights; `shrinkage=0.5` is the recommended default.
 
 **ImportanceWeights**: A frozen dataclass holding `.source` and `.target` weight
 arrays, typically built via `domain_weights(...)`. Weights are
@@ -87,4 +86,4 @@ ones: `alpha_blend` → `shrinkage`; `balance` (removed, inferred from group siz
 ## Non-package guidance
 
 **Example-specific decisions** (e.g., `LogitGap` recipe, confidence monitoring
-workflow) live in `docs/how-to/` frontmatter or inline comments, not here.
+workflow) live in `docs/examples/` frontmatter or inline comments, not here.

@@ -1,46 +1,34 @@
 # How to: Monitor model confidence
 
-Use this guide when you want a confidence signal alongside business risk, or when the model output
-itself is not the main thing you want to monitor.
+Use this guide when you want a certainty signal alongside business risk, or when the model output itself is not the thing you want to monitor.
 
-This guide uses the same HELOC setup as [Monitor predicted credit risk](monitor-credit-risk.md),
-but asks a different question.
+This guide uses the same HELOC setup as [Monitor predicted credit risk](monitor-credit-risk.md), but asks a different question.
 
 ## Why confidence is a separate signal
 
 Predicted risk and model confidence are not the same thing.
 
 - **Predicted risk** asks whether the model thinks outcomes are worse.
-- **Confidence** asks whether the model looks more or less certain about its predictions.
+- **Confidence** asks whether the model is more or less certain.
 
-Those signals can change together, but they do not have to. A model can become more confident while
-still producing riskier outcomes.
+Those signals can move together or independently. A model can become more confident while still predicting riskier outcomes.
+
+In `samesame` terminology, confidence is treated as an **outlier score** where higher means "more in-distribution / more certain." The helper below is called `outlier_scores_from_probabilities` for that reason — here larger scores mean higher confidence.
 
 ## Setup
 
 ```python
-import re
-
-from sklearn.datasets import fetch_openml
-from sklearn.ensemble import RandomForestClassifier
-
-import samesame as ss
-
-fico = fetch_openml(data_id=45554, as_frame=True)
-X, y = fico.data, fico.target
-
-re_obj = re.compile(r"external.*risk.*estimate", flags=re.I)
-col_split = next((c for c in X.columns if re_obj.search(c)), None)
-mask_high = X[col_split].astype(float) > 63
-
-X_train = X[mask_high].reset_index(drop=True)
-y_train = y[mask_high].reset_index(drop=True)
-X_deployment = X[~mask_high].reset_index(drop=True)
+--8<-- "snippets/heloc-split.py:heloc-split"
 ```
 
-## Step 1 - Train the model
+--8<-- "snippets/honest-scores.txt"
+
+## Step 1 — Train the model
 
 ```python
+import samesame as ss
+from sklearn.ensemble import RandomForestClassifier
+
 bad_mapping = {"Good": 0, "Bad": 1}
 y_train_binary = y_train.map(bad_mapping).values
 
@@ -53,11 +41,9 @@ rf_bad = RandomForestClassifier(
 rf_bad.fit(X_train, y_train_binary)
 ```
 
-## Step 2 - Build a confidence score from class probabilities
+## Step 2 — Build a confidence (outlier) score from class probabilities
 
-This example uses `LogitGap`, a small helper built from logit-transformed class probabilities.
-Higher values mean the model separates the classes more strongly, which we treat as higher
-confidence.
+We use `LogitGap`, the gap between the top logit and the mean of the rest. Larger gaps mean stronger class separation — interpreted as higher confidence.
 
 ```python
 import numpy as np
@@ -76,12 +62,11 @@ print(f"Training mean confidence:   {train_confidence.mean():.3f}")
 print(f"Deployment mean confidence: {deployment_confidence.mean():.3f}")
 ```
 
-On this HELOC split, deployment confidence is higher across the score distribution than training
-confidence.
+On this HELOC split, deployment confidence is higher than training confidence across the distribution.
 
-## Step 3 - Test whether confidence dropped
+## Step 3 — Test whether confidence dropped
 
-Higher confidence is better, so use `worse="lower"`.
+Higher confidence is better, so a harmful shift is toward *lower* scores.
 
 ```python
 source_scores = train_confidence
@@ -90,7 +75,7 @@ target_scores = deployment_confidence
 harm = ss.test_harmful_shift(
     source=source_scores,
     target=target_scores,
-    worse="lower",
+    worse="lower",  # lower confidence = harm
     rng=np.random.default_rng(12345),
 )
 
@@ -98,19 +83,16 @@ print(f"Statistic: {harm.statistic:.4f}")
 print(f"p-value:   {harm.pvalue:.4f}")
 ```
 
-This workflow should not flag a harmful confidence shift on the HELOC split, because deployment
-confidence shifts toward higher scores rather than lower scores.
+Expect a large p-value here — deployment confidence shifts toward *higher* scores, so we do not flag a harmful confidence drop.
 
 ## What this tells you
 
 This does not contradict the credit-risk guide. It answers a different question.
 
 - In [Monitor predicted credit risk](monitor-credit-risk.md), predicted default risk rises.
-- Here, confidence also rises, so the model does not look less certain on deployment.
+- Here, confidence also rises — the model does not look less certain on deployment.
 
-That combination is entirely possible. A model can look confidently wrong, confidently risky, or
-confidently stable. Confidence is useful context, but it is not a substitute for a business signal
-when a business signal already exists.
+That combination is entirely possible: a model can be confidently risky, confidently wrong, or confidently stable. Confidence is useful context, but not a substitute for a business signal when one exists. If labels are available, see [Monitor prediction errors once labels arrive](monitor-prediction-errors.md).
 
-If labels are available, the next step is often
-[Monitor prediction errors once labels arrive](monitor-prediction-errors.md).
+??? note "Why `outlier_scores_from_probabilities`?"
+    The package calls anomaly-like scalars **outlier scores** (`CONTEXT.md` terminology). Confidence fits that recipe: it is an outlier score where higher = more typical. The function name reflects the general recipe, not just this confidence use-case.

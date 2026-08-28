@@ -1,55 +1,42 @@
 # Shift testing
 
-Use this page when you already have one numeric signal for each group. The tests do not operate on
-raw feature tables; turn those tables into a score first.
+Use this page when you already have one numeric score for each group. The tests don't operate on raw feature tables — turn those into a score first.
 
-## Choose the function
+--8<-- "snippets/honest-scores.txt"
+
+## Choose a function
 
 | Function | What it answers | Use it when |
-|----------|------------------|-------------|
-| `shift.test_shift(...)` | Did anything change? | you want to detect any difference between source and target |
-| `shift.test_harmful_shift(...)` | Did the target distribution shift toward worse outcomes? | you know what "worse" means for your signal |
+|----------|-----------------|-------------|
+| `ss.test_shift` | Did anything change? | you want to detect any difference between source and target |
+| `ss.test_harmful_shift` | Did target shift toward worse outcomes? | you know what "worse" means for your signal |
 
-Examples of useful signals include predicted risk, prediction error, model confidence, and domain
-classifier probabilities.
+Useful signals: predicted risk, prediction error (Brier/log-loss), outlier scores (e.g., `LogitGap` confidence), or domain probabilities *for the shift test only* (don't reuse them as the harm signal when weighting).
 
 ## Common controls
 
 All functions accept:
 
-- `n_resamples` to control the number of permutation resamples
-- `rng` for reproducibility; pass an ``int`` seed, a NumPy ``Generator``/``RandomState``, or ``None``
-- `weights` for weighted testing with `ImportanceWeights`
+- `n_resamples` — permutation resamples. Default `9999`. Use `999` while exploring, `9999` for the final result, `19999` if you need `p < 0.001` resolution. Cost is `O(n log n)` per resample.
+- `rng` — reproducibility. Accepts `int` seed, `np.random.Generator`/`RandomState`, or `None`.
+- `weights` — `ImportanceWeights` from `ss.domain_weights` or constructed directly.
 
-`shift.test_harmful_shift(...)` also requires `worse`:
+`ss.test_harmful_shift` also requires `worse`:
 
-- `worse="higher"` (or `Worse.HIGHER`) when larger scores mean harm
-- `worse="lower"` (or `Worse.LOWER`) when smaller scores mean harm
+- `worse="higher"` (or `ss.Worse.HIGHER`) — larger scores mean harm (risk, error).
+- `worse="lower"` (or `ss.Worse.LOWER`) — smaller scores mean harm (confidence, accuracy).
 
-Both plain strings and the :class:`Worse` enum are accepted. The enum gives
-autocomplete and guards against typos: `ss.Worse.HIGHER`.
+Plain strings and the `Worse` enum are both accepted; the enum gives autocomplete and typo protection.
 
 ## What you get back
 
-- `shift.test_shift(...)` returns `ShiftResult`
-- `shift.test_harmful_shift(...)` returns `HarmfulShiftResult`
+- `ss.test_shift` → `ShiftResult` (`.statistic` is ROC AUC, two-sided p-value)
+- `ss.test_harmful_shift` → `HarmfulShiftResult` (`.statistic` is harm statistic, one-sided `greater` p-value, plus `.worse`)
 
-In each case, the fields most users look at first are:
+Both include `.null_distribution` when you need the full permutation output. `.statistic` describes separation; `.pvalue` assesses evidence. p-values are bounded in `(0, 1]` with +1 smoothing.
 
-- `.statistic`
-- `.pvalue`
-
-`HarmfulShiftResult` also includes `.worse`.
-All results include `.null_distribution` when you need the full permutation output.
-
-The statistic is not a p-value. Use `.statistic` to describe the observed separation and `.pvalue`
-to assess evidence against the corresponding null. The default permutation count is `9999`; use a
-smaller value while exploring and a larger value when the result matters.
-
-When scores come from a fitted model, generate them out of sample with cross-validation,
-out-of-bag predictions, or a held-out evaluation set. In-sample predictions can create artificial
-separation and invalidate the test interpretation. `samesame` receives scores only and cannot check
-how they were generated.
+??? tip "Which result to read first?"
+    Start with `.pvalue` (evidence). Use `.statistic` to describe magnitude — AUC ≈ `0.5` is chance; harm statistic has no fixed scale, compare observed vs null median.
 
 ## API
 

@@ -1,24 +1,21 @@
 # How to: Monitor prediction errors once labels arrive
 
-Use this guide when you have ground-truth labels for both groups and want a direct answer about
-whether the model is performing worse.
+Use this guide when you have ground-truth labels for both groups and want a direct answer about whether the model performs worse.
 
 When labels are available, prediction error is often the cleanest signal you can compare.
 
 ## Why this signal works well
 
-Prediction errors turn model quality into a numeric signal:
+Prediction errors turn model quality into a numeric score:
 
-- **Brier score** measures squared error on the predicted probability
-- **Log-loss** penalizes confident mistakes more heavily
+- **Brier score** — squared error on the predicted probability
+- **Log-loss** — penalizes confident mistakes more heavily
 
-For both, larger values mean worse predictions, so they work naturally with
-`ss.test_harmful_shift(...)`.
+For both, larger values mean worse predictions, so they work naturally with `ss.test_harmful_shift(..., worse="higher")`.
 
 ## Setup
 
-This guide uses the HELOC dataset again, but with a stratified random split. Unlike the credit-risk
-guide, the two groups here come from the same overall population.
+This guide uses the HELOC dataset with a stratified random split (unlike the risk/confidence guides, both groups here come from the same population).
 
 ```python
 import numpy as np
@@ -42,9 +39,11 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 ```
 
-## Step 1 - Fit the model and get honest predictions
+--8<-- "snippets/honest-scores.txt"
 
-Use out-of-bag predictions for training so the training-side errors are not artificially optimistic.
+## Step 1 — Fit the model and get honest predictions
+
+Use out-of-bag predictions for training so errors are not artificially optimistic.
 
 ```python
 rf = RandomForestClassifier(
@@ -59,7 +58,7 @@ train_prob = rf.oob_decision_function_[:, 1]
 test_prob = rf.predict_proba(X_test)[:, 1]
 ```
 
-## Step 2 - Turn predictions into error signals
+## Step 2 — Turn predictions into error scores
 
 ```python
 brier_train = (y_train - train_prob) ** 2
@@ -79,36 +78,37 @@ logloss_test = -(
 )
 ```
 
-## Step 3 - Test whether errors are worse on the test set
+## Step 3 — Test whether errors are worse on the test set
 
 ```python
 harm_brier = ss.test_harmful_shift(
     source=brier_train,
     target=brier_test,
     worse="higher",
+    rng=np.random.default_rng(12345),
 )
 
 harm_logloss = ss.test_harmful_shift(
     source=logloss_train,
     target=logloss_test,
     worse="higher",
+    rng=np.random.default_rng(12345),
 )
 
-print(f"Brier p-value:   {harm_brier.pvalue:.4f}")
-print(f"Log-loss p-value:{harm_logloss.pvalue:.4f}")
+print(f"Brier p-value:    {harm_brier.pvalue:.4f}")
+print(f"Log-loss p-value: {harm_logloss.pvalue:.4f}")
 ```
 
-On this stratified random split, the p-values should not be especially small. That is the expected
-result when training and test come from the same population.
+On this stratified random split, expect non-significant p-values — no evidence that the model performs worse on test when both groups come from the same population.
 
 ## Interpreting the outcome
 
-- Small p-values mean the test set contains a disproportionate share of higher-error predictions.
-- Large p-values mean there is not enough evidence that the model performs worse on the test set.
+- Small `p ≤ 0.05` — test set carries a disproportionate share of high-error predictions.
+- Large p-value — not enough evidence that the model performs worse on test.
 
-It is common for Brier score and log-loss to tell a similar story here. `ss.test_harmful_shift(...)`
-is rank-based, so signals that order observations in a similar way often produce similar results.
+Brier and log-loss often tell a similar story here. `ss.test_harmful_shift` is rank-based, so signals that order observations similarly produce similar results.
 
-Use this guide when labels are available. If they are not, use
-[Monitor predicted credit risk](monitor-credit-risk.md) or
-[Monitor model confidence](monitor-model-confidence.md) instead.
+Use this guide when labels are available. Otherwise use [Monitor predicted credit risk](monitor-credit-risk.md) or [Monitor model confidence](monitor-model-confidence.md).
+
+??? tip "Why clip probabilities?"
+    Log-loss uses `log(p)`. Clipping to `[1e-10, 1-1e-10]` avoids `log(0)` without changing the ranking that the test uses.

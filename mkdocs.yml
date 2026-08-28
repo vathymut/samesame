@@ -9,22 +9,22 @@ copyright: Copyright &copy; Vathy M. Kamulete
 nav:
   - Home: index.md
   - Tutorials:
-    - Detect Whether Two Datasets Differ: examples/tutorials/detect-distribution-shift.md
-    - Check Whether a Change Points in a Worse Direction: examples/tutorials/check-shift-harm.md
-    - Focus on Shared Support with Importance Weights: examples/tutorials/adjust-for-covariate-shift.md
+    - Detect whether two datasets differ: examples/tutorials/detect-distribution-shift.md
+    - Check whether target shifted toward worse outcomes: examples/tutorials/check-shift-harm.md
+    - Focus on common support with importance weights: examples/tutorials/adjust-for-covariate-shift.md
   - How-to guides:
-    - Monitor Predicted Credit Risk: examples/credit/monitor-credit-risk.md
-    - Monitor Model Confidence: examples/credit/monitor-model-confidence.md
-    - Monitor Prediction Errors Once Labels Arrive: examples/credit/monitor-prediction-errors.md
-    - Focus Harmful-Shift Testing on Shared Support: examples/weighting/source-reweighting.md
-    - Restrict Testing to Common Support on Both Sides: examples/weighting/double-weighting.md
-    - Diagnose Weight Concentration with Effective Sample Size: examples/weighting/diagnose-weight-concentration.md
+    - Monitor predicted credit risk: examples/credit/monitor-credit-risk.md
+    - Monitor model confidence: examples/credit/monitor-model-confidence.md
+    - Monitor prediction errors once labels arrive: examples/credit/monitor-prediction-errors.md
+    - Focus harmful-shift testing on common support: examples/weighting/source-reweighting.md
+    - Restrict testing to common support on both sides: examples/weighting/double-weighting.md
+    - Diagnose weight concentration with effective sample size: examples/weighting/diagnose-weight-concentration.md
   - Explanation:
-    - When Importance Weights Help: explanation/importance-weights-rationale.md
-    - Why the Harm Statistic Is Not Just AUC: explanation/harmful-shift-statistic.md
+    - When importance weights help: explanation/importance-weights-rationale.md
+    - Why the harm statistic is not just AUC: explanation/harmful-shift-statistic.md
   - API reference:
-      - Shift Testing: api/testing.md
-      - Importance Weights: api/weighting.md
+      - Shift testing: api/testing.md
+      - Importance weights: api/weighting.md
 plugins:
   - search
   - autorefs
@@ -52,18 +52,33 @@ theme:
     - search.suggest
     - search.highlight
     - content.code.copy
+    - content.tabs.link
   palette:
-    primary: white
-    accent: blue
+    - scheme: default
+      primary: white
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: black
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
 markdown_extensions:
   - toc:
       permalink: true
   - pymdownx.arithmatex:
       generic: true
   - pymdownx.inlinehilite
-  - pymdownx.snippets
+  - pymdownx.snippets:
+      base_path: docs
   - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
   - admonition
+  - pymdownx.details
 extra:
   social:
     - icon: fontawesome/brands/github

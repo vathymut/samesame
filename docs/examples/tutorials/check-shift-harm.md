@@ -1,69 +1,86 @@
 # Tutorial: Check whether target shifted toward worse outcomes
 
-Use this tutorial when you already have a signal with a clear direction and want to know whether the
-target distribution shifted toward worse outcomes.
+Use this tutorial when you already have a signal with a clear direction and want to know whether target moved toward the harmful end.
 
 By the end, you will know how to:
 
 - distinguish "different" from "worse"
 - choose the correct `worse` direction
-- run `ss.test_harmful_shift(...)` and interpret the p-value
+- run `ss.test_harmful_shift` and interpret the p-value
 
-`ss.test_shift(...)` asks whether source and target differ at all.
-`ss.test_harmful_shift(...)` asks the narrower question: did the target move toward the harmful end
-of the signal?
+`ss.test_shift` asks whether source and target differ *at all* (two-sided, AUC).
+`ss.test_harmful_shift` asks the narrower question: did target shift toward the harmful tail of the signal (one-sided)?
 
 ## What you need
 
 - a source group and a target group
-- a numeric signal for each group
-- a clear decision about whether larger values are better or worse
+- a numeric score for each group
+- a clear decision about whether larger values are worse
 
-## Step 1 - Make a simple example
+## Step 1 — Make a simple example
 
-Imagine these values are model-quality or confidence scores, where **higher is better**.
+Imagine these values are confidence scores, where **higher is better**.
 
 ```python
 import numpy as np
 
-rng = np.random.default_rng(123_456)
+rng = np.random.default_rng(12345)
 
 source_quality = rng.normal(loc=0.80, scale=0.07, size=400)
 target_quality = rng.normal(loc=0.72, scale=0.07, size=400)
 ```
 
-This example gives the target distribution slightly lower scores, so it illustrates a harmful shift.
+Target is slightly lower, so it illustrates a harmful shift for a higher-is-better signal.
 
-## Step 2 - Compare any change with harmful change
+## Step 2 — Compare any change with harmful change
 
-```python
-import samesame as ss
+=== "Higher is better (confidence, accuracy)"
 
-shift = ss.test_shift(source_quality, target_quality)
+    ```python
+    import samesame as ss
 
-harm = ss.test_harmful_shift(
-    source_quality,
-    target_quality,
-    worse="lower",
-)
+    shift = ss.test_shift(source_quality, target_quality, rng=rng)
 
-print(f"Shift p-value: {shift.pvalue:.4f}")
-print(f"Harm  p-value: {harm.pvalue:.4f}")
-```
+    harm = ss.test_harmful_shift(
+        source_quality,
+        target_quality,
+        worse="lower",  # smaller = worse for confidence
+        rng=rng,
+    )
 
-Because higher values are better here, we use `worse="lower"`. That tells `samesame` to treat a
-shift toward lower target scores as harmful.
+    print(f"Shift p-value: {shift.pvalue:.4f}")
+    print(f"Harm  p-value: {harm.pvalue:.4f}")
+    ```
+
+    `worse="lower"` tells `samesame` that a shift toward *smaller* target scores is harmful. Internally it negates scores so larger always means worse.
+
+=== "Higher is worse (risk, error, anomaly)"
+
+    ```python
+    import samesame as ss
+
+    # higher risk = worse
+    rng = np.random.default_rng(12345)
+    source_risk = rng.normal(loc=0.20, scale=0.07, size=400)
+    target_risk = rng.normal(loc=0.28, scale=0.07, size=400)
+
+    harm = ss.test_harmful_shift(source_risk, target_risk, worse="higher", rng=rng)
+    print(f"Harm p-value: {harm.pvalue:.4f}")
+    ```
 
 ## How to read the result
 
-- A small p-value from `test_shift(...)` means the groups differ.
-- A small p-value from `test_harmful_shift(...)` means the target distribution also shifted toward worse
-  outcomes.
-- If your signal already uses larger values for worse outcomes, use `worse="higher"` instead.
+- Small `test_shift` p-value — groups differ.
+- Small `test_harmful_shift` p-value — target also shifted toward the harmful direction you declared.
+- If your signal already uses larger = worse, use `worse="higher"`.
 
-Typical examples of `higher-is-worse` signals are predicted default risk, error, or anomaly level.
-Typical examples of `higher-is-better` signals are confidence, accuracy, or quality.
+| Signal | Worse when | Use |
+|--------|------------|-----|
+| Predicted risk, error, anomaly level | larger | `worse="higher"` |
+| Confidence, accuracy, quality | smaller | `worse="lower"` |
 
-For the full API of both tests, see [Shift testing](../../api/testing.md).
-When source and target do not cover the same feature space, continue to
-[Focus on shared support with importance weights](adjust-for-covariate-shift.md).
+`ss.Worse.HIGHER` / `ss.Worse.LOWER` are enum aliases that give autocomplete and guard against typos.
+
+--8<-- "snippets/honest-scores.txt"
+
+For the statistic behind the test, see [Why the harm statistic is not just AUC](../../explanation/harmful-shift-statistic.md). For the full API, see [Shift testing](../../api/testing.md). When source and target don't share the same feature support, continue to [Focus on common support with importance weights](adjust-for-covariate-shift.md).

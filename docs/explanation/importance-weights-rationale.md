@@ -3,32 +3,29 @@
 Importance weights help when source and target differ for two reasons at once:
 
 - there is a real change in the region you care about
-- one or both groups also contain observations that sit in parts of feature space the other group
-  almost never visits
+- one or both groups also contain observations that sit where the other group almost never goes
 
-Without weighting, those low-overlap observations can dominate the comparison.
+Without weighting, those low-overlap observations can dominate the comparison. Weighting narrows it to **common support**.
 
-For code, see
-[Focus on shared support with importance weights](../examples/tutorials/adjust-for-covariate-shift.md).
+For code, see [Focus on common support with importance weights](../examples/tutorials/adjust-for-covariate-shift.md).
 
 ## The basic problem
 
-Suppose a domain classifier estimates the probability that an observation belongs to target.
-Call that probability $\hat{p}(x)$.
-
-The standard density-ratio correction is:
+A domain classifier estimates `P(target | x)`, the domain probability. Call that `p̂(x)`. The standard density-ratio correction is:
 
 $$
 \hat{r}(x) = \frac{\hat{p}(x)}{1 - \hat{p}(x)} \cdot \frac{n_{\text{source}}}{n_{\text{target}}}
 $$
 
-This is useful, but it can become unstable. When the groups are easy to separate, a small number
-of observations can receive very large weights and dominate the test.
+`n_source / n_target` is the prior ratio — inferred from group sizes, not a tunable `balance` parameter. This ratio converts the classifier's posterior odds to a density ratio.
+
+Plain `r̂` is powerful but unstable: when groups separate well, a few points can receive huge weights and dominate the test.
+
+--8<-- "snippets/clipping-note.txt"
 
 ## How `samesame` stabilises the weights
 
-`samesame` uses relative importance weighting (RIW), which blends the plain density ratio toward
-uniform weighting.
+`samesame` uses relative importance weighting (RIW, Yamada et al. 2013), which blends the plain ratio toward uniform.
 
 For source weighting:
 
@@ -42,44 +39,43 @@ $$
 w_{\text{target}}(x) = \frac{1}{\lambda + (1 - \lambda) \hat{r}(x)}
 $$
 
-You do not need to compute these by hand. `domain_weights(...)` does it for you.
+where `λ = shrinkage` in `[0, 1]`. You don't compute these by hand — `ss.domain_weights` does it.
 
-## What `shrinkage` changes
+## What `shrinkage` (λ) changes
 
 | `shrinkage` | Effect |
-|-----------|--------|
+|-------------|--------|
 | `0.0` | Plain density ratio. Strongest correction, highest variance. |
-| `0.5` | Practical default. Good balance between correction and stability. |
+| `0.5` | Default. Good balance between correction and stability. |
 | `1.0` | Uniform weights. No correction. |
 
-Lower values correct more aggressively. Higher values are more conservative.
+Lower = more aggressive; higher = more conservative. Start at `0.5` and check [ESS](../examples/weighting/diagnose-weight-concentration.md) before lowering.
 
 ## Choosing a mode
 
-| Mode | Use it when |
-|------|-------------|
-| `reweight="source"` | source contains observations outside the target's common support |
-| `reweight="target"` | target contains observations outside the source's common support |
-| `reweight="both"` | both groups contain low-overlap observations and you want to focus on common support only |
+| Mode | Emphasizes | Use when |
+|------|-----------|----------|
+| `reweight="source"` | overlap from the source side; target unchanged | source contains observations outside target's common support |
+| `reweight="target"` | overlap from the target side; source unchanged | target contains observations outside source's common support |
+| `reweight="both"` | common support from both sides (default) | both groups contain low-overlap observations |
 
-In all three cases, `domain_weights(...)` normalizes each active group so the weights
-sum to that group's sample size.
+In all cases, `ss.domain_weights` normalizes each *active* group so weights sum to that group's sample size. Inactive groups get `1` for every observation (normalized to `n`, so they are uniform).
 
 ## When to skip weighting
 
-Start unweighted when:
+Start *unweighted* when:
 
 - source and target already overlap well
-- you do not have a reliable domain classifier
-- you want the first-pass answer before narrowing attention to common support
+- you don't have a reliable domain classifier
+- you want the first-pass answer before narrowing to common support
 
-Weights are most useful when you already know that overlap is the issue, not as a default for every
-comparison.
+Weights are most useful when you already know overlap is the issue, not as a default.
+
+??? tip "Quick decision tree"
+    *No overlap concern → omit `weights`.* *Source outliers only → `reweight="source"`.* *Both sides have outliers → `reweight="both"`.* *Unsure → start unweighted, then compare weighted.*
 
 ## References
 
-- Shimodaira, H. (2000). Improving predictive inference under covariate shift by weighting the
-  log-likelihood function. *Journal of Statistical Planning and Inference*, 90(2), 227-244.
-- Yamada, M., Suzuki, T., Kanamori, T., Hachiya, H., & Sugiyama, M. (2013). Relative
-  density-ratio estimation for robust distribution comparison. *Neural Computation*, 25(5),
-  1324-1370.
+- Shimodaira, H. (2000). Improving predictive inference under covariate shift by weighting the log-likelihood function. *Journal of Statistical Planning and Inference*, 90(2), 227–244.
+- Yamada, M., Suzuki, T., Kanamori, T., Hachiya, H., & Sugiyama, M. (2013). Relative density-ratio estimation for robust distribution comparison. *Neural Computation*, 25(5), 1324–1370.
+- Kamulete, V. M., et al. (2022). Detecting harmful distribution shifts via scoring rules. *UAI*. [arXiv:2107.02990](https://arxiv.org/abs/2107.02990) — the method behind `test_harmful_shift`.
