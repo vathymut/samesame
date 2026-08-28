@@ -20,7 +20,7 @@
 Two questions, two functions:
 
 - **Did anything change?** `samesame.test_shift` — two-sided, any difference.
-- **Did it get worse?** `samesame.test_harmful_shift` — one-sided, needs `worse="higher"` or `worse="lower"` (or `ss.Worse.HIGHER` / `ss.Worse.LOWER`).
+- **Did it get worse?** `samesame.test_harmful_shift` — one-sided, needs `worse="higher"` or `worse="lower"` (string or `ss.Worse`, interchangeable; enum gives autocomplete).
 
 ## Quick example
 
@@ -44,9 +44,9 @@ print(f"Shift statistic: {shift.statistic:.3f}, p-value: {shift.pvalue:.4f}")
 print(f"Harm  statistic: {harm.statistic:.3f}, p-value: {harm.pvalue:.4f}")
 ```
 
-Small p-value (typically ≤ 0.05) is evidence against the null. Read `.pvalue` first; use `.statistic` for magnitude. `test_shift` rejects for any difference; `test_harmful_shift` rejects only for excess mass in the harmful tail you declared.
+Small p-value (typically ≤ 0.05) is evidence against the null. Read `.pvalue` first; use `.statistic` for magnitude. `test_shift` rejects for any difference; `test_harmful_shift` rejects only for excess mass in the harmful tail you declared. On the HELOC split used in the docs, expect `AUC ≈ 1.0` and `harm p < 0.001`.
 
-`samesame` only sees scores — not how they were made. If scores come from a fitted model, generate them out of sample (cross-validation, OOB, or held-out set) — in-sample predictions invalidate the test.
+`samesame` only sees scores — not how they were made. If scores come from a fitted model, generate them out of sample with `cross_val_predict`, `oob_decision_function_`, or a held-out set — in-sample predictions invalidate the test.
 
 ## Start here
 
@@ -61,3 +61,5 @@ Full docs: https://vathymut.github.io/samesame/
 ```bash
 python -m pip install samesame
 ```
+
+Requires Python 3.12+, `numpy`, `scipy`, `scikit-learn`.

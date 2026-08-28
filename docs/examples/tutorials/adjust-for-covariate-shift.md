@@ -8,6 +8,10 @@ You will:
 - keep weighting inputs separate from the harm score
 - compare unweighted and weighted harmful-shift results
 
+!!! info "Prerequisites"
+    - [Test whether the shift is harmful](check-shift-harm.md) — `worse` and harm statistic.
+    - [Detect any distributional shift](detect-distribution-shift.md) — domain classifier and honest scores.
+
 ## What you need
 
 - source and target observations

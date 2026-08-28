@@ -6,9 +6,13 @@ Weights correct for low overlap, but they can pile mass on a handful of observat
 
 ESS ≤ `n`. Uniform weights give `ESS = n`; concentrated weights push ESS toward `1`.
 
+!!! info "Prerequisites"
+    - [Focus harmful-shift testing on common support](source-reweighting.md) — same HELOC setup, or run standalone with the synthetic example below.
+    - [When importance weights help](../../explanation/importance-weights-rationale.md) — `shrinkage` intuition.
+
 ## What you need
 
-- `source_prob` and `target_prob` — domain probabilities `P(target | x)` (see [Focus harmful-shift testing on common support](source-reweighting.md) for the full setup)
+- `source_prob` and `target_prob` — domain probabilities `P(target | x)` (see [Focus harmful-shift testing on common support](source-reweighting.md) for the full setup, or use the synthetic `beta` example below — no HELOC needed)
 - a reason to suspect concentration: low overlap, or `shrinkage` near `0.0`
 
 ## Step 1 — Build the weights
@@ -89,29 +93,7 @@ ESS is diagnostic, not a verdict. Use it with the weighted p-value: significant 
 
 ??? example "Full script — copy and run (synthetic, no HELOC needed)"
     ```python
-    import numpy as np
-
-    import samesame as ss
-
-    rng = np.random.default_rng(7)
-    source_prob = rng.beta(a=2, b=5, size=400)
-    target_prob = rng.beta(a=5, b=2, size=400)
-    source_prob[:8] = rng.uniform(0.97, 0.999, size=8)
-
-    # sweep shrinkage and compare ESS
-    for lam in [0.0, 0.25, 0.5, 0.75, 1.0]:
-        w = ss.domain_weights(source=source_prob, target=target_prob, reweight="both", shrinkage=lam)
-        e = w.effective_sample_size()
-        print(f"shrinkage={lam:<4}  source ESS={e.source:7.2f}  target ESS={e.target:7.2f}")
-
-    # example weighted test (synthetic harm scores)
-    rng = np.random.default_rng(12345)
-    source_scores = rng.normal(0, 1, 400)
-    target_scores = rng.normal(0.3, 1, 400)
-    w = ss.domain_weights(source=source_prob, target=target_prob, reweight="both", shrinkage=0.5)
-    unweighted = ss.test_harmful_shift(source=source_scores, target=target_scores, worse="higher", rng=np.random.default_rng(1))
-    weighted = ss.test_harmful_shift(source=source_scores, target=target_scores, worse="higher", weights=w, rng=np.random.default_rng(1))
-    print(f"Unweighted p={unweighted.pvalue:.4f}, weighted p={weighted.pvalue:.4f}")
+    --8<-- "examples/weighting/_code/diagnose_weight_concentration_example.py:full"
     ```
 
 For formulas, see [When importance weights help](../../explanation/importance-weights-rationale.md). For the API, see [Importance weights](../../api/weighting.md).

@@ -24,7 +24,21 @@ nav:
   - Explanation:
     - When importance weights help: explanation/importance-weights-rationale.md
     - Why the harm statistic is not just AUC: explanation/harmful-shift-statistic.md
-    - Glossary: explanation/glossary.md
+    - Glossary:
+      - Overview: explanation/glossary.md
+      - Source and target: explanation/glossary/source-target.md
+      - Score: explanation/glossary/score.md
+      - worse: explanation/glossary/worse.md
+      - Harmful shift: explanation/glossary/harmful-shift.md
+      - Domain probability: explanation/glossary/domain-probability.md
+      - Common support: explanation/glossary/common-support.md
+      - Importance weights: explanation/glossary/importance-weights.md
+      - Reweight: explanation/glossary/reweight.md
+      - Shrinkage: explanation/glossary/shrinkage.md
+      - Effective sample size: explanation/glossary/ess.md
+      - Permutation test: explanation/glossary/permutation-test.md
+      - Honest scores: explanation/glossary/honest-scores.md
+      - Statistic vs p-value: explanation/glossary/statistic-pvalue.md
   - API reference:
       - Shift testing: api/testing.md
       - Importance weights: api/weighting.md
@@ -50,12 +64,16 @@ theme:
     - navigation.sections
     - navigation.top
     - navigation.expand
+    - navigation.path
+    - navigation.indexes
     - navigation.footer
     - toc.follow
+    - toc.integrate
     - search.suggest
     - search.highlight
     - content.code.copy
     - content.tabs.link
+    - content.action.view
   palette:
     - scheme: default
       primary: white

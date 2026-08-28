@@ -46,10 +46,10 @@ result = ss.test_harmful_shift(
 Call it when source and target don't overlap well and you want to emphasize common support.
 
 - `source` and `target` — domain probabilities `P(target | x)` as **separate** 1-D arrays in `[0, 1]`, each aligned to its score array. The prior ratio `n_source / n_target` is inferred from lengths.
-- `reweight` — which group(s) to reweight: `"source"`, `"target"`, or `"both"` (default `"both"`). Accepts string or `ss.ReweightMode`.
+- `reweight` — which group(s) to reweight: `"source"`, `"target"`, or `"both"` (default `"both"`). Accepts string or `ss.ReweightMode` — interchangeable, enum gives autocomplete.
 - `shrinkage` (λ) in `[0, 1]` — RIW shrinkage trading correction strength against stability. `0` = plain ratio, `1` = uniform. Default `0.5`.
 
-Probabilities at `0` or `1` are clipped to `[1e-6, 1 − 1e-6]` before weighting (see note above).
+Probabilities at `0` or `1` are clipped to `[1e-6, 1 − 1e-6]` before weighting, as noted above.
 
 ## Choosing what to reweight
 

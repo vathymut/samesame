@@ -8,6 +8,9 @@ Is a shift harmful — not just different? In 5 minutes you will:
 
 `ss.test_shift` asks whether [source and target](../../explanation/glossary.md#source-and-target) differ at all (two-sided, AUC). `ss.test_harmful_shift` asks the narrower question: did target shift toward the harmful tail (one-sided)? See [Glossary: `worse`](../../explanation/glossary.md#worse).
 
+!!! info "Prerequisites"
+    - [Detect any distributional shift](detect-distribution-shift.md) — shift test and honest scores.
+
 ## What you need
 
 - source and target scores (one number per observation)

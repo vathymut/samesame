@@ -1,95 +1,107 @@
 # Glossary
 
-Core terms used across `samesame`. Keep this as the single source for wording; link here on first use in tutorials and how-to guides.
+Core terms used across `samesame`. Single source for wording — link here on first use in tutorials and how-to guides.
+
+!!! tip "How to use this page"
+    **Novice first pass:** Source → Target → Score → `worse` → Harmful shift → Honest scores → Statistic vs p-value. **Expert jump:** Shrinkage → ESS → Permutation test → Importance weights. Use the sidebar or table below. Each term links to a focused page with examples and API pointers.
+
+| Term | One line | Details |
+|------|----------|---------|
+| [Source / Target](#source-and-target) | Reference vs evaluation distribution (`source=` / `target=`) | [→ page](glossary/source-target.md) |
+| [Score](#score) | One number per observation — risk, error, or outlier score | [→ page](glossary/score.md) |
+| [`worse`](#worse) | Which direction is harmful (`higher` / `lower`) | [→ page](glossary/worse.md) |
+| [Harmful shift](#harmful-shift) | Target excess mass in the harmful tail | [→ page](glossary/harmful-shift.md) |
+| [Domain probability](#domain-probability) | `P(target|x)` for weighting | [→ page](glossary/domain-probability.md) |
+| [Common support](#common-support) | Overlap region where weighting focuses the test | [→ page](glossary/common-support.md) |
+| [Importance weights](#importance-weights) | `ImportanceWeights` normalized per group | [→ page](glossary/importance-weights.md) |
+| [Reweight](#reweight) | Which group(s) to adjust (`source`/`target`/`both`) | [→ page](glossary/reweight.md) |
+| [Shrinkage](#shrinkage) | `λ` blending plain ratio → uniform (default `0.5`) | [→ page](glossary/shrinkage.md) |
+| [ESS](#effective-sample-size-ess) | Kish `(sum w)²/sum w²` — diagnostics | [→ page](glossary/ess.md) |
+| [Permutation test](#permutation-test) | Labels permuted, scores fixed | [→ page](glossary/permutation-test.md) |
+| [Honest scores](#honest-out-of-sample-scores) | Out-of-sample via CV / OOB / held-out | [→ page](glossary/honest-scores.md) |
+| [Statistic vs p-value](#statistic-vs-p-value) | `.pvalue` first, `.statistic` second | [→ page](glossary/statistic-pvalue.md) |
 
 ## Source and target
 
-**Source** — reference distribution. Usually training data or a past batch. Scores from source are the baseline.
+**Source** — reference distribution (training or past batch). **Target** — evaluation distribution (production or new batch). Both are one numeric score per observation. Use `source=` / `target=` consistently; `group`/`membership_prob` are historic names.
 
-**Target** — evaluation distribution. Usually production data or a new batch. Scores from target are tested for change.
-
-Both are represented by one numeric score per observation (not raw feature tables). Use `source=` and `target=` arguments consistently; `group`/`membership_prob` are historical names (see `CONTEXT.md`).
+→ [Details: Source and target](glossary/source-target.md)
 
 ## Score
 
-A scalar signal derived from a model or raw measurement. Three families `samesame` is built for:
+A scalar signal per observation — predicted risk, prediction error, or outlier score (e.g., `LogitGap`). Any scalar works; `samesame` only tests it. Package term is *outlier score*.
 
-- **Predicted risk** — e.g., `P(default | x)`. Business impact directly.
-- **Prediction error** — e.g., Brier score, log-loss. Needs labels.
-- **Outlier score** — e.g., `LogitGap` confidence. Higher = more typical / more certain; lower = more atypical. Package term is *outlier score* (not "anomaly score" or "OOD score").
-
-Any scalar works; `samesame` only tests it.
+→ [Details: Score](glossary/score.md)
 
 ## `worse`
 
-Polarity parameter that defines harmful direction. Declared once per `test_harmful_shift` call:
+Polarity that defines harmful direction for `test_harmful_shift` (string or `ss.Worse`, interchangeable). `higher` = larger is worse; `lower` = smaller is worse. Internally negated so larger always means worse.
 
-- `worse="higher"` (or `ss.Worse.HIGHER`) — larger scores mean harm (risk, error, atypicality).
-- `worse="lower"` (or `ss.Worse.LOWER`) — smaller scores mean harm (confidence, accuracy).
-
-Internally scores are transformed so larger always means worse (`polarity = scores if worse == "higher" else -scores`). See [Shift testing](../api/testing.md).
+→ [Details: `worse`](glossary/worse.md) · See [Shift testing](../api/testing.md).
 
 ## Harmful shift
 
-A directional distributional change where target carries excess mass in the harmful tail you declared. Detected via `shift.test_harmful_shift(source_scores, target_scores, worse=...)`. Distinct from *any* shift (two-sided `test_shift`).
+Directional change where target has excess mass in the harmful tail you declared with `worse`. Distinct from *any* shift (`test_shift`, two-sided).
+
+→ [Details: Harmful shift](glossary/harmful-shift.md)
 
 ## Domain probability
 
-`P(target | x)` — output of a domain classifier trained to distinguish source from target. Passed as **separate** 1-D arrays `source` and `target` to `domain_weights(...)`. The prior ratio `n_source / n_target` is inferred from lengths, not tuned.
+`P(target | x)` from a domain classifier. Passed as separate `source`/`target` arrays to `domain_weights(...)`; prior ratio inferred from lengths. For weighting, not a harm signal.
 
-Used only for **weighting**, not as a harm signal. Don't reuse `P(target | x)` as the score you test for harm when you also weight.
+→ [Details: Domain probability](glossary/domain-probability.md)
 
 ## Common support
 
-Region of feature space where both source and target have non-negligible density. **Low-overlap** observations sit where the other group almost never goes and can dominate an unweighted test. Weighting reframes the question to common support.
+Overlap where both groups have density. Low-overlap points can dominate an unweighted test; weighting reframes to common support.
+
+→ [Details: Common support](glossary/common-support.md)
 
 ## Importance weights
 
-`ImportanceWeights` — frozen dataclass with `.source` and `.target` arrays, normalized so each group sums to its size. Built via `domain_weights(...)` from domain probabilities or constructed directly from custom weights. See [Importance weights](../api/weighting.md).
+`ImportanceWeights` dataclass with `.source`/`.target`, normalized to group size. Built via `domain_weights(...)` or custom.
+
+→ [Details: Importance weights](glossary/importance-weights.md) · [API](../api/weighting.md)
 
 ## Reweight
 
-Policy for `domain_weights(..., reweight=...)`:
+Policy `reweight="source"` / `"target"` / `"both"` (default) — which group(s) to adjust. Inactive groups get weight `1`.
 
-- `"source"` (`ss.ReweightMode.SOURCE`) — reweight source toward target; target unchanged.
-- `"target"` (`ss.ReweightMode.TARGET`) — reweight target toward source; source unchanged.
-- `"both"` (`ss.ReweightMode.BOTH`, default) — reweight both toward mutual support.
-
-Inactive groups get weight `1` (uniform after normalization).
+→ [Details: Reweight](glossary/reweight.md)
 
 ## Shrinkage
 
-`shrinkage` (λ) in `[0, 1]` — RIW (Relative Importance Weight) shrinkage trading correction strength against stability (Yamada et al. 2013). `0` = plain density ratio (strongest, highest variance); `1` = uniform (no correction); `0.5` = default balance. See [When importance weights help](importance-weights-rationale.md).
+`shrinkage` λ in `[0, 1]` (RIW) — `0` = plain ratio, `1` = uniform, `0.5` = default. Trades correction against stability.
+
+→ [Details: Shrinkage](glossary/shrinkage.md)
 
 ## Effective sample size (ESS)
 
-Kish's ESS per group: `(sum w)² / sum w²`. `ESS = n` for uniform weights; `→ 1` when one point dominates. Call `weights.effective_sample_size()` — it returns `.source` and `.target`.
+Kish’s ESS ` (sum w)² / sum w²` per group. `n` for uniform, `→1` when concentrated. Rule of thumb: worry when `ESS < n/4`.
 
 --8<-- "snippets/ess-rule.txt"
 
-See [Diagnose weight concentration](../examples/weighting/diagnose-weight-concentration.md) and `EffectiveSampleSize`.
+→ [Details: ESS](glossary/ess.md) · [Diagnose](../examples/weighting/diagnose-weight-concentration.md)
 
 ## Permutation test
 
-Label-permutation null. Scores (and weights, if given) stay fixed; only labels are permuted `n_resamples` times.
-
-- `test_shift` — two-sided on ROC AUC; doubling capped at `1`.
-- `test_harmful_shift` — one-sided `greater` on the harm statistic.
-
-p-values use +1 smoothing (Phipson & Smyth) and lie in `(0, 1]`.
+Label-permutation null; scores/weights fixed; `n_resamples` permutations. `test_shift` two-sided AUC, `test_harmful_shift` one-sided harm.
 
 --8<-- "snippets/n-resamples.txt"
 
+→ [Details: Permutation test](glossary/permutation-test.md)
+
 ## Honest (out-of-sample) scores
 
-Scores from a fitted model must be **out of sample** — cross-validation, OOB, or held-out set. In-sample predictions create false separation and invalidate the test. `samesame` only sees scores, not how they were made, so it cannot check this for you.
+Must be `cross_val_predict` / `oob_decision_function_` / held-out. In-sample invalidates the test.
+
+→ [Details: Honest scores](glossary/honest-scores.md)
 
 ## Statistic vs p-value
 
-- `.pvalue` — evidence against the null. Small (typically ≤ 0.05) means unlikely under no shift.
-- `.statistic` — magnitude. For `test_shift` it's ROC AUC (`0.5` = chance); for `test_harmful_shift` it has no fixed scale — compare observed vs null median (see [Why the harm statistic is not just AUC](harmful-shift-statistic.md)).
+`.pvalue` (evidence, ≤0.05) first; `.statistic` (magnitude) second. AUC `0.5` = chance; harm has no fixed scale — compare to null median.
 
-Read `.pvalue` first; `.statistic` second.
+→ [Details: Statistic vs p-value](glossary/statistic-pvalue.md)
 
 ## References
 

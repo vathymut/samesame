@@ -20,7 +20,7 @@
 Two questions, two functions:
 
 - **Did anything change?** `samesame.test_shift` — two-sided, any difference.
-- **Did it get worse?** `samesame.test_harmful_shift` — one-sided, needs `worse="higher"` or `worse="lower"` (or `ss.Worse.HIGHER` / `ss.Worse.LOWER`).
+- **Did it get worse?** `samesame.test_harmful_shift` — one-sided, needs `worse="higher"` or `worse="lower"` (string or `ss.Worse`, interchangeable; enum gives autocomplete).
 
 ## Quick example
 
@@ -30,22 +30,9 @@ Two questions, two functions:
 
 --8<-- "snippets/pvalue-guidance.txt"
 
-`test_shift` rejects for any difference; `test_harmful_shift` rejects only for excess mass in the harmful tail you declared.
+`test_shift` rejects for any difference; `test_harmful_shift` rejects only for excess mass in the harmful tail you declared. On the HELOC split used throughout the guides, expect `AUC ≈ 1.0` and `harm p < 0.001` — a clear harmful shift.
 
 --8<-- "snippets/honest-scores.txt"
-
-## Choose a signal
-
-| Signal | What it measures | `worse` |
-|--------|------------------|---------|
-| Predicted risk | business impact | `worse="higher"` |
-| Prediction error (Brier, log-loss) | accuracy once labels arrive | `worse="higher"` |
-| Outlier score — confidence (`LogitGap`) | certainty / typicality | `worse="lower"` |
-| Outlier score — atypicality | distance from source | `worse="higher"` |
-
-Domain probability `P(target | x)` is not a harm signal — use it to build importance weights, not as the score you test for harm.
-
-Any scalar score works; `samesame` provides only the test.
 
 ## The workflow
 
@@ -55,21 +42,33 @@ Any scalar score works; `samesame` provides only the test.
 
 When source and target cover different feature regions, `ss.domain_weights` focuses the comparison on [common support](explanation/importance-weights-rationale.md).
 
+Scores and weights stay fixed — only labels are permuted (`n_resamples` times). See [Glossary: Permutation test](explanation/glossary.md#permutation-test).
+
 ??? note "Permutation details"
-    Both tests permute labels, not scores.
 
     --8<-- "snippets/n-resamples.txt"
 
     See [Glossary](explanation/glossary.md#permutation-test).
+
+??? example "What score should I use?"
+
+    | Signal | What it measures | `worse` |
+    |--------|------------------|---------|
+    | Predicted risk | business impact | `worse="higher"` (or `ss.Worse.HIGHER`) |
+    | Prediction error (Brier, log-loss) | accuracy once labels arrive | `worse="higher"` (or `ss.Worse.HIGHER`) |
+    | Outlier score — confidence (`LogitGap`) | certainty / typicality | `worse="lower"` (or `ss.Worse.LOWER`) |
+    | Outlier score — atypicality | distance from source | `worse="higher"` (or `ss.Worse.HIGHER`) |
+
+    Domain probability `P(target | x)` can be the score for `test_shift`, but don't reuse it as the harm score when you also weight — use it to build weights. Any scalar works; `samesame` provides only the test.
 
 ## Decide what to run
 
 **Rule:** run unweighted first. Use `test_shift` when direction is unknown; use `test_harmful_shift` when you can declare `worse`. Add weights only when you have a domain classifier and low overlap.
 
 - **No overlap concern** → omit `weights`.
-- **Source outliers** (training has cases production never sees) → `reweight="source"`.
-- **Target outliers** (production has cases training never saw) → `reweight="target"`.
-- **Both** → `reweight="both"` for common-support comparison.
+- **Source outliers** (training has cases production never sees) → `reweight="source"` (or `ss.ReweightMode.SOURCE`).
+- **Target outliers** (production has cases training never saw) → `reweight="target"` (or `ss.ReweightMode.TARGET`).
+- **Both** → `reweight="both"` (or `ss.ReweightMode.BOTH`) for common-support comparison.
 
 A weighted test is trustworthy only when [effective sample size](explanation/glossary.md#effective-sample-size-ess) stays healthy:
 

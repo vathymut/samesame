@@ -11,7 +11,7 @@ Scores only — turn raw features into one numeric score per group first. See [G
 | `ss.test_shift` | Did anything change? | you want any difference between source and target |
 | `ss.test_harmful_shift` | Did target shift toward worse outcomes? | you can declare what "worse" means |
 
-Useful harm signals: predicted risk, prediction error (Brier/log-loss), or outlier scores (e.g., `LogitGap` confidence). Domain probability `P(target | x)` works for the *shift* test but don't reuse it as the harm signal when you also weight.
+Useful harm signals: predicted risk, prediction error (Brier/log-loss), or outlier scores (e.g., `LogitGap` confidence). Domain probability `P(target | x)` can be the score for `test_shift`, but don't reuse it as the harm score when you also weight — use it to build weights instead.
 
 ## Common controls
 
@@ -19,10 +19,10 @@ All functions accept `rng`, `weights`, and `n_resamples`:
 
 --8<-- "snippets/n-resamples.txt"
 
-- `rng` — reproducibility. Accepts `int` seed, `np.random.Generator`/`RandomState`, or `None`.
+- `rng` — reproducibility. Accepts `int` seed, `np.random.Generator`/`RandomState`, or `None`. Prefer a `Generator` (`np.random.default_rng(12345)`) for reproducibility; `int` is a shorthand.
 - `weights` — `ImportanceWeights` from `ss.domain_weights` or constructed directly. Must match `len(source)` and `len(target)`.
 
-`ss.test_harmful_shift` also requires `worse` (string or `ss.Worse` — interchangeable; enum gives autocomplete):
+`ss.test_harmful_shift` also requires `worse` — harmful direction (string or `ss.Worse`, interchangeable; enum gives autocomplete):
 
 --8<-- "snippets/worse-table.txt"
 

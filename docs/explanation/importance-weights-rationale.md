@@ -3,11 +3,13 @@
 Weighting helps when source and target differ for two reasons at once:
 
 - there is a real change in the region you care about
-- one or both groups also contain observations that sit where the other group almost never goes
+- one or both groups also contain points where the other group almost never goes (low overlap)
 
-Without weighting, those low-overlap observations can dominate the comparison. Weighting narrows it to **common support**.
+Without weighting, those low-overlap points can dominate a permutation test even though they tell you little about the shared population. Weighting reframes the comparison to **common support**.
 
-For code, see [Adjust for covariate shift with importance weights](../examples/tutorials/adjust-for-covariate-shift.md).
+> **Example:** source (training) has many 20-year-old students that production never sees, while production has retirees never seen in training. An unweighted test is swayed by those extremes; a weighted test focuses on the 30–60 overlap.
+
+For code, see [Adjust for covariate shift with importance weights](../examples/tutorials/adjust-for-covariate-shift.md) and [Importance weights API](../api/weighting.md).
 
 ## The basic problem
 
@@ -17,15 +19,15 @@ $$
 \hat{r}(x) = \frac{\hat{p}(x)}{1 - \hat{p}(x)} \cdot \frac{n_{\text{source}}}{n_{\text{target}}}
 $$
 
-`n_source / n_target` is the prior ratio — inferred from group sizes, not a tunable parameter. It converts the classifier's posterior odds to a density ratio.
+`n_source / n_target` is the prior ratio — inferred from group sizes, not a tunable parameter. It converts posterior odds to a density ratio.
 
-Plain `r̂` is powerful but unstable: when groups separate well, a few points receive huge weights and dominate the test.
+Plain `r̂` is powerful but unstable: when groups separate well, a few points receive huge weights and dominate the test. See [Diagnose weight concentration](../examples/weighting/diagnose-weight-concentration.md).
 
 --8<-- "snippets/clipping-note.txt"
 
 ## How `samesame` stabilises the weights
 
-`samesame` uses relative importance weighting (RIW, Yamada et al. 2013), which blends the plain ratio toward uniform.
+`samesame` uses relative importance weighting (RIW, Yamada et al. 2013) — a blend of the plain ratio toward uniform. You don't compute these by hand; `ss.domain_weights` does.
 
 Source weighting:
 
@@ -39,19 +41,19 @@ $$
 w_{\text{target}}(x) = \frac{1}{\lambda + (1 - \lambda) \hat{r}(x)}
 $$
 
-where `λ = shrinkage` in `[0, 1]`. You don't compute these by hand — `ss.domain_weights` does.
+where `λ = shrinkage` in `[0, 1]`.
 
 ## What `shrinkage` (λ) does
 
 --8<-- "snippets/shrinkage-table.txt"
 
-See [Diagnose weight concentration](../examples/weighting/diagnose-weight-concentration.md) and [Glossary: Shrinkage](glossary.md#shrinkage).
+Lower = stronger correction but higher variance. Start at `0.5` and check ESS before lowering — see [Diagnose weight concentration](../examples/weighting/diagnose-weight-concentration.md) and [Glossary: Shrinkage](glossary.md#shrinkage).
 
 ## Choosing what to reweight
 
 --8<-- "snippets/reweight-table.txt"
 
-In all cases, `ss.domain_weights` normalizes each *active* group so weights sum to that group's size. Inactive groups get `1` for every observation (normalized to `n`, so uniform).
+In all cases `ss.domain_weights` normalizes each *active* group so weights sum to that group's size. Inactive groups get `1` for every observation (uniform after normalization; ESS stays `n`).
 
 ## When to skip weighting
 
@@ -63,8 +65,13 @@ Stay unweighted when:
 
 Weights are for known overlap issues, not a default.
 
-??? tip "Quick decision tree"
-    *No overlap concern → omit `weights`.* *Source outliers only → `reweight="source"`.* *Both sides have outliers → `reweight="both"`.* *Unsure → start unweighted, then compare weighted.*
+**Quick decision:**
+
+- No overlap concern → omit `weights`.
+- Source outliers only → `reweight="source"` (or `ss.ReweightMode.SOURCE`).
+- Target outliers only → `reweight="target"` (or `ss.ReweightMode.TARGET`).
+- Both sides have outliers → `reweight="both"` (or `ss.ReweightMode.BOTH`).
+- Unsure → start unweighted, then compare weighted.
 
 ## References
 
