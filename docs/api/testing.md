@@ -1,43 +1,31 @@
 # Shift testing
 
-Scores only — turn raw features into one numeric score per group first. Common scores: predicted risk, prediction error, or outlier score (`LogitGap`). `P(target|x)` is valid for `test_shift` but double-duty as harm score is discouraged when weighting — use it to build weights instead.
+Scores only — turn raw features into one score per group first (predicted risk, prediction error, or outlier score). `P(target|x)` is valid for `test_shift`; don't reuse it as the harm score — use it to build weights instead.
 
 > Source: `src/samesame/shift.py` · `src/samesame/_permutation.py` · `src/samesame/_statistics.py`
-
-!!! tip "Honest scores"
-
-    If scores come from a fitted model, generate them out of sample with `cross_val_predict`, `oob_decision_function_`, or a held-out set. In-sample scores create false separation and invalidate the test.
 
 ## Which function?
 
 | Function | Answers | When |
 |----------|-----------------|-------------|
-| `ss.test_shift` | Did anything change? | you want any difference |
+| `ss.test_shift` | Did anything change? | direction unknown |
 | `ss.test_harmful_shift` | Did target shift toward worse? | you can declare `worse` |
 
-## Parameters
-
-All functions take:
-
-- `n_resamples` — permutation resamples. Default `9999`. Use `999` while exploring, `9999` final, `19999` for `p < 0.001` resolution.
-- `rng` — `int` seed, `np.random.Generator`/`RandomState`, or `None`. Prefer `np.random.default_rng(12345)`.
-- `weights` — `ImportanceWeights` from `ss.domain_weights`. Must match `len(source)`/`len(target)`.
-
-`ss.test_harmful_shift` also requires `worse`:
+`worse` is the polarity — string or `ss.Worse` (interchangeable):
 
 --8<-- "snippets/worse-table.txt"
 
-## Returns
+## Reading results
 
-- `ss.test_shift` → `ShiftResult` (`.statistic` = AUC, two-sided p)
-- `ss.test_harmful_shift` → `HarmfulShiftResult` (`.statistic` = harm, one-sided `greater`, plus `.worse`)
+Both return `.statistic`, `.pvalue`, `.null_distribution`. Read `.pvalue` first (≤ 0.05 is evidence against the null), `.statistic` second. Two-sided `test_shift` doubles the smaller tail (capped at 1); `test_harmful_shift` is one-sided `greater`. +1 smoothing, so `.pvalue` ∈ `(0, 1]` — see `src/samesame/_permutation.py:67`.
 
-Both carry `.null_distribution`. `.pvalue` ∈ `(0, 1]` with +1 smoothing; two-sided doubling capped at 1.
+- `test_shift`: `.statistic` is AUC (`0.5` = chance).
+- `test_harmful_shift`: `.statistic` has no fixed scale — compare observed vs `result.null_distribution` median (see [How the harm test works](../explanation/harmful-shift-statistic.md)). Also carries `.worse`.
 
-- `.pvalue` — evidence against the null. Small (≤ 0.05) = unlikely under no shift.
-- `.statistic` — magnitude. AUC `0.5` = chance; harm has no fixed scale — compare observed vs null median (see [How the harm test works](../explanation/harmful-shift-statistic.md)).
+Labels are permuted; scores and weights stay fixed. For honest p-values, scores from a fitted model must be out of sample (`cross_val_predict`, `oob_decision_function_`, or held-out).
 
-Read `.pvalue` first, `.statistic` second.
+??? tip "Reproducibility"
+    `rng` accepts `int`, `np.random.Generator`/`RandomState`, or `None`. Prefer `rng=np.random.default_rng(12345)`. `n_resamples` default `9999` (`999` while exploring, `19999` for `p < 0.001`).
 
 ## API
 

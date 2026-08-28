@@ -1,2 +1,0 @@
-!!! info "Why probabilities are clipped"
-    `domain_weights` clips domain probabilities to `[1e-6, 1 − 1e-6]` before forming density ratios. This prevents infinite weights when a classifier is over-confident (`p = 0` or `1`) and keeps `shrinkage` interpretable across datasets.

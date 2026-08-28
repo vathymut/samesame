@@ -1,1 +1,0 @@
-`n_resamples` — permutation resamples. Default `9999`. Use `999` while exploring, `9999` for the final result, `19999` if you need `p < 0.001` resolution. Cost is `O(n log n)` per resample, `O(n)` memory.

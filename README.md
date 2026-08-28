@@ -13,12 +13,10 @@
 
 **Did the target shift? Did it get worse?**
 
-`samesame` compares one score per observation — predicted risk, prediction error, or outlier score — between **source** (reference: training or past deployment) and **target** (current deployment).
+One score per observation — predicted risk, prediction error, or outlier score — for **source** (reference: training or past deployment) vs **target** (current deployment).
 
-- `ss.test_shift` — did anything change? Two-sided.
-- `ss.test_harmful_shift(..., worse="higher"|"lower")` — did it move toward worse outcomes? One-sided. You declare the harmful direction.
-
-Scores and weights stay fixed; only labels are permuted.
+- `ss.test_shift` — did the distribution change at all? Two-sided AUC.
+- `ss.test_harmful_shift(..., worse="higher"|"lower")` — did target move into the harmful tail you name? One-sided, low-FPR weighted.
 
 ## Quick example
 
@@ -42,18 +40,16 @@ print(f"Shift statistic: {shift.statistic:.3f}, p-value: {shift.pvalue:.4f}")
 print(f"Harm  statistic: {harm.statistic:.3f}, p-value: {harm.pvalue:.4f}")
 ```
 
-Small `p` (≤ 0.05) is evidence against the null. Read `.pvalue` first, `.statistic` second.
+Read `.pvalue` first (≤ 0.05 is evidence against the null), `.statistic` second.
 
-> **Toy scores vs real scores:** the snippet uses synthetic normals for brevity. With real features, build a score with a domain classifier and go through the full loop — see [Get started](https://vathymut.github.io/samesame/examples/tutorials/get-started.md).
-
-`samesame` only sees scores — not how they were made. If scores come from a fitted model, generate them out of sample with `cross_val_predict`, `oob_decision_function_`, or a held-out set.
+> **Toy scores vs real scores:** synthetic normals for brevity. With real features, build a score with a domain classifier and generate it out of sample (`cross_val_predict`, `oob_decision_function_`, or held-out) — see [Get started](https://vathymut.github.io/samesame/examples/tutorials/get-started.md).
 
 ## Workflow
 
-1. **Build one score per observation** — source and target.
-2. **Test any change** — `ss.test_shift`.
-3. **Test harm** — `ss.test_harmful_shift(..., worse=...)`.
-4. **Weight (only if needed)** — `ss.domain_weights` for common support.
+1. **One score per observation** — out of sample if from a fitted model.
+2. **Any change?** `ss.test_shift`
+3. **Harmful?** `ss.test_harmful_shift(..., worse=...)`
+4. **Poor overlap?** `ss.domain_weights` — and only then.
 
 Full docs: https://vathymut.github.io/samesame/
 
@@ -67,4 +63,4 @@ Full docs: https://vathymut.github.io/samesame/
 python -m pip install samesame
 ```
 
-Requires Python 3.12+ (uses `StrEnum`), `numpy`, `scipy`, `scikit-learn`.
+Requires Python 3.12+, `numpy`, `scipy`, `scikit-learn`. Not for randomized experiments, subgroup discovery, or sequential alarming.

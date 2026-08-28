@@ -1,4 +1,0 @@
-- `.pvalue` — evidence against the null. Small (typically ≤ 0.05) means unlikely under no shift.
-- `.statistic` — magnitude. For `test_shift` it's ROC AUC (`0.5` = chance); for `test_harmful_shift` it has no fixed scale — compare observed vs null median.
-
-Read `.pvalue` first; `.statistic` second.

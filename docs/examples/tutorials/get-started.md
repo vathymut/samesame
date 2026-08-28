@@ -1,11 +1,13 @@
 # Get started
 
-One score per observation — predicted risk, prediction error, or outlier score — for **source** (reference) vs **target** (evaluation). Two functions answer two questions:
+One score per observation — predicted risk, prediction error, or outlier score — for **source** (reference: training or past deployment) vs **target** (current deployment).
 
-- `ss.test_shift` — did anything change? Two-sided.
-- `ss.test_harmful_shift(..., worse="higher"|"lower")` — did target move toward worse outcomes? One-sided. You declare the direction.
+- `ss.test_shift` — did anything change? Two-sided AUC. `0.5` is chance.
+- `ss.test_harmful_shift(..., worse="higher"|"lower")` — did target move into the harmful tail you declare? One-sided. Larger always means worse (`worse="lower"` flips the sign).
 
-5 minutes with synthetic data. Swap in your own scores after.
+The difference is weighting: AUC averages uniformly (`∫ TPR dFPR`); harm emphasizes low `FPR` (`∫ TPR·(1−FPR)² dFPR`) — thresholds few source points clear but many target points do. Same AUC can hide opposite harm; see [How the harm test works](../../explanation/harmful-shift-statistic.md).
+
+Read `.pvalue` first (≤ 0.05 is evidence against the null), `.statistic` second.
 
 ## 1 — Make source and target
 
@@ -34,7 +36,8 @@ domain_prob = cross_val_predict(
 )[:, 1]
 ```
 
---8<-- "snippets/honest-scores.txt"
+!!! warning "Honest scores"
+    `samesame` only sees scores — not how they were made. If scores come from a fitted model, generate them out of sample (`cross_val_predict`, `oob_decision_function_`, or held-out set). In-sample predictions create false separation and invalidate the test.
 
 For harm tests on your own business score (risk, error, confidence), keep the domain probability separate — use it to build weights, not as the harm score.
 
@@ -48,17 +51,13 @@ shift = ss.test_shift(source=source_scores, target=target_scores, rng=rng)
 print(f"AUC {shift.statistic:.3f} p={shift.pvalue:.4f}")  # → 0.611, 0.0002
 ```
 
-AUC `0.5` = chance. Farther from `0.5` = stronger separation. Small `p` (≤ 0.05) is evidence against the null — read `.pvalue` first, `.statistic` second.
-
-Two-sided, so both `0.8` and `0.2` reject — it tests any deviation from `0.5`.
+Farther from `0.5` = stronger separation. Two-sided, so both `0.8` and `0.2` reject.
 
 ## 4 — Did it get worse?
 
 Declare the harmful direction once — string or `ss.Worse` (interchangeable):
 
 --8<-- "snippets/worse-table.txt"
-
-Internally `scores if worse=="higher" else -scores`, so larger always means worse.
 
 === "Higher is worse (risk, error)"
 
@@ -79,13 +78,12 @@ Internally `scores if worse=="higher" else -scores`, so larger always means wors
     print(f"Harm p={harm.pvalue:.4f}")  # → 0.0001
     ```
 
-How to read:
-
 - Small `test_shift` p — groups differ.
-- Small `test_harmful_shift` p — target also shifted toward the harmful tail you declared.
+- Small `test_harmful_shift` p — target also shifted toward the tail you declared.
 
-When feature support differs, see [Weight for common support](../weighting/weight-for-common-support.md). For the statistic details, see [How the harm test works](../../explanation/harmful-shift-statistic.md).
+Flip `worse` and p goes to ~1 — the test is directional.
 
 ??? tip "Reproducibility"
+    Pass `rng=np.random.default_rng(12345)` for deterministic p-values. Default `n_resamples=9999` (`999` while exploring, `19999` for `p < 0.001`).
 
-    Pass `rng=np.random.default_rng(12345)` for deterministic p-values. --8<-- "snippets/n-resamples.txt"
+When feature support differs, see [Weight for common support](../weighting/weight-for-common-support.md).

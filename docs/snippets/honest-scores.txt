@@ -1,2 +1,0 @@
-!!! warning "Scores from a fitted model must be out of sample"
-    `samesame` only sees scores — not how they were made. If scores come from a fitted model, generate them out of sample (`cross_val_predict`, `oob_decision_function_`, or held-out set). In-sample predictions create false separation and invalidate the test.

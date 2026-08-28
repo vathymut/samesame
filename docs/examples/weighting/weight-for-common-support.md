@@ -1,6 +1,6 @@
 # Weight for common support
 
-Down-weight low-overlap points so the test focuses where source and target both have density. Start unweighted, then compare — weighting is for known overlap issues, not a default.
+Start unweighted, then compare. Weighting is for known overlap issues, not a default — it focuses the test where source and target both have density.
 
 ## Why weight?
 
@@ -8,13 +8,11 @@ Even with a real change in the region you care about, points the other group alm
 
 > Training has many 20-year-old students production never sees; production has retirees never seen in training. Unweighted is swayed by extremes; weighted focuses on the 30–60 overlap.
 
-A domain classifier gives `p̂(x)=P(target|x)`. The plain correction is `p̂/(1-p̂) · n_source/n_target`. It is powerful but unstable when groups separate well — a few points get huge weights. `samesame` stabilises this with relative importance weighting (Yamada et al.): `shrinkage` λ blends toward uniform. Default `0.5`.
+A domain classifier gives `p̂(x)=P(target|x)`. The plain correction `p̂/(1-p̂)·n_source/n_target` is powerful but unstable — a few points get huge weights when groups separate well. `samesame` stabilises this with shrinkage λ blending toward uniform (default `0.5`):
 
 --8<-- "snippets/shrinkage-table.txt"
 
 **Rule:** domain probabilities are for *weighting* — don't reuse the same `P(target|x)` as the harm score.
-
-## When to use which
 
 --8<-- "snippets/reweight-table.txt"
 
@@ -63,7 +61,6 @@ import samesame as ss
 source_prob = domain_prob[split.values == 0]
 target_prob = domain_prob[split.values == 1]
 
-# unweighted vs source-only vs both
 unweighted = ss.test_harmful_shift(source=train_risk, target=deployment_risk, worse="higher", rng=np.random.default_rng(12345))
 w_src = ss.domain_weights(source=source_prob, target=target_prob, reweight="source", shrinkage=0.5)
 w_both = ss.domain_weights(source=source_prob, target=target_prob, reweight="both", shrinkage=0.5)
@@ -76,7 +73,7 @@ Use `source` when source has low-overlap cases; `both` when both sides do.
 
 ??? details "Diagnose weight concentration (ESS)"
 
-    Weighting can pile mass on a few points. Check effective sample size before trusting.
+    Weighting can pile mass on a few points. Check effective sample size before trusting:
 
     ```python
     rng = np.random.default_rng(7)
@@ -98,8 +95,6 @@ Use `source` when source has low-overlap cases; `both` when both sides do.
         print(f"shrinkage={lam:<4}  source ESS={e.source:7.2f}  target ESS={e.target:7.2f}")
     ```
 
-    --8<-- "snippets/ess-rule.txt"
-
-    If ESS stays low even at `0.5`, groups barely overlap — skip weighting.
+    Worry when `ESS < n/4` for either group (rule of thumb). If ESS stays low even at `0.5`, groups barely overlap — skip weighting.
 
 Full scripts: `examples/weighting/_code/` · Reference: [Importance weights](../../api/weighting.md).
