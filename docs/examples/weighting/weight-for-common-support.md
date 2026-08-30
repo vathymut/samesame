@@ -1,8 +1,10 @@
 # Weight for common support
 
-Start with an unweighted comparison. Use weighting only when source and target
-have poor overlap, because weighting changes the question: it focuses the test
-on the region where both groups have support.
+Start with an unweighted comparison. Use weighting only when poor feature
+overlap is a real concern, because weighting changes the question to common
+support — the regions represented by both groups — without creating information
+where groups do not overlap. It also changes the population the test describes
+and is not a default correction.
 
 ## Why weight?
 

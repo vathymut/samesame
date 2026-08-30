@@ -65,9 +65,8 @@ check of the test's behavior when errors have not shifted.
 Both tests provide evidence that the risk distribution changed and that the
 change is consistent with higher risk. This is a reason to investigate, not an
 automatic retraining decision. An AUC of `0.5` represents chance performance.
-The harmful-shift statistic has no universal scale, so interpret it using its
-null distribution and the model's risk scale. See [How it
-works](../../explanation/harmful-shift-statistic.md).
+Read the harmful-shift statistic against its null distribution and the model's
+risk scale. See [How it works](../../explanation/harmful-shift-statistic.md).
 
 === "Confidence — no labels needed"
 

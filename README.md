@@ -14,10 +14,12 @@
 **Did the target shift? Did it get worse?**
 
 Feature-level monitoring can produce alerts that are difficult to interpret,
-and labels may arrive too late to support early action. `samesame` focuses
-monitoring on a meaningful score per observation - such as predicted risk,
-prediction error, confidence, or an outlier score - and compares it between
-**source** (the reference) and **target** (the current deployment).
+and labels may arrive too late to support early action. `samesame` compares
+one meaningful score per observation — predicted risk, prediction error,
+confidence, or outlier score — between **source** (the reference) and
+**target** (the current deployment). The raw feature space is often too large
+to interpret and labels can arrive late; a single score gives each row one
+number to monitor.
 
 It separates two questions:
 
@@ -46,9 +48,10 @@ print(f"Shift statistic: {shift.statistic:.3f}, p-value: {shift.pvalue:.4f}")
 print(f"Harm  statistic: {harm.statistic:.3f}, p-value: {harm.pvalue:.4f}")
 ```
 
-Interpret p-values alongside the statistic and score distributions: evidence of
-a shift is not evidence of harm, and statistical significance is not business
-impact.
+Interpret p-values alongside the statistic and score distributions: a small
+p-value is evidence against label exchangeability — not business impact,
+causality, or the probability the null is true. Evidence of a shift is not
+evidence of harm.
 
 > **Toy scores vs. real scores:** The example uses synthetic normal scores for
 > brevity. For real features, build the score with a domain classifier and
@@ -61,7 +64,7 @@ impact.
 1. Build **one score per observation**, generating it out of sample if it comes from a fitted model.
 2. Test for **any shift** with `ss.test_shift`.
 3. Test for **harmful shift** with `ss.test_harmful_shift(..., worse=...)`.
-4. If source and target have poor overlap, use `ss.domain_weights` to reweight the comparison.
+4. If poor feature overlap is a real concern, use `ss.domain_weights` to reweight the comparison — weighting changes the population the comparison describes and is not a default correction.
 
 **Explore the documentation:**
 
