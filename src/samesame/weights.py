@@ -14,7 +14,7 @@ also changes the population the test describes.
 Use :func:`domain_weights` when you have ``P(target|x)`` from a domain
 classifier, or :class:`ImportanceWeights` directly when sample weights
 are already available. Start unweighted; reach for weights only when
-you have a substantive overlap concern.
+poor feature overlap is a real concern.
 """
 
 from __future__ import annotations
@@ -291,11 +291,10 @@ def domain_weights(
         reweights source toward target; ``'target'`` does the reverse.
         Accepts a plain string or :class:`ReweightMode`.
     shrinkage : float, optional
-        Shrinkage ``λ`` in ``[0, 1]`` blending RIW (Relative Importance
-        Weight) toward uniform weights. ``0`` is the plain density ratio
-        — strongest correction, highest variance. ``1`` is uniform — no
-        correction. Default ``0.5`` is a well-tested middle ground; check
-        ESS before lowering.
+        Shrinkage ``λ`` in ``[0, 1]`` (default ``0.5``) blending RIW
+        toward uniform weights. ``0`` is the plain density ratio — strongest
+        correction, highest variance. ``1`` is uniform — no correction.
+        ``0.5`` is a well-tested middle ground; check ESS before lowering.
 
     Returns
     -------
@@ -312,8 +311,8 @@ def domain_weights(
 
     Notes
     -----
-    * Start unweighted. Use weights only when you have a substantive
-      overlap concern — weighting changes the population the test
+    * Start unweighted. Use weights only when poor feature overlap is a
+      real concern — weighting changes the population the test
       describes and is not a default correction.
     * Estimate ``P(target|x)`` out of sample and keep it separate from
       the harm score. Domain probability describes membership; it says

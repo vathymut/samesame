@@ -1,9 +1,9 @@
 # Shift testing
 
-These tests compare distributions of one score per observation, not raw feature
-tables. First, choose a score that represents the question you care about - such
-as predicted risk, prediction error, confidence, or an outlier score - and
-compute it for every observation.
+These tests compare one meaningful score per observation — predicted risk,
+prediction error, confidence, or outlier score — between **source** and
+**target**, not raw feature tables. First, choose a score that represents the
+question you care about and compute it for every observation.
 
 The distinction between the functions is important. `test_shift` detects any
 change in the score distribution. `test_harmful_shift` deliberately ignores
@@ -44,9 +44,10 @@ alternative. A +1 correction keeps permutation p-values above zero.
 
 - `test_shift`: `.statistic` is AUC. An AUC of `0.5` means the score does not
   separate the groups; values farther from `0.5` indicate stronger separation.
-- `test_harmful_shift`: `.statistic` has no universal interpretation like AUC.
-  Compare it with `result.null_distribution` and examine the score scale. The
-  result also records `.worse`.
+- `test_harmful_shift`: `.statistic` is weighted AUC — read it against
+  `result.null_distribution` and the score's own scale (see [How the harm
+  test works](../explanation/harmful-shift-statistic.md)). The result also
+  records `.worse`.
 
 For honest p-values, scores from a fitted model must be generated out of sample
 (`cross_val_predict`, `oob_decision_function_`, or a held-out set). In-sample

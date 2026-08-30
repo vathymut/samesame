@@ -1,17 +1,14 @@
-"""Shift tests — did the target shift? Did it get worse?
+"""Shift tests — score-based source-versus-target monitoring.
 
-Pick one meaningful score per observation — predicted risk, prediction
-error, confidence, or an outlier score — and compare it between
-**source** (the reference, such as training data or a past deployment)
-and **target** (the current deployment).
+Compare one meaningful score per observation — predicted risk, prediction
+error, confidence, or outlier score — between **source** (reference:
+training or past deployment) and **target** (current deployment). The raw
+feature space is often too large to interpret and labels can arrive late;
+a single score gives each row one number to monitor.
 
-The raw feature space is often too large to interpret and labels can
-arrive late. A single score gives each row one number to monitor. Both
-tests keep scores — and any importance weights — fixed and shuffle group
-labels to ask what separation would look like if source and target were
-exchangeable. A small p-value is evidence against that exchangeability,
-not the probability that the null is true and not a measure of business
-impact.
+Both tests keep scores — and any importance weights — fixed and shuffle
+group labels. A small p-value is evidence against label exchangeability
+— not business impact, causality, or the probability the null is true.
 
 Two questions, two tests — use them separately so they are not
 conflated:
@@ -25,8 +22,9 @@ conflated:
   ``∫ TPR·(1−FPR)² dFPR`` that emphasizes that harmful tail.
 
 Start unweighted. Reach for :mod:`samesame.weights` only when poor
-feature overlap is a real concern — weighting changes the population
-the comparison describes.
+feature overlap is a real concern — weighting reframes the comparison
+around common support and changes the population described; it does not
+create information where groups do not overlap.
 """
 
 from __future__ import annotations
@@ -44,9 +42,9 @@ from samesame.weights import ImportanceWeights
 
 
 class Worse(StrEnum):
-    """Which tail is harmful for :func:`test_harmful_shift`.
+    """Polarity that defines which tail is harmful for :func:`test_harmful_shift`.
 
-    Declare ``worse`` from what the score *means* before looking at
+    Declare ``worse`` from what the score means before looking at
     results — not from whichever direction gives the smaller p-value.
     A plain string ``"higher"`` / ``"lower"`` is accepted wherever this
     enum is; the two forms are interchangeable.
@@ -55,10 +53,10 @@ class Worse(StrEnum):
     ----------
     HIGHER : Worse
         Larger scores mean more harm (e.g., predicted risk, prediction
-        error, atypicality outlier score).
+        error, or atypicality outlier score).
     LOWER : Worse
-        Smaller scores mean more harm (e.g., confidence via ``LogitGap``,
-        accuracy).
+        Smaller scores mean more harm (e.g., confidence via ``LogitGap``;
+        lower is worse).
 
     See Also
     --------
@@ -92,12 +90,11 @@ def _fmt(v: object) -> str:
 class ShiftResult:
     """Result of :func:`test_shift` — a two-sided permutation result.
 
-    The statistic is ROC AUC: how well the score separates target from
-    source (``0.5`` is chance, like a coin flip; ``0.8`` or ``0.2`` both
-    signal strong separation in opposite directions). The p-value is
-    evidence against label exchangeability — that source and target labels
-    could be swapped — not an effect size, not business impact, and not
-    the probability that the null is true.
+    The statistic is ROC AUC — how well the score separates target from
+    source (``0.5`` is chance; values farther from ``0.5`` signal stronger
+    separation, in either direction). The p-value is evidence against label
+    exchangeability — not business impact, causality, an effect size, or
+    the probability the null is true.
 
     Attributes
     ----------
@@ -134,9 +131,8 @@ class HarmfulShiftResult(ShiftResult):
 
     The statistic is a weighted AUC ``∫ TPR·(1−FPR)² dFPR`` that leans
     into thresholds the source rarely exceeds, after orienting the score
-    so larger means worse (``worse="lower"`` flips the sign). Unlike AUC
-    it has no universal chance value like ``0.5`` — read it against
-    ``null_distribution`` and the score's own scale. See
+    so larger means worse (``worse="lower"`` flips the sign). Read it
+    against ``null_distribution`` and the score's own scale. See
     :doc:`How the harm test works <../explanation/harmful-shift-statistic>`
     for the ROC intuition.
 
@@ -210,18 +206,18 @@ def test_shift(
 ) -> ShiftResult:
     """Broad screen — do source and target scores differ at all?
 
-    Any shift? Start here. Give it one score per observation — predicted
-    risk, prediction error, confidence, or an outlier score — and it
-    measures how well that score separates target from source with ROC AUC,
-    then shuffles labels to see whether the separation is unusual. A small
-    p-value is evidence that the distributions differ, not that the shift
-    is harmful, large, or causal.
+    Any shift? Start here. Give it one meaningful score per observation —
+    predicted risk, prediction error, confidence, or outlier score — and
+    it measures separation with ROC AUC, then shuffles labels to see
+    whether separation is unusual. A small p-value is evidence that the
+    distributions differ — not that the shift is harmful, large, or
+    causal.
 
-    Pick the score that answers your monitoring question before testing.
+    Choose the score that answers your monitoring question before testing.
     If the score comes from a fitted model, generate it out of sample with
-    ``cross_val_predict``, ``oob_decision_function_``, or a held-out set;
-    in-sample scores can make source and target look spuriously separable
-    because the model has already seen the data.
+    ``cross_val_predict``, ``oob_decision_function_``, or a held-out set
+    — in-sample scores can make the groups look spuriously separable
+    because the scoring model has memorised its inputs.
 
     Parameters
     ----------
@@ -240,7 +236,8 @@ def test_shift(
     weights : ImportanceWeights | None, optional
         Per-observation importance weights aligned to ``source`` and
         ``target``. Omit to compare the full populations; supply when the
-        comparison should focus on common support (see
+        comparison should focus on common support — weights are normalized
+        per group to its sample size (inactive groups stay at ``1``) (see
         :func:`samesame.weights.domain_weights`).
 
     Returns
@@ -309,7 +306,7 @@ def test_harmful_shift(
     A small ``test_shift`` p-value says *something* changed. This test asks
     the narrower question: after orienting the score so larger means worse
     (``worse="lower"`` flips the sign), does target put more mass beyond
-    thresholds that source rarely exceeds? Thresholds the source rarely
+    thresholds the source rarely exceeds? Thresholds the source rarely
     exceeds get more weight, so the test leans into the harmful tail. A
     small p-value is evidence for that directional movement — not for
     arbitrary shift.
@@ -340,7 +337,8 @@ def test_harmful_shift(
     weights : ImportanceWeights | None, optional
         Per-observation importance weights aligned to ``source`` and
         ``target``. Omit to compare the full populations; supply when the
-        comparison should focus on common support (see
+        comparison should focus on common support — weights are normalized
+        per group to its sample size (inactive groups stay at ``1``) (see
         :func:`samesame.weights.domain_weights`).
 
     Returns
@@ -353,9 +351,8 @@ def test_harmful_shift(
     Notes
     -----
     * One-sided ``greater`` alternative with ``+1`` smoothing (never zero).
-    * The statistic has no universal chance value. Compare it to
-      ``null_distribution`` and the score's own scale, not to ``0.5``.
-      See :doc:`How the harm test works
+    * Compare the statistic to ``null_distribution`` and the score's own
+      scale, not to ``0.5``. See :doc:`How the harm test works
       <../explanation/harmful-shift-statistic>` for the ROC intuition and
       the ``∫ TPR·(1−FPR)² dFPR`` form.
 

@@ -8,11 +8,11 @@ of the populations you want to compare. But when the groups barely overlap, a
 few observations from these regions can dominate the statistic even though the
 data provide little evidence about the other group's behaviour there.
 
-Importance weighting changes the question to one about **common support** - the
-regions of feature space represented by both groups. It can make the comparison
-more stable, but it does not create information outside the overlap and is not a
-default correction. Start unweighted and use weights when you have a substantive
-overlap concern.
+Importance weighting changes the question to one about **common support** — the
+regions represented by both groups. It can make the comparison more stable, but
+it does not create information where groups do not overlap, and it changes the
+population the test describes. It is not a default correction. Start unweighted
+and use weights only when poor feature overlap is a real concern.
 
 > Source: `src/samesame/weights.py` · `src/samesame/_permutation.py`
 
