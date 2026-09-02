@@ -4,12 +4,12 @@
 import re
 
 import numpy as np
-import pandas as pd
 from scipy.special import logit
 from sklearn.datasets import fetch_openml
 from sklearn.ensemble import RandomForestClassifier
 
 import samesame as ss
+
 
 def logit_gap(logits: np.ndarray) -> np.ndarray:
     max_logits = np.max(logits, axis=1)

@@ -1,16 +1,15 @@
 # Monitor a credit model
 
-A useful monitoring alarm should connect a statistical signal to the outcome you
-care about. Using one HELOC split, this example compares predicted risk,
-confidence, and prediction error from the same model. These signals are not
-interchangeable: they answer different operational questions and become
-available at different times.
+An alarm should tell you whether the score moved toward worse outcomes, not
+just that it moved. Using one HELOC split (External Risk Estimate >63 vs
+≤63, Gardner et al. 2023), this example compares three scores from the same
+model — they answer different questions and arrive at different times.
 
 | Signal | Requires labels? | Harmful direction | `worse` |
 |--------|-------------------|-------------------|---------|
-| Predicted risk | No | Higher risk | `"higher"` |
-| Confidence (`LogitGap`) | No | Lower certainty | `"lower"` |
-| Prediction error (Brier) | Yes | Larger error | `"higher"` |
+| Predicted risk | No | Higher risk | `higher` |
+| Confidence (`LogitGap`) | No | Lower certainty | `lower` |
+| Prediction error (Brier) | Yes | Larger error | `higher` |
 
 Start with predicted risk when the model output already represents a harmful
 outcome. Use confidence for an early warning when labels are delayed, and
@@ -21,10 +20,10 @@ started](../tutorials/get-started.md).
 
 ## Setup
 
-The same split is used for the risk and confidence examples: source is the
-higher-risk slice and target is the simulated deployment. The error example
-uses a separate random split where the null hypothesis is true, making it a
-check of the test's behavior when errors have not shifted.
+The same HELOC split (source: training lower-risk, target: deployment
+higher-risk) is reused for risk and confidence. The error tab uses a separate
+random train/test split where the null of no error shift holds, so a large
+p-value is expected.
 
 ```python
 --8<-- "snippets/heloc-split.py:heloc-split"
@@ -34,7 +33,9 @@ check of the test's behavior when errors have not shifted.
 
 === "Risk — no labels needed"
 
-    Predicted risk is the model's estimated probability of default, so higher values represent a worse outcome.
+    Predicted risk — model's `P(default)`; larger = worse, so `worse="higher"`
+    (pre-specify, don't pick by p-value, cf. `Worse`). Higher values represent
+    a worse outcome.
 
     ```python
     import numpy as np
@@ -43,6 +44,7 @@ check of the test's behavior when errors have not shifted.
     --8<-- "snippets/heloc-split.py:heloc-domain"
     --8<-- "snippets/heloc-split.py:heloc-risk-model"
 
+    # any shift? domain_prob is generic; harm on interpretable risk
     shift = ss.test_shift(
         source=domain_prob[split.values == 0],
         target=domain_prob[split.values == 1],
@@ -61,16 +63,19 @@ check of the test's behavior when errors have not shifted.
     | sig. | sig. | changed **and** moved toward worse |
     | sig. | not sig. | changed, not clearly harmful |
     | not sig. | not sig. | no clear shift |
+    | not sig. | sig. | rare — directional where broad is not |
 
-Both tests provide evidence that the risk distribution changed and that the
-change is consistent with higher risk. This is a reason to investigate, not an
-automatic retraining decision. An AUC of `0.5` represents chance performance.
-Read the harmful-shift statistic against its null distribution and the model's
-risk scale. See [How it works](../../explanation/harmful-shift-statistic.md).
+    Both tests provide evidence that the risk distribution changed and that the
+    change is consistent with higher risk. This is a reason to investigate, not an
+    automatic retraining decision. An AUC of `0.5` is chance; read the
+    harmful-shift statistic against its null distribution and the model's risk
+    scale (0–1). See [How it works](../../explanation/harmful-shift-statistic.md).
 
 === "Confidence — no labels needed"
 
-    `LogitGap` is an **outlier score** for confidence: larger values mean greater certainty. It is the gap between the top logit and the mean of the remaining logits.
+    `LogitGap` is an **outlier score** for confidence: larger = more certain,
+    so a drop (`worse="lower"`) is harm. It is the gap between the top logit
+    and the mean of the remaining logits.
 
     ```python
     --8<-- "examples/credit/_code/monitor_model_confidence_example.py:imports"
@@ -92,7 +97,11 @@ risk scale. See [How it works](../../explanation/harmful-shift-statistic.md).
 
 === "Errors — needs labels"
 
-    Once ground truth is available, prediction error provides the most direct accuracy check. The random split in this example is deliberately constructed under the null hypothesis of no error shift, so a large p-value is expected. In a real deployment comparison, a small p-value would provide evidence that prediction errors increased in the target.
+    Once labels arrive, prediction error (Brier) is the clearest post-outcome
+    check. The random split here is deliberately constructed under the null of
+    no error shift, so a large p-value is expected. In a real deployment, a
+    small p-value would provide evidence that prediction errors increased in
+    the target.
 
     ```python
     import numpy as np

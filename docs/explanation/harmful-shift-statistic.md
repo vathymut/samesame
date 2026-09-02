@@ -88,8 +88,21 @@ rarely exceeded by source observations.
 
 ## References
 
-For the statistical foundation of the harmful-shift test, see:
-
-Kamulete, V. M. (2022). *Test for non-negligible adverse shifts*. *Proceedings
-of the 38th Conference on Uncertainty in Artificial Intelligence (UAI)*.
-[arXiv:2107.02990](https://arxiv.org/abs/2107.02990).
+* Kamulete, V. M. (2022). *Test for non-negligible adverse shifts*.
+  *Proceedings of the 38th Conference on Uncertainty in Artificial
+  Intelligence (UAI)*, PMLR 180:959-968.
+  [PMLR](https://proceedings.mlr.press/v180/kamulete22a.html) ·
+  [arXiv:2107.02990](https://arxiv.org/abs/2107.02990).
+* Phipson, B., Smyth, G. K. (2010). *Permutation P-values should never be
+  zero: calculating exact P-values when permutations are randomly drawn*.
+  *Statistical Applications in Genetics and Molecular Biology* 9(1):Article 39.
+  https://doi.org/10.2202/1544-6115.1585 — the ``+1`` smoothing used for both tests.
+* Kish, L. (1965). *Survey Sampling*. Wiley — Kish's ``(sum w)² / sum w²`` effective sample size.
+* Bickel, S., Brückner, M., Scheffer, T. (2007). *Discriminative learning for
+  differing training and test distributions*. *ICML* 24:81-88.
+  https://doi.org/10.1145/1273496.1273507 — density ratio ``r = p/(1-p)·n_s/n_t``.
+* Yamada, M. et al. (2013). *Relative density-ratio estimation for robust
+  distribution comparison*. *Neural Comput.* 25(5):1324-1370.
+  https://doi.org/10.1162/NECO_a_00442 — relative importance weighting with ``λ``.
+* Elvira, V. et al. (2022). *Rethinking the effective sample size*.
+  *Int. Stat. Rev.* 90(3):525-550 — caveats on ESS thresholds (no universal ``n/4`` cutoff).

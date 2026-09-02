@@ -47,7 +47,7 @@ repair a poorly estimated domain classifier.
 
 --8<-- "snippets/reweight-table.txt"
 
-- `shrinkage` λ in `[0, 1]` - `0` gives the plain density ratio (strong, high variance), while `1` gives uniform weights (no correction). The default is `0.5`; start there and check ESS before lowering:
+- `shrinkage` λ in `[0, 1]` - `0` gives the plain density ratio (strong, high variance), while `1` gives uniform weights (no correction). The default is `0.5`; start there and check `ESS/n` before lowering (lower = more aggressive):
 
 --8<-- "snippets/shrinkage-table.txt"
 
@@ -61,13 +61,17 @@ print(ess.source, ess.target)  # compare each to its n
 ```
 
 Effective sample size (ESS) translates unequal weights into an approximate
-number of equally weighted observations. Uniform weights give `ESS = n`; when
-one or two observations carry most of the mass, ESS approaches `1`.
+number of equally weighted observations (Kish, 1965: ``(sum w)² / sum w²``).
+Uniform weights give `ESS = n`; when one or two observations carry most of the
+mass, ESS approaches `1`.
 
-Treat `ESS < n/4` as a warning rather than a hard cutoff. A low ESS means the
-weighted result is fragile and largely driven by a few observations. If ESS
-remains low after moderate shrinkage, the groups may not have enough common
-support for a reliable weighted comparison.
+Compare each ESS to its ``n`` via ``ESS/n`` — there is no universal cutoff from
+Kish. Treat a low ratio (e.g., substantially below ``0.5``) as a warning that
+the weighted result is fragile and largely driven by a few observations, not as
+a hard validation rule. The often-quoted ``ESS < n/4`` is only a rough
+illustrative heuristic with no published empirical threshold (see Elvira et al.,
+2022). If ``ESS/n`` remains low even at ``shrinkage=0.5``, the groups may not
+have enough common support for a reliable weighted comparison.
 
 ## API
 

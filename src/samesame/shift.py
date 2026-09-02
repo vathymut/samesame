@@ -1,10 +1,11 @@
 """Shift tests — score-based source-versus-target monitoring.
 
-Compare one meaningful score per observation — predicted risk, prediction
-error, confidence, or outlier score — between **source** (reference:
-training or past deployment) and **target** (current deployment). The raw
-feature space is often too large to interpret and labels can arrive late;
-a single score gives each row one number to monitor.
+Compare one interpretable score per observation — predicted risk,
+prediction error, confidence, or outlier score — between **source**
+(reference: training or past deployment) and **target** (current
+deployment). The raw feature space is often too large to interpret and
+labels can arrive late; a single score gives each row one number to
+monitor.
 
 Both tests keep scores — and any importance weights — fixed and shuffle
 group labels. A small p-value is evidence against label exchangeability
@@ -14,17 +15,28 @@ Two questions, two tests — use them separately so they are not
 conflated:
 
 * :func:`test_shift` — broad, two-sided screen. Can the score
-  distinguish source from target at all? Reports ROC AUC (``0.5`` is
-  chance).
+  distinguish source from target at all? Reports ROC AUC ``∫ TPR dFPR``
+  (``0.5`` is chance).
 * :func:`test_harmful_shift` — focused, one-sided tail test. After
   orienting the score so larger means worse, does target put more mass
-  beyond thresholds that source rarely exceeds? Reports a weighted AUC
-  ``∫ TPR·(1−FPR)² dFPR`` that emphasizes that harmful tail.
+  beyond thresholds that source rarely exceeds? Reports the weighted AUC
+  ``∫ TPR·(1−FPR)² dFPR`` of Kamulete (2022) that emphasizes that
+  harmful tail.
 
 Start unweighted. Reach for :mod:`samesame.weights` only when poor
 feature overlap is a real concern — weighting reframes the comparison
 around common support and changes the population described; it does not
 create information where groups do not overlap.
+
+References
+----------
+Kamulete, V. M. (2022). Test for non-negligible adverse shifts.
+    *Proceedings of the 38th Conference on Uncertainty in Artificial
+    Intelligence*, PMLR 180:959-968. arXiv:2107.02990.
+Phipson, B., Smyth, G. K. (2010). Permutation P-values should never be
+    zero: calculating exact P-values when permutations are randomly drawn.
+    *Statistical Applications in Genetics and Molecular Biology*,
+    9(1):Article 39. https://doi.org/10.2202/1544-6115.1585
 """
 
 from __future__ import annotations
@@ -44,8 +56,9 @@ from samesame.weights import ImportanceWeights
 class Worse(StrEnum):
     """Polarity that defines which tail is harmful for :func:`test_harmful_shift`.
 
-    Declare ``worse`` from what the score means before looking at
-    results — not from whichever direction gives the smaller p-value.
+    Choose ``worse`` from the score's definition (e.g., risk is higher-is-worse,
+    confidence via ``LogitGap`` is lower-is-worse) and pre-register it; do not
+    pick the direction that gives the smaller p-value after seeing the data.
     A plain string ``"higher"`` / ``"lower"`` is accepted wherever this
     enum is; the two forms are interchangeable.
 
@@ -90,11 +103,11 @@ def _fmt(v: object) -> str:
 class ShiftResult:
     """Result of :func:`test_shift` — a two-sided permutation result.
 
-    The statistic is ROC AUC — how well the score separates target from
-    source (``0.5`` is chance; values farther from ``0.5`` signal stronger
-    separation, in either direction). The p-value is evidence against label
-    exchangeability — not business impact, causality, an effect size, or
-    the probability the null is true.
+    The statistic is ROC AUC ``∫ TPR dFPR`` — how well the score
+    separates target from source (``0.5`` is chance; values farther from
+    ``0.5`` signal stronger separation, in either direction). The p-value
+    is evidence against label exchangeability — not business impact,
+    causality, an effect size, or the probability the null is true.
 
     Attributes
     ----------
@@ -102,7 +115,7 @@ class ShiftResult:
         Observed ROC AUC, weighted when ``weights`` were supplied.
     pvalue : float
         Two-sided permutation p-value with +1 smoothing (always > 0;
-        doubling the smaller tail, capped at 1).
+        doubling the smaller tail, capped at 1) (Phipson & Smyth, 2010).
     null_distribution : NDArray[np.float64]
         Null distribution of the statistic (length ``n_resamples``),
         produced by permuting group labels while keeping scores and
@@ -112,6 +125,11 @@ class ShiftResult:
     --------
     test_harmful_shift : When you can name the harmful tail in advance.
     samesame.weights.domain_weights : If poor overlap is a real concern.
+
+    References
+    ----------
+    Phipson, B., Smyth, G. K. (2010). Permutation P-values should never be
+        zero. *Stat. Appl. Genet. Mol. Biol.* 9(1):Article 39.
     """
 
     statistic: float
@@ -129,10 +147,11 @@ class ShiftResult:
 class HarmfulShiftResult(ShiftResult):
     """Result of :func:`test_harmful_shift` — a one-sided tail result.
 
-    The statistic is a weighted AUC ``∫ TPR·(1−FPR)² dFPR`` that leans
-    into thresholds the source rarely exceeds, after orienting the score
-    so larger means worse (``worse="lower"`` flips the sign). Read it
-    against ``null_distribution`` and the score's own scale. See
+    One-sided tail result. The statistic is the weighted AUC
+    ``∫ TPR·(1−FPR)² dFPR`` of Kamulete (2022) after orienting the score
+    so larger means worse (``worse="lower"`` flips the sign); it leans
+    into thresholds the source rarely exceeds. Read it against
+    ``null_distribution`` and the score's own scale. See
     :doc:`How the harm test works <../explanation/harmful-shift-statistic>`
     for the ROC intuition.
 
@@ -142,7 +161,7 @@ class HarmfulShiftResult(ShiftResult):
         Observed harmful-shift statistic.
     pvalue : float
         One-sided (``greater``) permutation p-value with +1 smoothing
-        (always > 0).
+        (always > 0) (Phipson & Smyth, 2010).
     null_distribution : NDArray[np.float64]
         Null distribution of the statistic (length ``n_resamples``),
         produced by permuting group labels while keeping scores and
@@ -154,6 +173,13 @@ class HarmfulShiftResult(ShiftResult):
     --------
     test_shift : Broad screen when any change matters.
     Worse : ``"higher"`` vs ``"lower"`` in plain language.
+
+    References
+    ----------
+    Kamulete, V. M. (2022). Test for non-negligible adverse shifts.
+        *Proceedings of the 38th UAI*, PMLR 180:959-968. arXiv:2107.02990.
+    Phipson, B., Smyth, G. K. (2010). Permutation P-values should never be
+        zero. *Stat. Appl. Genet. Mol. Biol.* 9(1):Article 39.
     """
 
     worse: Worse
@@ -206,7 +232,7 @@ def test_shift(
 ) -> ShiftResult:
     """Broad screen — do source and target scores differ at all?
 
-    Any shift? Start here. Give it one meaningful score per observation —
+    Any shift? Start here. Give it one interpretable score per observation —
     predicted risk, prediction error, confidence, or outlier score — and
     it measures separation with ROC AUC, then shuffles labels to see
     whether separation is unusual. A small p-value is evidence that the
@@ -234,10 +260,10 @@ def test_shift(
         Random state for reproducibility. Pass ``np.random.default_rng(12345)``
         or an ``int`` seed. Default ``None``.
     weights : ImportanceWeights | None, optional
-        Per-observation importance weights aligned to ``source`` and
-        ``target``. Omit to compare the full populations; supply when the
-        comparison should focus on common support — weights are normalized
-        per group to its sample size (inactive groups stay at ``1``) (see
+        Per-observation importance weights from :class:`samesame.weights.ImportanceWeights`.
+        Omit for the full-population comparison; supply only to focus on common
+        support. Weights are normalized internally (each group's weights sum to
+        its ``n``; inactive groups stay at ``1``) (see
         :func:`samesame.weights.domain_weights`).
 
     Returns
@@ -250,8 +276,7 @@ def test_shift(
     Notes
     -----
     * The p-value doubles the smaller tail (capped at ``1``) and adds ``+1``
-      smoothing so it is never exactly zero — permutation p-values stay
-      above zero.
+      smoothing so it is never exactly zero (Phipson & Smyth, 2010).
     * Interpret ``statistic`` relative to ``0.5`` (chance; ``0.8`` or
       ``0.2`` both signal strong separation) and ``pvalue`` as evidence
       against exchangeability — not as harm or business impact.
@@ -264,6 +289,11 @@ def test_shift(
     test_harmful_shift : Directional test when you can declare the harmful tail.
     samesame.weights.domain_weights : Build weights from ``P(target|x)``.
     samesame.weights.ImportanceWeights : Container for per-group weights.
+
+    References
+    ----------
+    Phipson, B., Smyth, G. K. (2010). Permutation P-values should never be
+        zero. *Stat. Appl. Genet. Mol. Biol.* 9(1):Article 39.
 
     Examples
     --------
@@ -305,11 +335,12 @@ def test_harmful_shift(
 
     A small ``test_shift`` p-value says *something* changed. This test asks
     the narrower question: after orienting the score so larger means worse
-    (``worse="lower"`` flips the sign), does target put more mass beyond
-    thresholds the source rarely exceeds? Thresholds the source rarely
-    exceeds get more weight, so the test leans into the harmful tail. A
-    small p-value is evidence for that directional movement — not for
-    arbitrary shift.
+    (``worse="lower"`` flips the sign internally), does target put more
+    mass beyond thresholds the source rarely exceeds? Formally it is the
+    weighted AUC ``∫ TPR·(1−FPR)² dFPR`` of Kamulete (2022); thresholds
+    the source rarely exceeds get more weight, so the test leans into the
+    harmful tail. A small p-value is evidence for that directional movement
+    — not for arbitrary shift.
 
     Decide ``worse`` from what the score means before looking at results;
     do not pick the direction that gives the smaller p-value.
@@ -335,10 +366,10 @@ def test_harmful_shift(
         Random state for reproducibility. Pass ``np.random.default_rng(12345)``
         or an ``int`` seed. Default ``None``.
     weights : ImportanceWeights | None, optional
-        Per-observation importance weights aligned to ``source`` and
-        ``target``. Omit to compare the full populations; supply when the
-        comparison should focus on common support — weights are normalized
-        per group to its sample size (inactive groups stay at ``1``) (see
+        Per-observation importance weights from :class:`samesame.weights.ImportanceWeights`.
+        Omit for the full-population comparison; supply only to focus on common
+        support. Weights are normalized internally (each group's weights sum to
+        its ``n``; inactive groups stay at ``1``) (see
         :func:`samesame.weights.domain_weights`).
 
     Returns
@@ -350,7 +381,8 @@ def test_harmful_shift(
 
     Notes
     -----
-    * One-sided ``greater`` alternative with ``+1`` smoothing (never zero).
+    * One-sided ``greater`` alternative with ``+1`` smoothing (never zero)
+      (Phipson & Smyth, 2010).
     * Compare the statistic to ``null_distribution`` and the score's own
       scale, not to ``0.5``. See :doc:`How the harm test works
       <../explanation/harmful-shift-statistic>` for the ROC intuition and
@@ -361,6 +393,13 @@ def test_harmful_shift(
     test_shift : Broad, two-sided screen when any change matters.
     samesame.weights.domain_weights : Build weights from ``P(target|x)``.
     Worse : The ``"higher"`` / ``"lower"`` choice in plain language.
+
+    References
+    ----------
+    Kamulete, V. M. (2022). Test for non-negligible adverse shifts.
+        *Proceedings of the 38th UAI*, PMLR 180:959-968. arXiv:2107.02990.
+    Phipson, B., Smyth, G. K. (2010). Permutation P-values should never be
+        zero. *Stat. Appl. Genet. Mol. Biol.* 9(1):Article 39.
 
     Examples
     --------

@@ -1,18 +1,20 @@
 """samesame — score-based source-versus-target monitoring.
 
-Compare one meaningful score per observation — predicted risk, prediction
-error, confidence, or outlier score — between **source** (reference:
-training or past deployment) and **target** (current deployment). The raw
-feature space is often too large to interpret and labels can arrive late;
-a single score gives each row one number to monitor.
+Reduce each observation to one interpretable score — predicted risk,
+prediction error, confidence, or outlier score — and compare its
+distribution between **source** (reference: training or past deployment)
+and **target** (current deployment). The raw feature space is often too
+large to interpret and labels can arrive late; a single score gives each
+row one number to monitor.
 
 Two questions, two tests. :mod:`samesame.shift` separates them so they are
 not conflated:
 
 * ``test_shift`` — broad, two-sided screen for any distributional change
-  (ROC AUC).
+  (ROC AUC ``∫ TPR dFPR``, ``0.5`` is chance).
 * ``test_harmful_shift(..., worse=...)`` — focused, one-sided test for
-  movement toward the tail you declare harmful (weighted AUC).
+  movement toward the tail you declare harmful (weighted AUC
+  ``∫ TPR·(1−FPR)² dFPR``).
 
 When poor feature overlap is a real concern, :mod:`samesame.weights`
 reframes the comparison around common support — the regions represented by

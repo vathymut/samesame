@@ -15,11 +15,10 @@
 
 Feature-level monitoring can produce alerts that are difficult to interpret,
 and labels may arrive too late to support early action. `samesame` compares
-one meaningful score per observation — predicted risk, prediction error,
+one interpretable score per observation — predicted risk, prediction error,
 confidence, or outlier score — between **source** (the reference) and
-**target** (the current deployment). The raw feature space is often too large
-to interpret and labels can arrive late; a single score gives each row one
-number to monitor.
+**target** (the current deployment). A model score reduces each observation
+to one interpretable score so each row has one number to monitor.
 
 It separates two questions:
 

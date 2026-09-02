@@ -14,31 +14,34 @@
 
 Production monitoring usually starts with a practical problem: the raw feature
 space is too large to interpret directly, and labels often arrive late. A model
-score gives each observation one meaningful number to monitor: predicted risk,
-prediction error, confidence, or an outlier score.
+score reduces each observation to one interpretable score — predicted risk,
+prediction error, confidence, or outlier score — so each row has one number to
+monitor.
 
 `samesame` compares that score between **source** (the reference, such as
 training data or a past deployment) and **target** (the current deployment).
 It separates two questions that should not be conflated:
 
-- `ss.test_shift` — can the score distinguish source from target at all?
-- `ss.test_harmful_shift(..., worse="higher"|"lower")` — is target unusually
-  concentrated in the harmful direction you specify?
+- `ss.test_shift` — broad, two-sided screen for any shift (ROC AUC
+  `∫ TPR dFPR`, `0.5` is chance).
+- `ss.test_harmful_shift(..., worse="higher"|"lower")` — focused, one-sided
+  test for movement toward the tail you declare harmful (weighted AUC
+  `∫ TPR·(1−FPR)² dFPR`).
 
-The first test is two-sided and reports ROC AUC. The second is one-sided and
-weights the part of the score range where target exceeds thresholds that few
-source observations exceed. This makes it sensitive to a harmful tail rather
-than to every kind of distribution shift.
+The first test is two-sided and reports ROC AUC `∫ TPR dFPR`. The second is
+one-sided and weights the part of the score range where target exceeds
+thresholds that few source observations exceed, emphasizing the harmful tail.
 
 ```python
 --8<-- "snippets/quick-example.py:quick-example"
 ```
 
-Read `.pvalue` as evidence against the relevant null, then inspect the
-statistic and the score distributions for practical importance. A small
-`test_shift` p-value means the groups differ, not that the difference is
-harmful. A small harmful-shift p-value means the specified harmful direction
-is supported; it does not measure business impact or prove causality.
+Read `.pvalue` as evidence against label exchangeability, then inspect
+`.statistic` and the score distributions. A small p-value is not business
+impact, causality, or the probability the null is true. Evidence of a shift
+is not evidence of harm — a small `test_shift` p-value means the groups
+differ; a small harmful-shift p-value means the specified harmful direction
+is supported.
 
 ## Workflow
 

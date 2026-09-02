@@ -6,9 +6,9 @@ whether the change moved in a declared harmful direction.
 
 In this tutorial, **source** is the reference distribution, such as training
 data or a past deployment, and **target** is the distribution you want to
-evaluate, typically the current deployment. Compare them using one meaningful
-score for each observation, such as predicted risk, prediction error,
-confidence, or an outlier score.
+evaluate, typically the current deployment. Compare them using one
+interpretable score for each observation, such as predicted risk, prediction
+error, confidence, or an outlier score.
 
 - **Any shift?** Use `ss.test_shift` to ask whether the score distinguishes source from target. This is a two-sided AUC test; an AUC of `0.5` is chance.
 - **Harmful shift?** Use `ss.test_harmful_shift(..., worse="higher"|"lower")` to ask whether the target moved toward the harmful tail you specify. This is a one-sided test based on the weighted AUC, with the score oriented so that larger values mean worse outcomes (`worse="lower"` flips the sign).

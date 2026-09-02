@@ -1,4 +1,14 @@
-"""Harmful-shift statistic: weighted AUC with source-anchored weighting."""
+"""Harmful-shift statistic: weighted AUC with source-anchored weighting.
+
+Implements ``∫ TPR·(1−FPR)² dFPR`` = ``∫ TPR·F_source(t)² dFPR``
+(Kamulete, 2022) via ``(1−FPR) = F_source``; see
+:doc:`How the harm test works <../explanation/harmful-shift-statistic>`.
+
+References
+----------
+Kamulete, V. M. (2022). Test for non-negligible adverse shifts.
+    *Proceedings of the 38th UAI*, PMLR 180:959-968. arXiv:2107.02990.
+"""
 
 from __future__ import annotations
 
@@ -14,11 +24,18 @@ def harmful_shift_statistic(
     *,
     sample_weight: NDArray[np.float64] | None = None,
 ) -> float:
-    """Directional shift statistic: ``∫ TPR · F_source(t)^2 dFPR``.
+    """Directional shift statistic: ``∫ TPR·(1−FPR)² dFPR`` = ``∫ TPR·F_source(t)² dFPR``.
 
     Larger values mean the target distribution has more mass above high
-    thresholds that source rarely exceeds. Inputs are the pooled labels
-    (0 = source, 1 = target) and scores pooled in the same order.
+    thresholds that source rarely exceeds. Since ``1−FPR(t) = F_source(t)``,
+    the ``(1−FPR)²`` form used in the docs and the ``F_source²`` form are
+    identical. Inputs are the pooled labels (0 = source, 1 = target) and
+    scores pooled in the same order.
+
+    References
+    ----------
+    Kamulete, V. M. (2022). Test for non-negligible adverse shifts.
+        *Proceedings of the 38th UAI*, PMLR 180:959-968.
     """
     fpr, tpr, thresholds = roc_curve(labels, scores, sample_weight=sample_weight)
 
