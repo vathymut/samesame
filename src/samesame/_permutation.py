@@ -1,4 +1,15 @@
-"""Weighted two-sample permutation testing (label-permutation null)."""
+"""Weighted two-sample permutation testing (label-permutation null).
+
+The ``+1`` smoothing follows Phipson & Smyth (2010): ``(count+1)/(n+1)``
+for one-sided and doubling the smaller tail (capped at 1) for two-sided,
+so p-values are never exactly zero.
+
+References
+----------
+Phipson, B., Smyth, G. K. (2010). Permutation P-values should never be
+    zero. *Stat. Appl. Genet. Mol. Biol.* 9(1):Article 39.
+    https://doi.org/10.2202/1544-6115.1585
+"""
 
 from __future__ import annotations
 
@@ -69,7 +80,12 @@ def _pvalue(
     null: NDArray[np.float64],
     alternative: Literal["less", "greater", "two-sided"],
 ) -> float:
-    """Conservative permutation p-value with +1 smoothing (Phipson & Smyth)."""
+    """Conservative permutation p-value with ``+1`` smoothing.
+
+    Implements the Phipson & Smyth (2010) exact ``(count+1)/(n+1)`` form
+    (one-sided) and the two-sided doubling of the smaller tail (capped at
+    1). See module References for the full citation.
+    """
     n = null.size
     # small epsilon to treat near-equal floats as equal (matches scipy's gamma)
     eps = np.finfo(float).eps * 100

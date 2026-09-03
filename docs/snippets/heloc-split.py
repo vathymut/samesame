@@ -17,7 +17,6 @@ X_deployment = X[~mask_high].reset_index(drop=True)
 # --8<-- [end:heloc-split]
 
 # --8<-- [start:heloc-domain]
-import pandas as pd  # kept for snippet self-containment when included alone
 from sklearn.ensemble import RandomForestClassifier
 
 split = pd.Series([0] * len(X_train) + [1] * len(X_deployment))

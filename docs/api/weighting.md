@@ -8,11 +8,11 @@ of the populations you want to compare. But when the groups barely overlap, a
 few observations from these regions can dominate the statistic even though the
 data provide little evidence about the other group's behaviour there.
 
-Importance weighting changes the question to one about **common support** - the
-regions of feature space represented by both groups. It can make the comparison
-more stable, but it does not create information outside the overlap and is not a
-default correction. Start unweighted and use weights when you have a substantive
-overlap concern.
+Importance weighting changes the question to one about **common support** — the
+regions represented by both groups. It can make the comparison more stable, but
+it does not create information where groups do not overlap, and it changes the
+population the test describes. It is not a default correction. Start unweighted
+and use weights only when poor feature overlap is a real concern.
 
 > Source: `src/samesame/weights.py` · `src/samesame/_permutation.py`
 
@@ -47,7 +47,7 @@ repair a poorly estimated domain classifier.
 
 --8<-- "snippets/reweight-table.txt"
 
-- `shrinkage` λ in `[0, 1]` - `0` gives the plain density ratio (strong, high variance), while `1` gives uniform weights (no correction). The default is `0.5`; start there and check ESS before lowering:
+- `shrinkage` λ in `[0, 1]` - `0` gives the plain density ratio (strong, high variance), while `1` gives uniform weights (no correction). The default is `0.5`; start there and check `ESS/n` before lowering (lower = more aggressive):
 
 --8<-- "snippets/shrinkage-table.txt"
 
@@ -61,13 +61,17 @@ print(ess.source, ess.target)  # compare each to its n
 ```
 
 Effective sample size (ESS) translates unequal weights into an approximate
-number of equally weighted observations. Uniform weights give `ESS = n`; when
-one or two observations carry most of the mass, ESS approaches `1`.
+number of equally weighted observations (Kish, 1965: ``(sum w)² / sum w²``).
+Uniform weights give `ESS = n`; when one or two observations carry most of the
+mass, ESS approaches `1`.
 
-Treat `ESS < n/4` as a warning rather than a hard cutoff. A low ESS means the
-weighted result is fragile and largely driven by a few observations. If ESS
-remains low after moderate shrinkage, the groups may not have enough common
-support for a reliable weighted comparison.
+Compare each ESS to its ``n`` via ``ESS/n`` — there is no universal cutoff from
+Kish. Treat a low ratio (e.g., substantially below ``0.5``) as a warning that
+the weighted result is fragile and largely driven by a few observations, not as
+a hard validation rule. The often-quoted ``ESS < n/4`` is only a rough
+illustrative heuristic with no published empirical threshold (see Elvira et al.,
+2022). If ``ESS/n`` remains low even at ``shrinkage=0.5``, the groups may not
+have enough common support for a reliable weighted comparison.
 
 ## API
 

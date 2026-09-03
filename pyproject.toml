@@ -1,6 +1,6 @@
 [project]
 name = "samesame"
-version = "0.4.0"
+version = "0.4.1"
 description = "Statistical tests for comparing source and target score distributions — and whether the target moved toward worse outcomes."
 readme = "README.md"
 requires-python = ">=3.12"

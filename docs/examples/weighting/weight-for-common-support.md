@@ -1,8 +1,10 @@
 # Weight for common support
 
-Start with an unweighted comparison. Use weighting only when source and target
-have poor overlap, because weighting changes the question: it focuses the test
-on the region where both groups have support.
+Start with an unweighted comparison. Use weighting only when poor feature
+overlap is a real concern, because weighting changes the question to common
+support — the regions represented by both groups — without creating information
+where groups do not overlap. It also changes the population the test describes
+and is not a default correction.
 
 ## Why weight?
 
@@ -15,11 +17,11 @@ where source and target overlap.
 
 A domain classifier estimates `p̂(x)=P(target|x)`. After accounting for the
 source and target sample sizes, the odds correction
-`p̂/(1-p̂)·n_source/n_target` estimates relative density and produces importance
-weights. This correction can be unstable when the groups separate well,
-because a few observations may receive huge weights. `samesame` stabilises the
-weights with shrinkage, λ, which blends them toward uniform weights (default
-`0.5`):
+`p̂/(1-p̂)·n_source/n_target` (Bickel et al., 2007) estimates relative density
+and produces importance weights. This correction can be unstable when the
+groups separate well, because a few observations may receive huge weights.
+`samesame` stabilises the weights with shrinkage `λ`, which blends them toward
+uniform weights (default `0.5`, Yamada et al., 2013):
 
 --8<-- "snippets/shrinkage-table.txt"
 
@@ -86,9 +88,10 @@ p_both = ss.test_harmful_shift(source=train_risk, target=deployment_risk, worse=
 print(f"Unweighted p={unweighted.pvalue:.4f} Source p={p_src.pvalue:.4f} Both p={p_both.pvalue:.4f}")  # → all 0.0001 — persists on common support
 ```
 
-Use `source` when source has low-overlap cases and you want to represent the
-target region. Use `target` for the reverse. Use `both` when both groups have
-low-overlap regions and the intended comparison is their mutual support.
+Use `source` when source has low-overlap cases outside target support
+(reweight source toward target; target unchanged). Use `target` for the
+reverse (reweight target toward source). Use `both` (default) when both groups
+have low-overlap regions and the intended comparison is their mutual support.
 
 ??? details "Diagnose weight concentration (ESS)"
 
@@ -117,6 +120,6 @@ low-overlap regions and the intended comparison is their mutual support.
         print(f"shrinkage={lam:<4}  source ESS={e.source:7.2f}  target ESS={e.target:7.2f}")
     ```
 
-    Treat `ESS < n/4` for either group as a warning sign, not a hard cutoff. If ESS remains low even at the default `shrinkage=0.5`, the groups have insufficient common support for reliable weighting; consider leaving the comparison unweighted.
+    Compare each ESS to its ``n`` via ``ESS/n`` — a low ratio (e.g., substantially below ``0.5``) warns that a few observations dominate, not a hard cutoff. The ``ESS < n/4`` figure sometimes quoted is only a rough illustrative heuristic with no published threshold (Kish gives no cutoff; see Elvira et al., 2022). If ``ESS/n`` remains low even at the default ``shrinkage=0.5``, the groups have insufficient common support for reliable weighting; consider leaving the comparison unweighted.
 
 Full scripts: `examples/weighting/_code/` · Reference: [Importance weights](../../api/weighting.md).

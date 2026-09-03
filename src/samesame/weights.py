@@ -1,12 +1,14 @@
 """Common support, not just common samples — importance weights for overlap.
 
-An unweighted comparison describes the full source and target samples,
-including regions seen by only one group. That is right when those
-regions belong in the question you are asking. When the groups barely
-overlap, a few observations from the fringes can dominate the statistic
-even though the data say little about the other group's behaviour there.
+Compare one interpretable score per observation between **source**
+(reference) and **target** (current deployment). An unweighted comparison
+describes the full samples, including regions seen by only one group.
+That is right when those regions belong in the question you are asking.
+When the groups barely overlap, a few observations from the fringes can
+dominate the statistic even though the data say little about the other
+group's behaviour there.
 
-Weighting changes the question to **common support** — the regions of
+Weighting reframes the question to **common support** — the regions of
 feature space represented by both groups — without creating information
 where the groups do not overlap. It can steady the comparison, but it
 also changes the population the test describes.
@@ -14,7 +16,17 @@ also changes the population the test describes.
 Use :func:`domain_weights` when you have ``P(target|x)`` from a domain
 classifier, or :class:`ImportanceWeights` directly when sample weights
 are already available. Start unweighted; reach for weights only when
-you have a substantive overlap concern.
+poor feature overlap is a real concern.
+
+References
+----------
+Kish, L. (1965). *Survey Sampling*. Wiley, New York.
+Bickel, S., Brückner, M., Scheffer, T. (2007). Discriminative learning
+    for differing training and test distributions. *ICML* 24:81-88.
+    https://doi.org/10.1145/1273496.1273507
+Yamada, M. et al. (2013). Relative density-ratio estimation for robust
+    distribution comparison. *Neural Comput.* 25(5):1324-1370.
+    https://doi.org/10.1162/NECO_a_00442
 """
 
 from __future__ import annotations
@@ -126,14 +138,19 @@ def _normalize(weights: NDArray[np.float64]) -> NDArray[np.float64]:
 class EffectiveSampleSize:
     """Kish effective sample size — how much information is left after weighting.
 
-    Think of it as the number of equally weighted observations that would
-    carry the same information as your unequal weights: ``(sum w)^2 / sum w^2``
-    (Kish, 1965). Uniform weights keep every voice — ``ESS == n``. When a
-    few observations shout while the rest whisper, ESS slides toward ``1``.
+    Kish's ESS ``(sum w)² / sum w²`` (Kish, 1965): uniform weights keep
+    every voice — ``ESS == n``; when a few observations shout while the
+    rest whisper, ESS slides toward ``1``. It interpolates between ``n``
+    (uniform) and ``1`` (one observation dominates).
 
-    Compare each value to its ``n``. ``ESS < n/4`` is a friendly warning
-    that the weighted result is fragile and largely driven by a few
-    observations — not a hard cutoff.
+    Compare each ESS to its ``n`` via the ratio ``ESS/n``. There is no
+    universal cutoff from Kish; interpret ``ESS/n`` as a continuous
+    diagnostic. A low ratio — for example substantially below ``0.5`` or,
+    as a rough illustrative heuristic, ``ESS < n/4`` — means the weighted
+    result leans on a few observations and should be interpreted cautiously,
+    not as a hard validation rule. The ``n/4`` figure is a package heuristic
+    with no published empirical threshold (see Elvira et al., 2022 for
+    caveats on ESS-based cutoffs).
 
     Attributes
     ----------
@@ -149,7 +166,10 @@ class EffectiveSampleSize:
 
     References
     ----------
-    Kish, L. (1965). Survey Sampling. John Wiley & Sons.
+    Kish, L. (1965). *Survey Sampling*. Wiley, New York.
+    Elvira, V., Martino, L., Robert, C. P. (2022). Rethinking the effective
+        sample size. *International Statistical Review* 90(3):525-550.
+        https://doi.org/10.1111/insr.12500
     """
 
     source: float
@@ -218,10 +238,10 @@ class ImportanceWeights:
     def effective_sample_size(self) -> EffectiveSampleSize:
         """How much independent information remains after weighting.
 
-        Returns Kish's ``(sum w)^2 / sum w^2`` per group. Uniform weights
-        give ``ESS == n``; concentrated weights where a handful dominate
-        push ESS toward ``1``. A low ESS warns that the weighted result
-        leans on a few observations.
+        Returns Kish's ``(sum w)² / sum w²`` (Kish, 1965) per group. Uniform
+        weights give ``ESS == n``; concentrated weights where a handful
+        dominate push ESS toward ``1``. Interpret ``ESS/n`` continuously; a
+        low ratio warns that the weighted result leans on a few observations.
 
         If ESS stays low even at ``shrinkage=0.5``, the groups may lack
         enough common support for a reliable weighted comparison — consider
@@ -234,7 +254,9 @@ class ImportanceWeights:
 
         References
         ----------
-        Kish, L. (1965). Survey Sampling. John Wiley & Sons.
+        Kish, L. (1965). *Survey Sampling*. Wiley, New York.
+        Elvira, V. et al. (2022). Rethinking the effective sample size.
+            *Int. Stat. Rev.* 90(3):525-550.
 
         Examples
         --------
@@ -291,11 +313,11 @@ def domain_weights(
         reweights source toward target; ``'target'`` does the reverse.
         Accepts a plain string or :class:`ReweightMode`.
     shrinkage : float, optional
-        Shrinkage ``λ`` in ``[0, 1]`` blending RIW (Relative Importance
-        Weight) toward uniform weights. ``0`` is the plain density ratio
-        — strongest correction, highest variance. ``1`` is uniform — no
-        correction. Default ``0.5`` is a well-tested middle ground; check
-        ESS before lowering.
+        Shrinkage ``λ`` in ``[0, 1]`` (default ``0.5``) blending RIW
+        toward uniform weights. ``0`` is the plain density ratio — strongest
+        correction, highest variance. ``1`` is uniform — no correction.
+        ``0.5`` is the recommended default; start there and inspect
+        ``ESS/n`` before lowering (lower = more aggressive correction).
 
     Returns
     -------
@@ -312,25 +334,37 @@ def domain_weights(
 
     Notes
     -----
-    * Start unweighted. Use weights only when you have a substantive
-      overlap concern — weighting changes the population the test
+    * Start unweighted. Use weights only when poor feature overlap is a
+      real concern — weighting changes the population the test
       describes and is not a default correction.
     * Estimate ``P(target|x)`` out of sample and keep it separate from
       the harm score. Domain probability describes membership; it says
       nothing about whether an outcome is good or bad.
     * Call ``.effective_sample_size()`` on the result and compare each
-      ESS to its ``n``. ``ESS < n/4`` is a warning that a few
-      observations dominate. If ESS stays low at ``shrinkage=0.5``,
-      the groups may not have enough common support for a reliable
-      weighted comparison — consider leaving the comparison unweighted.
+      ESS to its ``n`` via ``ESS/n``. A low ratio (e.g., substantially
+      below ``0.5``) warns that a few observations dominate. If ``ESS/n``
+      stays low at ``shrinkage=0.5``, the groups may not have enough common
+      support for a reliable weighted comparison — consider leaving the
+      comparison unweighted. The often-quoted ``ESS < n/4`` is only a rough
+      illustrative heuristic, not a validated cutoff.
 
     See Also
     --------
     ImportanceWeights : Container that normalizes and validates weights.
-    EffectiveSampleSize : Per-group ESS and the ``n/4`` rule of thumb.
+    EffectiveSampleSize : Per-group ESS and ESS/n interpretation.
     ReweightMode : ``"source"``, ``"target"``, ``"both"`` in plain language.
     samesame.shift.test_shift : Any-shift test that can consume weights.
     samesame.shift.test_harmful_shift : Directional test that can consume weights.
+
+    References
+    ----------
+    Kish, L. (1965). *Survey Sampling*. Wiley.
+    Bickel, S. et al. (2007). Discriminative learning for differing training
+        and test distributions. *ICML* 24:81-88.
+    Yamada, M. et al. (2013). Relative density-ratio estimation. *Neural
+        Comput.* 25(5):1324-1370.
+    Elvira, V. et al. (2022). Rethinking the effective sample size.
+        *Int. Stat. Rev.* 90(3):525-550.
 
     Examples
     --------

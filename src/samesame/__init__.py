@@ -1,26 +1,36 @@
-"""samesame — did the target shift? Did it get worse?
+"""samesame — score-based source-versus-target monitoring.
 
-Focus monitoring on one meaningful score per observation — predicted risk,
-prediction error, confidence, or an outlier score — and compare it between
-**source** (the reference, such as training data or a past deployment) and
-**target** (the current deployment).
+Reduce each observation to one interpretable score — predicted risk,
+prediction error, confidence, or outlier score — and compare its
+distribution between **source** (reference: training or past deployment)
+and **target** (current deployment). The raw feature space is often too
+large to interpret and labels can arrive late; a single score gives each
+row one number to monitor.
 
 Two questions, two tests. :mod:`samesame.shift` separates them so they are
 not conflated:
 
 * ``test_shift`` — broad, two-sided screen for any distributional change
-  (ROC AUC).
+  (ROC AUC ``∫ TPR dFPR``, ``0.5`` is chance).
 * ``test_harmful_shift(..., worse=...)`` — focused, one-sided test for
-  movement toward the tail you declare harmful (weighted AUC).
+  movement toward the tail you declare harmful (weighted AUC
+  ``∫ TPR·(1−FPR)² dFPR``).
 
-When source and target barely overlap, :mod:`samesame.weights` reframes the
-comparison around common support via :func:`samesame.weights.domain_weights`
-or an explicit :class:`samesame.weights.ImportanceWeights`.
+When poor feature overlap is a real concern, :mod:`samesame.weights`
+reframes the comparison around common support — the regions represented by
+both groups — via :func:`samesame.weights.domain_weights` or an explicit
+:class:`samesame.weights.ImportanceWeights`. Weighting changes which
+observations count more; it does not create information where groups do not
+overlap.
 
-Workflow: choose a score (generate it out of sample if it comes from a fitted
-model) → ask whether anything changed → ask whether it got worse → reweight
-only if overlap is a real concern. A small p-value is evidence against label
-exchangeability, not a measure of business impact or causality.
+Workflow: (1) choose one score per observation — generate it out of sample
+with ``cross_val_predict``, ``oob_decision_function_``, or a held-out set if
+it comes from a fitted model; (2) ask whether anything changed
+(``test_shift``); (3) ask whether it got worse
+(``test_harmful_shift`` with ``worse``); (4) reweight only if poor overlap
+is a real concern. A small p-value is evidence against label
+exchangeability — not business impact, causality, or the probability the null
+is true.
 
 Public surface is :mod:`samesame.shift` and :mod:`samesame.weights`; start
 with :doc:`Get started <examples/tutorials/get-started>` or
