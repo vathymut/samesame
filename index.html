@@ -819,21 +819,24 @@
 <p><strong>Did the target shift? Did it get worse?</strong></p>
 <p>Production monitoring usually starts with a practical problem: the raw feature
 space is too large to interpret directly, and labels often arrive late. A model
-score gives each observation one meaningful number to monitor: predicted risk,
-prediction error, confidence, or an outlier score.</p>
+score reduces each observation to one interpretable score — predicted risk,
+prediction error, confidence, or outlier score — so each row has one number to
+monitor.</p>
 <p><code>samesame</code> compares that score between <strong>source</strong> (the reference, such as
 training data or a past deployment) and <strong>target</strong> (the current deployment).
 It separates two questions that should not be conflated:</p>
 <ul>
-<li><code>ss.test_shift</code> — can the score distinguish source from target at all?</li>
-<li><code>ss.test_harmful_shift(..., worse="higher"|"lower")</code> — is target unusually
-  concentrated in the harmful direction you specify?</li>
+<li><code>ss.test_shift</code> — broad, two-sided screen for any shift (ROC AUC
+  <code>∫ TPR dFPR</code>, <code>0.5</code> is chance).</li>
+<li><code>ss.test_harmful_shift(..., worse="higher"|"lower")</code> — focused, one-sided
+  test for movement toward the tail you declare harmful (weighted AUC
+  <code>∫ TPR·(1−FPR)² dFPR</code>).</li>
 </ul>
-<p>The first test is two-sided and reports ROC AUC. The second is one-sided and
-weights the part of the score range where target exceeds thresholds that few
-source observations exceed. This makes it sensitive to a harmful tail rather
-than to every kind of distribution shift.</p>
+<p>The first test is two-sided and reports ROC AUC <code>∫ TPR dFPR</code>. The second is
+one-sided and weights the part of the score range where target exceeds
+thresholds that few source observations exceed, emphasizing the harmful tail.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
 <span class="kn">import</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ss</span>
 
 <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">)</span>
@@ -853,11 +856,12 @@ than to every kind of distribution shift.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Harm  statistic: </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, p-value: </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="c1"># → Harm  statistic: 0.155, p-value: 0.0001</span>
 </code></pre></div>
-<p>Read <code>.pvalue</code> as evidence against the relevant null, then inspect the
-statistic and the score distributions for practical importance. A small
-<code>test_shift</code> p-value means the groups differ, not that the difference is
-harmful. A small harmful-shift p-value means the specified harmful direction
-is supported; it does not measure business impact or prove causality.</p>
+<p>Read <code>.pvalue</code> as evidence against label exchangeability, then inspect
+<code>.statistic</code> and the score distributions. A small p-value is not business
+impact, causality, or the probability the null is true. Evidence of a shift
+is not evidence of harm — a small <code>test_shift</code> p-value means the groups
+differ; a small harmful-shift p-value means the specified harmful direction
+is supported.</p>
 <h2 id="workflow">Workflow<a class="headerlink" href="#workflow" title="Permanent link">&para;</a></h2>
 <ol>
 <li><strong>Choose a score</strong> that represents the outcome you care about. Generate it
@@ -983,7 +987,7 @@ is supported; it does not measure business impact or prove causality.</p>
     
     
       
-      <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.action.view"], "search": "assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": "0.4.0"}</script>
+      <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.action.view"], "search": "assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": "0.4.1"}</script>
     
     
       <script src="assets/javascripts/bundle.92b07e13.min.js"></script>

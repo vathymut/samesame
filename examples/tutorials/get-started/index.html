@@ -822,9 +822,9 @@ per observation, test for a difference between source and target, and test
 whether the change moved in a declared harmful direction.</p>
 <p>In this tutorial, <strong>source</strong> is the reference distribution, such as training
 data or a past deployment, and <strong>target</strong> is the distribution you want to
-evaluate, typically the current deployment. Compare them using one meaningful
-score for each observation, such as predicted risk, prediction error,
-confidence, or an outlier score.</p>
+evaluate, typically the current deployment. Compare them using one
+interpretable score for each observation, such as predicted risk, prediction
+error, confidence, or an outlier score.</p>
 <ul>
 <li><strong>Any shift?</strong> Use <code>ss.test_shift</code> to ask whether the score distinguishes source from target. This is a two-sided AUC test; an AUC of <code>0.5</code> is chance.</li>
 <li><strong>Harmful shift?</strong> Use <code>ss.test_harmful_shift(..., worse="higher"|"lower")</code> to ask whether the target moved toward the harmful tail you specify. This is a one-sided test based on the weighted AUC, with the score oriented so that larger values mean worse outcomes (<code>worse="lower"</code> flips the sign).</li>
@@ -1073,7 +1073,7 @@ smaller p-value.</p>
     
     
       
-      <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.action.view"], "search": "../../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": "0.4.0"}</script>
+      <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.action.view"], "search": "../../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": "0.4.1"}</script>
     
     
       <script src="../../../assets/javascripts/bundle.92b07e13.min.js"></script>

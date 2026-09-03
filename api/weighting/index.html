@@ -878,11 +878,11 @@ regions seen by only one group. This is appropriate when those regions are part
 of the populations you want to compare. But when the groups barely overlap, a
 few observations from these regions can dominate the statistic even though the
 data provide little evidence about the other group's behaviour there.</p>
-<p>Importance weighting changes the question to one about <strong>common support</strong> - the
-regions of feature space represented by both groups. It can make the comparison
-more stable, but it does not create information outside the overlap and is not a
-default correction. Start unweighted and use weights when you have a substantive
-overlap concern.</p>
+<p>Importance weighting changes the question to one about <strong>common support</strong> — the
+regions represented by both groups. It can make the comparison more stable, but
+it does not create information where groups do not overlap, and it changes the
+population the test describes. It is not a default correction. Start unweighted
+and use weights only when poor feature overlap is a real concern.</p>
 <blockquote>
 <p>Source: <code>src/samesame/weights.py</code> · <code>src/samesame/_permutation.py</code></p>
 </blockquote>
@@ -954,7 +954,7 @@ repair a poorly estimated domain classifier.</p>
 </tbody>
 </table>
 <ul>
-<li><code>shrinkage</code> λ in <code>[0, 1]</code> - <code>0</code> gives the plain density ratio (strong, high variance), while <code>1</code> gives uniform weights (no correction). The default is <code>0.5</code>; start there and check ESS before lowering:</li>
+<li><code>shrinkage</code> λ in <code>[0, 1]</code> - <code>0</code> gives the plain density ratio (strong, high variance), while <code>1</code> gives uniform weights (no correction). The default is <code>0.5</code>; start there and check <code>ESS/n</code> before lowering (lower = more aggressive):</li>
 </ul>
 <table>
 <thead>
@@ -970,7 +970,7 @@ repair a poorly estimated domain classifier.</p>
 </tr>
 <tr>
 <td><code>0.5</code></td>
-<td>Default. Good balance.</td>
+<td>Default (0.5). Good balance — start here and check <code>ESS/n</code> before lowering.</td>
 </tr>
 <tr>
 <td><code>1.0</code></td>
@@ -978,19 +978,23 @@ repair a poorly estimated domain classifier.</p>
 </tr>
 </tbody>
 </table>
-<p>Lower = more aggressive; higher = more conservative. Start at <code>0.5</code> and check ESS before lowering.</p>
+<p>Lower = more aggressive; higher = more conservative. Start at <code>0.5</code> and check <code>ESS/n</code> before lowering.</p>
 <p>See <a href="../../examples/weighting/weight-for-common-support/">Weight for common support</a> for guidance on diagnosing overlap and weight concentration.</p>
 <h2 id="effective-sample-size">Effective sample size<a class="headerlink" href="#effective-sample-size" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="n">ess</span> <span class="o">=</span> <span class="n">weights</span><span class="o">.</span><span class="n">effective_sample_size</span><span class="p">()</span>  <span class="c1"># Kish (1965): (sum w)² / sum w²</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">ess</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="n">ess</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>  <span class="c1"># compare each to its n</span>
 </code></pre></div>
 <p>Effective sample size (ESS) translates unequal weights into an approximate
-number of equally weighted observations. Uniform weights give <code>ESS = n</code>; when
-one or two observations carry most of the mass, ESS approaches <code>1</code>.</p>
-<p>Treat <code>ESS &lt; n/4</code> as a warning rather than a hard cutoff. A low ESS means the
-weighted result is fragile and largely driven by a few observations. If ESS
-remains low after moderate shrinkage, the groups may not have enough common
-support for a reliable weighted comparison.</p>
+number of equally weighted observations (Kish, 1965: <code>(sum w)² / sum w²</code>).
+Uniform weights give <code>ESS = n</code>; when one or two observations carry most of the
+mass, ESS approaches <code>1</code>.</p>
+<p>Compare each ESS to its <code>n</code> via <code>ESS/n</code> — there is no universal cutoff from
+Kish. Treat a low ratio (e.g., substantially below <code>0.5</code>) as a warning that
+the weighted result is fragile and largely driven by a few observations, not as
+a hard validation rule. The often-quoted <code>ESS &lt; n/4</code> is only a rough
+illustrative heuristic with no published empirical threshold (see Elvira et al.,
+2022). If <code>ESS/n</code> remains low even at <code>shrinkage=0.5</code>, the groups may not
+have enough common support for a reliable weighted comparison.</p>
 <h2 id="api">API<a class="headerlink" href="#api" title="Permanent link">&para;</a></h2>
 
 
@@ -1088,11 +1092,11 @@ Accepts a plain string or :class:<code>ReweightMode</code>.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Shrinkage <code>λ</code> in <code>[0, 1]</code> blending RIW (Relative Importance
-Weight) toward uniform weights. <code>0</code> is the plain density ratio
-— strongest correction, highest variance. <code>1</code> is uniform — no
-correction. Default <code>0.5</code> is a well-tested middle ground; check
-ESS before lowering.</p>
+                <p>Shrinkage <code>λ</code> in <code>[0, 1]</code> (default <code>0.5</code>) blending RIW
+toward uniform weights. <code>0</code> is the plain density ratio — strongest
+correction, highest variance. <code>1</code> is uniform — no correction.
+<code>0.5</code> is the recommended default; start there and inspect
+<code>ESS/n</code> before lowering (lower = more aggressive correction).</p>
               </div>
             </td>
             <td>
@@ -1155,27 +1159,40 @@ Inactive groups keep weight <code>1</code> for every observation.</p>
 <details class="note" open>
   <summary>Notes</summary>
   <ul>
-<li>Start unweighted. Use weights only when you have a substantive
-  overlap concern — weighting changes the population the test
+<li>Start unweighted. Use weights only when poor feature overlap is a
+  real concern — weighting changes the population the test
   describes and is not a default correction.</li>
 <li>Estimate <code>P(target|x)</code> out of sample and keep it separate from
   the harm score. Domain probability describes membership; it says
   nothing about whether an outcome is good or bad.</li>
 <li>Call <code>.effective_sample_size()</code> on the result and compare each
-  ESS to its <code>n</code>. <code>ESS &lt; n/4</code> is a warning that a few
-  observations dominate. If ESS stays low at <code>shrinkage=0.5</code>,
-  the groups may not have enough common support for a reliable
-  weighted comparison — consider leaving the comparison unweighted.</li>
+  ESS to its <code>n</code> via <code>ESS/n</code>. A low ratio (e.g., substantially
+  below <code>0.5</code>) warns that a few observations dominate. If <code>ESS/n</code>
+  stays low at <code>shrinkage=0.5</code>, the groups may not have enough common
+  support for a reliable weighted comparison — consider leaving the
+  comparison unweighted. The often-quoted <code>ESS &lt; n/4</code> is only a rough
+  illustrative heuristic, not a validated cutoff.</li>
 </ul>
 </details>
 
 <details class="see-also" open>
   <summary>See Also</summary>
   <p>ImportanceWeights : Container that normalizes and validates weights.
-EffectiveSampleSize : Per-group ESS and the <code>n/4</code> rule of thumb.
+EffectiveSampleSize : Per-group ESS and ESS/n interpretation.
 ReweightMode : <code>"source"</code>, <code>"target"</code>, <code>"both"</code> in plain language.
 samesame.shift.test_shift : Any-shift test that can consume weights.
 samesame.shift.test_harmful_shift : Directional test that can consume weights.</p>
+</details>
+
+<details class="references" open>
+  <summary>References</summary>
+  <p>Kish, L. (1965). <em>Survey Sampling</em>. Wiley.
+Bickel, S. et al. (2007). Discriminative learning for differing training
+    and test distributions. <em>ICML</em> 24:81-88.
+Yamada, M. et al. (2013). Relative density-ratio estimation. <em>Neural
+    Comput.</em> 25(5):1324-1370.
+Elvira, V. et al. (2022). Rethinking the effective sample size.
+    <em>Int. Stat. Rev.</em> 90(3):525-550.</p>
 </details>
 
 <p><span class="doc-section-title">Examples:</span></p>
@@ -1193,29 +1210,7 @@ samesame.shift.test_harmful_shift : Directional test that can consume weights.</
 
             <details class="quote">
               <summary>Source code in <code>src/samesame/weights.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">258</span>
-<span class="normal">259</span>
-<span class="normal">260</span>
-<span class="normal">261</span>
-<span class="normal">262</span>
-<span class="normal">263</span>
-<span class="normal">264</span>
-<span class="normal">265</span>
-<span class="normal">266</span>
-<span class="normal">267</span>
-<span class="normal">268</span>
-<span class="normal">269</span>
-<span class="normal">270</span>
-<span class="normal">271</span>
-<span class="normal">272</span>
-<span class="normal">273</span>
-<span class="normal">274</span>
-<span class="normal">275</span>
-<span class="normal">276</span>
-<span class="normal">277</span>
-<span class="normal">278</span>
-<span class="normal">279</span>
-<span class="normal">280</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">280</span>
 <span class="normal">281</span>
 <span class="normal">282</span>
 <span class="normal">283</span>
@@ -1310,7 +1305,41 @@ samesame.shift.test_harmful_shift : Directional test that can consume weights.</
 <span class="normal">372</span>
 <span class="normal">373</span>
 <span class="normal">374</span>
-<span class="normal">375</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">domain_weights</span><span class="p">(</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span>
+<span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">domain_weights</span><span class="p">(</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">source</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
     <span class="n">target</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
@@ -1346,11 +1375,11 @@ samesame.shift.test_harmful_shift : Directional test that can consume weights.</
 <span class="sd">        reweights source toward target; ``&#39;target&#39;`` does the reverse.</span>
 <span class="sd">        Accepts a plain string or :class:`ReweightMode`.</span>
 <span class="sd">    shrinkage : float, optional</span>
-<span class="sd">        Shrinkage ``λ`` in ``[0, 1]`` blending RIW (Relative Importance</span>
-<span class="sd">        Weight) toward uniform weights. ``0`` is the plain density ratio</span>
-<span class="sd">        — strongest correction, highest variance. ``1`` is uniform — no</span>
-<span class="sd">        correction. Default ``0.5`` is a well-tested middle ground; check</span>
-<span class="sd">        ESS before lowering.</span>
+<span class="sd">        Shrinkage ``λ`` in ``[0, 1]`` (default ``0.5``) blending RIW</span>
+<span class="sd">        toward uniform weights. ``0`` is the plain density ratio — strongest</span>
+<span class="sd">        correction, highest variance. ``1`` is uniform — no correction.</span>
+<span class="sd">        ``0.5`` is the recommended default; start there and inspect</span>
+<span class="sd">        ``ESS/n`` before lowering (lower = more aggressive correction).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1367,25 +1396,37 @@ samesame.shift.test_harmful_shift : Directional test that can consume weights.</
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    * Start unweighted. Use weights only when you have a substantive</span>
-<span class="sd">      overlap concern — weighting changes the population the test</span>
+<span class="sd">    * Start unweighted. Use weights only when poor feature overlap is a</span>
+<span class="sd">      real concern — weighting changes the population the test</span>
 <span class="sd">      describes and is not a default correction.</span>
 <span class="sd">    * Estimate ``P(target|x)`` out of sample and keep it separate from</span>
 <span class="sd">      the harm score. Domain probability describes membership; it says</span>
 <span class="sd">      nothing about whether an outcome is good or bad.</span>
 <span class="sd">    * Call ``.effective_sample_size()`` on the result and compare each</span>
-<span class="sd">      ESS to its ``n``. ``ESS &lt; n/4`` is a warning that a few</span>
-<span class="sd">      observations dominate. If ESS stays low at ``shrinkage=0.5``,</span>
-<span class="sd">      the groups may not have enough common support for a reliable</span>
-<span class="sd">      weighted comparison — consider leaving the comparison unweighted.</span>
+<span class="sd">      ESS to its ``n`` via ``ESS/n``. A low ratio (e.g., substantially</span>
+<span class="sd">      below ``0.5``) warns that a few observations dominate. If ``ESS/n``</span>
+<span class="sd">      stays low at ``shrinkage=0.5``, the groups may not have enough common</span>
+<span class="sd">      support for a reliable weighted comparison — consider leaving the</span>
+<span class="sd">      comparison unweighted. The often-quoted ``ESS &lt; n/4`` is only a rough</span>
+<span class="sd">      illustrative heuristic, not a validated cutoff.</span>
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
 <span class="sd">    ImportanceWeights : Container that normalizes and validates weights.</span>
-<span class="sd">    EffectiveSampleSize : Per-group ESS and the ``n/4`` rule of thumb.</span>
+<span class="sd">    EffectiveSampleSize : Per-group ESS and ESS/n interpretation.</span>
 <span class="sd">    ReweightMode : ``&quot;source&quot;``, ``&quot;target&quot;``, ``&quot;both&quot;`` in plain language.</span>
 <span class="sd">    samesame.shift.test_shift : Any-shift test that can consume weights.</span>
 <span class="sd">    samesame.shift.test_harmful_shift : Directional test that can consume weights.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Kish, L. (1965). *Survey Sampling*. Wiley.</span>
+<span class="sd">    Bickel, S. et al. (2007). Discriminative learning for differing training</span>
+<span class="sd">        and test distributions. *ICML* 24:81-88.</span>
+<span class="sd">    Yamada, M. et al. (2013). Relative density-ratio estimation. *Neural</span>
+<span class="sd">        Comput.* 25(5):1324-1370.</span>
+<span class="sd">    Elvira, V. et al. (2022). Rethinking the effective sample size.</span>
+<span class="sd">        *Int. Stat. Rev.* 90(3):525-550.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -1522,27 +1563,7 @@ samesame.shift.test_shift : The tests that consume these weights.</p>
 
               <details class="quote">
                 <summary>Source code in <code>src/samesame/weights.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">159</span>
-<span class="normal">160</span>
-<span class="normal">161</span>
-<span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span>
-<span class="normal">165</span>
-<span class="normal">166</span>
-<span class="normal">167</span>
-<span class="normal">168</span>
-<span class="normal">169</span>
-<span class="normal">170</span>
-<span class="normal">171</span>
-<span class="normal">172</span>
-<span class="normal">173</span>
-<span class="normal">174</span>
-<span class="normal">175</span>
-<span class="normal">176</span>
-<span class="normal">177</span>
-<span class="normal">178</span>
-<span class="normal">179</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">179</span>
 <span class="normal">180</span>
 <span class="normal">181</span>
 <span class="normal">182</span>
@@ -1613,7 +1634,29 @@ samesame.shift.test_shift : The tests that consume these weights.</p>
 <span class="normal">247</span>
 <span class="normal">248</span>
 <span class="normal">249</span>
-<span class="normal">250</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ImportanceWeights</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Validated, ready-to-use importance weights for source and target.</span>
 
@@ -1675,10 +1718,10 @@ samesame.shift.test_shift : The tests that consume these weights.</p>
     <span class="k">def</span><span class="w"> </span><span class="nf">effective_sample_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EffectiveSampleSize</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;How much independent information remains after weighting.</span>
 
-<span class="sd">        Returns Kish&#39;s ``(sum w)^2 / sum w^2`` per group. Uniform weights</span>
-<span class="sd">        give ``ESS == n``; concentrated weights where a handful dominate</span>
-<span class="sd">        push ESS toward ``1``. A low ESS warns that the weighted result</span>
-<span class="sd">        leans on a few observations.</span>
+<span class="sd">        Returns Kish&#39;s ``(sum w)² / sum w²`` (Kish, 1965) per group. Uniform</span>
+<span class="sd">        weights give ``ESS == n``; concentrated weights where a handful</span>
+<span class="sd">        dominate push ESS toward ``1``. Interpret ``ESS/n`` continuously; a</span>
+<span class="sd">        low ratio warns that the weighted result leans on a few observations.</span>
 
 <span class="sd">        If ESS stays low even at ``shrinkage=0.5``, the groups may lack</span>
 <span class="sd">        enough common support for a reliable weighted comparison — consider</span>
@@ -1691,7 +1734,9 @@ samesame.shift.test_shift : The tests that consume these weights.</p>
 
 <span class="sd">        References</span>
 <span class="sd">        ----------</span>
-<span class="sd">        Kish, L. (1965). Survey Sampling. John Wiley &amp; Sons.</span>
+<span class="sd">        Kish, L. (1965). *Survey Sampling*. Wiley, New York.</span>
+<span class="sd">        Elvira, V. et al. (2022). Rethinking the effective sample size.</span>
+<span class="sd">            *Int. Stat. Rev.* 90(3):525-550.</span>
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
@@ -1733,10 +1778,10 @@ samesame.shift.test_shift : The tests that consume these weights.</p>
     <div class="doc doc-contents ">
 
         <p>How much independent information remains after weighting.</p>
-<p>Returns Kish's <code>(sum w)^2 / sum w^2</code> per group. Uniform weights
-give <code>ESS == n</code>; concentrated weights where a handful dominate
-push ESS toward <code>1</code>. A low ESS warns that the weighted result
-leans on a few observations.</p>
+<p>Returns Kish's <code>(sum w)² / sum w²</code> (Kish, 1965) per group. Uniform
+weights give <code>ESS == n</code>; concentrated weights where a handful
+dominate push ESS toward <code>1</code>. Interpret <code>ESS/n</code> continuously; a
+low ratio warns that the weighted result leans on a few observations.</p>
 <p>If ESS stays low even at <code>shrinkage=0.5</code>, the groups may lack
 enough common support for a reliable weighted comparison — consider
 leaving the comparison unweighted.</p>
@@ -1767,7 +1812,9 @@ leaving the comparison unweighted.</p>
 
 <details class="references" open>
   <summary>References</summary>
-  <p>Kish, L. (1965). Survey Sampling. John Wiley &amp; Sons.</p>
+  <p>Kish, L. (1965). <em>Survey Sampling</em>. Wiley, New York.
+Elvira, V. et al. (2022). Rethinking the effective sample size.
+    <em>Int. Stat. Rev.</em> 90(3):525-550.</p>
 </details>
 
 <p><span class="doc-section-title">Examples:</span></p>
@@ -1782,27 +1829,7 @@ leaving the comparison unweighted.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/samesame/weights.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">218</span>
-<span class="normal">219</span>
-<span class="normal">220</span>
-<span class="normal">221</span>
-<span class="normal">222</span>
-<span class="normal">223</span>
-<span class="normal">224</span>
-<span class="normal">225</span>
-<span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">238</span>
 <span class="normal">239</span>
 <span class="normal">240</span>
 <span class="normal">241</span>
@@ -1814,13 +1841,35 @@ leaving the comparison unweighted.</p>
 <span class="normal">247</span>
 <span class="normal">248</span>
 <span class="normal">249</span>
-<span class="normal">250</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">effective_sample_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EffectiveSampleSize</span><span class="p">:</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">effective_sample_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EffectiveSampleSize</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;How much independent information remains after weighting.</span>
 
-<span class="sd">    Returns Kish&#39;s ``(sum w)^2 / sum w^2`` per group. Uniform weights</span>
-<span class="sd">    give ``ESS == n``; concentrated weights where a handful dominate</span>
-<span class="sd">    push ESS toward ``1``. A low ESS warns that the weighted result</span>
-<span class="sd">    leans on a few observations.</span>
+<span class="sd">    Returns Kish&#39;s ``(sum w)² / sum w²`` (Kish, 1965) per group. Uniform</span>
+<span class="sd">    weights give ``ESS == n``; concentrated weights where a handful</span>
+<span class="sd">    dominate push ESS toward ``1``. Interpret ``ESS/n`` continuously; a</span>
+<span class="sd">    low ratio warns that the weighted result leans on a few observations.</span>
 
 <span class="sd">    If ESS stays low even at ``shrinkage=0.5``, the groups may lack</span>
 <span class="sd">    enough common support for a reliable weighted comparison — consider</span>
@@ -1833,7 +1882,9 @@ leaving the comparison unweighted.</p>
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
-<span class="sd">    Kish, L. (1965). Survey Sampling. John Wiley &amp; Sons.</span>
+<span class="sd">    Kish, L. (1965). *Survey Sampling*. Wiley, New York.</span>
+<span class="sd">    Elvira, V. et al. (2022). Rethinking the effective sample size.</span>
+<span class="sd">        *Int. Stat. Rev.* 90(3):525-550.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -1949,19 +2000,7 @@ samesame.weights.ImportanceWeights : What you get back.</p>
 
               <details class="quote">
                 <summary>Source code in <code>src/samesame/weights.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">31</span>
-<span class="normal">32</span>
-<span class="normal">33</span>
-<span class="normal">34</span>
-<span class="normal">35</span>
-<span class="normal">36</span>
-<span class="normal">37</span>
-<span class="normal">38</span>
-<span class="normal">39</span>
-<span class="normal">40</span>
-<span class="normal">41</span>
-<span class="normal">42</span>
-<span class="normal">43</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">43</span>
 <span class="normal">44</span>
 <span class="normal">45</span>
 <span class="normal">46</span>
@@ -1983,7 +2022,19 @@ samesame.weights.ImportanceWeights : What you get back.</p>
 <span class="normal">62</span>
 <span class="normal">63</span>
 <span class="normal">64</span>
-<span class="normal">65</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ReweightMode</span><span class="p">(</span><span class="n">StrEnum</span><span class="p">):</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ReweightMode</span><span class="p">(</span><span class="n">StrEnum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Which group(s) to reweight toward common support.</span>
 
 <span class="sd">    Reweighting does not invent information where the groups do not</span>
@@ -2051,13 +2102,18 @@ samesame.weights.ImportanceWeights : What you get back.</p>
 
 
         <p>Kish effective sample size — how much information is left after weighting.</p>
-<p>Think of it as the number of equally weighted observations that would
-carry the same information as your unequal weights: <code>(sum w)^2 / sum w^2</code>
-(Kish, 1965). Uniform weights keep every voice — <code>ESS == n</code>. When a
-few observations shout while the rest whisper, ESS slides toward <code>1</code>.</p>
-<p>Compare each value to its <code>n</code>. <code>ESS &lt; n/4</code> is a friendly warning
-that the weighted result is fragile and largely driven by a few
-observations — not a hard cutoff.</p>
+<p>Kish's ESS <code>(sum w)² / sum w²</code> (Kish, 1965): uniform weights keep
+every voice — <code>ESS == n</code>; when a few observations shout while the
+rest whisper, ESS slides toward <code>1</code>. It interpolates between <code>n</code>
+(uniform) and <code>1</code> (one observation dominates).</p>
+<p>Compare each ESS to its <code>n</code> via the ratio <code>ESS/n</code>. There is no
+universal cutoff from Kish; interpret <code>ESS/n</code> as a continuous
+diagnostic. A low ratio — for example substantially below <code>0.5</code> or,
+as a rough illustrative heuristic, <code>ESS &lt; n/4</code> — means the weighted
+result leans on a few observations and should be interpreted cautiously,
+not as a hard validation rule. The <code>n/4</code> figure is a package heuristic
+with no published empirical threshold (see Elvira et al., 2022 for
+caveats on ESS-based cutoffs).</p>
 
 
 <p><span class="doc-section-title">Attributes:</span></p>
@@ -2104,7 +2160,10 @@ samesame.weights.domain_weights : Where shrinkage trades bias for stability.</p>
 
 <details class="references" open>
   <summary>References</summary>
-  <p>Kish, L. (1965). Survey Sampling. John Wiley &amp; Sons.</p>
+  <p>Kish, L. (1965). <em>Survey Sampling</em>. Wiley, New York.
+Elvira, V., Martino, L., Robert, C. P. (2022). Rethinking the effective
+    sample size. <em>International Statistical Review</em> 90(3):525-550.
+    https://doi.org/10.1111/insr.12500</p>
 </details>
 
 
@@ -2115,19 +2174,7 @@ samesame.weights.domain_weights : Where shrinkage trades bias for stability.</p>
 
               <details class="quote">
                 <summary>Source code in <code>src/samesame/weights.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">125</span>
-<span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
-<span class="normal">129</span>
-<span class="normal">130</span>
-<span class="normal">131</span>
-<span class="normal">132</span>
-<span class="normal">133</span>
-<span class="normal">134</span>
-<span class="normal">135</span>
-<span class="normal">136</span>
-<span class="normal">137</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">137</span>
 <span class="normal">138</span>
 <span class="normal">139</span>
 <span class="normal">140</span>
@@ -2146,18 +2193,43 @@ samesame.weights.domain_weights : Where shrinkage trades bias for stability.</p>
 <span class="normal">153</span>
 <span class="normal">154</span>
 <span class="normal">155</span>
-<span class="normal">156</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">EffectiveSampleSize</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Kish effective sample size — how much information is left after weighting.</span>
 
-<span class="sd">    Think of it as the number of equally weighted observations that would</span>
-<span class="sd">    carry the same information as your unequal weights: ``(sum w)^2 / sum w^2``</span>
-<span class="sd">    (Kish, 1965). Uniform weights keep every voice — ``ESS == n``. When a</span>
-<span class="sd">    few observations shout while the rest whisper, ESS slides toward ``1``.</span>
+<span class="sd">    Kish&#39;s ESS ``(sum w)² / sum w²`` (Kish, 1965): uniform weights keep</span>
+<span class="sd">    every voice — ``ESS == n``; when a few observations shout while the</span>
+<span class="sd">    rest whisper, ESS slides toward ``1``. It interpolates between ``n``</span>
+<span class="sd">    (uniform) and ``1`` (one observation dominates).</span>
 
-<span class="sd">    Compare each value to its ``n``. ``ESS &lt; n/4`` is a friendly warning</span>
-<span class="sd">    that the weighted result is fragile and largely driven by a few</span>
-<span class="sd">    observations — not a hard cutoff.</span>
+<span class="sd">    Compare each ESS to its ``n`` via the ratio ``ESS/n``. There is no</span>
+<span class="sd">    universal cutoff from Kish; interpret ``ESS/n`` as a continuous</span>
+<span class="sd">    diagnostic. A low ratio — for example substantially below ``0.5`` or,</span>
+<span class="sd">    as a rough illustrative heuristic, ``ESS &lt; n/4`` — means the weighted</span>
+<span class="sd">    result leans on a few observations and should be interpreted cautiously,</span>
+<span class="sd">    not as a hard validation rule. The ``n/4`` figure is a package heuristic</span>
+<span class="sd">    with no published empirical threshold (see Elvira et al., 2022 for</span>
+<span class="sd">    caveats on ESS-based cutoffs).</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -2173,7 +2245,10 @@ samesame.weights.domain_weights : Where shrinkage trades bias for stability.</p>
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
-<span class="sd">    Kish, L. (1965). Survey Sampling. John Wiley &amp; Sons.</span>
+<span class="sd">    Kish, L. (1965). *Survey Sampling*. Wiley, New York.</span>
+<span class="sd">    Elvira, V., Martino, L., Robert, C. P. (2022). Rethinking the effective</span>
+<span class="sd">        sample size. *International Statistical Review* 90(3):525-550.</span>
+<span class="sd">        https://doi.org/10.1111/insr.12500</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">source</span><span class="p">:</span> <span class="nb">float</span>
@@ -2306,7 +2381,7 @@ samesame.weights.domain_weights : Where shrinkage trades bias for stability.</p>
     
     
       
-      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.action.view"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": "0.4.0"}</script>
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.action.view"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": "0.4.1"}</script>
     
     
       <script src="../../assets/javascripts/bundle.92b07e13.min.js"></script>

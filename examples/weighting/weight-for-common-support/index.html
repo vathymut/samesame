@@ -811,9 +811,11 @@
 
 
 <h1 id="weight-for-common-support">Weight for common support<a class="headerlink" href="#weight-for-common-support" title="Permanent link">&para;</a></h1>
-<p>Start with an unweighted comparison. Use weighting only when source and target
-have poor overlap, because weighting changes the question: it focuses the test
-on the region where both groups have support.</p>
+<p>Start with an unweighted comparison. Use weighting only when poor feature
+overlap is a real concern, because weighting changes the question to common
+support — the regions represented by both groups — without creating information
+where groups do not overlap. It also changes the population the test describes
+and is not a default correction.</p>
 <h2 id="why-weight">Why weight?<a class="headerlink" href="#why-weight" title="Permanent link">&para;</a></h2>
 <p>A few low-overlap observations can dominate the permutation test, even if the
 region you care about has genuinely changed. Weighting reduces their influence
@@ -824,11 +826,11 @@ where source and target overlap.</p>
 </blockquote>
 <p>A domain classifier estimates <code>p̂(x)=P(target|x)</code>. After accounting for the
 source and target sample sizes, the odds correction
-<code>p̂/(1-p̂)·n_source/n_target</code> estimates relative density and produces importance
-weights. This correction can be unstable when the groups separate well,
-because a few observations may receive huge weights. <code>samesame</code> stabilises the
-weights with shrinkage, λ, which blends them toward uniform weights (default
-<code>0.5</code>):</p>
+<code>p̂/(1-p̂)·n_source/n_target</code> (Bickel et al., 2007) estimates relative density
+and produces importance weights. This correction can be unstable when the
+groups separate well, because a few observations may receive huge weights.
+<code>samesame</code> stabilises the weights with shrinkage <code>λ</code>, which blends them toward
+uniform weights (default <code>0.5</code>, Yamada et al., 2013):</p>
 <table>
 <thead>
 <tr>
@@ -843,7 +845,7 @@ weights with shrinkage, λ, which blends them toward uniform weights (default
 </tr>
 <tr>
 <td><code>0.5</code></td>
-<td>Default. Good balance.</td>
+<td>Default (0.5). Good balance — start here and check <code>ESS/n</code> before lowering.</td>
 </tr>
 <tr>
 <td><code>1.0</code></td>
@@ -851,7 +853,7 @@ weights with shrinkage, λ, which blends them toward uniform weights (default
 </tr>
 </tbody>
 </table>
-<p>Lower = more aggressive; higher = more conservative. Start at <code>0.5</code> and check ESS before lowering.</p>
+<p>Lower = more aggressive; higher = more conservative. Start at <code>0.5</code> and check <code>ESS/n</code> before lowering.</p>
 <p><strong>Rule:</strong> Use the domain probability to measure how observations differ between
 source and target, and to build weights. Use a separate score with a clear
 good/bad interpretation for the harm test. A domain probability describes
@@ -931,7 +933,6 @@ the harmful shift is also present in the common-support region.</p>
 <span class="n">X_train</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">mask_high</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">y_train</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">mask_high</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">X_deployment</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="o">~</span><span class="n">mask_high</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>  <span class="c1"># kept for snippet self-containment when included alone</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestClassifier</span>
 
 <span class="n">split</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_deployment</span><span class="p">))</span>
@@ -970,9 +971,10 @@ the harmful shift is also present in the common-support region.</p>
 <span class="n">p_both</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">train_risk</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">deployment_risk</span><span class="p">,</span> <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">w_both</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">))</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unweighted p=</span><span class="si">{</span><span class="n">unweighted</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> Source p=</span><span class="si">{</span><span class="n">p_src</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> Both p=</span><span class="si">{</span><span class="n">p_both</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># → all 0.0001 — persists on common support</span>
 </code></pre></div>
-<p>Use <code>source</code> when source has low-overlap cases and you want to represent the
-target region. Use <code>target</code> for the reverse. Use <code>both</code> when both groups have
-low-overlap regions and the intended comparison is their mutual support.</p>
+<p>Use <code>source</code> when source has low-overlap cases outside target support
+(reweight source toward target; target unchanged). Use <code>target</code> for the
+reverse (reweight target toward source). Use <code>both</code> (default) when both groups
+have low-overlap regions and the intended comparison is their mutual support.</p>
 <details class="details">
 <summary>Diagnose weight concentration (ESS)</summary>
 <p>Weighting can concentrate the comparison on a few observations. Check the effective sample size (ESS) to see whether the weighted result is supported by enough information.</p>
@@ -994,7 +996,7 @@ correction strength and stability.</p>
     <span class="n">e</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">effective_sample_size</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;shrinkage=</span><span class="si">{</span><span class="n">lam</span><span class="si">:</span><span class="s2">&lt;4</span><span class="si">}</span><span class="s2">  source ESS=</span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">source</span><span class="si">:</span><span class="s2">7.2f</span><span class="si">}</span><span class="s2">  target ESS=</span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">target</span><span class="si">:</span><span class="s2">7.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
-<p>Treat <code>ESS &lt; n/4</code> for either group as a warning sign, not a hard cutoff. If ESS remains low even at the default <code>shrinkage=0.5</code>, the groups have insufficient common support for reliable weighting; consider leaving the comparison unweighted.</p>
+<p>Compare each ESS to its <code>n</code> via <code>ESS/n</code> — a low ratio (e.g., substantially below <code>0.5</code>) warns that a few observations dominate, not a hard cutoff. The <code>ESS &lt; n/4</code> figure sometimes quoted is only a rough illustrative heuristic with no published threshold (Kish gives no cutoff; see Elvira et al., 2022). If <code>ESS/n</code> remains low even at the default <code>shrinkage=0.5</code>, the groups have insufficient common support for reliable weighting; consider leaving the comparison unweighted.</p>
 </details>
 <p>Full scripts: <code>examples/weighting/_code/</code> · Reference: <a href="../../../api/weighting/">Importance weights</a>.</p>
 
@@ -1118,7 +1120,7 @@ correction strength and stability.</p>
     
     
       
-      <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.action.view"], "search": "../../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": "0.4.0"}</script>
+      <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.action.view"], "search": "../../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": "0.4.1"}</script>
     
     
       <script src="../../../assets/javascripts/bundle.92b07e13.min.js"></script>

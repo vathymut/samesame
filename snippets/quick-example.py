@@ -1,5 +1,6 @@
 # --8<-- [start:quick-example]
 import numpy as np
+
 import samesame as ss
 
 rng = np.random.default_rng(12345)

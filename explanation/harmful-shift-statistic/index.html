@@ -955,10 +955,26 @@ therefore peaks at low <code>FPR</code> and decays to <code>0</code> at <code>FP
 costs <code>O(n log n)</code> per resample and <code>O(n)</code> memory.</p>
 </details>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
-<p>For the statistical foundation of the harmful-shift test, see:</p>
-<p>Kamulete, V. M. (2022). <em>Test for non-negligible adverse shifts</em>. <em>Proceedings
-of the 38th Conference on Uncertainty in Artificial Intelligence (UAI)</em>.
-<a href="https://arxiv.org/abs/2107.02990">arXiv:2107.02990</a>.</p>
+<ul>
+<li>Kamulete, V. M. (2022). <em>Test for non-negligible adverse shifts</em>.
+  <em>Proceedings of the 38th Conference on Uncertainty in Artificial
+  Intelligence (UAI)</em>, PMLR 180:959-968.
+  <a href="https://proceedings.mlr.press/v180/kamulete22a.html">PMLR</a> ·
+  <a href="https://arxiv.org/abs/2107.02990">arXiv:2107.02990</a>.</li>
+<li>Phipson, B., Smyth, G. K. (2010). <em>Permutation P-values should never be
+  zero: calculating exact P-values when permutations are randomly drawn</em>.
+  <em>Statistical Applications in Genetics and Molecular Biology</em> 9(1):Article 39.
+  https://doi.org/10.2202/1544-6115.1585 — the <code>+1</code> smoothing used for both tests.</li>
+<li>Kish, L. (1965). <em>Survey Sampling</em>. Wiley — Kish's <code>(sum w)² / sum w²</code> effective sample size.</li>
+<li>Bickel, S., Brückner, M., Scheffer, T. (2007). <em>Discriminative learning for
+  differing training and test distributions</em>. <em>ICML</em> 24:81-88.
+  https://doi.org/10.1145/1273496.1273507 — density ratio <code>r = p/(1-p)·n_s/n_t</code>.</li>
+<li>Yamada, M. et al. (2013). <em>Relative density-ratio estimation for robust
+  distribution comparison</em>. <em>Neural Comput.</em> 25(5):1324-1370.
+  https://doi.org/10.1162/NECO_a_00442 — relative importance weighting with <code>λ</code>.</li>
+<li>Elvira, V. et al. (2022). <em>Rethinking the effective sample size</em>.
+  <em>Int. Stat. Rev.</em> 90(3):525-550 — caveats on ESS thresholds (no universal <code>n/4</code> cutoff).</li>
+</ul>
 
 
 
@@ -1080,7 +1096,7 @@ of the 38th Conference on Uncertainty in Artificial Intelligence (UAI)</em>.
     
     
       
-      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.action.view"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": "0.4.0"}</script>
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.action.view"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": "0.4.1"}</script>
     
     
       <script src="../../assets/javascripts/bundle.92b07e13.min.js"></script>
