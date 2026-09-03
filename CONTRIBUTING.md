@@ -82,8 +82,60 @@ uv run mkdocs gh-deploy
 ### Updating the Package Version
 
 ```bash
-uv version --bump
+uv version --bump   # or: uv version --bump patch|minor|major  |  uv version 0.5.0
 ```
+
+This updates `pyproject.toml:3` (`version`) and `uv.lock`. Keep `mkdocs.yml:83`
+(`extra.version`) in sync — bump it to the same `<new>` version in the same commit.
+
+```bash
+# example: bump to 0.4.1 and sync docs version
+uv version --bump patch
+# then edit mkdocs.yml: extra.version: 0.4.1
+git add pyproject.toml uv.lock mkdocs.yml
+git commit -m "chore(release): 0.4.1"
+git push origin main  # or: origin develop -> merge to main before tagging
+```
+
+Verify locally before tagging:
+
+```bash
+uv run pytest
+uv run ruff check .
+```
+
+### Creating a GitHub Release
+
+> Must be executed **before** publishing to PyPI. Previous releases `v0.3.2` (`d59f4a1`)
+> and `v0.4.0` (`20bd868`) were created this way: annotated tag on `main` → GitHub Release
+> → `uv build` → `uv publish`.
+
+```bash
+# 1. Ensure main is up to date and version is bumped (above)
+git checkout main && git pull
+git tag -a v<new> -m "v<new>"
+git push origin v<new>
+
+# 2. Create the GitHub Release (requires gh auth login / GH_TOKEN)
+gh release create v<new> --title v<new> --target main --generate-notes
+# custom body (mirrors v0.4.0 pattern):
+# gh release create v<new> --title v<new> --target main --notes "v<new> — summary
+#
+# Highlights:
+# - ...
+# - Bumps version from <old> (<sha>) to <new> (<sha>).
+# - Site version explicit (mkdocs.yml:83 extra.version: <new>).
+#
+# PyPI: https://pypi.org/project/samesame/<new>/
+# Docs: https://vathymut.github.io/samesame/
+# Repo: https://github.com/vathymut/samesame/releases/tag/v<new>"
+
+# 3. Verify
+gh release view v<new>
+curl -s https://api.github.com/repos/vathymut/samesame/releases/tags/v<new> | head -n 20
+```
+
+Alternatively create via UI: `https://github.com/vathymut/samesame/releases/new` → select tag `v<new>` → target `main` → generate notes → Publish.
 
 ### Building Python Package
 
