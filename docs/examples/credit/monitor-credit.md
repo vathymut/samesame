@@ -1,9 +1,17 @@
 # Monitor a credit model
 
 An alarm should tell you whether the score moved toward worse outcomes, not
-just that it moved. Using one HELOC split (External Risk Estimate >63 vs
-≤63, Gardner et al. 2023), this example compares three scores from the same
-model — they answer different questions and arrive at different times.
+just that it moved. Here is the story that demand comes from.
+
+A lender trains a default-risk model on its safest book — applicants the
+bureau already smiles on. Then the book changes: a new partner channel, a
+bolder marketing push, a market that cooled. Riskier applicants start
+arriving, the model is still scoring, and two readings of the same dashboard
+look identical from the outside: **the model decayed**, or **the population
+changed**. One wants a retraining ticket; the other wants a business meeting.
+Using one HELOC split (External Risk Estimate > 63 vs ≤ 63, Gardner et al.
+2023), this example works that story with three scores from the same model —
+they answer different questions and arrive at different times.
 
 | Signal | Requires labels? | Harmful direction | `worse` |
 |--------|-------------------|-------------------|---------|
@@ -16,7 +24,42 @@ outcome. Use confidence for an early warning when labels are delayed, and
 prediction error for the clearest post-outcome check. **Source** is the
 reference distribution, such as training data or a past deployment; **target**
 is the current deployment. If you are new to `samesame`, start with [Get
-started](../tutorials/get-started.md).
+started](../tutorials/get-started.md) — or with [Is the new drug good
+enough?](../trials/check-drug-efficacy.md), the same test told as a clinical
+trial with no model in sight.
+
+## The dataset
+
+HELOC stands for **home equity line of credit** — a revolving credit line
+secured by the borrower's home. The data comes from the FICO Community
+Explainable AI Challenge: anonymized credit-bureau features for each
+applicant, and a target that records whether the borrower went 90 days past
+due or worse at least once in the first 24 months of the account. We fetch
+the 9,871 applications from the
+[OpenML](https://openml.org/search?type=data&sort=runs&id=45554&status=active)
+mirror (`data_id=45554`) with `fetch_openml`, so the examples run with no
+manual download.
+
+## The split
+
+A HELOC applicant arrives with a risk estimate from a third-party bureau
+service — the `ExternalRiskEstimate` feature; higher values mean a safer
+applicant. The challenge-winning model of the original FICO competition
+zeroed in on a cutoff of **63** on that estimate, and the
+[TableShift](https://tableshift.org) benchmark (Gardner et al., 2023) adopted
+the same threshold to define its two populations. We do the same, and read it
+as a deployment story:
+
+- **Source** — 7,683 applicants with estimate > 63: the calmer book the
+  lender trained on. Observed bad rate 43.5%.
+- **Target** — 2,188 applicants with estimate ≤ 63: the riskier book that
+  arrives after deployment. Observed bad rate 81.9%.
+
+A model trained on the first group is deployed on the second — trained on
+calm seas, sailing into a storm. Mean predicted default risk climbs from
+about 44% to 73%, and the two rival readings return: model harm, or context
+change? The three signals below give the evidence; the [weighting
+guide](../weighting/weight-for-common-support.md) interrogates the alarm.
 
 ## Setup
 
@@ -54,9 +97,13 @@ p-value is expected.
         source=train_risk, target=deployment_risk,
         worse="higher", rng=np.random.default_rng(12345),
     )
-    print(f"AUC {shift.statistic:.4f} p={shift.pvalue:.4f}")   # → 0.9999, 0.0001
-    print(f"Harm {harm.statistic:.4f} p={harm.pvalue:.4f}")    # → 0.35, 0.0001
+    print(f"AUC {shift.statistic:.4f} p={shift.pvalue:.4f}")   # → 1.0000, 0.0002
+    print(f"Harm {harm.statistic:.4f} p={harm.pvalue:.4f}")    # → 0.2483, 0.0001
     ```
+
+    The domain classifier separates the books almost perfectly (AUC 1.0000) —
+    no surprise, since the split variable itself is a feature — and the harm
+    test confirms the move is toward higher risk, not just any change.
 
     | `test_shift` | `test_harmful_shift` | Meaning |
     |--------------|----------------------|---------|
@@ -90,10 +137,16 @@ p-value is expected.
         worse="lower",  # lower confidence = harm
         rng=np.random.default_rng(12345),
     )
-    print(f"Harm {harm.statistic:.4f} p={harm.pvalue:.4f}")  # → 0.04, 0.90
+    print(f"Harm {harm.statistic:.4f} p={harm.pvalue:.4f}")  # → 0.0409, 1.0000
     ```
 
-    The large `p`-value provides no evidence of a harmful confidence drop in this test, but it does not prove that confidence is unchanged. Confidence and risk can move together: a model may become more confident while also becoming more risky. This example assumes `X_train`, `X_deployment`, and `rf_bad` from Setup.
+    Not only is there no evidence of a harmful confidence drop — the direction
+    of the statistic suggests the model is, if anything, *more* certain on the
+    deployment book. With a bad rate near 82%, predicted probabilities
+    polarize toward the extremes, and certainty rides along. A model may
+    become more confident while also becoming more risky: confidence is a
+    complement to risk, not a substitute. This example assumes `X_train`,
+    `X_deployment`, and `rf_bad` from Setup.
 
 === "Errors — needs labels"
 
@@ -124,7 +177,7 @@ p-value is expected.
     brier_train = (y_train - train_prob) ** 2
     brier_test  = (y_test  - test_prob) ** 2
     harm = ss.test_harmful_shift(source=brier_train, target=brier_test, worse="higher", rng=np.random.default_rng(12345))
-    print(f"Brier p={harm.pvalue:.4f}")  # → ~0.60
+    print(f"Brier p={harm.pvalue:.4f}")  # → 0.2737
     ```
 
     This example provides no evidence that errors got worse. Brier score and log loss usually lead to similar conclusions, so either metric can be used for this comparison.
@@ -137,4 +190,9 @@ To reproduce these examples end to end, see the full runnable scripts in `exampl
 - **Confidence** — use for an early warning when labels are not yet available.
 - **Prediction error** — use for the clearest post-outcome accuracy check.
 
-If source and target have poor overlap in feature space, see [Weight for common support](../weighting/weight-for-common-support.md).
+Risk and confidence moved without a single label arriving — that is what
+makes them early. The error check waits for outcomes; here it runs on a
+random split where nothing is wrong, and finds exactly that. The question the
+storm book leaves open — did the alarm fire because comparable applicants got
+worse, or because incomparable ones arrived? — is precisely what [Weight for
+common support](../weighting/weight-for-common-support.md) interrogates.

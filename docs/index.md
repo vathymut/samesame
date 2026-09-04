@@ -10,7 +10,12 @@
 [![UAI 2022](https://img.shields.io/badge/paper-UAI%202022-yellow)](https://arxiv.org/abs/2107.02990)
 <!-- badges: end -->
 
-**Did the target shift? Did it get worse?**
+> *Same, same but different ...*
+
+Every monitoring question starts as one word: *same?* Is the new sample the
+same as the reference? The name is the answer you hope to give. The work —
+and the reason this package exists — is the second half of the phrase: when
+the target is different, is it different in the way that matters, **worse**?
 
 Production monitoring usually starts with a practical problem: the raw feature
 space is too large to interpret directly, and labels often arrive late. A model
@@ -53,11 +58,22 @@ is supported.
 4. **Address poor feature overlap** with `ss.domain_weights` only when it is a
    real concern; weighting changes the population the comparison describes.
 
+```mermaid
+flowchart TD
+    score["One score per observation"] --> shift["test_shift<br/>did anything change?"]
+    shift --> harm["test_harmful_shift<br/>did it get worse?"]
+    harm --> overlap{"Poor feature overlap?"}
+    overlap -- "real concern" --> reweight["domain_weights<br/>compare on common support"]
+    overlap -- otherwise --> act["Act on the evidence"]
+    reweight --> act
+```
+
 ## Where next
 
 - **[Get started](examples/tutorials/get-started.md)** — 5 min, both tests.
-- **[Monitor a credit model](examples/credit/monitor-credit.md)** — HELOC: risk, confidence, errors.
-- **[Weight for common support](examples/weighting/weight-for-common-support.md)** — when to reweight.
+- **[Is the new drug good enough?](examples/trials/check-drug-efficacy.md)** — the harm test, told as a trial with 70 scores and no model.
+- **[Monitor a credit model](examples/credit/monitor-credit.md)** — HELOC: one model, three signals, one storm.
+- **[Weight for common support](examples/weighting/weight-for-common-support.md)** — when to reweight, and what it costs.
 
 ## Installation
 

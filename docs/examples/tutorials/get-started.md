@@ -2,7 +2,9 @@
 
 In this tutorial, you will build a minimal monitoring workflow: create one score
 per observation, test for a difference between source and target, and test
-whether the change moved in a declared harmful direction.
+whether the change moved in a declared harmful direction. By the end, the
+two-question habit — *did it change? did it get worse?* — should feel as
+natural as checking a pulse.
 
 In this tutorial, **source** is the reference distribution, such as training
 data or a past deployment, and **target** is the distribution you want to
@@ -83,9 +85,10 @@ either direction - for example, `0.8` or `0.2` - can reject the null.
 
 ## 4 — Did it get worse?
 
-Before running the test, declare whether higher or lower scores represent worse
-outcomes. Pass this choice as a string or as `ss.Worse`; the two forms are
-interchangeable.
+This is the question with a stake attached: not *did it change*, but *did it
+move toward the outcomes you fear*. Before running the test, declare whether
+higher or lower scores represent worse outcomes. Pass this choice as a string
+or as `ss.Worse`; the two forms are interchangeable.
 
 --8<-- "snippets/worse-table.txt"
 
@@ -121,4 +124,8 @@ smaller p-value.
 ??? tip "Reproducibility"
     Pass `rng=np.random.default_rng(12345)` to make the permutation-based p-values reproducible. The default is `n_resamples=9999`; `999` is useful while exploring, while `19999` gives better resolution for p-values below `0.001`.
 
-If source and target have poor overlap in feature space, see [Weight for common support](../weighting/weight-for-common-support.md) to learn how to reweight the comparison.
+For the harm test told on real data with no model at all, read [Is the new drug
+good enough?](../trials/check-drug-efficacy.md). If source and target have poor
+overlap in feature space, see [Weight for common
+support](../weighting/weight-for-common-support.md) to learn how to reweight
+the comparison.

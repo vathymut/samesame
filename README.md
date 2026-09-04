@@ -11,6 +11,8 @@
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 <!-- badges: end -->
 
+> *Same, same but different ...*
+
 **Did the target shift? Did it get worse?**
 
 Feature-level monitoring can produce alerts that are difficult to interpret,
@@ -68,6 +70,7 @@ evidence of harm.
 **Explore the documentation:**
 
 - [Get started](https://vathymut.github.io/samesame/examples/tutorials/get-started.md) - learn the workflow and run both tests in five minutes.
+- [Is the new drug good enough?](https://vathymut.github.io/samesame/examples/trials/check-drug-efficacy.md) - the harm test explained on a classic noninferiority trial, no model required.
 - [Monitor a credit model](https://vathymut.github.io/samesame/examples/credit/monitor-credit.md) - work through risk, confidence, and error monitoring with HELOC data.
 - [Weight for common support](https://vathymut.github.io/samesame/examples/weighting/weight-for-common-support.md) - learn when and how to reweight comparisons.
 

@@ -10,6 +10,7 @@ nav:
   - Home: index.md
   - Get started: examples/tutorials/get-started.md
   - Guides:
+    - Is the new drug good enough?: examples/trials/check-drug-efficacy.md
     - Monitor a credit model: examples/credit/monitor-credit.md
     - Weight for common support: examples/weighting/weight-for-common-support.md
   - Explanation:

@@ -68,7 +68,11 @@ the harmful shift is also present in the common-support region.
 
 ## HELOC example
 
-This example uses the same source and target split as [Monitor a credit model](../credit/monitor-credit.md).
+This example uses the same source and target split as [Monitor a credit
+model](../credit/monitor-credit.md) — the lender that trained on calm seas
+and sailed into a storm. There, the risk alarm fired. Here we ask the
+question it begs: did comparable applicants get worse, or did incomparable
+ones simply arrive?
 
 ```python
 import samesame as ss
@@ -87,6 +91,29 @@ p_src = ss.test_harmful_shift(source=train_risk, target=deployment_risk, worse="
 p_both = ss.test_harmful_shift(source=train_risk, target=deployment_risk, worse="higher", weights=w_both, rng=np.random.default_rng(12345))
 print(f"Unweighted p={unweighted.pvalue:.4f} Source p={p_src.pvalue:.4f} Both p={p_both.pvalue:.4f}")  # → all 0.0001 — persists on common support
 ```
+
+The alarm survives reweighting (all p = 0.0001), and the effective sample
+sizes say how much water that carries: the source side of the comparison
+rests on an effective 2,491 of 7,683 applications (ESS/n ≈ 0.32), the target
+side on 1,532 of 2,188 (≈ 0.70). The harmful shift is present on common
+support too — not a low-overlap artifact.
+
+??? details "What a stricter protocol finds (research)"
+
+    A companion research study on common-support weighting (under review,
+    2026) re-runs this HELOC comparison under a stricter protocol: the split
+    variable is dropped from the features, the domain classifier is
+    cross-validated, and the test runs on held-out subsamples (1,536 source
+    and 2,776 target applications; 499 permutations, `shrinkage=0.5`).
+    Under that protocol, the three standard modes — unweighted,
+    source-weighted, target-weighted — all reject at the permutation minimum
+    (p = 0.002), but the doubly weighted test does not (p = 0.376; ESS 401 of
+    1,536 source, 803 of 2,776 target). The verdict flips because most of
+    each population lies outside the common support: the alarm was carried by
+    applicant profiles from low-overlap regions — context change, not model
+    harm on comparable applicants. The protocols differ, and that is the
+    lesson: check the contrast between modes on *your* protocol before
+    trusting any single p-value.
 
 Use `source` when source has low-overlap cases outside target support
 (reweight source toward target; target unchanged). Use `target` for the

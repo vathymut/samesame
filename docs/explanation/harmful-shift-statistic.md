@@ -66,7 +66,9 @@ mass. AUC can still be large in that case, but the harmful statistic is smaller.
 Here, the ROC curve is an analysis tool for visualizing how a monitoring score
 ranks target relative to source across thresholds. AUC summarizes performance
 across all thresholds equally; the harmful statistic emphasizes thresholds
-rarely exceeded by source observations.
+rarely exceeded by source observations. For a worked example of this intuition
+on 70 real trial scores, see [Is the new drug good
+enough?](../examples/trials/check-drug-efficacy.md).
 
 ??? details "Formula (experts)"
 
