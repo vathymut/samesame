@@ -93,19 +93,18 @@ normality, and with 70 observations.
 
 ## What the statistic is asking
 
-The harmful-shift statistic is a weighted AUC: `∫ TPR·(1−FPR)² dFPR`. In this
-trial it reads as one question: **does Bowl leave more patients in relief
-territory that Armanaleg rarely visits?**
+The harmful-shift statistic is a weighted AUC — `∫ TPR·(1−FPR)² dFPR` — that
+spotlights the harmful tail. In this trial it asks one thing: **does Bowl push
+more patients into discomfort that Armanaleg almost never produces?**
 
-Each threshold is a level of discomfort. `FPR` is how often the *standard*
-exceeds it; the `(1−FPR)²` factor concentrates attention on thresholds the
-standard almost never breaches. If Bowl's worst cases bunch beyond those
-thresholds, the statistic grows. If the arms differ mainly where the standard
-already has plenty of patients, the statistic stays modest — as it does here.
-A plain AUC treats every threshold equally; the harm weighting decides that
-*some differences matter more than others*. See [How the harm test
-works](../../explanation/harmful-shift-statistic.md) for the formula and the
-ROC-curve intuition.
+For any discomfort threshold, `FPR` is the fraction of Armanaleg patients
+above it, so `(1−FPR)²` is largest where Armanaleg is rarest. The statistic
+grows when Bowl's worst outcomes cluster beyond those rare thresholds; it stays
+modest when the arms differ only where Armanaleg is already common — as it does
+here. A standard AUC weights every threshold equally; the harm statistic does
+not. See [How the harm test
+works](../../explanation/harmful-shift-statistic.md) for the formula and ROC
+intuition.
 
 ## How to read a non-rejection
 
