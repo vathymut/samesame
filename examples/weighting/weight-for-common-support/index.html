@@ -269,7 +269,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="../../credit/monitor-credit/" class="md-tabs__link">
+        <a href="../../trials/check-drug-efficacy/" class="md-tabs__link">
           
   
   
@@ -439,6 +439,8 @@
       
         
       
+        
+      
     
     
     
@@ -477,6 +479,29 @@
             Guides
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../trials/check-drug-efficacy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Is the new drug good enough?
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -915,7 +940,11 @@ harmful direction. If a strong unweighted result becomes weak after weighting,
 the evidence was concentrated in low-overlap regions. If the result persists,
 the harmful shift is also present in the common-support region.</p>
 <h2 id="heloc-example">HELOC example<a class="headerlink" href="#heloc-example" title="Permanent link">&para;</a></h2>
-<p>This example uses the same source and target split as <a href="../../credit/monitor-credit/">Monitor a credit model</a>.</p>
+<p>This example uses the same source and target split as <a href="../../credit/monitor-credit/">Monitor a credit
+model</a> — the lender that trained on calm seas
+and sailed into a storm. There, the risk alarm fired. Here we ask the
+question it begs: did comparable applicants get worse, or did incomparable
+ones simply arrive?</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ss</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
@@ -971,6 +1000,28 @@ the harmful shift is also present in the common-support region.</p>
 <span class="n">p_both</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">train_risk</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">deployment_risk</span><span class="p">,</span> <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">w_both</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">))</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unweighted p=</span><span class="si">{</span><span class="n">unweighted</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> Source p=</span><span class="si">{</span><span class="n">p_src</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> Both p=</span><span class="si">{</span><span class="n">p_both</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># → all 0.0001 — persists on common support</span>
 </code></pre></div>
+<p>The alarm survives reweighting (all p = 0.0001), and the effective sample
+sizes say how much water that carries: the source side of the comparison
+rests on an effective 2,491 of 7,683 applications (ESS/n ≈ 0.32), the target
+side on 1,532 of 2,188 (≈ 0.70). The harmful shift is present on common
+support too — not a low-overlap artifact.</p>
+<details class="details">
+<summary>What a stricter protocol finds (research)</summary>
+<p>A companion research study on common-support weighting (under review,
+2026) re-runs this HELOC comparison under a stricter protocol: the split
+variable is dropped from the features, the domain classifier is
+cross-validated, and the test runs on held-out subsamples (1,536 source
+and 2,776 target applications; 499 permutations, <code>shrinkage=0.5</code>).
+Under that protocol, the three standard modes — unweighted,
+source-weighted, target-weighted — all reject at the permutation minimum
+(p = 0.002), but the doubly weighted test does not (p = 0.376; ESS 401 of
+1,536 source, 803 of 2,776 target). The verdict flips because most of
+each population lies outside the common support: the alarm was carried by
+applicant profiles from low-overlap regions — context change, not model
+harm on comparable applicants. The protocols differ, and that is the
+lesson: check the contrast between modes on <em>your</em> protocol before
+trusting any single p-value.</p>
+</details>
 <p>Use <code>source</code> when source has low-overlap cases outside target support
 (reweight source toward target; target unchanged). Use <code>target</code> for the
 reverse (reweight target toward source). Use <code>both</code> (default) when both groups

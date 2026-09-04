@@ -267,7 +267,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="examples/credit/monitor-credit/" class="md-tabs__link">
+        <a href="examples/trials/check-drug-efficacy/" class="md-tabs__link">
           
   
   
@@ -504,6 +504,8 @@
       
         
       
+        
+      
     
     
     
@@ -541,6 +543,29 @@
             Guides
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="examples/trials/check-drug-efficacy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Is the new drug good enough?
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -816,7 +841,13 @@
 <a href="https://arxiv.org/abs/2107.02990"><img alt="UAI 2022" src="https://img.shields.io/badge/paper-UAI%202022-yellow" /></a></p>
 <!-- badges: end -->
 
-<p><strong>Did the target shift? Did it get worse?</strong></p>
+<blockquote>
+<p><em>Same, same but different ...</em></p>
+</blockquote>
+<p>Every monitoring question starts as one word: <em>same?</em> Is the new sample the
+same as the reference? The name is the answer you hope to give. The work —
+and the reason this package exists — is the second half of the phrase: when
+the target is different, is it different in the way that matters, <strong>worse</strong>?</p>
 <p>Production monitoring usually starts with a practical problem: the raw feature
 space is too large to interpret directly, and labels often arrive late. A model
 score reduces each observation to one interpretable score — predicted risk,
@@ -872,11 +903,19 @@ is supported.</p>
 <li><strong>Address poor feature overlap</strong> with <code>ss.domain_weights</code> only when it is a
    real concern; weighting changes the population the comparison describes.</li>
 </ol>
+<pre class="mermaid"><code>flowchart TD
+    score["One score per observation"] --&gt; shift["test_shift&lt;br/&gt;did anything change?"]
+    shift --&gt; harm["test_harmful_shift&lt;br/&gt;did it get worse?"]
+    harm --&gt; overlap{"Poor feature overlap?"}
+    overlap -- "real concern" --&gt; reweight["domain_weights&lt;br/&gt;compare on common support"]
+    overlap -- otherwise --&gt; act["Act on the evidence"]
+    reweight --&gt; act</code></pre>
 <h2 id="where-next">Where next<a class="headerlink" href="#where-next" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong><a href="examples/tutorials/get-started/">Get started</a></strong> — 5 min, both tests.</li>
-<li><strong><a href="examples/credit/monitor-credit/">Monitor a credit model</a></strong> — HELOC: risk, confidence, errors.</li>
-<li><strong><a href="examples/weighting/weight-for-common-support/">Weight for common support</a></strong> — when to reweight.</li>
+<li><strong><a href="examples/trials/check-drug-efficacy/">Is the new drug good enough?</a></strong> — the harm test, told as a trial with 70 scores and no model.</li>
+<li><strong><a href="examples/credit/monitor-credit/">Monitor a credit model</a></strong> — HELOC: one model, three signals, one storm.</li>
+<li><strong><a href="examples/weighting/weight-for-common-support/">Weight for common support</a></strong> — when to reweight, and what it costs.</li>
 </ul>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>samesame

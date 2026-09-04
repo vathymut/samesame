@@ -15,7 +15,7 @@
         <link rel="canonical" href="https://vathymut.github.io/samesame/examples/credit/monitor-credit/">
       
       
-        <link rel="prev" href="../../tutorials/get-started/">
+        <link rel="prev" href="../../trials/check-drug-efficacy/">
       
       
         <link rel="next" href="../../weighting/weight-for-common-support/">
@@ -269,7 +269,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+        <a href="../../trials/check-drug-efficacy/" class="md-tabs__link">
           
   
   
@@ -439,6 +439,8 @@
       
         
       
+        
+      
     
     
     
@@ -477,6 +479,29 @@
             Guides
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../trials/check-drug-efficacy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Is the new drug good enough?
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -533,6 +558,24 @@
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      The dataset
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-split" class="md-nav__link">
+    <span class="md-ellipsis">
+      The split
+    </span>
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#setup" class="md-nav__link">
@@ -812,9 +855,16 @@
 
 <h1 id="monitor-a-credit-model">Monitor a credit model<a class="headerlink" href="#monitor-a-credit-model" title="Permanent link">&para;</a></h1>
 <p>An alarm should tell you whether the score moved toward worse outcomes, not
-just that it moved. Using one HELOC split (External Risk Estimate &gt;63 vs
-≤63, Gardner et al. 2023), this example compares three scores from the same
-model — they answer different questions and arrive at different times.</p>
+just that it moved. Here is the story that demand comes from.</p>
+<p>A lender trains a default-risk model on its safest book — applicants the
+bureau already smiles on. Then the book changes: a new partner channel, a
+bolder marketing push, a market that cooled. Riskier applicants start
+arriving, the model is still scoring, and two readings of the same dashboard
+look identical from the outside: <strong>the model decayed</strong>, or <strong>the population
+changed</strong>. One wants a retraining ticket; the other wants a business meeting.
+Using one HELOC split (External Risk Estimate &gt; 63 vs ≤ 63, Gardner et al.
+2023), this example works that story with three scores from the same model —
+they answer different questions and arrive at different times.</p>
 <table>
 <thead>
 <tr>
@@ -850,7 +900,38 @@ outcome. Use confidence for an early warning when labels are delayed, and
 prediction error for the clearest post-outcome check. <strong>Source</strong> is the
 reference distribution, such as training data or a past deployment; <strong>target</strong>
 is the current deployment. If you are new to <code>samesame</code>, start with <a href="../../tutorials/get-started/">Get
-started</a>.</p>
+started</a> — or with <a href="../../trials/check-drug-efficacy/">Is the new drug good
+enough?</a>, the same test told as a clinical
+trial with no model in sight.</p>
+<h2 id="the-dataset">The dataset<a class="headerlink" href="#the-dataset" title="Permanent link">&para;</a></h2>
+<p>HELOC stands for <strong>home equity line of credit</strong> — a revolving credit line
+secured by the borrower's home. The data comes from the FICO Community
+Explainable AI Challenge: anonymized credit-bureau features for each
+applicant, and a target that records whether the borrower went 90 days past
+due or worse at least once in the first 24 months of the account. We fetch
+the 9,871 applications from the
+<a href="https://openml.org/search?type=data&amp;sort=runs&amp;id=45554&amp;status=active">OpenML</a>
+mirror (<code>data_id=45554</code>) with <code>fetch_openml</code>, so the examples run with no
+manual download.</p>
+<h2 id="the-split">The split<a class="headerlink" href="#the-split" title="Permanent link">&para;</a></h2>
+<p>A HELOC applicant arrives with a risk estimate from a third-party bureau
+service — the <code>ExternalRiskEstimate</code> feature; higher values mean a safer
+applicant. The challenge-winning model of the original FICO competition
+zeroed in on a cutoff of <strong>63</strong> on that estimate, and the
+<a href="https://tableshift.org">TableShift</a> benchmark (Gardner et al., 2023) adopted
+the same threshold to define its two populations. We do the same, and read it
+as a deployment story:</p>
+<ul>
+<li><strong>Source</strong> — 7,683 applicants with estimate &gt; 63: the calmer book the
+  lender trained on. Observed bad rate 43.5%.</li>
+<li><strong>Target</strong> — 2,188 applicants with estimate ≤ 63: the riskier book that
+  arrives after deployment. Observed bad rate 81.9%.</li>
+</ul>
+<p>A model trained on the first group is deployed on the second — trained on
+calm seas, sailing into a storm. Mean predicted default risk climbs from
+about 44% to 73%, and the two rival readings return: model harm, or context
+change? The three signals below give the evidence; the <a href="../../weighting/weight-for-common-support/">weighting
+guide</a> interrogates the alarm.</p>
 <h2 id="setup">Setup<a class="headerlink" href="#setup" title="Permanent link">&para;</a></h2>
 <p>The same HELOC split (source: training lower-risk, target: deployment
 higher-risk) is reused for risk and confidence. The error tab uses a separate
@@ -920,9 +1001,12 @@ a worse outcome.</p>
     <span class="n">source</span><span class="o">=</span><span class="n">train_risk</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">deployment_risk</span><span class="p">,</span>
     <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">),</span>
 <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;AUC </span><span class="si">{</span><span class="n">shift</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> p=</span><span class="si">{</span><span class="n">shift</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>   <span class="c1"># → 0.9999, 0.0001</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Harm </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> p=</span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>    <span class="c1"># → 0.35, 0.0001</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;AUC </span><span class="si">{</span><span class="n">shift</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> p=</span><span class="si">{</span><span class="n">shift</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>   <span class="c1"># → 1.0000, 0.0002</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Harm </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> p=</span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>    <span class="c1"># → 0.2483, 0.0001</span>
 </code></pre></div>
+<p>The domain classifier separates the books almost perfectly (AUC 1.0000) —
+no surprise, since the split variable itself is a feature — and the harm
+test confirms the move is toward higher risk, not just any change.</p>
 <table>
 <thead>
 <tr>
@@ -991,9 +1075,15 @@ and the mean of the remaining logits.</p>
     <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;lower&quot;</span><span class="p">,</span>  <span class="c1"># lower confidence = harm</span>
     <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">),</span>
 <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Harm </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> p=</span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># → 0.04, 0.90</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Harm </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> p=</span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># → 0.0409, 1.0000</span>
 </code></pre></div>
-<p>The large <code>p</code>-value provides no evidence of a harmful confidence drop in this test, but it does not prove that confidence is unchanged. Confidence and risk can move together: a model may become more confident while also becoming more risky. This example assumes <code>X_train</code>, <code>X_deployment</code>, and <code>rf_bad</code> from Setup.</p>
+<p>Not only is there no evidence of a harmful confidence drop — the direction
+of the statistic suggests the model is, if anything, <em>more</em> certain on the
+deployment book. With a bad rate near 82%, predicted probabilities
+polarize toward the extremes, and certainty rides along. A model may
+become more confident while also becoming more risky: confidence is a
+complement to risk, not a substitute. This example assumes <code>X_train</code>,
+<code>X_deployment</code>, and <code>rf_bad</code> from Setup.</p>
 </div>
 <div class="tabbed-block">
 <p>Once labels arrive, prediction error (Brier) is the clearest post-outcome
@@ -1021,7 +1111,7 @@ the target.</p>
 <span class="n">brier_train</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_train</span> <span class="o">-</span> <span class="n">train_prob</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
 <span class="n">brier_test</span>  <span class="o">=</span> <span class="p">(</span><span class="n">y_test</span>  <span class="o">-</span> <span class="n">test_prob</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
 <span class="n">harm</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">brier_train</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">brier_test</span><span class="p">,</span> <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Brier p=</span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># → ~0.60</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Brier p=</span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># → 0.2737</span>
 </code></pre></div>
 <p>This example provides no evidence that errors got worse. Brier score and log loss usually lead to similar conclusions, so either metric can be used for this comparison.</p>
 </div>
@@ -1034,7 +1124,12 @@ the target.</p>
 <li><strong>Confidence</strong> — use for an early warning when labels are not yet available.</li>
 <li><strong>Prediction error</strong> — use for the clearest post-outcome accuracy check.</li>
 </ul>
-<p>If source and target have poor overlap in feature space, see <a href="../../weighting/weight-for-common-support/">Weight for common support</a>.</p>
+<p>Risk and confidence moved without a single label arriving — that is what
+makes them early. The error check waits for outcomes; here it runs on a
+random split where nothing is wrong, and finds exactly that. The question the
+storm book leaves open — did the alarm fire because comparable applicants got
+worse, or because incomparable ones arrived? — is precisely what <a href="../../weighting/weight-for-common-support/">Weight for
+common support</a> interrogates.</p>
 
 
 
@@ -1072,7 +1167,7 @@ the target.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../../tutorials/get-started/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Get started">
+          <a href="../../trials/check-drug-efficacy/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Is the new drug good enough?">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1082,7 +1177,7 @@ the target.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Get started
+                Is the new drug good enough?
               </div>
             </div>
           </a>
