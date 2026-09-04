@@ -20,7 +20,7 @@ source and target sample sizes, the odds correction
 `p̂/(1-p̂)·n_source/n_target` (Bickel et al., 2007) estimates relative density
 and produces importance weights. This correction can be unstable when the
 groups separate well, because a few observations may receive huge weights.
-`samesame` stabilises the weights with shrinkage `λ`, which blends them toward
+`samesame` stabilizes the weights with shrinkage `λ`, which blends them toward
 uniform weights (default `0.5`, Yamada et al., 2013):
 
 --8<-- "snippets/shrinkage-table.txt"

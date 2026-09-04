@@ -12,14 +12,11 @@ evaluate, typically the current deployment. Compare them using one
 interpretable score for each observation, such as predicted risk, prediction
 error, confidence, or an outlier score.
 
-- **Any shift?** Use `ss.test_shift` to ask whether the score distinguishes source from target. This is a two-sided AUC test; an AUC of `0.5` is chance.
-- **Harmful shift?** Use `ss.test_harmful_shift(..., worse="higher"|"lower")` to ask whether the target moved toward the harmful tail you specify. This is a one-sided test based on the weighted AUC, with the score oriented so that larger values mean worse outcomes (`worse="lower"` flips the sign).
+- **Any shift?** Use `ss.test_shift` — a broad, two-sided screen for whether the score distinguishes source from target; an AUC of `0.5` is chance.
+- **Harmful shift?** Use `ss.test_harmful_shift(..., worse="higher"|"lower")` — a focused, one-sided test for whether the target moved toward the harmful tail you specify (`worse="lower"` flips the sign).
 
-`test_shift` is a broad, two-sided screen for whether source and target differ.
-`test_harmful_shift` is a focused, one-sided test for whether the target moved
-into the harmful tail, after orienting the score so that larger values mean
-worse outcomes. These tests can reach different conclusions because a shift
-may be harmless, harmful, or even beneficial depending on where it occurs. See
+The two tests can reach different conclusions because a shift may be
+harmless, harmful, or even beneficial depending on where it occurs. See
 [How the harm test works](../../explanation/harmful-shift-statistic.md) for the
 intuition and formula.
 

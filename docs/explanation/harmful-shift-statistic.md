@@ -14,7 +14,7 @@ thresholds that the source rarely exceeds? The API therefore requires an
 explicit `worse` argument. Choose `worse` from the meaning of the score before
 looking at the result, not from whichever direction produces a smaller p-value.
 
-## What the tests average
+## What the tests measure
 
 Both tests use permutations to assess the same source-versus-target comparison,
 keeping scores and weights fixed. `test_shift` treats all thresholds equally and
@@ -70,7 +70,7 @@ rarely exceeded by source observations. For a worked example of this intuition
 on 70 real trial scores, see [Is the new drug good
 enough?](../examples/trials/check-drug-efficacy.md).
 
-??? details "Formula (experts)"
+??? details "The formula"
 
     First orient the score so that larger values mean worse outcomes: let
     `S=scores` when `worse=="higher"` and `S=-scores` when `worse=="lower"`.

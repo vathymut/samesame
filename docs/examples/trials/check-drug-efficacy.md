@@ -121,7 +121,7 @@ harm. Two cautions carry over from trials to monitoring:
 
 ## Why a drug trial lives in a monitoring guide
 
-Because every deployed model is a challenger drug. Table of the translation:
+Because every deployed model is a challenger drug. The translation:
 
 | Trial | Monitoring | `samesame` |
 |---|---|---|

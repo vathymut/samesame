@@ -54,8 +54,7 @@ alternative. A `+1` correction keeps permutation p-values above zero
 For honest p-values, scores from a fitted model must be generated out of sample
 (`cross_val_predict`, `oob_decision_function_`, or a held-out set). In-sample
 predictions can make source and target look more separable simply because the
-scoring model has memorised its inputs, producing misleading separation and
-invalidating the test.
+scoring model has memorized its inputs, invalidating the test.
 
 ??? tip "Reproducibility"
     Pass `rng=np.random.default_rng(12345)` to make the permutation-based p-values reproducible. The default is `n_resamples=9999`; `999` is useful while exploring, while `19999` gives better resolution for p-values below `0.001`.

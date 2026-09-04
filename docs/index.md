@@ -31,22 +31,15 @@ It separates two questions that should not be conflated:
   `∫ TPR dFPR`, `0.5` is chance).
 - `ss.test_harmful_shift(..., worse="higher"|"lower")` — focused, one-sided
   test for movement toward the tail you declare harmful (weighted AUC
-  `∫ TPR·(1−FPR)² dFPR`).
-
-The first test is two-sided and reports ROC AUC `∫ TPR dFPR`. The second is
-one-sided and weights the part of the score range where target exceeds
-thresholds that few source observations exceed, emphasizing the harmful tail.
+  `∫ TPR·(1−FPR)² dFPR`, which emphasizes the harmful tail).
 
 ```python
 --8<-- "snippets/quick-example.py:quick-example"
 ```
 
-Read `.pvalue` as evidence against label exchangeability, then inspect
-`.statistic` and the score distributions. A small p-value is not business
+Read `.pvalue` as evidence against label exchangeability — not business
 impact, causality, or the probability the null is true. Evidence of a shift
-is not evidence of harm — a small `test_shift` p-value means the groups
-differ; a small harmful-shift p-value means the specified harmful direction
-is supported.
+is not evidence of harm.
 
 ## Workflow
 
@@ -57,16 +50,6 @@ is supported.
    worse=...)`.
 4. **Address poor feature overlap** with `ss.domain_weights` only when it is a
    real concern; weighting changes the population the comparison describes.
-
-```mermaid
-flowchart TD
-    score["One score per observation"] --> shift["test_shift<br/>did anything change?"]
-    shift --> harm["test_harmful_shift<br/>did it get worse?"]
-    harm --> overlap{"Poor feature overlap?"}
-    overlap -- "real concern" --> reweight["domain_weights<br/>compare on common support"]
-    overlap -- otherwise --> act["Act on the evidence"]
-    reweight --> act
-```
 
 ## Where next
 

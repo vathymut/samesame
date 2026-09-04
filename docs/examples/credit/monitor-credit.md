@@ -76,9 +76,9 @@ p-value is expected.
 
 === "Risk — no labels needed"
 
-    Predicted risk — model's `P(default)`; larger = worse, so `worse="higher"`
-    (pre-specify, don't pick by p-value, cf. `Worse`). Higher values represent
-    a worse outcome.
+    Predicted risk — the model's `P(default)`; larger is worse, so
+    `worse="higher"`. Declare the direction before testing; never pick it by
+    p-value.
 
     ```python
     import numpy as np
@@ -110,7 +110,7 @@ p-value is expected.
     | sig. | sig. | changed **and** moved toward worse |
     | sig. | not sig. | changed, not clearly harmful |
     | not sig. | not sig. | no clear shift |
-    | not sig. | sig. | rare — directional where broad is not |
+    | not sig. | sig. | rare — the tail test catches what the broad screen misses |
 
     Both tests provide evidence that the risk distribution changed and that the
     change is consistent with higher risk. This is a reason to investigate, not an
@@ -122,12 +122,16 @@ p-value is expected.
 
     `LogitGap` is an **outlier score** for confidence: larger = more certain,
     so a drop (`worse="lower"`) is harm. It is the gap between the top logit
-    and the mean of the remaining logits.
+    and the mean of the remaining logits. The fitted risk model from the
+    risk tab provides the probabilities.
 
     ```python
+    --8<-- "snippets/heloc-split.py:heloc-domain"
+    --8<-- "snippets/heloc-split.py:heloc-risk-model"
     --8<-- "examples/credit/_code/monitor_model_confidence_example.py:imports"
     --8<-- "examples/credit/_code/monitor_model_confidence_example.py:logit-gap"
     --8<-- "examples/credit/_code/monitor_model_confidence_example.py:outlier-scores"
+    import samesame as ss
 
     train_conf = outlier_scores_from_probabilities(rf_bad.oob_decision_function_)
     deploy_conf = outlier_scores_from_probabilities(rf_bad.predict_proba(X_deployment))
@@ -145,8 +149,7 @@ p-value is expected.
     deployment book. With a bad rate near 82%, predicted probabilities
     polarize toward the extremes, and certainty rides along. A model may
     become more confident while also becoming more risky: confidence is a
-    complement to risk, not a substitute. This example assumes `X_train`,
-    `X_deployment`, and `rf_bad` from Setup.
+    complement to risk, not a substitute.
 
 === "Errors — needs labels"
 

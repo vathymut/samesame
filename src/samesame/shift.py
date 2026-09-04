@@ -243,7 +243,7 @@ def test_shift(
     If the score comes from a fitted model, generate it out of sample with
     ``cross_val_predict``, ``oob_decision_function_``, or a held-out set
     — in-sample scores can make the groups look spuriously separable
-    because the scoring model has memorised its inputs.
+    because the scoring model has memorized its inputs.
 
     Parameters
     ----------
@@ -282,7 +282,7 @@ def test_shift(
       against exchangeability — not as harm or business impact.
     * For honest p-values, scores from a fitted model must be out of
       sample. In-sample predictions can inflate separation because the
-      scoring model has memorised its inputs.
+      scoring model has memorized its inputs.
 
     See Also
     --------

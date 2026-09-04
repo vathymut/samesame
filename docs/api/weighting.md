@@ -25,29 +25,35 @@ and use weights only when poor feature overlap is a real concern.
 | You have `P(target\|x)` | Build weights with `ss.domain_weights(source=..., target=...)` |
 
 ```python
+import numpy as np
 import samesame as ss
 
-ss.test_shift(source=source_scores, target=target_scores, rng=12345)
 ss.test_shift(source=source_scores, target=target_scores,
-              weights=ss.ImportanceWeights(source=source_weights, target=target_weights), rng=12345)
+              rng=np.random.default_rng(12345))
+ss.test_shift(source=source_scores, target=target_scores,
+              weights=ss.ImportanceWeights(source=source_weights, target=target_weights),
+              rng=np.random.default_rng(12345))
 
 weights = ss.domain_weights(source=source_prob, target=target_prob, reweight="both", shrinkage=0.5)
-ss.test_harmful_shift(source=source_scores, target=target_scores, worse="higher", weights=weights, rng=12345)
+ss.test_harmful_shift(source=source_scores, target=target_scores, worse="higher", weights=weights,
+                      rng=np.random.default_rng(12345))
 ```
 
-Weights are normalised to sum to each group's size, so the groups retain their
+Weights are normalized to sum to each group's size, so the groups retain their
 original nominal sample sizes in the permutation calculation. An inactive group
 gets weight `1`. Weights change which observations count more; they do not
 repair a poorly estimated domain classifier.
 
 ## `domain_weights`
 
-- `source` / `target` - separate 1-D arrays of domain probabilities `P(target|x)` in `[0, 1]`, aligned to the scores. Estimate these probabilities out of sample or otherwise honestly. The prior ratio `n_source/n_target` is inferred from the array lengths. Values are clipped to `[1e-6, 1 - 1e-6]` before ratios to avoid infinities.
-- `reweight` - which group(s) to reweight (default `"both"`):
+Pass separate 1-D arrays of domain probabilities `P(target|x)`, aligned to the
+scores you intend to test; estimate them out of sample or otherwise honestly.
+Which group(s) to reweight:
 
 --8<-- "snippets/reweight-table.txt"
 
-- `shrinkage` λ in `[0, 1]` - `0` gives the plain density ratio (strong, high variance), while `1` gives uniform weights (no correction). The default is `0.5`; start there and check `ESS/n` before lowering (lower = more aggressive):
+Shrinkage λ controls the bias–variance tradeoff of the correction — start at
+the default and check `ESS/n` before going more aggressive:
 
 --8<-- "snippets/shrinkage-table.txt"
 
