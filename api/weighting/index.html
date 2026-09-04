@@ -934,24 +934,27 @@ and use weights only when poor feature overlap is a real concern.</p>
 </tr>
 </tbody>
 </table>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ss</span>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ss</span>
 
-<span class="n">ss</span><span class="o">.</span><span class="n">test_shift</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_scores</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_scores</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="mi">12345</span><span class="p">)</span>
 <span class="n">ss</span><span class="o">.</span><span class="n">test_shift</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_scores</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_scores</span><span class="p">,</span>
-              <span class="n">weights</span><span class="o">=</span><span class="n">ss</span><span class="o">.</span><span class="n">ImportanceWeights</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_weights</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_weights</span><span class="p">),</span> <span class="n">rng</span><span class="o">=</span><span class="mi">12345</span><span class="p">)</span>
+              <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">))</span>
+<span class="n">ss</span><span class="o">.</span><span class="n">test_shift</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_scores</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_scores</span><span class="p">,</span>
+              <span class="n">weights</span><span class="o">=</span><span class="n">ss</span><span class="o">.</span><span class="n">ImportanceWeights</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_weights</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_weights</span><span class="p">),</span>
+              <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">))</span>
 
 <span class="n">weights</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">domain_weights</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_prob</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_prob</span><span class="p">,</span> <span class="n">reweight</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">shrinkage</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
-<span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_scores</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_scores</span><span class="p">,</span> <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="mi">12345</span><span class="p">)</span>
+<span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_scores</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_scores</span><span class="p">,</span> <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span>
+                      <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">))</span>
 </code></pre></div>
-<p>Weights are normalised to sum to each group's size, so the groups retain their
+<p>Weights are normalized to sum to each group's size, so the groups retain their
 original nominal sample sizes in the permutation calculation. An inactive group
 gets weight <code>1</code>. Weights change which observations count more; they do not
 repair a poorly estimated domain classifier.</p>
 <h2 id="domain_weights"><code>domain_weights</code><a class="headerlink" href="#domain_weights" title="Permanent link">&para;</a></h2>
-<ul>
-<li><code>source</code> / <code>target</code> - separate 1-D arrays of domain probabilities <code>P(target|x)</code> in <code>[0, 1]</code>, aligned to the scores. Estimate these probabilities out of sample or otherwise honestly. The prior ratio <code>n_source/n_target</code> is inferred from the array lengths. Values are clipped to <code>[1e-6, 1 - 1e-6]</code> before ratios to avoid infinities.</li>
-<li><code>reweight</code> - which group(s) to reweight (default <code>"both"</code>):</li>
-</ul>
+<p>Pass separate 1-D arrays of domain probabilities <code>P(target|x)</code>, aligned to the
+scores you intend to test; estimate them out of sample or otherwise honestly.
+Which group(s) to reweight:</p>
 <table>
 <thead>
 <tr>
@@ -978,9 +981,8 @@ repair a poorly estimated domain classifier.</p>
 </tr>
 </tbody>
 </table>
-<ul>
-<li><code>shrinkage</code> λ in <code>[0, 1]</code> - <code>0</code> gives the plain density ratio (strong, high variance), while <code>1</code> gives uniform weights (no correction). The default is <code>0.5</code>; start there and check <code>ESS/n</code> before lowering (lower = more aggressive):</li>
-</ul>
+<p>Shrinkage λ controls the bias–variance tradeoff of the correction — start at
+the default and check <code>ESS/n</code> before going more aggressive:</p>
 <table>
 <thead>
 <tr>
@@ -1003,7 +1005,7 @@ repair a poorly estimated domain classifier.</p>
 </tr>
 </tbody>
 </table>
-<p>Lower = more aggressive; higher = more conservative. Start at <code>0.5</code> and check <code>ESS/n</code> before lowering.</p>
+<p>Lower = more aggressive; higher = more conservative.</p>
 <p>See <a href="../../examples/weighting/weight-for-common-support/">Weight for common support</a> for guidance on diagnosing overlap and weight concentration.</p>
 <h2 id="effective-sample-size">Effective sample size<a class="headerlink" href="#effective-sample-size" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="n">ess</span> <span class="o">=</span> <span class="n">weights</span><span class="o">.</span><span class="n">effective_sample_size</span><span class="p">()</span>  <span class="c1"># Kish (1965): (sum w)² / sum w²</span>

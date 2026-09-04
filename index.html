@@ -861,11 +861,8 @@ It separates two questions that should not be conflated:</p>
   <code>∫ TPR dFPR</code>, <code>0.5</code> is chance).</li>
 <li><code>ss.test_harmful_shift(..., worse="higher"|"lower")</code> — focused, one-sided
   test for movement toward the tail you declare harmful (weighted AUC
-  <code>∫ TPR·(1−FPR)² dFPR</code>).</li>
+  <code>∫ TPR·(1−FPR)² dFPR</code>, which emphasizes the harmful tail).</li>
 </ul>
-<p>The first test is two-sided and reports ROC AUC <code>∫ TPR dFPR</code>. The second is
-one-sided and weights the part of the score range where target exceeds
-thresholds that few source observations exceed, emphasizing the harmful tail.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ss</span>
@@ -887,12 +884,9 @@ thresholds that few source observations exceed, emphasizing the harmful tail.</p
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Harm  statistic: </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, p-value: </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="c1"># → Harm  statistic: 0.155, p-value: 0.0001</span>
 </code></pre></div>
-<p>Read <code>.pvalue</code> as evidence against label exchangeability, then inspect
-<code>.statistic</code> and the score distributions. A small p-value is not business
+<p>Read <code>.pvalue</code> as evidence against label exchangeability — not business
 impact, causality, or the probability the null is true. Evidence of a shift
-is not evidence of harm — a small <code>test_shift</code> p-value means the groups
-differ; a small harmful-shift p-value means the specified harmful direction
-is supported.</p>
+is not evidence of harm.</p>
 <h2 id="workflow">Workflow<a class="headerlink" href="#workflow" title="Permanent link">&para;</a></h2>
 <ol>
 <li><strong>Choose a score</strong> that represents the outcome you care about. Generate it
@@ -903,13 +897,6 @@ is supported.</p>
 <li><strong>Address poor feature overlap</strong> with <code>ss.domain_weights</code> only when it is a
    real concern; weighting changes the population the comparison describes.</li>
 </ol>
-<pre class="mermaid"><code>flowchart TD
-    score["One score per observation"] --&gt; shift["test_shift&lt;br/&gt;did anything change?"]
-    shift --&gt; harm["test_harmful_shift&lt;br/&gt;did it get worse?"]
-    harm --&gt; overlap{"Poor feature overlap?"}
-    overlap -- "real concern" --&gt; reweight["domain_weights&lt;br/&gt;compare on common support"]
-    overlap -- otherwise --&gt; act["Act on the evidence"]
-    reweight --&gt; act</code></pre>
 <h2 id="where-next">Where next<a class="headerlink" href="#where-next" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong><a href="examples/tutorials/get-started/">Get started</a></strong> — 5 min, both tests.</li>

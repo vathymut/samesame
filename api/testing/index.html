@@ -942,7 +942,7 @@ Pass it as a string or as <code>ss.Worse</code>; the two forms are interchangeab
 <tbody>
 <tr>
 <td>Predicted risk</td>
-<td>business impact</td>
+<td>the predicted outcome itself (e.g., risk)</td>
 <td><code>worse="higher"</code></td>
 </tr>
 <tr>
@@ -983,8 +983,7 @@ alternative. A <code>+1</code> correction keeps permutation p-values above zero
 <p>For honest p-values, scores from a fitted model must be generated out of sample
 (<code>cross_val_predict</code>, <code>oob_decision_function_</code>, or a held-out set). In-sample
 predictions can make source and target look more separable simply because the
-scoring model has memorised its inputs, producing misleading separation and
-invalidating the test.</p>
+scoring model has memorized its inputs, invalidating the test.</p>
 <details class="tip">
 <summary>Reproducibility</summary>
 <p>Pass <code>rng=np.random.default_rng(12345)</code> to make the permutation-based p-values reproducible. The default is <code>n_resamples=9999</code>; <code>999</code> is useful while exploring, while <code>19999</code> gives better resolution for p-values below <code>0.001</code>.</p>
@@ -1010,7 +1009,7 @@ causal.</p>
 If the score comes from a fitted model, generate it out of sample with
 <code>cross_val_predict</code>, <code>oob_decision_function_</code>, or a held-out set
 — in-sample scores can make the groups look spuriously separable
-because the scoring model has memorised its inputs.</p>
+because the scoring model has memorized its inputs.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -1151,7 +1150,7 @@ fixed.</p>
   against exchangeability — not as harm or business impact.</li>
 <li>For honest p-values, scores from a fitted model must be out of
   sample. In-sample predictions can inflate separation because the
-  scoring model has memorised its inputs.</li>
+  scoring model has memorized its inputs.</li>
 </ul>
 </details>
 
@@ -1302,7 +1301,7 @@ samesame.weights.ImportanceWeights : Container for per-group weights.</p>
 <span class="sd">    If the score comes from a fitted model, generate it out of sample with</span>
 <span class="sd">    ``cross_val_predict``, ``oob_decision_function_``, or a held-out set</span>
 <span class="sd">    — in-sample scores can make the groups look spuriously separable</span>
-<span class="sd">    because the scoring model has memorised its inputs.</span>
+<span class="sd">    because the scoring model has memorized its inputs.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1341,7 +1340,7 @@ samesame.weights.ImportanceWeights : Container for per-group weights.</p>
 <span class="sd">      against exchangeability — not as harm or business impact.</span>
 <span class="sd">    * For honest p-values, scores from a fitted model must be out of</span>
 <span class="sd">      sample. In-sample predictions can inflate separation because the</span>
-<span class="sd">      scoring model has memorised its inputs.</span>
+<span class="sd">      scoring model has memorized its inputs.</span>
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>

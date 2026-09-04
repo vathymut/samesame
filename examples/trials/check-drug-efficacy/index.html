@@ -930,18 +930,17 @@ worse than that of Armanaleg.</p>
 <p>The same conclusion, reached without a pre-specified margin, without
 normality, and with 70 observations.</p>
 <h2 id="what-the-statistic-is-asking">What the statistic is asking<a class="headerlink" href="#what-the-statistic-is-asking" title="Permanent link">&para;</a></h2>
-<p>The harmful-shift statistic is a weighted AUC: <code>∫ TPR·(1−FPR)² dFPR</code>. In this
-trial it reads as one question: <strong>does Bowl leave more patients in relief
-territory that Armanaleg rarely visits?</strong></p>
-<p>Each threshold is a level of discomfort. <code>FPR</code> is how often the <em>standard</em>
-exceeds it; the <code>(1−FPR)²</code> factor concentrates attention on thresholds the
-standard almost never breaches. If Bowl's worst cases bunch beyond those
-thresholds, the statistic grows. If the arms differ mainly where the standard
-already has plenty of patients, the statistic stays modest — as it does here.
-A plain AUC treats every threshold equally; the harm weighting decides that
-<em>some differences matter more than others</em>. See <a href="../../../explanation/harmful-shift-statistic/">How the harm test
-works</a> for the formula and the
-ROC-curve intuition.</p>
+<p>The harmful-shift statistic is a weighted AUC — <code>∫ TPR·(1−FPR)² dFPR</code> — that
+spotlights the harmful tail. In this trial it asks one thing: <strong>does Bowl push
+more patients into discomfort that Armanaleg almost never produces?</strong></p>
+<p>For any discomfort threshold, <code>FPR</code> is the fraction of Armanaleg patients
+above it, so <code>(1−FPR)²</code> is largest where Armanaleg is rarest. The statistic
+grows when Bowl's worst outcomes cluster beyond those rare thresholds; it stays
+modest when the arms differ only where Armanaleg is already common — as it does
+here. A standard AUC weights every threshold equally; the harm statistic does
+not. See <a href="../../../explanation/harmful-shift-statistic/">How the harm test
+works</a> for the formula and ROC
+intuition.</p>
 <h2 id="how-to-read-a-non-rejection">How to read a non-rejection<a class="headerlink" href="#how-to-read-a-non-rejection" title="Permanent link">&para;</a></h2>
 <p>A p-value of 0.13 is <strong>not</strong> a certificate of equivalence. It says: with this
 much data, the observed difference is not surprising under no meaningful
@@ -955,7 +954,7 @@ harm. Two cautions carry over from trials to monitoring:</p>
   turns a verdict into a fishing expedition.</li>
 </ul>
 <h2 id="why-a-drug-trial-lives-in-a-monitoring-guide">Why a drug trial lives in a monitoring guide<a class="headerlink" href="#why-a-drug-trial-lives-in-a-monitoring-guide" title="Permanent link">&para;</a></h2>
-<p>Because every deployed model is a challenger drug. Table of the translation:</p>
+<p>Because every deployed model is a challenger drug. The translation:</p>
 <table>
 <thead>
 <tr>

@@ -854,7 +854,7 @@ source and target sample sizes, the odds correction
 <code>p̂/(1-p̂)·n_source/n_target</code> (Bickel et al., 2007) estimates relative density
 and produces importance weights. This correction can be unstable when the
 groups separate well, because a few observations may receive huge weights.
-<code>samesame</code> stabilises the weights with shrinkage <code>λ</code>, which blends them toward
+<code>samesame</code> stabilizes the weights with shrinkage <code>λ</code>, which blends them toward
 uniform weights (default <code>0.5</code>, Yamada et al., 2013):</p>
 <table>
 <thead>
@@ -878,7 +878,7 @@ uniform weights (default <code>0.5</code>, Yamada et al., 2013):</p>
 </tr>
 </tbody>
 </table>
-<p>Lower = more aggressive; higher = more conservative. Start at <code>0.5</code> and check <code>ESS/n</code> before lowering.</p>
+<p>Lower = more aggressive; higher = more conservative.</p>
 <p><strong>Rule:</strong> Use the domain probability to measure how observations differ between
 source and target, and to build weights. Use a separate score with a clear
 good/bad interpretation for the harm test. A domain probability describes

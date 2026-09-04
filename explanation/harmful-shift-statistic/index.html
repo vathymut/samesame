@@ -671,9 +671,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#what-the-tests-average" class="md-nav__link">
+  <a href="#what-the-tests-measure" class="md-nav__link">
     <span class="md-ellipsis">
-      What the tests average
+      What the tests measure
     </span>
   </a>
   
@@ -865,7 +865,7 @@ that larger values mean worse outcomes, does the target place more mass beyond
 thresholds that the source rarely exceeds? The API therefore requires an
 explicit <code>worse</code> argument. Choose <code>worse</code> from the meaning of the score before
 looking at the result, not from whichever direction produces a smaller p-value.</p>
-<h2 id="what-the-tests-average">What the tests average<a class="headerlink" href="#what-the-tests-average" title="Permanent link">&para;</a></h2>
+<h2 id="what-the-tests-measure">What the tests measure<a class="headerlink" href="#what-the-tests-measure" title="Permanent link">&para;</a></h2>
 <p>Both tests use permutations to assess the same source-versus-target comparison,
 keeping scores and weights fixed. <code>test_shift</code> treats all thresholds equally and
 measures overall separation with AUC. <code>test_harmful_shift</code> emphasizes
@@ -926,7 +926,7 @@ Pass it as a string or as <code>ss.Worse</code>; the two forms are interchangeab
 <tbody>
 <tr>
 <td>Predicted risk</td>
-<td>business impact</td>
+<td>the predicted outcome itself (e.g., risk)</td>
 <td><code>worse="higher"</code></td>
 </tr>
 <tr>
@@ -965,7 +965,7 @@ rarely exceeded by source observations. For a worked example of this intuition
 on 70 real trial scores, see <a href="../../examples/trials/check-drug-efficacy/">Is the new drug good
 enough?</a>.</p>
 <details class="details">
-<summary>Formula (experts)</summary>
+<summary>The formula</summary>
 <p>First orient the score so that larger values mean worse outcomes: let
 <code>S=scores</code> when <code>worse=="higher"</code> and <code>S=-scores</code> when <code>worse=="lower"</code>.
 For threshold <code>t</code>, treat target as the positive class:</p>

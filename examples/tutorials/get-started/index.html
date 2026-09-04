@@ -853,14 +853,11 @@ evaluate, typically the current deployment. Compare them using one
 interpretable score for each observation, such as predicted risk, prediction
 error, confidence, or an outlier score.</p>
 <ul>
-<li><strong>Any shift?</strong> Use <code>ss.test_shift</code> to ask whether the score distinguishes source from target. This is a two-sided AUC test; an AUC of <code>0.5</code> is chance.</li>
-<li><strong>Harmful shift?</strong> Use <code>ss.test_harmful_shift(..., worse="higher"|"lower")</code> to ask whether the target moved toward the harmful tail you specify. This is a one-sided test based on the weighted AUC, with the score oriented so that larger values mean worse outcomes (<code>worse="lower"</code> flips the sign).</li>
+<li><strong>Any shift?</strong> Use <code>ss.test_shift</code> — a broad, two-sided screen for whether the score distinguishes source from target; an AUC of <code>0.5</code> is chance.</li>
+<li><strong>Harmful shift?</strong> Use <code>ss.test_harmful_shift(..., worse="higher"|"lower")</code> — a focused, one-sided test for whether the target moved toward the harmful tail you specify (<code>worse="lower"</code> flips the sign).</li>
 </ul>
-<p><code>test_shift</code> is a broad, two-sided screen for whether source and target differ.
-<code>test_harmful_shift</code> is a focused, one-sided test for whether the target moved
-into the harmful tail, after orienting the score so that larger values mean
-worse outcomes. These tests can reach different conclusions because a shift
-may be harmless, harmful, or even beneficial depending on where it occurs. See
+<p>The two tests can reach different conclusions because a shift may be
+harmless, harmful, or even beneficial depending on where it occurs. See
 <a href="../../../explanation/harmful-shift-statistic/">How the harm test works</a> for the
 intuition and formula.</p>
 <p>Interpret <code>.pvalue</code> alongside the statistic and the distributions: a small
@@ -926,7 +923,7 @@ or as <code>ss.Worse</code>; the two forms are interchangeable.</p>
 <tbody>
 <tr>
 <td>Predicted risk</td>
-<td>business impact</td>
+<td>the predicted outcome itself (e.g., risk)</td>
 <td><code>worse="higher"</code></td>
 </tr>
 <tr>
