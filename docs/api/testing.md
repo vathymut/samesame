@@ -1,10 +1,10 @@
 # Shift testing
 
-Reduce each observation to one interpretable score — predicted risk, prediction error, confidence, or an outlier score — and compare its distribution between **source** (the reference) and **target** (the current deployment) rather than scanning a full feature table. Choose a score that captures the question you care about and compute it for every observation.
+`samesame` compares a single interpretable score — predicted risk, prediction error, confidence, or an outlier score — between **source** (the reference) and **target** (the current deployment), rather than scanning a full feature table. Choose a score that captures the question you care about and compute it for every observation.
 
 `samesame` provides two tests for this comparison. `test_shift` is a broad, two-sided screen based on the ROC AUC (`∫ TPR dFPR`; `0.5` means chance-level separation). `test_harmful_shift` is a focused, one-sided test for the harmful tail based on a weighted AUC (`∫ TPR·(1−FPR)² dFPR`) that gives more weight to thresholds rarely exceeded in the source. Use the first when any distributional change matters; use the second when you can state the harmful direction in advance with `worse`.
 
-A domain classifier's estimate of `P(target|x)` can serve as a useful generic score for detecting any shift, but do not reuse it as the harm score. It describes how target-like an observation is, not whether the outcome is harmful. Reserve it for building weights when you need a common-support comparison.
+A domain classifier's estimate of `P(target|x)` can serve as a useful generic score for detecting any shift. Do not reuse it as the harm score: it describes how target-like an observation is, not whether the outcome is harmful. Reserve it for building weights when you need a common-support comparison.
 
 ??? details "Source files"
     `src/samesame/shift.py` · `src/samesame/_permutation.py` · `src/samesame/_statistics.py`

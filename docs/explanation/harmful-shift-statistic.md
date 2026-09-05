@@ -2,7 +2,7 @@
 
 ## The question
 
-Not every distributional change is a harmful change. A credit portfolio, for example, may contain fewer safe applicants and more medium-risk applicants while the high-risk tail stays the same. A generic shift test detects this redistribution, but it cannot say whether the change is harmful for the outcome you care about.
+Not every shift is a harmful shift. A credit portfolio, for example, may contain fewer safe applicants and more medium-risk applicants while the high-risk tail stays the same. A generic shift test detects this redistribution, but it cannot say whether the change is harmful for the outcome you care about.
 
 The harmful-shift test asks a narrower question. After orienting the score so that larger values mean worse outcomes, does the target place more mass beyond thresholds that the source rarely exceeds? The API therefore requires you to declare the harmful direction with `worse`.
 
@@ -24,7 +24,7 @@ Both tests use permutations on the same source-versus-target comparison, keeping
 | Threshold weighting | Uniform | Emphasis on low `FPR` — the source-rare tail |
 | Direction | Two-sided | One-sided (`greater`) |
 
-Use `test_shift` when any change in the score distribution matters. Use `test_harmful_shift` when you can define the harmful direction in advance and want to focus on that tail. Interpret an AUC near `0.5` as little separation; interpret the harmful-shift statistic by comparing it to `result.null_distribution` and by using its p-value as evidence against the null.
+Use `test_shift` when any change in the score distribution matters. Use `test_harmful_shift` when you can define the harmful direction in advance and want to focus on that tail. An AUC near `0.5` means little separation; read the harmful-shift statistic against `result.null_distribution` and use its p-value as evidence against the null.
 
 --8<-- "snippets/worse-declaration.txt"
 

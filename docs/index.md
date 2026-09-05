@@ -12,18 +12,18 @@
 
 > *Same, same but different ...*
 
-Every monitoring question starts with a simple check: *is this the same as the reference?* The package name is the answer you hope to give. The harder question follows when the answer is no — has the difference moved toward worse outcomes?
+Every monitoring question starts with the same check: *is this still like the reference?* The package name is the answer you hope to give. When the answer is no, the more important question is whether the difference moved toward worse outcomes.
 
-Production monitoring often starts from a practical constraint: the raw feature space is too large to scan directly, and labels arrive too late to guide early action. A model score addresses this by reducing each observation to one interpretable number per row, such as predicted risk, prediction error, confidence, or an outlier score.
+Production monitoring often starts from a practical constraint: the raw feature space is too large to scan directly, and labels arrive too late to guide early action. A model score addresses this by reducing each observation to one interpretable number — predicted risk, prediction error, confidence, or an outlier score.
 
 `samesame` compares that score between source and target.
 
 --8<-- "snippets/source-target.txt"
 
-It separates two questions that are easy to conflate. Two functions address them:
+It separates two questions that are easy to conflate:
 
-- `ss.test_shift`: a broad, two-sided screen for any shift. Its statistic is the ROC AUC (`∫ TPR dFPR`); `0.5` means the score does not separate source from target.
-- `ss.test_harmful_shift(..., worse="higher"|"lower")`: a focused, one-sided test for movement toward the tail you declare harmful. Its statistic is a weighted AUC (`∫ TPR·(1−FPR)² dFPR`) that gives more weight to the harmful tail.
+- `ss.test_shift` — a broad, two-sided screen for any shift. Its statistic is the ROC AUC (`∫ TPR dFPR`); `0.5` means the score does not separate source from target.
+- `ss.test_harmful_shift(..., worse="higher"|"lower")` — a focused, one-sided test for movement toward the tail you declare harmful. Its statistic is a weighted AUC (`∫ TPR·(1−FPR)² dFPR`) that emphasizes the harmful tail.
 
 ```python
 --8<-- "snippets/quick-example.py:quick-example"

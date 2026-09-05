@@ -4,7 +4,7 @@
 
 An unweighted comparison describes the full source and target samples, including regions that only one group occupies. That is appropriate when those regions belong to the populations you want to compare. When the groups barely overlap, however, a small number of observations from those regions can dominate the statistic even though the data contain little information about how the other group would behave there.
 
-Importance weighting reframes the comparison around **common support** — the regions represented by both groups. It can make the test more stable, but it does not create information where the groups do not overlap, and it changes the population the test describes. It is not a default correction. Start without weights and introduce them only when poor feature overlap is a genuine concern.
+Importance weighting reframes the comparison around **common support** — the regions represented by both groups. It can make the test more stable, but it does not create information where the groups do not overlap, and it changes the population the test describes. It is not a default correction. Start without weights and introduce them only when poor feature overlap is a real concern.
 
 ??? details "Source files"
     `src/samesame/weights.py` · `src/samesame/_permutation.py`

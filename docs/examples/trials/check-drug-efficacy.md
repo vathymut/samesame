@@ -4,7 +4,7 @@ Medicine has a name for the question this guide explores: **noninferiority**. A 
 
 The example comes from a classic case study reprinted in the [SAS proceedings](https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf). A new, less expensive drug — call it **Bowl** — is compared with the established standard, **Armanaleg**. Patients report relief on a scale from 4 to 16, where higher is better. Bowl does not look better on average: mean relief is 9.4 for Bowl versus 10.1 for Armanaleg (42 and 28 patients, respectively). But *not better* is not the question here. The question is whether Bowl is meaningfully worse.
 
-Notice what this question is not. “Are the two drugs different?” is a two-sided comparison that is easy to ask and easy to answer. “Is the challenger not meaningfully worse?” is a one-sided judgment that depends on a declared direction. In a trial that direction is pre-registered; in monitoring you pre-specify `worse` from the meaning of the score, before you look at any p-value.
+Contrast two questions. “Are the two drugs different?” is a two-sided comparison that is easy to ask and easy to answer. “Is the challenger not meaningfully worse?” is a one-sided judgment that depends on a declared direction. In a trial that direction is pre-registered; in monitoring you pre-specify `worse` from the meaning of the score, before you look at any p-value.
 
 If you are new to `samesame`, start with [Get started](../tutorials/get-started.md).
 
@@ -26,7 +26,7 @@ relief = np.array([float(s) for s in datalines])
 armanaleg, bowl = relief[:28], relief[28:]  # source: standard, target: challenger
 ```
 
-The harmful-shift test is oriented so that larger values mean worse outcomes. Relief runs the other way, so we flip it into a **discomfort score**, `max(relief) − relief`, where a large value means the patient remained far from the best possible relief.
+The harmful-shift test is oriented so that larger values mean worse outcomes. Relief runs the other way, so we flip it into a **discomfort score**, `max(relief) − relief`, where a large value means the patient stayed far from the best possible relief.
 
 ```python
 discomfort = relief.max() - relief           # flip: larger = worse
@@ -64,7 +64,7 @@ The same conclusion follows without a pre-specified margin, without a normality 
 
 ## What the statistic is asking
 
-The harmful-shift statistic is a weighted AUC, `∫ TPR·(1−FPR)² dFPR`, that focuses on the harmful tail. In this trial it asks a single question: **does Bowl push more patients into discomfort that Armanaleg rarely produces?**
+The harmful-shift statistic is a weighted AUC, `∫ TPR·(1−FPR)² dFPR`, that focuses on the harmful tail. In this trial it asks one question: **does Bowl push more patients into discomfort that Armanaleg rarely produces?**
 
 For any discomfort threshold, `FPR` is the fraction of Armanaleg patients above it, so `(1−FPR)²` is largest where Armanaleg is rarest. The statistic grows when Bowl's worst outcomes cluster beyond those rare thresholds; it stays modest when the arms differ only where Armanaleg is already common, as they do here. A standard AUC weighs every threshold equally; the harm statistic does not. See [How the harm test works](../../explanation/harmful-shift-statistic.md) for the formula and ROC intuition.
 
@@ -86,6 +86,6 @@ Every deployed model is a challenger drug in this analogy. The correspondence is
 | Relief score | One interpretable score per observation | score |
 | "Not meaningfully worse" | No harmful shift | `test_harmful_shift` |
 
-The challenger passes when it remains close enough to the standard; when it does not, `samesame` helps you see where and how.
+The challenger passes when it stays close enough to the standard; when it does not, `samesame` helps you see where and how.
 
 For the same test applied to a model score on a real credit benchmark, see [Monitor a credit model](../credit/monitor-credit.md). To compare the deployment with reweighting for common support, see [Weight for common support](../weighting/weight-for-common-support.md).

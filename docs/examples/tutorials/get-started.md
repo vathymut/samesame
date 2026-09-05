@@ -1,13 +1,13 @@
 # Get started
 
-In this tutorial, you will build a minimal monitoring workflow: create one score per observation, test for a difference between source and target, and test whether the change moved toward a declared harmful direction. By the end, the two-question habit — *did it change? did it get worse?* — should feel routine.
+In this tutorial you will build a minimal monitoring workflow: create one score per observation, check whether source and target differ, and then check whether the change moved toward a harmful direction you declare. By the end, the two-question habit — *did it change? did it get worse?* — should feel familiar.
 
 --8<-- "snippets/source-target.txt"
 
 Compare source and target with one interpretable score per observation, such as predicted risk, prediction error, confidence, or an outlier score.
 
-- **Any shift?** Use `ss.test_shift`: a broad, two-sided screen for whether the score separates source from target. An AUC of `0.5` means no separation.
-- **Harmful shift?** Use `ss.test_harmful_shift(..., worse="higher"|"lower")`: a focused, one-sided test for whether the target moved toward the harmful tail you specify. Use `worse="lower"` when smaller values mean more harm.
+- **Any shift?** Use `ss.test_shift` — a broad, two-sided screen for whether the score separates source from target. An AUC of `0.5` means no separation.
+- **Harmful shift?** Use `ss.test_harmful_shift(..., worse="higher"|"lower")` — a focused, one-sided test for whether the target moved toward the harmful tail you specify. Use `worse="lower"` when smaller values mean more harm.
 
 The two tests can reach different conclusions because a distributional shift may be benign, harmful, or even beneficial depending on where it falls. See [How the harm test works](../../explanation/harmful-shift-statistic.md) for intuition and the formula.
 
@@ -26,7 +26,7 @@ X = np.vstack([source, target])
 labels = np.r_[np.zeros(len(source), dtype=int), np.ones(len(target), dtype=int)]
 ```
 
-In production, source and target should reflect the two populations behind your monitoring question — for example, training data versus a current deployment. Choose the source with care: every conclusion describes the target relative to that reference.
+In production, source and target should reflect the two populations that define your monitoring question — for example, training data versus the current deployment. Choose the source with care: every conclusion describes the target relative to that reference.
 
 ## 2 — Score out of sample
 
@@ -47,7 +47,7 @@ domain_prob = cross_val_predict(
 
     --8<-- "snippets/honest-scores.txt"
 
-When you test a score with a clear notion of better and worse outcomes, keep it separate from the domain probability. Domain probability describes group membership, not outcome quality. Use it to build weights when needed, and use the interpretable score as the harm score.
+When you test a score with a clear notion of better and worse, keep it separate from the domain probability. Domain probability describes group membership, not outcome quality. Use it to build weights when needed, and use the interpretable score as the harm score.
 
 ## 3 — Did anything change?
 
@@ -63,7 +63,7 @@ An AUC near `0.5` means the score hardly separates the groups, while values well
 
 ## 4 — Did it get worse?
 
-This is the question that carries a consequence: not *did it change*, but *did it move toward the outcomes you want to avoid*.
+The more important question is whether the change moved toward outcomes you want to avoid.
 
 --8<-- "snippets/worse-declaration.txt"
 
@@ -89,9 +89,9 @@ This is the question that carries a consequence: not *did it change*, but *did i
     ```
 
 - A small `test_shift` p-value is evidence that the score distributions differ.
-- A small `test_harmful_shift` p-value is evidence that the target shifted toward the harmful tail you declared, not simply that some shift occurred.
+- A small `test_harmful_shift` p-value is evidence that the target shifted toward the harmful tail you declared.
 
-The test is directional by design: changing `worse` changes the harmful direction under examination.
+The test is directional by design: changing `worse` changes the tail under examination.
 
 --8<-- "snippets/worse-tip.txt"
 

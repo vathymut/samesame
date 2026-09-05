@@ -1,17 +1,17 @@
 # Weight for common support
 
-Start with an unweighted comparison. Reach for weighting only when poor feature overlap is a genuine concern. Weighting reframes the question around **common support** — the regions represented by both groups. It does not create information where the groups do not overlap, and it changes the population the test describes. It is not a default correction.
+Start with an unweighted comparison. Reach for weighting only when poor feature overlap is a real concern. Weighting reframes the question around **common support** — the regions represented by both groups. It does not create information where the groups do not overlap, and it changes the population the test describes. It is not a default correction.
 
 !!! note "Prerequisites"
     You have run an unweighted comparison and seen a shift, and you can estimate honest `P(target|x)` out of sample (for example with `cross_val_predict` or `oob_decision_function_`). Keep the domain probability separate from the interpretable score you test for harm. If you are new to `samesame`, start with [Get started](../tutorials/get-started.md) and [Monitor a credit model](../credit/monitor-credit.md) first.
 
 ## Why weight?
 
-A handful of low-overlap observations can dominate an unweighted permutation test, even when the region you care about has genuinely changed. Weighting reduces their influence and focuses the comparison on the narrower question of whether the shift persists where source and target overlap.
+A handful of low-overlap observations can dominate an unweighted permutation test, even when the region you care about has changed. Weighting reduces their influence and focuses the comparison on the narrower question of whether the shift persists where source and target overlap.
 
 > Training includes many 20-year-old students that production never sees, while production includes retirees that training never saw. An unweighted comparison is pulled by the extremes; a weighted comparison centers on the overlapping 30–60 range.
 
-A domain classifier estimates `p̂(x) = P(target|x)`. After adjusting for the sample sizes, the odds correction `p̂/(1−p̂) · n_source/n_target` (Bickel et al., 2007) estimates the relative density and produces importance weights. This correction can be unstable when the groups separate well, because a small number of observations may receive very large weights. `samesame` stabilizes the result with a shrinkage parameter `λ` that pulls weights toward uniform. The default is `0.5` (Yamada et al., 2013):
+A domain classifier estimates `p̂(x) = P(target|x)`. After adjusting for the sample sizes, the odds correction `p̂/(1−p̂) · n_source/n_target` (Bickel et al., 2007) estimates the relative density and produces importance weights. This correction can be unstable when the groups separate well, because a few observations may receive very large weights. `samesame` stabilizes the result with a shrinkage parameter `λ` that pulls weights toward uniform. The default is `0.5` (Yamada et al., 2013):
 
 --8<-- "snippets/shrinkage-table.txt"
 
@@ -54,7 +54,7 @@ Use the same `worse` value for the unweighted and weighted comparisons so that b
 
 ## HELOC example
 
-This example uses the same source and target split as [Monitor a credit model](../credit/monitor-credit.md): the lender that trained in calmer conditions and was then evaluated in a more adverse mix. There, the risk alarm fired. Here we ask what remains when the comparison is reweighted: did comparable applicants fare worse, or did incomparable ones arrive?
+This example uses the same source and target split as [Monitor a credit model](../credit/monitor-credit.md): the lender that trained in calm conditions and was then evaluated in a more adverse mix. There, the risk alarm fired. Here we ask what remains when the comparison is reweighted: did comparable applicants fare worse, or did incomparable ones arrive?
 
 ```python
 import samesame as ss
@@ -104,6 +104,6 @@ The alarm survives reweighting (all p = 0.0001), and the effective sample sizes 
         print(f"shrinkage={lam:<4}  source ESS={e.source:7.2f}  target ESS={e.target:7.2f}")
     ```
 
-    Compare each ESS to its `n` through `ESS/n`. A low ratio — for example well below `0.5` — signals that the weighted result is fragile and driven by a few observations. This is a warning, not a hard validation rule, and there is no universal cutoff from Kish. The often-quoted `ESS < n/4` is a rough illustrative heuristic with no published empirical threshold (see Elvira et al., 2022). If `ESS/n` remains low even at `shrinkage=0.5`, the groups may lack enough common support for a reliable weighted comparison; consider leaving the comparison unweighted. See [Effective sample size](../../api/weighting.md#effective-sample-size) for details.
+    Compare each ESS to its `n` through `ESS/n`. A low ratio — for example well below `0.5` — signals that the weighted result is fragile and driven by a few observations. This is a warning, not a hard validation rule, and there is no universal cutoff from Kish. The often-quoted `ESS < n/4` is a rough illustrative heuristic with no published empirical threshold (see Elvira et al., 2022). If `ESS/n` stays low even at `shrinkage=0.5`, the groups may lack enough common support for a reliable weighted comparison; consider keeping the comparison unweighted. See [Effective sample size](../../api/weighting.md#effective-sample-size) for details.
 
 Full scripts: `examples/weighting/_code/` · Reference: [Importance weights](../../api/weighting.md).
