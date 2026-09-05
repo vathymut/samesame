@@ -13,14 +13,14 @@
 > *Same, same but different ...*
 
 Every monitoring question starts as one word: *same?* Is the new sample the
-same as the reference? The name is the answer you hope to give. The work —
-and the reason this package exists — is the second half of the phrase: when
-the target is different, is it different in the way that matters, **worse**?
+same as the reference? The name is the answer you hope to give. The work, and
+the reason this package exists, is the second half of the phrase: when the
+target is different, is it different in the way that matters, **worse**?
 
 Production monitoring usually starts with a practical problem: the raw feature
 space is too large to interpret directly, and labels often arrive late. A model
-score reduces each observation — predicted risk, prediction error, confidence,
-or an outlier score — to a single interpretable number, one per row.
+score reduces each observation (predicted risk, prediction error, confidence,
+or an outlier score) to a single interpretable number, one per row.
 
 `samesame` compares that score between **source** (the reference, such as
 training data or a past deployment) and **target** (the current deployment).
@@ -36,20 +36,21 @@ It separates two questions that should not be conflated:
 --8<-- "snippets/quick-example.py:quick-example"
 ```
 
-Read `.pvalue` as evidence against label exchangeability — not business
-impact, causality, or the probability the null is true. Evidence of a shift
-is not evidence of harm.
+A small p-value is evidence against label exchangeability (the assumption
+that source and target labels can be swapped). It is not evidence of business
+impact, causality, effect size, or the probability that the null is true.
+Evidence of a shift is not evidence of harm.
 
 ## Workflow
 
-1. **Choose a score** that represents the outcome you care about. Generate it
+1. **Choose a score** that represents the outcome you care about; generate it
    out of sample if it comes from a fitted model.
 2. **Ask whether anything changed** with `ss.test_shift`.
 3. **Ask whether the change is harmful** with `ss.test_harmful_shift(...,
    worse=...)`.
 4. **Address poor feature overlap** with `ss.domain_weights` only when it is a
-   real concern — weighting changes the population the comparison describes
-   and is not a default correction.
+   real concern, since weighting changes the population the comparison
+   describes and is not a default correction.
 
 ## Where next
 
@@ -64,4 +65,4 @@ is not evidence of harm.
 python -m pip install samesame
 ```
 
-Requires Python 3.12+, `numpy`, `scipy`, `scikit-learn`. Not for randomized experiments, subgroup discovery, or sequential monitoring.
+Requires Python 3.12+, `numpy`, `scipy`, and `scikit-learn`. Not for randomized experiments, subgroup discovery, or sequential monitoring.

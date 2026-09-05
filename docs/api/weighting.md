@@ -8,11 +8,12 @@ of the populations you want to compare. But when the groups barely overlap, a
 few observations from these regions can dominate the statistic even though the
 data provide little evidence about the other group's behavior there.
 
-Importance weighting changes the question to one about **common support** — the
-regions represented by both groups. It can make the comparison more stable, but
-it does not create information where groups do not overlap, and it changes the
-population the test describes. It is not a default correction. Start unweighted
-and use weights only when poor feature overlap is a real concern.
+Importance weighting changes the question to one about **common support**
+(the regions represented by both groups). It can make the comparison more
+stable. It does not create information where the groups do not overlap, and
+it changes the population the test describes. It is not a default
+correction. Start unweighted and use weights only when poor feature overlap
+is a real concern.
 
 ??? details "Source files"
     `src/samesame/weights.py` · `src/samesame/_permutation.py`
@@ -48,12 +49,12 @@ repair a poorly estimated domain classifier.
 ## Domain weights
 
 Pass separate 1-D arrays of domain probabilities `P(target|x)`, aligned to the
-scores you intend to test; estimate them honestly — out of sample if a model
+scores you intend to test; estimate them honestly, out of sample if a model
 produces them. Which group(s) to reweight:
 
 --8<-- "snippets/reweight-table.txt"
 
-Shrinkage λ controls the bias–variance tradeoff of the correction — start at
+Shrinkage λ controls the bias–variance tradeoff of the correction; start at
 the default and check `ESS/n` before going more aggressive:
 
 --8<-- "snippets/shrinkage-table.txt"

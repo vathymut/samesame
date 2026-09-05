@@ -1,10 +1,10 @@
 # Weight for common support
 
 Start with an unweighted comparison. Use weighting only when poor feature
-overlap is a real concern: weighting reframes the comparison around common
-support — the regions represented by both groups — without creating
-information where the groups do not overlap, and it changes the population the
-test describes. It is not a default correction.
+overlap is a real concern. Weighting reframes the comparison around common
+support (the regions represented by both groups). It does not create
+information where the groups do not overlap, and it changes the population
+the test describes. It is not a default correction.
 
 ## Why weight?
 
@@ -72,10 +72,10 @@ the harmful shift is also present in the common-support region.
 ## HELOC example
 
 This example uses the same source and target split as [Monitor a credit
-model](../credit/monitor-credit.md) — the lender that trained on calm seas
+model](../credit/monitor-credit.md): the lender that trained on calm seas
 and sailed into a storm. There, the risk alarm fired. Here we ask the
-question it begs: did comparable applicants get worse, or did incomparable
-ones simply arrive?
+question it leaves open: did comparable applicants get worse, or did
+incomparable ones simply arrive?
 
 ```python
 import samesame as ss
@@ -99,7 +99,7 @@ The alarm survives reweighting (all p = 0.0001), and the effective sample
 sizes say how much water that carries: the source side of the comparison
 rests on an effective 2,491 of 7,683 applications (ESS/n ≈ 0.32), the target
 side on 1,532 of 2,188 (≈ 0.70). The harmful shift is present on common
-support too — not a low-overlap artifact.
+support too, not a low-overlap artifact.
 
 ??? details "What a stricter protocol finds (research)"
 
@@ -108,12 +108,12 @@ support too — not a low-overlap artifact.
     variable is dropped from the features, the domain classifier is
     cross-validated, and the test runs on held-out subsamples (1,536 source
     and 2,776 target applications; 499 permutations, `shrinkage=0.5`).
-    Under that protocol, the three standard modes — unweighted,
-    source-weighted, target-weighted — all reject at the permutation minimum
+    Under that protocol, the three standard modes (unweighted,
+    source-weighted, target-weighted) all reject at the permutation minimum
     (p = 0.002), but the doubly weighted test does not (p = 0.376; ESS 401 of
     1,536 source, 803 of 2,776 target). The verdict flips because most of
-    each population lies outside the common support: the alarm was carried by
-    applicant profiles from low-overlap regions — context change, not model
+    each population lies outside the common support. The alarm was carried by
+    applicant profiles from low-overlap regions: context change, not model
     harm on comparable applicants. The protocols differ, and that is the
     lesson: check the contrast between modes on *your* protocol before
     trusting any single p-value.
@@ -135,8 +135,7 @@ support too — not a low-overlap artifact.
 
     Lower `shrinkage` gives a stronger correction but higher-variance weights;
     higher `shrinkage` gives more stable, more uniform weights. The default
-    `shrinkage=0.5` is empirically supported as a good tradeoff between
-    correction strength and stability.
+    `shrinkage=0.5` balances correction strength and stability.
 
     ```python
     for lam in [0.0, 0.25, 0.5, 0.75, 1.0]:
@@ -145,7 +144,7 @@ support too — not a low-overlap artifact.
         print(f"shrinkage={lam:<4}  source ESS={e.source:7.2f}  target ESS={e.target:7.2f}")
     ```
 
-    Compare each ESS to its ``n`` via ``ESS/n`` — a low ratio warns that a few
+    Compare each ESS to its ``n`` via ``ESS/n``: a low ratio warns that a few
     observations dominate the weighted result. What counts as "low", the
     caveats, and why there is no universal cutoff: see [Effective sample
     size](../../api/weighting.md#effective-sample-size) in the reference.

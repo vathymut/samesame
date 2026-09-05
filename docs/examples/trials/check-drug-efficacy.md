@@ -1,15 +1,15 @@
 # Is the new drug good enough?
 
 Medicine has a name for the question this guide answers: **noninferiority**. A
-new treatment — cheaper, faster to make, easier to tolerate — does not have to
+new treatment (cheaper, faster to make, easier to tolerate) does not have to
 beat the standard. It has to be *not meaningfully worse*. The harmful-shift
-test grew up answering exactly this question: it was introduced as D-SOS, a
+test answers exactly this question: it was introduced as D-SOS, a
 nonparametric noninferiority test that needs no pre-specified margin and no
 normality assumption (Kamulete, 2022).
 
 The example comes from a classic case study, reprinted in the
 [SAS proceedings](https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf).
-A new, less expensive drug — call it **Bowl** — challenges the established
+A new, less expensive drug (call it **Bowl**) challenges the established
 standard, **Armanaleg**. Patients report relief on a 4-to-16 scale; higher is
 better. Bowl does not look better: mean relief is 9.4 against Armanaleg's
 10.1 (42 vs 28 patients). But *not better* is not the question. The question
@@ -19,7 +19,7 @@ Notice what that question is **not**. "Are the two drugs different?" is a
 two-sided question, and a cheap answer. "Is the challenger not meaningfully
 worse?" is a one-sided verdict with a protocol behind it. In a trial, the
 direction is pre-registered. In monitoring, you pre-specify `worse` from the
-meaning of the score — before you look at any p-value.
+meaning of the score, before you look at any p-value.
 
 If you are new to `samesame`, start with [Get
 started](../tutorials/get-started.md).
@@ -27,7 +27,7 @@ started](../tutorials/get-started.md).
 ## The data
 
 Seventy relief scores, two arms. `samesame` sees one score per observation and
-nothing else — no model, no features. **Source** is the standard (Armanaleg,
+nothing else: no model, no features. **Source** is the standard (Armanaleg,
 the reference); **target** is the challenger (Bowl, the treatment under
 evaluation).
 
@@ -46,7 +46,7 @@ armanaleg, bowl = relief[:28], relief[28:]  # source: standard, target: challeng
 ```
 
 The harmful-shift test wants an orientation: larger = worse. Relief points the
-other way, so flip it into a **discomfort score** — `max(relief) − relief` —
+other way, so flip it into a **discomfort score**, `max(relief) − relief`,
 where a large value means the patient was left far from the best possible
 relief.
 
@@ -56,7 +56,7 @@ armanaleg_harm = discomfort[:28]
 bowl_harm = discomfort[28:]
 ```
 
-Flipping the score and declaring `worse="lower"` are interchangeable — the
+Flipping the score and declaring `worse="lower"` are interchangeable: the
 test negates internally, so both give the same verdict. Declare the direction;
 the arithmetic follows.
 
@@ -80,7 +80,7 @@ Read the two results together:
 - `test_shift` (two-sided, AUC 0.58) finds no strong evidence the arms differ
   at all.
 - `test_harmful_shift` (one-sided) finds no evidence that Bowl is meaningfully
-  worse — p = 0.13, far from any conventional alarm level.
+  worse: p = 0.13, far from any conventional alarm level.
 
 This matches the original parametric analysis of the same study, which
 concluded:
@@ -93,14 +93,14 @@ normality, and with 70 observations.
 
 ## What the statistic is asking
 
-The harmful-shift statistic is a weighted AUC — `∫ TPR·(1−FPR)² dFPR` — that
+The harmful-shift statistic is a weighted AUC, `∫ TPR·(1−FPR)² dFPR`, that
 spotlights the harmful tail. In this trial it asks one thing: **does Bowl push
 more patients into discomfort that Armanaleg almost never produces?**
 
 For any discomfort threshold, `FPR` is the fraction of Armanaleg patients
 above it, so `(1−FPR)²` is largest where Armanaleg is rarest. The statistic
 grows when Bowl's worst outcomes cluster beyond those rare thresholds; it stays
-modest when the arms differ only where Armanaleg is already common — as it does
+modest when the arms differ only where Armanaleg is already common, as it does
 here. A standard AUC weights every threshold equally; the harm statistic does
 not. See [How the harm test
 works](../../explanation/harmful-shift-statistic.md) for the formula and ROC
@@ -130,8 +130,8 @@ Because every deployed model is a challenger drug. The translation:
 | Relief score | One interpretable score per observation | score |
 | "Not meaningfully worse" | No harmful shift | `test_harmful_shift` |
 
-Your deployment is Bowl. Your training data is Armanaleg. The drug passes when
-it is *same enough* — and when it fails, `samesame` tells you so.
+The drug passes when it is *same enough*; when it fails, `samesame` tells you
+so.
 
 For the same test applied to a model score on a real credit benchmark, see
 [Monitor a credit model](../credit/monitor-credit.md). For reweighting the

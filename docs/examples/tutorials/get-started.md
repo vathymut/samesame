@@ -3,7 +3,7 @@
 In this tutorial, you will build a minimal monitoring workflow: create one score
 per observation, test for a difference between source and target, and test
 whether the change moved in a declared harmful direction. By the end, the
-two-question habit — *did it change? did it get worse?* — should feel as
+two-question habit (*did it change? did it get worse?*) should feel as
 natural as checking a pulse.
 
 **Source** is the reference distribution, such as training data or a past
@@ -20,9 +20,11 @@ harmless, harmful, or even beneficial depending on where it occurs. See
 [How the harm test works](../../explanation/harmful-shift-statistic.md) for the
 intuition and formula.
 
-Interpret `.pvalue` alongside the statistic and the distributions: a small
-p-value is evidence against label exchangeability — the assumption that the
-two samples can be swapped — not the size or cause of the change.
+Interpret `.pvalue` alongside the statistic and the distributions. A small
+p-value is evidence against label exchangeability (the assumption that source
+and target labels can be swapped). It is not evidence of business impact,
+causality, effect size, or the probability that the null is true. Evidence of
+a shift is not evidence of harm.
 
 ## 1 — Make source and target
 
@@ -36,8 +38,8 @@ labels = np.r_[np.zeros(len(source), dtype=int), np.ones(len(target), dtype=int)
 ```
 
 In production, the source and target should represent the two populations
-relevant to your monitoring question — for example, training data versus a
-current deployment. Choose the source carefully: every conclusion describes
+relevant to your monitoring question (for example, training data versus a
+current deployment). Choose the source carefully: every conclusion describes
 the target relative to that reference.
 
 ## 2 — Score out of sample
@@ -45,7 +47,7 @@ the target relative to that reference.
 Each row must be scored by a model that did not see that row. Here, a domain
 classifier estimates `P(target|x)`, the probability that the row belongs to the
 target rather than the source. Differences in this probability indicate how
-well the features distinguish the two distributions, making it a useful
+well the features distinguish the two distributions. That makes it a useful
 generic score for detecting *any* shift:
 
 ```python
@@ -59,7 +61,7 @@ domain_prob = cross_val_predict(
 ```
 
 !!! warning "Honest scores"
-    `samesame` only sees scores, not how they were made. If scores come from a fitted model, generate them out of sample using `cross_val_predict`, `oob_decision_function_`, or a held-out set. In-sample predictions let the model separate source from target using information it has already seen, which can produce misleading results and invalidate the test.
+    `samesame` only sees scores, not how they were made. When a fitted model produces the scores, generate them out of sample with `cross_val_predict`, `oob_decision_function_`, or a held-out set. In-sample predictions use information the model has already seen; they can make source and target look more separable than they are and invalidate the test.
 
 When testing a score with a clear interpretation of what constitutes a good or
 bad outcome, keep it separate from the domain probability. Domain probability
@@ -78,13 +80,13 @@ print(f"AUC {shift.statistic:.3f} p={shift.pvalue:.4f}")  # → 0.611, 0.0002
 
 An AUC near `0.5` indicates little separation, while values farther from `0.5`
 indicate stronger separation. Because `test_shift` is two-sided, separation in
-either direction — for example, `0.8` or `0.2` — can reject the null.
+either direction (for example, `0.8` or `0.2`) can reject the null.
 
 ## 4 — Did it get worse?
 
 This is the question with a stake attached: not *did it change*, but *did it
 move toward the outcomes you fear*. Before running the test, declare which
-direction is harmful; pass it as a string or as `ss.Worse` — the two forms
+direction is harmful. Pass it as a string or as `ss.Worse`; the two forms
 are interchangeable.
 
 --8<-- "snippets/worse-table.txt"

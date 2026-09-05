@@ -3,8 +3,7 @@
 This guide closely follows
 [Docling's guidelines](https://github.com/docling-project/docling/blob/main/CONTRIBUTING.md).
 
-We welcome external contributions. If you have an itch, please feel
-free to scratch it.
+We welcome external contributions. If you have an itch, please scratch it.
 
 ## Developing
 
@@ -39,13 +38,13 @@ More detailed options are described on the [Using Python environments](https://d
 
 #### Add a new dependency
 
-Simply use the `uv add` command. The `pyproject.toml` and `uv.lock` files will be updated.
+Use the `uv add` command. The `pyproject.toml` and `uv.lock` files will be updated.
 
 ```bash
 uv add [OPTIONS] <PACKAGES|--requirements <REQUIREMENTS>>
 ```
 
-## Coding Style Guidelines
+## Coding style guidelines
 
 We use the following tools to enforce code style:
 
@@ -74,9 +73,27 @@ The server will be available at [http://localhost:8000](http://localhost:8000).
 The README and `docs/index.md` cover the same ground for different audiences
 (PyPI visitors and documentation readers). When you change one, check the other
 in the same commit: badges, the two-test summary, the workflow list, and the
-installation scope line.
+installation scope line. Two shared sentences must stay byte-identical across
+files, because they have drifted apart before:
 
-### Pushing Documentation to GitHub Pages
+**Exchangeability caveat** (byte-identical in `docs/index.md`, `README.md`,
+`docs/examples/tutorials/get-started.md`; each file may add its own lead-in):
+
+> A small p-value is evidence against label exchangeability (the assumption
+> that source and target labels can be swapped). It is not evidence of
+> business impact, causality, effect size, or the probability that the null
+> is true. Evidence of a shift is not evidence of harm.
+
+**Out-of-sample warning** (byte-identical in `README.md`,
+`docs/examples/tutorials/get-started.md`, `docs/api/testing.md`; `docs/index.md`
+keeps a one-line version in its workflow list):
+
+> When a fitted model produces the scores, generate them out of sample with
+> `cross_val_predict`, `oob_decision_function_`, or a held-out set. In-sample
+> predictions use information the model has already seen; they can make source
+> and target look more separable than they are and invalidate the test.
+
+### Push documentation to GitHub Pages
 
 Run the following:
 
@@ -84,7 +101,7 @@ Run the following:
 uv run mkdocs gh-deploy
 ```
 
-### Updating the Package Version
+### Update the package version
 
 ```bash
 uv version --bump   # or: uv version --bump patch|minor|major  |  uv version 0.5.0
@@ -109,7 +126,7 @@ uv run pytest
 uv run ruff check .
 ```
 
-### Creating a GitHub Release
+### Create a GitHub release
 
 > Must be executed **before** publishing to PyPI. Previous releases `v0.3.2` (`d59f4a1`)
 > and `v0.4.0` (`20bd868`) were created this way: annotated tag on `main` → GitHub Release
@@ -142,13 +159,13 @@ curl -s https://api.github.com/repos/vathymut/samesame/releases/tags/v<new> | he
 
 Alternatively create via UI: `https://github.com/vathymut/samesame/releases/new` → select tag `v<new>` → target `main` → generate notes → Publish.
 
-### Building Python Package
+### Build the package
 
 ```bash
 uv build
 ```
 
-### Publishing to PyPI
+### Publish to PyPI
 
 Following [these instructions](https://github.com/astral-sh/uv/issues/10878#issuecomment-3473401901),
 we first log in securely as follows:
@@ -167,7 +184,7 @@ publish the new version of the package using:
 uv publish --username __token__
 ```
 
-### Yanking Old Releases
+### Yank old releases
 
 PyPI does **not** support automatic retention ("keep last N") and does **not**
 expose a token-based API for yanking (`pypi/warehouse#12708`). Yanking is
