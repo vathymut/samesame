@@ -931,7 +931,7 @@
 
 <h1 id="how-the-harm-test-works">How the harm test works<a class="headerlink" href="#how-the-harm-test-works" title="Permanent link">&para;</a></h1>
 <h2 id="the-question">The question<a class="headerlink" href="#the-question" title="Permanent link">&para;</a></h2>
-<p>Not every distributional change is a harmful change. A credit portfolio, for example, may contain fewer safe applicants and more medium-risk applicants while the high-risk tail stays the same. A generic shift test detects this redistribution, but it cannot say whether the change is harmful for the outcome you care about.</p>
+<p>Not every shift is a harmful shift. A credit portfolio, for example, may contain fewer safe applicants and more medium-risk applicants while the high-risk tail stays the same. A generic shift test detects this redistribution, but it cannot say whether the change is harmful for the outcome you care about.</p>
 <p>The harmful-shift test asks a narrower question. After orienting the score so that larger values mean worse outcomes, does the target place more mass beyond thresholds that the source rarely exceeds? The API therefore requires you to declare the harmful direction with <code>worse</code>.</p>
 <p>Decide whether higher or lower values are worse before looking at the result; do not choose the direction based on whichever gives a smaller p-value.</p>
 <h2 id="what-the-tests-measure">What the tests measure<a class="headerlink" href="#what-the-tests-measure" title="Permanent link">&para;</a></h2>
@@ -972,7 +972,7 @@
 </tr>
 </tbody>
 </table>
-<p>Use <code>test_shift</code> when any change in the score distribution matters. Use <code>test_harmful_shift</code> when you can define the harmful direction in advance and want to focus on that tail. Interpret an AUC near <code>0.5</code> as little separation; interpret the harmful-shift statistic by comparing it to <code>result.null_distribution</code> and by using its p-value as evidence against the null.</p>
+<p>Use <code>test_shift</code> when any change in the score distribution matters. Use <code>test_harmful_shift</code> when you can define the harmful direction in advance and want to focus on that tail. An AUC near <code>0.5</code> means little separation; read the harmful-shift statistic against <code>result.null_distribution</code> and use its p-value as evidence against the null.</p>
 <p>Declare the harmful direction from the meaning of the score before testing. Pass it as a string or as <code>ss.Worse</code>; the two forms are interchangeable:</p>
 <table>
 <thead>

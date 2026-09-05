@@ -920,14 +920,14 @@
 <blockquote>
 <p><em>Same, same but different ...</em></p>
 </blockquote>
-<p>Every monitoring question starts with a simple check: <em>is this the same as the reference?</em> The package name is the answer you hope to give. The harder question follows when the answer is no — has the difference moved toward worse outcomes?</p>
-<p>Production monitoring often starts from a practical constraint: the raw feature space is too large to scan directly, and labels arrive too late to guide early action. A model score addresses this by reducing each observation to one interpretable number per row, such as predicted risk, prediction error, confidence, or an outlier score.</p>
+<p>Every monitoring question starts with the same check: <em>is this still like the reference?</em> The package name is the answer you hope to give. When the answer is no, the more important question is whether the difference moved toward worse outcomes.</p>
+<p>Production monitoring often starts from a practical constraint: the raw feature space is too large to scan directly, and labels arrive too late to guide early action. A model score addresses this by reducing each observation to one interpretable number — predicted risk, prediction error, confidence, or an outlier score.</p>
 <p><code>samesame</code> compares that score between source and target.</p>
 <p><strong>Source</strong> is the reference distribution (training data or a past deployment); <strong>target</strong> is the current deployment under evaluation.</p>
-<p>It separates two questions that are easy to conflate. Two functions address them:</p>
+<p>It separates two questions that are easy to conflate:</p>
 <ul>
-<li><code>ss.test_shift</code>: a broad, two-sided screen for any shift. Its statistic is the ROC AUC (<code>∫ TPR dFPR</code>); <code>0.5</code> means the score does not separate source from target.</li>
-<li><code>ss.test_harmful_shift(..., worse="higher"|"lower")</code>: a focused, one-sided test for movement toward the tail you declare harmful. Its statistic is a weighted AUC (<code>∫ TPR·(1−FPR)² dFPR</code>) that gives more weight to the harmful tail.</li>
+<li><code>ss.test_shift</code> — a broad, two-sided screen for any shift. Its statistic is the ROC AUC (<code>∫ TPR dFPR</code>); <code>0.5</code> means the score does not separate source from target.</li>
+<li><code>ss.test_harmful_shift(..., worse="higher"|"lower")</code> — a focused, one-sided test for movement toward the tail you declare harmful. Its statistic is a weighted AUC (<code>∫ TPR·(1−FPR)² dFPR</code>) that emphasizes the harmful tail.</li>
 </ul>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 

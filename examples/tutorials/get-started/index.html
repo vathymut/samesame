@@ -927,12 +927,12 @@
 
 
 <h1 id="get-started">Get started<a class="headerlink" href="#get-started" title="Permanent link">&para;</a></h1>
-<p>In this tutorial, you will build a minimal monitoring workflow: create one score per observation, test for a difference between source and target, and test whether the change moved toward a declared harmful direction. By the end, the two-question habit — <em>did it change? did it get worse?</em> — should feel routine.</p>
+<p>In this tutorial you will build a minimal monitoring workflow: create one score per observation, check whether source and target differ, and then check whether the change moved toward a harmful direction you declare. By the end, the two-question habit — <em>did it change? did it get worse?</em> — should feel familiar.</p>
 <p><strong>Source</strong> is the reference distribution (training data or a past deployment); <strong>target</strong> is the current deployment under evaluation.</p>
 <p>Compare source and target with one interpretable score per observation, such as predicted risk, prediction error, confidence, or an outlier score.</p>
 <ul>
-<li><strong>Any shift?</strong> Use <code>ss.test_shift</code>: a broad, two-sided screen for whether the score separates source from target. An AUC of <code>0.5</code> means no separation.</li>
-<li><strong>Harmful shift?</strong> Use <code>ss.test_harmful_shift(..., worse="higher"|"lower")</code>: a focused, one-sided test for whether the target moved toward the harmful tail you specify. Use <code>worse="lower"</code> when smaller values mean more harm.</li>
+<li><strong>Any shift?</strong> Use <code>ss.test_shift</code> — a broad, two-sided screen for whether the score separates source from target. An AUC of <code>0.5</code> means no separation.</li>
+<li><strong>Harmful shift?</strong> Use <code>ss.test_harmful_shift(..., worse="higher"|"lower")</code> — a focused, one-sided test for whether the target moved toward the harmful tail you specify. Use <code>worse="lower"</code> when smaller values mean more harm.</li>
 </ul>
 <p>The two tests can reach different conclusions because a distributional shift may be benign, harmful, or even beneficial depending on where it falls. See <a href="../../../explanation/harmful-shift-statistic/">How the harm test works</a> for intuition and the formula.</p>
 <p>Interpret <code>.pvalue</code> alongside the statistic and the score distributions.</p>
@@ -945,7 +945,7 @@
 <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">])</span>
 <span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">source</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">target</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)]</span>
 </code></pre></div>
-<p>In production, source and target should reflect the two populations behind your monitoring question — for example, training data versus a current deployment. Choose the source with care: every conclusion describes the target relative to that reference.</p>
+<p>In production, source and target should reflect the two populations that define your monitoring question — for example, training data versus the current deployment. Choose the source with care: every conclusion describes the target relative to that reference.</p>
 <h2 id="2-score-out-of-sample">2 — Score out of sample<a class="headerlink" href="#2-score-out-of-sample" title="Permanent link">&para;</a></h2>
 <p>Each row should be scored by a model that did not see that row during training. Here, a domain classifier estimates <code>P(target|x)</code>, the probability that a row belongs to the target rather than the source. When this probability separates the two groups well, it signals a distributional difference, which makes it a useful generic score for detecting <em>any</em> shift:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">HistGradientBoostingClassifier</span>
@@ -961,7 +961,7 @@
 <p><code>samesame</code> only sees scores, not how they were made.</p>
 <p>When a fitted model produces the scores, generate them out of sample with <code>cross_val_predict</code>, <code>oob_decision_function_</code>, or a held-out set. In-sample predictions use information the model has already seen; they can make source and target look more separable than they are and invalidate the test.</p>
 </div>
-<p>When you test a score with a clear notion of better and worse outcomes, keep it separate from the domain probability. Domain probability describes group membership, not outcome quality. Use it to build weights when needed, and use the interpretable score as the harm score.</p>
+<p>When you test a score with a clear notion of better and worse, keep it separate from the domain probability. Domain probability describes group membership, not outcome quality. Use it to build weights when needed, and use the interpretable score as the harm score.</p>
 <h2 id="3-did-anything-change">3 — Did anything change?<a class="headerlink" href="#3-did-anything-change" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ss</span>
 <span class="n">source_scores</span> <span class="o">=</span> <span class="n">domain_prob</span><span class="p">[</span><span class="n">labels</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
@@ -971,7 +971,7 @@
 </code></pre></div>
 <p>An AUC near <code>0.5</code> means the score hardly separates the groups, while values well above or below <code>0.5</code> mean stronger separation. Because <code>test_shift</code> is two-sided, separation in either direction — for example <code>0.8</code> or <code>0.2</code> — can lead to rejection.</p>
 <h2 id="4-did-it-get-worse">4 — Did it get worse?<a class="headerlink" href="#4-did-it-get-worse" title="Permanent link">&para;</a></h2>
-<p>This is the question that carries a consequence: not <em>did it change</em>, but <em>did it move toward the outcomes you want to avoid</em>.</p>
+<p>The more important question is whether the change moved toward outcomes you want to avoid.</p>
 <p>Declare the harmful direction from the meaning of the score before testing. Pass it as a string or as <code>ss.Worse</code>; the two forms are interchangeable:</p>
 <table>
 <thead>
@@ -1025,9 +1025,9 @@
 </div>
 <ul>
 <li>A small <code>test_shift</code> p-value is evidence that the score distributions differ.</li>
-<li>A small <code>test_harmful_shift</code> p-value is evidence that the target shifted toward the harmful tail you declared, not simply that some shift occurred.</li>
+<li>A small <code>test_harmful_shift</code> p-value is evidence that the target shifted toward the harmful tail you declared.</li>
 </ul>
-<p>The test is directional by design: changing <code>worse</code> changes the harmful direction under examination.</p>
+<p>The test is directional by design: changing <code>worse</code> changes the tail under examination.</p>
 <p>Decide whether higher or lower values are worse before looking at the result; do not choose the direction based on whichever gives a smaller p-value.</p>
 <details class="tip">
 <summary>Reproducibility</summary>
