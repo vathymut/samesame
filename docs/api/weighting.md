@@ -6,7 +6,7 @@ An unweighted comparison describes the full source and target samples, including
 regions seen by only one group. This is appropriate when those regions are part
 of the populations you want to compare. But when the groups barely overlap, a
 few observations from these regions can dominate the statistic even though the
-data provide little evidence about the other group's behaviour there.
+data provide little evidence about the other group's behavior there.
 
 Importance weighting changes the question to one about **common support** — the
 regions represented by both groups. It can make the comparison more stable, but
@@ -14,7 +14,8 @@ it does not create information where groups do not overlap, and it changes the
 population the test describes. It is not a default correction. Start unweighted
 and use weights only when poor feature overlap is a real concern.
 
-> Source: `src/samesame/weights.py` · `src/samesame/_permutation.py`
+??? details "Source files"
+    `src/samesame/weights.py` · `src/samesame/_permutation.py`
 
 ## When to use
 
@@ -44,11 +45,11 @@ original nominal sample sizes in the permutation calculation. An inactive group
 gets weight `1`. Weights change which observations count more; they do not
 repair a poorly estimated domain classifier.
 
-## `domain_weights`
+## Domain weights
 
 Pass separate 1-D arrays of domain probabilities `P(target|x)`, aligned to the
-scores you intend to test; estimate them out of sample or otherwise honestly.
-Which group(s) to reweight:
+scores you intend to test; estimate them honestly — out of sample if a model
+produces them. Which group(s) to reweight:
 
 --8<-- "snippets/reweight-table.txt"
 
@@ -71,13 +72,14 @@ number of equally weighted observations (Kish, 1965: ``(sum w)² / sum w²``).
 Uniform weights give `ESS = n`; when one or two observations carry most of the
 mass, ESS approaches `1`.
 
-Compare each ESS to its ``n`` via ``ESS/n`` — there is no universal cutoff from
-Kish. Treat a low ratio (e.g., substantially below ``0.5``) as a warning that
-the weighted result is fragile and largely driven by a few observations, not as
-a hard validation rule. The often-quoted ``ESS < n/4`` is only a rough
-illustrative heuristic with no published empirical threshold (see Elvira et al.,
-2022). If ``ESS/n`` remains low even at ``shrinkage=0.5``, the groups may not
-have enough common support for a reliable weighted comparison.
+Compare each ESS to its ``n`` via ``ESS/n``. A low ratio (e.g., substantially
+below ``0.5``) warns that the weighted result is fragile and largely driven by
+a few observations; it is a warning, not a hard validation rule, and there is
+no universal cutoff from Kish. The often-quoted ``ESS < n/4`` is only a rough
+illustrative heuristic with no published empirical threshold (see Elvira et
+al., 2022). If ``ESS/n`` remains low even at ``shrinkage=0.5``, the groups may
+not have enough common support for a reliable weighted comparison; consider
+leaving the comparison unweighted.
 
 ## API
 

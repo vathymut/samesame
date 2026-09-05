@@ -6,11 +6,11 @@ whether the change moved in a declared harmful direction. By the end, the
 two-question habit — *did it change? did it get worse?* — should feel as
 natural as checking a pulse.
 
-In this tutorial, **source** is the reference distribution, such as training
-data or a past deployment, and **target** is the distribution you want to
-evaluate, typically the current deployment. Compare them using one
-interpretable score for each observation, such as predicted risk, prediction
-error, confidence, or an outlier score.
+**Source** is the reference distribution, such as training data or a past
+deployment; **target** is the distribution you want to evaluate, typically the
+current deployment. Compare them using one interpretable score for each
+observation, such as predicted risk, prediction error, confidence, or an
+outlier score.
 
 - **Any shift?** Use `ss.test_shift` — a broad, two-sided screen for whether the score distinguishes source from target; an AUC of `0.5` is chance.
 - **Harmful shift?** Use `ss.test_harmful_shift(..., worse="higher"|"lower")` — a focused, one-sided test for whether the target moved toward the harmful tail you specify (`worse="lower"` flips the sign).
@@ -21,8 +21,8 @@ harmless, harmful, or even beneficial depending on where it occurs. See
 intuition and formula.
 
 Interpret `.pvalue` alongside the statistic and the distributions: a small
-p-value indicates evidence against label exchangeability, i.e. the assumption
-that the two samples can be swapped, not the size or cause of the change.
+p-value is evidence against label exchangeability — the assumption that the
+two samples can be swapped — not the size or cause of the change.
 
 ## 1 — Make source and target
 
@@ -36,7 +36,7 @@ labels = np.r_[np.zeros(len(source), dtype=int), np.ones(len(target), dtype=int)
 ```
 
 In production, the source and target should represent the two populations
-relevant to your monitoring question - for example, training data versus a
+relevant to your monitoring question — for example, training data versus a
 current deployment. Choose the source carefully: every conclusion describes
 the target relative to that reference.
 
@@ -78,14 +78,14 @@ print(f"AUC {shift.statistic:.3f} p={shift.pvalue:.4f}")  # → 0.611, 0.0002
 
 An AUC near `0.5` indicates little separation, while values farther from `0.5`
 indicate stronger separation. Because `test_shift` is two-sided, separation in
-either direction - for example, `0.8` or `0.2` - can reject the null.
+either direction — for example, `0.8` or `0.2` — can reject the null.
 
 ## 4 — Did it get worse?
 
 This is the question with a stake attached: not *did it change*, but *did it
-move toward the outcomes you fear*. Before running the test, declare whether
-higher or lower scores represent worse outcomes. Pass this choice as a string
-or as `ss.Worse`; the two forms are interchangeable.
+move toward the outcomes you fear*. Before running the test, declare which
+direction is harmful; pass it as a string or as `ss.Worse` — the two forms
+are interchangeable.
 
 --8<-- "snippets/worse-table.txt"
 

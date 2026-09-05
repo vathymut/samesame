@@ -9,7 +9,7 @@ bolder marketing push, a market that cooled. Riskier applicants start
 arriving, the model is still scoring, and two readings of the same dashboard
 look identical from the outside: **the model decayed**, or **the population
 changed**. One wants a retraining ticket; the other wants a business meeting.
-Using one HELOC split (External Risk Estimate > 63 vs ≤ 63, Gardner et al.
+Using one HELOC split (ExternalRiskEstimate > 63 vs ≤ 63; Gardner et al.,
 2023), this example works that story with three scores from the same model —
 they answer different questions and arrive at different times.
 
@@ -19,12 +19,11 @@ they answer different questions and arrive at different times.
 | Confidence (`LogitGap`) | No | Lower certainty | `lower` |
 | Prediction error (Brier) | Yes | Larger error | `higher` |
 
-Start with predicted risk when the model output already represents a harmful
-outcome. Use confidence for an early warning when labels are delayed, and
-prediction error for the clearest post-outcome check. **Source** is the
-reference distribution, such as training data or a past deployment; **target**
-is the current deployment. If you are new to `samesame`, start with [Get
-started](../tutorials/get-started.md) — or with [Is the new drug good
+**Source** is the reference distribution, such as training data or a past
+deployment; **target** is the current deployment. Which signal to lead with is
+a working choice — [Which signal when?](#which-signal-when) compares them. If
+you are new to `samesame`, start with [Get started](../tutorials/get-started.md)
+— or with [Is the new drug good
 enough?](../trials/check-drug-efficacy.md), the same test told as a clinical
 trial with no model in sight.
 
@@ -116,7 +115,8 @@ p-value is expected.
     change is consistent with higher risk. This is a reason to investigate, not an
     automatic retraining decision. An AUC of `0.5` is chance; read the
     harmful-shift statistic against its null distribution and the model's risk
-    scale (0–1). See [How it works](../../explanation/harmful-shift-statistic.md).
+    scale (0–1). See [How the harm test
+    works](../../explanation/harmful-shift-statistic.md).
 
 === "Confidence — no labels needed"
 

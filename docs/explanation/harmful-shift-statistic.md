@@ -63,11 +63,11 @@ are rare in the source, so the harmful statistic is large. When it rises late,
 the groups differ mainly in regions where the source already has substantial
 mass. AUC can still be large in that case, but the harmful statistic is smaller.
 
-Here, the ROC curve is an analysis tool for visualizing how a monitoring score
-ranks target relative to source across thresholds. AUC summarizes performance
-across all thresholds equally; the harmful statistic emphasizes thresholds
-rarely exceeded by source observations. For a worked example of this intuition
-on 70 real trial scores, see [Is the new drug good
+In this view, the ROC curve is a diagnostic device: it shows how a monitoring
+score ranks target against source across thresholds. AUC summarizes
+performance across all thresholds equally; the harmful statistic emphasizes
+thresholds rarely exceeded by source observations. For a worked example of
+this intuition on 70 real trial scores, see [Is the new drug good
 enough?](../examples/trials/check-drug-efficacy.md).
 
 ??? details "The formula"
@@ -98,13 +98,13 @@ enough?](../examples/trials/check-drug-efficacy.md).
 * Phipson, B., Smyth, G. K. (2010). *Permutation P-values should never be
   zero: calculating exact P-values when permutations are randomly drawn*.
   *Statistical Applications in Genetics and Molecular Biology* 9(1):Article 39.
-  https://doi.org/10.2202/1544-6115.1585 — the ``+1`` smoothing used for both tests.
+  [doi:10.2202/1544-6115.1585](https://doi.org/10.2202/1544-6115.1585) — the ``+1`` smoothing used for both tests.
 * Kish, L. (1965). *Survey Sampling*. Wiley — Kish's ``(sum w)² / sum w²`` effective sample size.
 * Bickel, S., Brückner, M., Scheffer, T. (2007). *Discriminative learning for
-  differing training and test distributions*. *ICML* 24:81-88.
-  https://doi.org/10.1145/1273496.1273507 — density ratio ``r = p/(1-p)·n_s/n_t``.
+  differing training and test distributions*.   *ICML* 24:81-88.
+  [doi:10.1145/1273496.1273507](https://doi.org/10.1145/1273496.1273507) — density ratio ``r = p/(1-p)·n_s/n_t``.
 * Yamada, M. et al. (2013). *Relative density-ratio estimation for robust
-  distribution comparison*. *Neural Comput.* 25(5):1324-1370.
-  https://doi.org/10.1162/NECO_a_00442 — relative importance weighting with ``λ``.
+  distribution comparison*.   *Neural Comput.* 25(5):1324-1370.
+  [doi:10.1162/NECO_a_00442](https://doi.org/10.1162/NECO_a_00442) — relative importance weighting with ``λ``.
 * Elvira, V. et al. (2022). *Rethinking the effective sample size*.
   *Int. Stat. Rev.* 90(3):525-550 — caveats on ESS thresholds (no universal ``n/4`` cutoff).

@@ -1,9 +1,9 @@
 # Shift testing
 
 Reduce each observation to one interpretable score — predicted risk,
-prediction error, confidence, or outlier score — and compare its
+prediction error, confidence, or an outlier score — and compare its
 distribution between **source** (reference) and **target** (current
-deployment), not raw feature tables. First, choose a score that represents
+deployment) rather than a raw feature table. Choose a score that represents
 the question you care about and compute it for every observation.
 
 `test_shift` is a broad, two-sided screen (AUC `∫ TPR dFPR`, `0.5` is
@@ -17,7 +17,8 @@ shift, but do not reuse it as the harm score. It describes how target-like an
 observation is, not whether its outcome is harmful. Use it to build weights
 when you need a common-support comparison.
 
-> Source: `src/samesame/shift.py` · `src/samesame/_permutation.py` · `src/samesame/_statistics.py`
+??? details "Source files"
+    `src/samesame/shift.py` · `src/samesame/_permutation.py` · `src/samesame/_statistics.py`
 
 ## Which function?
 

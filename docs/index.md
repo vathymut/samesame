@@ -19,9 +19,8 @@ the target is different, is it different in the way that matters, **worse**?
 
 Production monitoring usually starts with a practical problem: the raw feature
 space is too large to interpret directly, and labels often arrive late. A model
-score reduces each observation to one interpretable score — predicted risk,
-prediction error, confidence, or outlier score — so each row has one number to
-monitor.
+score reduces each observation — predicted risk, prediction error, confidence,
+or an outlier score — to a single interpretable number, one per row.
 
 `samesame` compares that score between **source** (the reference, such as
 training data or a past deployment) and **target** (the current deployment).
@@ -49,7 +48,8 @@ is not evidence of harm.
 3. **Ask whether the change is harmful** with `ss.test_harmful_shift(...,
    worse=...)`.
 4. **Address poor feature overlap** with `ss.domain_weights` only when it is a
-   real concern; weighting changes the population the comparison describes.
+   real concern — weighting changes the population the comparison describes
+   and is not a default correction.
 
 ## Where next
 
@@ -64,4 +64,4 @@ is not evidence of harm.
 python -m pip install samesame
 ```
 
-Requires Python 3.12+, `numpy`, `scipy`, `scikit-learn`. Not for randomized experiments, subgroup discovery, or sequential alarming.
+Requires Python 3.12+, `numpy`, `scipy`, `scikit-learn`. Not for randomized experiments, subgroup discovery, or sequential monitoring.

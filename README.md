@@ -18,9 +18,8 @@
 Feature-level monitoring can produce alerts that are difficult to interpret,
 and labels may arrive too late to support early action. `samesame` compares
 one interpretable score per observation — predicted risk, prediction error,
-confidence, or outlier score — between **source** (the reference) and
-**target** (the current deployment). A model score reduces each observation
-to one interpretable score so each row has one number to monitor.
+confidence, or an outlier score — between **source** (the reference) and
+**target** (the current deployment), so each row has one number to monitor.
 
 It separates two questions:
 
@@ -56,23 +55,23 @@ evidence of harm.
 
 > **Toy scores vs. real scores:** The example uses synthetic normal scores for
 > brevity. For real features, build the score with a domain classifier and
-> generate it out of sample - using `cross_val_predict`,
-> `oob_decision_function_`, or held-out data - to avoid in-sample bias. See
-> [Get started](https://vathymut.github.io/samesame/examples/tutorials/get-started.md).
+> generate it out of sample — using `cross_val_predict`,
+> `oob_decision_function_`, or held-out data — to avoid in-sample bias. See
+> [Get started](https://vathymut.github.io/samesame/examples/tutorials/get-started/).
 
 ## Workflow
 
 1. Build **one score per observation**, generating it out of sample if it comes from a fitted model.
 2. Test for **any shift** with `ss.test_shift`.
 3. Test for **harmful shift** with `ss.test_harmful_shift(..., worse=...)`.
-4. If poor feature overlap is a real concern, use `ss.domain_weights` to reweight the comparison — weighting changes the population the comparison describes and is not a default correction.
+4. **Address poor feature overlap** with `ss.domain_weights` only when it is a real concern — weighting changes the population the comparison describes and is not a default correction.
 
 **Explore the documentation:**
 
-- [Get started](https://vathymut.github.io/samesame/examples/tutorials/get-started.md) - learn the workflow and run both tests in five minutes.
-- [Is the new drug good enough?](https://vathymut.github.io/samesame/examples/trials/check-drug-efficacy.md) - the harm test explained on a classic noninferiority trial, no model required.
-- [Monitor a credit model](https://vathymut.github.io/samesame/examples/credit/monitor-credit.md) - work through risk, confidence, and error monitoring with HELOC data.
-- [Weight for common support](https://vathymut.github.io/samesame/examples/weighting/weight-for-common-support.md) - learn when and how to reweight comparisons.
+- [Get started](https://vathymut.github.io/samesame/examples/tutorials/get-started/) — learn the workflow and run both tests in five minutes.
+- [Is the new drug good enough?](https://vathymut.github.io/samesame/examples/trials/check-drug-efficacy/) — the harm test explained on a classic noninferiority trial, no model required.
+- [Monitor a credit model](https://vathymut.github.io/samesame/examples/credit/monitor-credit/) — work through risk, confidence, and error monitoring with HELOC data.
+- [Weight for common support](https://vathymut.github.io/samesame/examples/weighting/weight-for-common-support/) — learn when and how to reweight comparisons.
 
 [Read the full documentation](https://vathymut.github.io/samesame/).
 
@@ -82,6 +81,7 @@ evidence of harm.
 python -m pip install samesame
 ```
 
-Requires Python 3.12+, `numpy`, `scipy`, and `scikit-learn`.
+Requires Python 3.12+, `numpy`, `scipy`, and `scikit-learn`. Not for
+randomized experiments, subgroup discovery, or sequential monitoring.
 
 For supported use cases and limitations, see the [full documentation](https://vathymut.github.io/samesame/).

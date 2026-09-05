@@ -1,6 +1,6 @@
 # Contributing
 
-This closely follows
+This guide closely follows
 [Docling's guidelines](https://github.com/docling-project/docling/blob/main/CONTRIBUTING.md).
 
 We welcome external contributions. If you have an itch, please feel
@@ -70,6 +70,11 @@ uv run mkdocs serve
 ```
 
 The server will be available at [http://localhost:8000](http://localhost:8000).
+
+The README and `docs/index.md` cover the same ground for different audiences
+(PyPI visitors and documentation readers). When you change one, check the other
+in the same commit: badges, the two-test summary, the workflow list, and the
+installation scope line.
 
 ### Pushing Documentation to GitHub Pages
 

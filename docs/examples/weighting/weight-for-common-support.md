@@ -1,10 +1,10 @@
 # Weight for common support
 
 Start with an unweighted comparison. Use weighting only when poor feature
-overlap is a real concern, because weighting changes the question to common
-support — the regions represented by both groups — without creating information
-where groups do not overlap. It also changes the population the test describes
-and is not a default correction.
+overlap is a real concern: weighting reframes the comparison around common
+support — the regions represented by both groups — without creating
+information where the groups do not overlap, and it changes the population the
+test describes. It is not a default correction.
 
 ## Why weight?
 
@@ -61,6 +61,9 @@ weighted = ss.test_harmful_shift(source=source_scores, target=target_scores, wor
 print(f"Unweighted p={unweighted.pvalue:.4f} Weighted p={weighted.pvalue:.4f}")  # → 1.0, 0.62
 ```
 
+Neither test finds a shift in this synthetic draw; the example shows the
+plumbing. The HELOC case below shows the contrast between modes on real data.
+
 Use the same `worse` value for both comparisons so that they test the same
 harmful direction. If a strong unweighted result becomes weak after weighting,
 the evidence was concentrated in low-overlap regions. If the result persists,
@@ -115,11 +118,6 @@ support too — not a low-overlap artifact.
     lesson: check the contrast between modes on *your* protocol before
     trusting any single p-value.
 
-Use `source` when source has low-overlap cases outside target support
-(reweight source toward target; target unchanged). Use `target` for the
-reverse (reweight target toward source). Use `both` (default) when both groups
-have low-overlap regions and the intended comparison is their mutual support.
-
 ??? details "Diagnose weight concentration (ESS)"
 
     Weighting can concentrate the comparison on a few observations. Check the effective sample size (ESS) to see whether the weighted result is supported by enough information.
@@ -147,6 +145,9 @@ have low-overlap regions and the intended comparison is their mutual support.
         print(f"shrinkage={lam:<4}  source ESS={e.source:7.2f}  target ESS={e.target:7.2f}")
     ```
 
-    Compare each ESS to its ``n`` via ``ESS/n`` — a low ratio (e.g., substantially below ``0.5``) warns that a few observations dominate, not a hard cutoff. The ``ESS < n/4`` figure sometimes quoted is only a rough illustrative heuristic with no published threshold (Kish gives no cutoff; see Elvira et al., 2022). If ``ESS/n`` remains low even at the default ``shrinkage=0.5``, the groups have insufficient common support for reliable weighting; consider leaving the comparison unweighted.
+    Compare each ESS to its ``n`` via ``ESS/n`` — a low ratio warns that a few
+    observations dominate the weighted result. What counts as "low", the
+    caveats, and why there is no universal cutoff: see [Effective sample
+    size](../../api/weighting.md#effective-sample-size) in the reference.
 
 Full scripts: `examples/weighting/_code/` · Reference: [Importance weights](../../api/weighting.md).
