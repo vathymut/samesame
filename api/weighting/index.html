@@ -974,17 +974,8 @@
 
 <h1 id="importance-weights">Importance weights<a class="headerlink" href="#importance-weights" title="Permanent link">&para;</a></h1>
 <h2 id="why-weighting-exists">Why weighting exists<a class="headerlink" href="#why-weighting-exists" title="Permanent link">&para;</a></h2>
-<p>An unweighted comparison describes the full source and target samples, including
-regions seen by only one group. This is appropriate when those regions are part
-of the populations you want to compare. But when the groups barely overlap, a
-few observations from these regions can dominate the statistic even though the
-data provide little evidence about the other group's behavior there.</p>
-<p>Importance weighting changes the question to one about <strong>common support</strong>
-(the regions represented by both groups). It can make the comparison more
-stable. It does not create information where the groups do not overlap, and
-it changes the population the test describes. It is not a default
-correction. Start unweighted and use weights only when poor feature overlap
-is a real concern.</p>
+<p>An unweighted comparison describes the full source and target samples, including regions that only one group occupies. That is appropriate when those regions belong to the populations you want to compare. When the groups barely overlap, however, a small number of observations from those regions can dominate the statistic even though the data contain little information about how the other group would behave there.</p>
+<p>Importance weighting reframes the comparison around <strong>common support</strong> — the regions represented by both groups. It can make the test more stable, but it does not create information where the groups do not overlap, and it changes the population the test describes. It is not a default correction. Start without weights and introduce them only when poor feature overlap is a genuine concern.</p>
 <details class="details">
 <summary>Source files</summary>
 <p><code>src/samesame/weights.py</code> · <code>src/samesame/_permutation.py</code></p>
@@ -1025,14 +1016,9 @@ is a real concern.</p>
 <span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_scores</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_scores</span><span class="p">,</span> <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span>
                       <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">))</span>
 </code></pre></div>
-<p>Weights are normalized to sum to each group's size, so the groups retain their
-original nominal sample sizes in the permutation calculation. An inactive group
-gets weight <code>1</code>. Weights change which observations count more; they do not
-repair a poorly estimated domain classifier.</p>
+<p>Weights are normalized to sum to each group's size, so the groups keep their original nominal sample sizes in the permutation. A group that is not reweighted receives a weight of <code>1</code> for every observation. Weights change how much each observation counts; they do not compensate for a poorly estimated domain classifier.</p>
 <h2 id="domain-weights">Domain weights<a class="headerlink" href="#domain-weights" title="Permanent link">&para;</a></h2>
-<p>Pass separate 1-D arrays of domain probabilities <code>P(target|x)</code>, aligned to the
-scores you intend to test; estimate them honestly, out of sample if a model
-produces them. Which group(s) to reweight:</p>
+<p>Pass separate one-dimensional arrays of domain probabilities <code>P(target|x)</code>, each aligned with the scores you intend to test. Estimate these probabilities honestly — out of sample when a model produces them. Choose which group or groups to reweight:</p>
 <table>
 <thead>
 <tr>
@@ -1059,8 +1045,7 @@ produces them. Which group(s) to reweight:</p>
 </tr>
 </tbody>
 </table>
-<p>Shrinkage λ controls the bias–variance tradeoff of the correction; start at
-the default and check <code>ESS/n</code> before going more aggressive:</p>
+<p>Shrinkage <code>λ</code> controls the bias–variance trade-off of the correction. Start at the default and check <code>ESS/n</code> before making the correction more aggressive:</p>
 <table>
 <thead>
 <tr>
@@ -1083,24 +1068,14 @@ the default and check <code>ESS/n</code> before going more aggressive:</p>
 </tr>
 </tbody>
 </table>
-<p>Lower = more aggressive; higher = more conservative.</p>
+<p>Lower values are more aggressive; higher values are more conservative.</p>
 <p>See <a href="../../examples/weighting/weight-for-common-support/">Weight for common support</a> for guidance on diagnosing overlap and weight concentration.</p>
 <h2 id="effective-sample-size">Effective sample size<a class="headerlink" href="#effective-sample-size" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="n">ess</span> <span class="o">=</span> <span class="n">weights</span><span class="o">.</span><span class="n">effective_sample_size</span><span class="p">()</span>  <span class="c1"># Kish (1965): (sum w)² / sum w²</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">ess</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="n">ess</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>  <span class="c1"># compare each to its n</span>
 </code></pre></div>
-<p>Effective sample size (ESS) translates unequal weights into an approximate
-number of equally weighted observations (Kish, 1965: <code>(sum w)² / sum w²</code>).
-Uniform weights give <code>ESS = n</code>; when one or two observations carry most of the
-mass, ESS approaches <code>1</code>.</p>
-<p>Compare each ESS to its <code>n</code> via <code>ESS/n</code>. A low ratio (e.g., substantially
-below <code>0.5</code>) warns that the weighted result is fragile and largely driven by
-a few observations; it is a warning, not a hard validation rule, and there is
-no universal cutoff from Kish. The often-quoted <code>ESS &lt; n/4</code> is only a rough
-illustrative heuristic with no published empirical threshold (see Elvira et
-al., 2022). If <code>ESS/n</code> remains low even at <code>shrinkage=0.5</code>, the groups may
-not have enough common support for a reliable weighted comparison; consider
-leaving the comparison unweighted.</p>
+<p>Effective sample size (ESS) translates unequal weights into an approximate count of equally weighted observations (Kish, 1965: <code>(sum w)² / sum w²</code>). Uniform weights yield <code>ESS = n</code>; when one or two observations carry most of the weight, ESS falls toward <code>1</code>.</p>
+<p>Compare each ESS to its <code>n</code> through <code>ESS/n</code>. A low ratio — for example well below <code>0.5</code> — signals that the weighted result is fragile and driven by a few observations. This is a warning, not a hard validation rule, and there is no universal cutoff from Kish. The often-quoted <code>ESS &lt; n/4</code> is a rough illustrative heuristic with no published empirical threshold (see Elvira et al., 2022). If <code>ESS/n</code> stays low even at <code>shrinkage=0.5</code>, the groups may lack enough common support for a reliable weighted comparison; consider keeping the comparison unweighted.</p>
 <h2 id="api">API<a class="headerlink" href="#api" title="Permanent link">&para;</a></h2>
 
 

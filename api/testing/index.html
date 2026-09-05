@@ -966,20 +966,9 @@
 
 
 <h1 id="shift-testing">Shift testing<a class="headerlink" href="#shift-testing" title="Permanent link">&para;</a></h1>
-<p>Reduce each observation to one interpretable score, such as predicted risk,
-prediction error, confidence, or an outlier score. Compare its distribution
-between <strong>source</strong> (reference) and <strong>target</strong> (current deployment) rather than
-a raw feature table. Choose a score that represents the question you care
-about and compute it for every observation.</p>
-<p><code>test_shift</code> is a broad, two-sided screen (AUC <code>∫ TPR dFPR</code>, <code>0.5</code> is
-chance). <code>test_harmful_shift</code> is a focused, one-sided tail test (weighted AUC
-<code>∫ TPR·(1−FPR)² dFPR</code>) that emphasizes thresholds the source rarely
-exceeds. Use the first when any change matters; the second when you can
-pre-specify <code>worse</code>.</p>
-<p><code>P(target|x)</code> from a domain classifier can be a useful score for detecting any
-shift, but do not reuse it as the harm score. It describes how target-like an
-observation is, not whether its outcome is harmful. Use it to build weights
-when you need a common-support comparison.</p>
+<p>Reduce each observation to one interpretable score — predicted risk, prediction error, confidence, or an outlier score — and compare its distribution between <strong>source</strong> (the reference) and <strong>target</strong> (the current deployment) rather than scanning a full feature table. Choose a score that captures the question you care about and compute it for every observation.</p>
+<p><code>samesame</code> provides two tests for this comparison. <code>test_shift</code> is a broad, two-sided screen based on the ROC AUC (<code>∫ TPR dFPR</code>; <code>0.5</code> means chance-level separation). <code>test_harmful_shift</code> is a focused, one-sided test for the harmful tail based on a weighted AUC (<code>∫ TPR·(1−FPR)² dFPR</code>) that gives more weight to thresholds rarely exceeded in the source. Use the first when any distributional change matters; use the second when you can state the harmful direction in advance with <code>worse</code>.</p>
+<p>A domain classifier's estimate of <code>P(target|x)</code> can serve as a useful generic score for detecting any shift, but do not reuse it as the harm score. It describes how target-like an observation is, not whether the outcome is harmful. Reserve it for building weights when you need a common-support comparison.</p>
 <details class="details">
 <summary>Source files</summary>
 <p><code>src/samesame/shift.py</code> · <code>src/samesame/_permutation.py</code> · <code>src/samesame/_statistics.py</code></p>
@@ -989,19 +978,19 @@ when you need a common-support comparison.</p>
 <thead>
 <tr>
 <th>Function</th>
-<th>Answers</th>
-<th>When</th>
+<th>Question</th>
+<th>When to use</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>ss.test_shift</code></td>
 <td>Do source and target differ?</td>
-<td>Any score distributional change matters</td>
+<td>Any change in the score distribution matters</td>
 </tr>
 <tr>
 <td><code>ss.test_harmful_shift</code></td>
-<td>Did target move toward the specified harmful tail?</td>
+<td>Did the target move toward the harmful tail you specified?</td>
 <td>You can declare <code>worse</code> in advance</td>
 </tr>
 </tbody>
@@ -1018,49 +1007,38 @@ when you need a common-support comparison.</p>
 <tbody>
 <tr>
 <td>Predicted risk</td>
-<td>the predicted outcome itself (e.g., risk)</td>
+<td>The predicted outcome itself (e.g., risk)</td>
 <td><code>worse="higher"</code></td>
 </tr>
 <tr>
-<td>Prediction error (Brier, log-loss)</td>
-<td>accuracy once labels arrive</td>
+<td>Prediction error (Brier, log loss)</td>
+<td>Accuracy once labels arrive</td>
 <td><code>worse="higher"</code></td>
 </tr>
 <tr>
 <td>Outlier score — confidence (<code>LogitGap</code>)</td>
-<td>certainty / typicality</td>
+<td>Certainty / typicality</td>
 <td><code>worse="lower"</code></td>
 </tr>
 <tr>
 <td>Outlier score — atypicality</td>
-<td>distance from source</td>
+<td>Distance from source</td>
 <td><code>worse="higher"</code></td>
 </tr>
 </tbody>
 </table>
 <h2 id="reading-results">Reading results<a class="headerlink" href="#reading-results" title="Permanent link">&para;</a></h2>
-<p>Both return <code>.statistic</code>, <code>.pvalue</code>, and <code>.null_distribution</code>. The null
-distribution is produced by permuting group labels while keeping scores and
-weights fixed. It represents what values are plausible if the source and
-target labels were interchangeable.</p>
-<p>Interpret <code>.pvalue</code> as evidence against label exchangeability, not as the
-probability that the null is true and not as an effect size. Two-sided
-<code>test_shift</code> doubles the smaller tail, capped at 1; <code>test_harmful_shift</code> uses
-the one-sided <code>greater</code> alternative. A <code>+1</code> correction keeps permutation
-p-values above zero (Phipson &amp; Smyth, 2010).</p>
+<p>Both functions return <code>.statistic</code>, <code>.pvalue</code>, and <code>.null_distribution</code>. The null distribution is generated by permuting group labels while keeping scores and weights fixed. It shows which statistic values would be plausible if source and target labels were interchangeable.</p>
+<p>Interpret <code>.pvalue</code> as evidence against label exchangeability, not as the probability that the null is true and not as a measure of effect size. The two tests handle tails differently: <code>test_shift</code> is two-sided and doubles the smaller tail (capped at 1), while <code>test_harmful_shift</code> is one-sided with the <code>greater</code> alternative. Both use a <code>+1</code> correction so permutation p-values never reach zero (Phipson &amp; Smyth, 2010).</p>
 <ul>
-<li><code>test_shift</code>: <code>.statistic</code> is AUC. An AUC of <code>0.5</code> means the score does not
-  separate the groups; values farther from <code>0.5</code> indicate stronger separation.</li>
-<li><code>test_harmful_shift</code>: <code>.statistic</code> is weighted AUC; read it against
-  <code>result.null_distribution</code> and the score's own scale (see <a href="../../explanation/harmful-shift-statistic/">How the harm
-  test works</a>). The result also
-  records <code>.worse</code>.</li>
+<li><code>test_shift</code>: <code>.statistic</code> is the ROC AUC. An AUC of <code>0.5</code> means the score does not separate the groups; values well above or below <code>0.5</code> mean stronger separation.</li>
+<li><code>test_harmful_shift</code>: <code>.statistic</code> is the weighted AUC. Read it against <code>result.null_distribution</code> and the score's own scale (see <a href="../../explanation/harmful-shift-statistic/">How the harm test works</a>). The result also records the chosen <code>.worse</code>.</li>
 </ul>
-<p>Honest p-values require out-of-sample scores. <code>samesame</code> only sees scores, not how they were made.</p>
+<p>Valid p-values depend on out-of-sample scores. <code>samesame</code> only sees the scores you pass in, not how they were constructed.</p>
 <p>When a fitted model produces the scores, generate them out of sample with <code>cross_val_predict</code>, <code>oob_decision_function_</code>, or a held-out set. In-sample predictions use information the model has already seen; they can make source and target look more separable than they are and invalidate the test.</p>
 <details class="tip">
 <summary>Reproducibility</summary>
-<p>Pass <code>rng=np.random.default_rng(12345)</code> to make the permutation-based p-values reproducible. The default is <code>n_resamples=9999</code>; <code>999</code> is useful while exploring, while <code>19999</code> gives better resolution for p-values below <code>0.001</code>.</p>
+<p>Pass <code>rng=np.random.default_rng(12345)</code> to make permutation p-values reproducible. The default is <code>n_resamples=9999</code>; use <code>999</code> while exploring and <code>19999</code> when you need finer resolution for p-values below <code>0.001</code>.</p>
 </details>
 <h2 id="api">API<a class="headerlink" href="#api" title="Permanent link">&para;</a></h2>
 

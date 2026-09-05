@@ -1,6 +1,6 @@
 | Signal | What it measures | `worse` |
 |--------|------------------|---------|
-| Predicted risk | the predicted outcome itself (e.g., risk) | `worse="higher"` |
-| Prediction error (Brier, log-loss) | accuracy once labels arrive | `worse="higher"` |
-| Outlier score — confidence (`LogitGap`) | certainty / typicality | `worse="lower"` |
-| Outlier score — atypicality | distance from source | `worse="higher"` |
+| Predicted risk | The predicted outcome itself (e.g., risk) | `worse="higher"` |
+| Prediction error (Brier, log loss) | Accuracy once labels arrive | `worse="higher"` |
+| Outlier score — confidence (`LogitGap`) | Certainty / typicality | `worse="lower"` |
+| Outlier score — atypicality | Distance from source | `worse="higher"` |

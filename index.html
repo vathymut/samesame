@@ -920,24 +920,14 @@
 <blockquote>
 <p><em>Same, same but different ...</em></p>
 </blockquote>
-<p>Every monitoring question starts as one word: <em>same?</em> Is the new sample the
-same as the reference? The name is the answer you hope to give. The work is
-the second half of the phrase: when the target differs, does it differ in
-the way that matters? Is it <strong>worse</strong>?</p>
-<p>Production monitoring usually starts with a practical problem: the raw feature
-space is too large to interpret directly, and labels often arrive late. A model
-score reduces each observation (predicted risk, prediction error, confidence,
-or an outlier score) to a single interpretable number, one per row.</p>
+<p>Every monitoring question starts with a simple check: <em>is this the same as the reference?</em> The package name is the answer you hope to give. The harder question follows when the answer is no — has the difference moved toward worse outcomes?</p>
+<p>Production monitoring often starts from a practical constraint: the raw feature space is too large to scan directly, and labels arrive too late to guide early action. A model score addresses this by reducing each observation to one interpretable number per row, such as predicted risk, prediction error, confidence, or an outlier score.</p>
 <p><code>samesame</code> compares that score between source and target.</p>
 <p><strong>Source</strong> is the reference distribution (training data or a past deployment); <strong>target</strong> is the current deployment under evaluation.</p>
-<p>It separates two questions that should not be conflated. Two functions
-implement them:</p>
+<p>It separates two questions that are easy to conflate. Two functions address them:</p>
 <ul>
-<li><code>ss.test_shift</code>: broad, two-sided screen for any shift (ROC AUC
-  <code>∫ TPR dFPR</code>, <code>0.5</code> is chance).</li>
-<li><code>ss.test_harmful_shift(..., worse="higher"|"lower")</code>: focused, one-sided
-  test for movement toward the tail you declare harmful (weighted AUC
-  <code>∫ TPR·(1−FPR)² dFPR</code>, which emphasizes the harmful tail).</li>
+<li><code>ss.test_shift</code>: a broad, two-sided screen for any shift. Its statistic is the ROC AUC (<code>∫ TPR dFPR</code>); <code>0.5</code> means the score does not separate source from target.</li>
+<li><code>ss.test_harmful_shift(..., worse="higher"|"lower")</code>: a focused, one-sided test for movement toward the tail you declare harmful. Its statistic is a weighted AUC (<code>∫ TPR·(1−FPR)² dFPR</code>) that gives more weight to the harmful tail.</li>
 </ul>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
@@ -963,26 +953,22 @@ implement them:</p>
 <p>A small p-value is evidence against label exchangeability (the assumption that source and target labels can be swapped). It is not evidence of business impact, causality, effect size, or the probability that the null is true. Evidence of a shift is not evidence of harm.</p>
 <h2 id="workflow">Workflow<a class="headerlink" href="#workflow" title="Permanent link">&para;</a></h2>
 <ol>
-<li><strong>Choose a score</strong> that represents the outcome you care about; generate it
-   out of sample if it comes from a fitted model.</li>
+<li><strong>Choose a score</strong> that captures the outcome you care about. If it comes from a fitted model, generate it out of sample.</li>
 <li><strong>Ask whether anything changed</strong> with <code>ss.test_shift</code>.</li>
-<li><strong>Ask whether the change is harmful</strong> with <code>ss.test_harmful_shift(...,
-   worse=...)</code>.</li>
-<li><strong>Address poor feature overlap</strong> with <code>ss.domain_weights</code> only when it is a
-   real concern. Weighting changes the population the comparison describes
-   and is not a default correction.</li>
+<li><strong>Ask whether the change is harmful</strong> with <code>ss.test_harmful_shift(..., worse=...)</code>.</li>
+<li><strong>Address poor feature overlap</strong> with <code>ss.domain_weights</code> only when it is a real concern. Weighting reframes the comparison around common support and is not a default correction.</li>
 </ol>
 <h2 id="where-next">Where next<a class="headerlink" href="#where-next" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong><a href="examples/tutorials/get-started/">Get started</a></strong> — 5 min, both tests.</li>
-<li><strong><a href="examples/trials/check-drug-efficacy/">Is the new drug good enough?</a></strong> — the harm test, told as a trial with 70 scores and no model.</li>
-<li><strong><a href="examples/credit/monitor-credit/">Monitor a credit model</a></strong> — HELOC: one model, three signals under the same shift.</li>
+<li><strong><a href="examples/tutorials/get-started/">Get started</a></strong> — 5 minutes, both tests.</li>
+<li><strong><a href="examples/trials/check-drug-efficacy/">Is the new drug good enough?</a></strong> — the harm test through a trial of 70 scores, with no model.</li>
+<li><strong><a href="examples/credit/monitor-credit/">Monitor a credit model</a></strong> — HELOC data: one model, three signals under the same shift.</li>
 <li><strong><a href="examples/weighting/weight-for-common-support/">Weight for common support</a></strong> — when to reweight, and what it costs.</li>
 </ul>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>samesame
 </code></pre></div>
-<p>Requires Python 3.12+, <code>numpy</code>, <code>scipy</code>, and <code>scikit-learn</code>. Not for randomized experiments, subgroup discovery, or sequential monitoring.</p>
+<p>Requires Python 3.12+, <code>numpy</code>, <code>scipy</code>, and <code>scikit-learn</code>. The package is designed for score-based monitoring and is not intended for randomized experiments, subgroup discovery, or sequential monitoring.</p>
 
 
 

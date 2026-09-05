@@ -756,9 +756,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#auc-vs-harm" class="md-nav__link">
+  <a href="#auc-versus-harm" class="md-nav__link">
     <span class="md-ellipsis">
-      AUC vs harm
+      AUC versus harm
     </span>
   </a>
   
@@ -931,26 +931,16 @@
 
 <h1 id="how-the-harm-test-works">How the harm test works<a class="headerlink" href="#how-the-harm-test-works" title="Permanent link">&para;</a></h1>
 <h2 id="the-question">The question<a class="headerlink" href="#the-question" title="Permanent link">&para;</a></h2>
-<p>A distributional change is not necessarily a harmful change. For example, a
-credit portfolio may contain fewer safe applicants and more medium-risk
-applicants while the high-risk tail remains unchanged. A generic shift test can
-detect this redistribution, but it cannot determine whether the change is
-harmful according to the outcome you care about.</p>
-<p>The harmful-shift test asks a narrower question: after orienting the score so
-that larger values mean worse outcomes, does the target place more mass beyond
-thresholds that the source rarely exceeds? The API therefore requires an explicit <code>worse</code> argument.</p>
+<p>Not every distributional change is a harmful change. A credit portfolio, for example, may contain fewer safe applicants and more medium-risk applicants while the high-risk tail stays the same. A generic shift test detects this redistribution, but it cannot say whether the change is harmful for the outcome you care about.</p>
+<p>The harmful-shift test asks a narrower question. After orienting the score so that larger values mean worse outcomes, does the target place more mass beyond thresholds that the source rarely exceeds? The API therefore requires you to declare the harmful direction with <code>worse</code>.</p>
 <p>Decide whether higher or lower values are worse before looking at the result; do not choose the direction based on whichever gives a smaller p-value.</p>
 <h2 id="what-the-tests-measure">What the tests measure<a class="headerlink" href="#what-the-tests-measure" title="Permanent link">&para;</a></h2>
-<p>Both tests use permutations to assess the same source-versus-target comparison,
-keeping scores and weights fixed. <code>test_shift</code> treats all thresholds equally and
-measures overall separation with AUC. <code>test_harmful_shift</code> emphasizes
-thresholds that are rare in the source, so it is sensitive to target mass in the
-harmful tail. Their exact statistics are:</p>
+<p>Both tests use permutations on the same source-versus-target comparison, keeping scores and weights fixed. <code>test_shift</code> weighs all thresholds equally and summarizes overall separation with the ROC AUC. <code>test_harmful_shift</code> gives extra weight to thresholds that are rare in the source, so it responds more to target mass in the harmful tail. Their statistics are:</p>
 <ul>
 <li><code>test_shift</code>: <code>∫ TPR dFPR</code></li>
 <li><code>test_harmful_shift</code>: <code>∫ TPR·(1−FPR)² dFPR</code></li>
 </ul>
-<h2 id="auc-vs-harm">AUC vs harm<a class="headerlink" href="#auc-vs-harm" title="Permanent link">&para;</a></h2>
+<h2 id="auc-versus-harm">AUC versus harm<a class="headerlink" href="#auc-versus-harm" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -963,7 +953,7 @@ harmful tail. Their exact statistics are:</p>
 <tr>
 <td>Question</td>
 <td>Do source and target differ?</td>
-<td>Did target move toward the specified harmful tail?</td>
+<td>Did the target move toward the harmful tail you specified?</td>
 </tr>
 <tr>
 <td>Statistic</td>
@@ -971,9 +961,9 @@ harmful tail. Their exact statistics are:</p>
 <td>Weighted AUC: <code>∫ TPR·(1−FPR)² dFPR</code></td>
 </tr>
 <tr>
-<td>Threshold emphasis</td>
+<td>Threshold weighting</td>
 <td>Uniform</td>
-<td>Low <code>FPR</code> (source-rare tail)</td>
+<td>Emphasis on low <code>FPR</code> — the source-rare tail</td>
 </tr>
 <tr>
 <td>Direction</td>
@@ -982,12 +972,7 @@ harmful tail. Their exact statistics are:</p>
 </tr>
 </tbody>
 </table>
-<p>Use <code>test_shift</code> for a two-sided test when any score distributional change
-matters. Use <code>test_harmful_shift</code> for a one-sided test when you can define the
-harmful direction in advance and want to focus on the harmful tail. Interpret
-AUC relative to its chance value of <code>0.5</code>; interpret the harmful-shift statistic
-relative to <code>result.null_distribution</code>, using the p-value as evidence against
-the null.</p>
+<p>Use <code>test_shift</code> when any change in the score distribution matters. Use <code>test_harmful_shift</code> when you can define the harmful direction in advance and want to focus on that tail. Interpret an AUC near <code>0.5</code> as little separation; interpret the harmful-shift statistic by comparing it to <code>result.null_distribution</code> and by using its p-value as evidence against the null.</p>
 <p>Declare the harmful direction from the meaning of the score before testing. Pass it as a string or as <code>ss.Worse</code>; the two forms are interchangeable:</p>
 <table>
 <thead>
@@ -1000,22 +985,22 @@ the null.</p>
 <tbody>
 <tr>
 <td>Predicted risk</td>
-<td>the predicted outcome itself (e.g., risk)</td>
+<td>The predicted outcome itself (e.g., risk)</td>
 <td><code>worse="higher"</code></td>
 </tr>
 <tr>
-<td>Prediction error (Brier, log-loss)</td>
-<td>accuracy once labels arrive</td>
+<td>Prediction error (Brier, log loss)</td>
+<td>Accuracy once labels arrive</td>
 <td><code>worse="higher"</code></td>
 </tr>
 <tr>
 <td>Outlier score — confidence (<code>LogitGap</code>)</td>
-<td>certainty / typicality</td>
+<td>Certainty / typicality</td>
 <td><code>worse="lower"</code></td>
 </tr>
 <tr>
 <td>Outlier score — atypicality</td>
-<td>distance from source</td>
+<td>Distance from source</td>
 <td><code>worse="higher"</code></td>
 </tr>
 </tbody>
@@ -1028,53 +1013,28 @@ the null.</p>
     line "harmful (early rise)" [0, 0.75, 0.88, 0.94, 0.98, 1]
     line "beneficial (late rise)" [0, 0.08, 0.15, 0.30, 0.65, 1]
     line "diagonal" [0, 0.2, 0.4, 0.6, 0.8, 1]</code></pre>
-<p>When the ROC curve rises early, many target observations exceed thresholds that
-are rare in the source, so the harmful statistic is large. When it rises late,
-the groups differ mainly in regions where the source already has substantial
-mass. AUC can still be large in that case, but the harmful statistic is smaller.</p>
-<p>In this view, the ROC curve is a diagnostic device: it shows how a monitoring
-score ranks target against source across thresholds. AUC summarizes
-performance across all thresholds equally; the harmful statistic emphasizes
-thresholds rarely exceeded by source observations. For a worked example of
-this intuition on 70 real trial scores, see <a href="../../examples/trials/check-drug-efficacy/">Is the new drug good
-enough?</a>.</p>
+<p>When the ROC curve rises early, many target observations exceed thresholds that the source rarely exceeds, so the harmful-shift statistic is large. When the curve rises late, the groups differ mainly where the source already has substantial mass. The AUC can still be large in that case, but the harmful-shift statistic stays smaller.</p>
+<p>In this view, the ROC curve is a diagnostic: it shows how a monitoring score ranks target against source across thresholds. The AUC summarizes performance uniformly across all thresholds; the harmful-shift statistic concentrates on thresholds the source rarely exceeds. For a concrete illustration on 70 real trial scores, see <a href="../../examples/trials/check-drug-efficacy/">Is the new drug good enough?</a>.</p>
 <details class="details">
 <summary>The formula</summary>
-<p>First orient the score so that larger values mean worse outcomes: let
-<code>S=scores</code> when <code>worse=="higher"</code> and <code>S=-scores</code> when <code>worse=="lower"</code>.
-For threshold <code>t</code>, treat target as the positive class:</p>
+<p>First orient the score so larger values mean worse outcomes: set <code>S = scores</code> when <code>worse == "higher"</code> and <code>S = -scores</code> when <code>worse == "lower"</code>. For a threshold <code>t</code>, treat target as the positive class:</p>
 <ul>
-<li><code>FPR(t)=P(S&gt;t|source)</code>, <code>TPR(t)=P(S&gt;t|target)</code></li>
-<li><code>1−FPR = F̂_source(t)</code> (the source ECDF), so:</li>
+<li><code>FPR(t) = P(S &gt; t | source)</code>, <code>TPR(t) = P(S &gt; t | target)</code></li>
+<li><code>1 − FPR = F̂_source(t)</code> (the source ECDF), so:</li>
 </ul>
 <div class="arithmatex">\[
 T = \int TPR\cdot(1-FPR)^2\,dFPR = \int TPR\cdot\hat{F}_{\text{source}}(t)^2\,dFPR.
 \]</div>
-<p>The factor <code>(1−FPR)^2</code> emphasizes thresholds that are rarely exceeded by
-source observations. Without this factor, uniform weighting gives AUC. Harm
-therefore peaks at low <code>FPR</code> and decays to <code>0</code> at <code>FPR=1</code>. The computation
-costs <code>O(n log n)</code> per resample and <code>O(n)</code> memory.</p>
+<p>The factor <code>(1−FPR)²</code> gives the most weight to thresholds the source rarely exceeds. Without it, uniform weighting yields the AUC. Harm therefore peaks at low <code>FPR</code> and falls to <code>0</code> at <code>FPR = 1</code>. The computation costs <code>O(n log n)</code> per resample and <code>O(n)</code> memory.</p>
 </details>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Kamulete, V. M. (2022). <em>Test for non-negligible adverse shifts</em>.
-  <em>Proceedings of the 38th Conference on Uncertainty in Artificial
-  Intelligence (UAI)</em>, PMLR 180:959-968.
-  <a href="https://proceedings.mlr.press/v180/kamulete22a.html">PMLR</a> ·
-  <a href="https://arxiv.org/abs/2107.02990">arXiv:2107.02990</a>.</li>
-<li>Phipson, B., Smyth, G. K. (2010). <em>Permutation P-values should never be
-  zero: calculating exact P-values when permutations are randomly drawn</em>.
-  <em>Statistical Applications in Genetics and Molecular Biology</em> 9(1):Article 39.
-  <a href="https://doi.org/10.2202/1544-6115.1585">doi:10.2202/1544-6115.1585</a> — the <code>+1</code> smoothing used for both tests.</li>
+<li>Kamulete, V. M. (2022). <em>Test for non-negligible adverse shifts</em>. <em>Proceedings of the 38th Conference on Uncertainty in Artificial Intelligence (UAI)</em>, PMLR 180:959–968. <a href="https://proceedings.mlr.press/v180/kamulete22a.html">PMLR</a> · <a href="https://arxiv.org/abs/2107.02990">arXiv:2107.02990</a>.</li>
+<li>Phipson, B., Smyth, G. K. (2010). <em>Permutation P-values should never be zero: calculating exact P-values when permutations are randomly drawn</em>. <em>Statistical Applications in Genetics and Molecular Biology</em> 9(1):Article 39. <a href="https://doi.org/10.2202/1544-6115.1585">doi:10.2202/1544-6115.1585</a> — the <code>+1</code> smoothing used for both tests.</li>
 <li>Kish, L. (1965). <em>Survey Sampling</em>. Wiley — Kish's <code>(sum w)² / sum w²</code> effective sample size.</li>
-<li>Bickel, S., Brückner, M., Scheffer, T. (2007). <em>Discriminative learning for
-  differing training and test distributions</em>.   <em>ICML</em> 24:81-88.
-  <a href="https://doi.org/10.1145/1273496.1273507">doi:10.1145/1273496.1273507</a> — density ratio <code>r = p/(1-p)·n_s/n_t</code>.</li>
-<li>Yamada, M. et al. (2013). <em>Relative density-ratio estimation for robust
-  distribution comparison</em>.   <em>Neural Comput.</em> 25(5):1324-1370.
-  <a href="https://doi.org/10.1162/NECO_a_00442">doi:10.1162/NECO_a_00442</a> — relative importance weighting with <code>λ</code>.</li>
-<li>Elvira, V. et al. (2022). <em>Rethinking the effective sample size</em>.
-  <em>Int. Stat. Rev.</em> 90(3):525-550 — caveats on ESS thresholds (no universal <code>n/4</code> cutoff).</li>
+<li>Bickel, S., Brückner, M., Scheffer, T. (2007). <em>Discriminative learning for differing training and test distributions</em>. <em>ICML</em> 24:81–88. <a href="https://doi.org/10.1145/1273496.1273507">doi:10.1145/1273496.1273507</a> — density ratio <code>r = p/(1−p) · n_s/n_t</code>.</li>
+<li>Yamada, M. et al. (2013). <em>Relative density-ratio estimation for robust distribution comparison</em>. <em>Neural Comput.</em> 25(5):1324–1370. <a href="https://doi.org/10.1162/NECO_a_00442">doi:10.1162/NECO_a_00442</a> — relative importance weighting with <code>λ</code>.</li>
+<li>Elvira, V. et al. (2022). <em>Rethinking the effective sample size</em>. <em>Int. Stat. Rev.</em> 90(3):525–550 — cautions on ESS thresholds (no universal <code>n/4</code> cutoff).</li>
 </ul>
 
 
