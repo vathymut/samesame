@@ -934,6 +934,14 @@
 <p>Not every shift is a harmful shift. A credit portfolio, for example, may contain fewer safe applicants and more medium-risk applicants while the high-risk tail stays the same. A generic shift test detects this redistribution, but it cannot say whether the change is harmful for the outcome you care about.</p>
 <p>The harmful-shift test asks a narrower question. After orienting the score so that larger values mean worse outcomes, does the target place more mass beyond thresholds that the source rarely exceeds? The API therefore requires you to declare the harmful direction with <code>worse</code>.</p>
 <p>Decide whether higher or lower values are worse before looking at the result; do not choose the direction based on whichever gives a smaller p-value.</p>
+<details class="note">
+<summary>Why not just test for equal distribution?</summary>
+<p>Tests of equal distribution reject on any difference — even a benign one
+(e.g. fewer outliers in the target) — and tests of means miss heavy-tail
+harm (e.g. Netflix PlayDelay). For the story behind <em>The Question: are we
+worse off?</em> and why <code>test_harmful_shift</code> answers it, see
+<a href="https://vathymut.org/posts/2023-01-03-are-you-ok/">Are you OK? Test for harmful (adverse) shift</a>.</p>
+</details>
 <h2 id="what-the-tests-measure">What the tests measure<a class="headerlink" href="#what-the-tests-measure" title="Permanent link">&para;</a></h2>
 <p>Both tests use permutations on the same source-versus-target comparison, keeping scores and weights fixed. <code>test_shift</code> weighs all thresholds equally and summarizes overall separation with the ROC AUC. <code>test_harmful_shift</code> gives extra weight to thresholds that are rare in the source, so it responds more to target mass in the harmful tail. Their statistics are:</p>
 <ul>

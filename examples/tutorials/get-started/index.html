@@ -962,6 +962,14 @@
 <p>When a fitted model produces the scores, generate them out of sample with <code>cross_val_predict</code>, <code>oob_decision_function_</code>, or a held-out set. In-sample predictions use information the model has already seen; they can make source and target look more separable than they are and invalidate the test.</p>
 </div>
 <p>When you test a score with a clear notion of better and worse, keep it separate from the domain probability. Domain probability describes group membership, not outcome quality. Use it to build weights when needed, and use the interpretable score as the harm score.</p>
+<details class="tip">
+<summary>Why a classifier?</summary>
+<p>Estimating <code>P(target|x)</code> and checking whether it separates source from target
+<em>is</em> a two-sample test — fit a classifier to the source/target labels and see
+if it does better than chance. For intuition on why this humble test often
+rivals kernel tests and needs no RKHS machinery, see
+<a href="https://vathymut.org/posts/2022-01-22-in-gentle-praise-of-modern-tests/">In gentle praise of classifier tests</a>.</p>
+</details>
 <h2 id="3-did-anything-change">3 — Did anything change?<a class="headerlink" href="#3-did-anything-change" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ss</span>
 <span class="n">source_scores</span> <span class="o">=</span> <span class="n">domain_prob</span><span class="p">[</span><span class="n">labels</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
