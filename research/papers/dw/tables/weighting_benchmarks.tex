@@ -1,0 +1,98 @@
+% This table is the paper's primary benchmark reference.
+% Overlap weights (Li et al. 2018) and Crump trimming (Crump et al. 2009) are
+% the two external baselines against which Stabilized RIW (CS-DSOS, ours) is
+% compared throughout the experiments.
+\begin{table}[t]
+  \centering
+  \small
+  \caption{Weighting approaches for common-support testing. Every method addresses overlap, but they
+    differ in \emph{which quantity} they target and \emph{what} they preserve.
+    The overlap-vs-stabilized contrast is central: both produce continuous, bounded weights,
+    but the mechanism and estimand diverge fundamentally.}
+  \label{tab:weighting-benchmarks}
+  \begin{tabular}{lp{4.8cm}p{4.8cm}p{4.8cm}}
+    \toprule
+    & \textbf{Overlap weights}
+    & \textbf{Crump trimming}
+    & \textbf{Stabilized RIW (ours)} \\
+    & (Li et al. 2018, 2019)
+    & (Crump et al. 2009)
+    & (Yamada et al. 2013) \\
+    \midrule
+    \multicolumn{4}{l}{\textit{What drives the weight}} \\
+    \hspace{1em} Operates on
+    & Propensity score $p(x)$
+    & Propensity score $p(x)$
+    & Density ratio $r(x) = \frac{p}{1-p} \cdot \frac{n_s}{n_t}$ \\
+    \hspace{1em} Formula
+    & $w(x) = p(x)\bigl(1-p(x)\bigr)$
+    & $\mathbb{1}\{\min(p,1-p) \ge \alpha\}$
+    & $w_{\mathrm{src}}\!=\!\frac{r}{(1-\lambda)+\lambda r}$,\;
+      $w_{\mathrm{tgt}}\!=\!\frac{1}{\lambda+(1-\lambda)r}$ \\
+    \hspace{1em} Prior ratio
+    & Not reflected
+    & Not reflected
+    & Inferred from group sizes \\
+    \midrule
+    \multicolumn{4}{l}{\textit{Weight behavior}} \\
+    \hspace{1em} Weight at $p\to0$
+    & $\to 0$
+    & Discarded if $p < \alpha$
+    & $\to 0$ (source) \; $\to 1/\lambda$ (target) \\
+    \hspace{1em} Weight at $p\to1$
+    & $\to 0$
+    & Discarded if $p > 1-\alpha$
+    & $\to 1/\lambda$ (source) \; $\to 0$ (target) \\
+    \hspace{1em} Bounded?
+    & Yes ($\max = 0.25$)
+    & N/A (binary)
+    & Yes ($\max = 1/\lambda$) \\
+    \hspace{1em} Zero at $p\in\{0,1\}$?
+    & Yes (soft zero)
+    & Yes (hard discard)
+    & No (asymptotic, never zero) \\
+    \midrule
+    \multicolumn{4}{l}{\textit{Estimand and workflow}} \\
+    \hspace{1em} Target population
+    & Overlap region ($p(x)\approx 0.5$)
+    & $p(x)\in[\alpha,\,1-\alpha]$
+    & Full populations restricted to common support \\
+    \hspace{1em} Tuning parameter
+    & None (fixed)
+    & $\alpha$ (arbitrary threshold)
+    & $\lambda$ (principled via ESS) \\
+    \hspace{1em} Preserves all observations?
+    & Yes (soft downweight)
+    & No (hard discard)
+    & Yes (soft downweight) \\
+    \hspace{1em} Under two-sided mismatch
+    & Over-rejects
+    & Over-rejects
+    & Calibrated \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{0.5em}
+  \small
+  \textbf{Why overlap and stabilized RIW look similar but differ.}
+  Both produce \emph{continuous, bounded} weights that downweight extreme $p(x)$ values,
+  and a casual reader may conflate them as two soft alternatives to Crump's hard trim.
+  The separation is in what drives the weight:
+  overlap weights target $p(1-p)$ --- the variance of a Bernoulli group indicator --- which
+  peaks at $p=0.5$ and vanishes at the boundaries.
+  Stabilized RIW targets the \emph{density ratio} $r(x)$, which encodes relative density of
+  the two groups via Bayes' theorem, then bounds it through the sigmoid-like map
+  $r \mapsto r/((1-\lambda)+\lambda r)$.
+  Two consequences follow:
+  (i)~overlap weights fix the weight shape by $p$ alone, whereas RIW incorporates
+  the prior ratio and group-conditional densities --- an observation with $p=0.9$ gets
+  overlap weight $0.09$ regardless of group sizes, but its stabilized RIW weight depends
+  on whether it comes from the sparse or dense group;
+  (ii)~overlap weights assign \emph{zero} weight at $p\in\{0,1\}$, a soft version of
+  Crump's hard discard, while stabilized RIW preserves non-zero weight for every
+  observation (bounded by $1/\lambda$), never completely discarding any data point.
+  The empirical consequence is that overlap weights over-reject under two-sided weak-overlap
+  contamination (Section~\ref{sec:calibration}), while the doubly weighted test remains
+  calibrated because its asymmetric forward/inverse corrections handle each group's
+  density structure separately.
+\end{table}

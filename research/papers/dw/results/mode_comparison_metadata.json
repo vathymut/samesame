@@ -1,0 +1,44 @@
+{
+  "arguments": {
+    "detail_output": "/Users/vathymut/Documents/samesame/research/papers/dw/results/mode_comparison_detail.csv",
+    "lambda_value": 0.5,
+    "metadata_output": "/Users/vathymut/Documents/samesame/research/papers/dw/results/mode_comparison_metadata.json",
+    "n_repeats": 100,
+    "n_resamples": 499,
+    "n_source": 180,
+    "n_target": 180,
+    "output": "/Users/vathymut/Documents/samesame/research/papers/dw/results/mode_comparison_summary.csv"
+  },
+  "command": [
+    "/Users/vathymut/Documents/samesame/research/papers/dw/scripts/generate_mode_comparison.py",
+    "--n-repeats",
+    "100",
+    "--n-resamples",
+    "499",
+    "--n-source",
+    "180",
+    "--n-target",
+    "180",
+    "--lambda-value",
+    "0.5"
+  ],
+  "commit": "7058212c12b84be8cfa4f1fffe130ba15d9fbe52",
+  "dirty": true,
+  "input_sha256": {},
+  "scenarios": {
+    "both_sides": [
+      0.25,
+      0.25
+    ],
+    "source_only": [
+      0.25,
+      0.0
+    ],
+    "target_only": [
+      0.0,
+      0.25
+    ]
+  },
+  "script": "generate_mode_comparison.py",
+  "script_sha256": "fa050d50760688e32d50d74d6e62ed836631486ded7a41df693e18073181122f"
+}

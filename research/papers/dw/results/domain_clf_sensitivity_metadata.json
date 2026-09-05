@@ -1,0 +1,48 @@
+{
+  "arguments": {
+    "detail_output": "/Users/vathymut/Documents/samesame/research/papers/dw/results/domain_clf_sensitivity_detail.csv",
+    "lambda_value": 0.5,
+    "metadata_output": "/Users/vathymut/Documents/samesame/research/papers/dw/results/domain_clf_sensitivity_metadata.json",
+    "n_repeats": 40,
+    "n_resamples": 199,
+    "n_source": 180,
+    "n_target": 180,
+    "output": "/Users/vathymut/Documents/samesame/research/papers/dw/results/domain_clf_sensitivity_summary.csv",
+    "severity_grid": [
+      0.0,
+      0.1,
+      0.2,
+      0.3,
+      0.4
+    ]
+  },
+  "classifiers": [
+    "logistic",
+    "random_forest",
+    "hist_gbm"
+  ],
+  "command": [
+    "/Users/vathymut/Documents/samesame/research/papers/dw/scripts/generate_domain_clf_sensitivity.py",
+    "--n-repeats",
+    "40",
+    "--n-resamples",
+    "199",
+    "--n-source",
+    "180",
+    "--n-target",
+    "180",
+    "--lambda-value",
+    "0.5",
+    "--output",
+    "/Users/vathymut/Documents/samesame/research/papers/dw/results/domain_clf_sensitivity_summary.csv",
+    "--detail-output",
+    "/Users/vathymut/Documents/samesame/research/papers/dw/results/domain_clf_sensitivity_detail.csv",
+    "--metadata-output",
+    "/Users/vathymut/Documents/samesame/research/papers/dw/results/domain_clf_sensitivity_metadata.json"
+  ],
+  "commit": "01c821e8a94ec36e40af8d62a9401542e041e315",
+  "dirty": true,
+  "input_sha256": {},
+  "script": "generate_domain_clf_sensitivity.py",
+  "script_sha256": "561c427c9a474ec607816d3fe620e2fdc3c89589bc8f7dc12c197a249e811836"
+}

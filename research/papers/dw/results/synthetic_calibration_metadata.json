@@ -1,0 +1,43 @@
+{
+  "frozen_snapshot": true,
+  "arguments": {
+    "detail_output": "/Users/vathymut/Documents/samesame/research/papers/dw/results/synthetic_calibration_detail.csv",
+    "lambda_value": 0.5,
+    "metadata_output": "/Users/vathymut/Documents/samesame/research/papers/dw/results/synthetic_calibration_metadata.json",
+    "n_repeats": 100,
+    "n_resamples": 499,
+    "n_source": 180,
+    "n_target": 180,
+    "output": "/Users/vathymut/Documents/samesame/research/papers/dw/results/synthetic_calibration_summary.csv",
+    "severity_grid": [
+      0.0,
+      0.1,
+      0.2,
+      0.3,
+      0.4
+    ]
+  },
+  "command": [
+    "/Users/vathymut/Documents/samesame/research/papers/dw/scripts/generate_synthetic_calibration.py",
+    "--n-repeats",
+    "100",
+    "--n-resamples",
+    "499",
+    "--n-source",
+    "180",
+    "--n-target",
+    "180",
+    "--severity-grid",
+    "0.0",
+    "0.1",
+    "0.2",
+    "0.3",
+    "0.4"
+  ],
+  "commit": "7058212c12b84be8cfa4f1fffe130ba15d9fbe52",
+  "dirty": true,
+  "input_sha256": {},
+  "null_hypothesis": "No harmful change on common support; support mismatch occurs only in low-overlap regions.",
+  "script": "generate_synthetic_calibration.py",
+  "script_sha256": "e335c85a87639a7d903473d3be15407eed59cdcffeb7da4c2d9f4f38f79e5a25"
+}

@@ -1,0 +1,97 @@
+\documentclass[twoside]{article}
+
+% Template: AISTATS 2026 (current). Switch to icml2026.sty for ICML submission.
+\usepackage{aistats2026}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{etoolbox}
+\PassOptionsToPackage{hyphens}{url}
+\usepackage{hyperref}
+\hypersetup{breaklinks=true}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{amsthm}
+\usepackage[capitalize,noabbrev]{cleveref}
+
+\newtheorem{proposition}{Proposition}
+
+\raggedbottom
+% Switch to non-linked breakable URLs inside the bibliography so url.sty can
+% insert break opportunities at '/' and '-', avoiding column overflow.
+% \url is a robust command; its actual implementation lives in the internal
+% \csname url \endcsname token. We redirect that token to url.sty's raw \Url
+% formatter, which inserts break opportunities without a PDF link annotation.
+\AtBeginEnvironment{thebibliography}{%
+  \raggedright\sloppy
+  \expandafter\let\csname url \endcsname\Url
+}
+\setlength{\emergencystretch}{3em}
+
+\newcommand{\method}{CS-DSOS}
+\newcommand{\sourceDist}{\mathcal{S}}
+\newcommand{\targetDist}{\mathcal{T}}
+\newcommand{\overlap}{\mathcal{O}}
+
+\begin{document}
+
+\twocolumn[
+
+\aistatstitle{Testing Harmful Shift on Common Support}
+
+\aistatsauthor{ Anonymous Authors }
+
+\aistatsaddress{ Anonymous Institution }
+
+]
+
+\begin{abstract}
+\input{sections/abstract}
+\end{abstract}
+
+\section{Introduction}\label{sec:introduction}
+\input{sections/introduction}
+
+\section{Related Work}
+\input{sections/related_work}
+
+\section{Method}\label{sec:method}
+\input{sections/method}
+
+\section{Results}\label{sec:results}
+\input{sections/experiments}
+
+\section{Limitations}
+\input{sections/limitations}
+
+\section{Conclusion}
+\input{sections/conclusion}
+
+\section{Broader Impact}
+\input{sections/broader_impact}
+
+\bibliography{references}
+\bibliographystyle{apalike}
+
+\appendix
+\section{Reproducibility Plan}
+\input{sections/appendix_reproducibility}
+
+\section{Theoretical Context}
+\label{app:theory}
+\input{sections/appendix_theory}
+
+\section{Weighting Approaches Comparison}
+\label{app:weighting-comparison}
+\input{tables/weighting_benchmarks}
+
+\section{Real-Data Task Details}
+\input{tables/appendix_task_table}
+
+\input{sections/appendix_extended_experiments}
+
+\end{document}

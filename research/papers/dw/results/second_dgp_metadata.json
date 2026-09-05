@@ -1,0 +1,58 @@
+{
+  "arguments": {
+    "calibration_detail_output": "/Users/vathymut/Documents/samesame/research/papers/dw/results/second_dgp_calibration_detail.csv",
+    "calibration_output": "/Users/vathymut/Documents/samesame/research/papers/dw/results/second_dgp_calibration_summary.csv",
+    "effect_grid": [
+      0.0,
+      0.15,
+      0.3,
+      0.45,
+      0.6
+    ],
+    "lambda_value": 0.5,
+    "metadata_output": "/Users/vathymut/Documents/samesame/research/papers/dw/results/second_dgp_metadata.json",
+    "n_repeats": 40,
+    "n_resamples": 199,
+    "n_source": 180,
+    "n_target": 180,
+    "power_detail_output": "/Users/vathymut/Documents/samesame/research/papers/dw/results/second_dgp_power_detail.csv",
+    "power_output": "/Users/vathymut/Documents/samesame/research/papers/dw/results/second_dgp_power_summary.csv",
+    "severity_grid": [
+      0.0,
+      0.1,
+      0.2,
+      0.3,
+      0.4
+    ]
+  },
+  "command": [
+    "/Users/vathymut/Documents/samesame/research/papers/dw/scripts/generate_second_dgp.py",
+    "--n-repeats",
+    "40",
+    "--n-resamples",
+    "199",
+    "--n-source",
+    "180",
+    "--n-target",
+    "180",
+    "--lambda-value",
+    "0.5",
+    "--calibration-output",
+    "/Users/vathymut/Documents/samesame/research/papers/dw/results/second_dgp_calibration_summary.csv",
+    "--calibration-detail-output",
+    "/Users/vathymut/Documents/samesame/research/papers/dw/results/second_dgp_calibration_detail.csv",
+    "--power-output",
+    "/Users/vathymut/Documents/samesame/research/papers/dw/results/second_dgp_power_summary.csv",
+    "--power-detail-output",
+    "/Users/vathymut/Documents/samesame/research/papers/dw/results/second_dgp_power_detail.csv",
+    "--metadata-output",
+    "/Users/vathymut/Documents/samesame/research/papers/dw/results/second_dgp_metadata.json"
+  ],
+  "commit": "01c821e8a94ec36e40af8d62a9401542e041e315",
+  "dgp": "regression-based with 2D features",
+  "dirty": true,
+  "experiment_type": "power",
+  "input_sha256": {},
+  "script": "generate_second_dgp.py",
+  "script_sha256": "7c04fc414dc1fda72bcc542ddca97a4fb3eda8173385a174fed4fefa46e44144"
+}

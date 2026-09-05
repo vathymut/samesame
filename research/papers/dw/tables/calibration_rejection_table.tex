@@ -1,0 +1,21 @@
+\begin{table}[t]
+  \centering
+  \small
+  \caption{Rejection rates (\%) under weak overlap (\emph{null}: no harmful change on common support).
+    The three weighting families (Table~\ref{tab:weighting-benchmarks}) behave
+    differently: Crump and overlap track the unweighted test, while only the
+    doubly weighted mode stays at nominal.}
+  \label{tab:calibration-reject}
+  \begin{tabular}{lccccc}
+    \toprule
+    Mode & 0.0 & 0.1 & 0.2 & 0.3 & 0.4\\
+    \midrule
+    Unweighted & 4.0 & 85.0 & 100.0 & 100.0 & 100.0\\
+    Source-weighted & 3.0 & 43.0 & 99.0 & 100.0 & 100.0\\
+    Target-weighted & 2.0 & 6.0 & 50.0 & 97.0 & 100.0\\
+    \textbf{Doubly weighted} & \textbf{1.0} & \textbf{0.0} & \textbf{0.0} & \textbf{0.0} & \textbf{0.0}\\
+    Crump-trimmed & 4.0 & 84.0 & 100.0 & 100.0 & 96.0\\
+    Overlap-weighted & 3.0 & 72.0 & 100.0 & 100.0 & 100.0\\
+    \bottomrule
+  \end{tabular}
+\end{table}

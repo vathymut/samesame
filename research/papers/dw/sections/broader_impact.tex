@@ -1,0 +1,5 @@
+The method is designed for deployment settings where source and target overlap weakly. In high-stakes tabular workflows---credit, healthcare---common-support comparison can reduce false alarms from weak overlap and focus investigation on comparable cases.
+
+Common-support restriction also creates risks. It downweights weak-overlap regions, and those regions can matter when they correspond to novel, underserved, or safety-critical populations~\cite{Barocas_2023}. Overlap-based exclusion in algorithmic auditing can hide disparate impact when the most vulnerable subgroups are also the least well-represented in the source data~\cite{Dwork_2012}. The doubly weighted test should not be a blanket replacement for unweighted monitoring, out-of-coverage diagnostics, or subgroup analysis.
+
+Which populations count as comparable is an application decision, not a statistical one. That choice should be made with domain expertise, especially where excluding weak-overlap observations could obscure disparities or delay intervention on new failure modes.

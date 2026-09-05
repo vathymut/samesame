@@ -1,0 +1,51 @@
+{
+  "arguments": {
+    "detail_output": "/Users/vathymut/Documents/samesame/research/papers/dw/results/lambda_sensitivity_detail.csv",
+    "effect_size": 0.4,
+    "lambda_grid": [
+      0.0,
+      0.25,
+      0.5,
+      0.75,
+      1.0
+    ],
+    "metadata_output": "/Users/vathymut/Documents/samesame/research/papers/dw/results/lambda_sensitivity_metadata.json",
+    "n_repeats": 100,
+    "n_resamples": 499,
+    "n_source": 180,
+    "n_target": 180,
+    "output": "/Users/vathymut/Documents/samesame/research/papers/dw/results/lambda_sensitivity_summary.csv",
+    "severity": 0.25
+  },
+  "command": [
+    "/Users/vathymut/Documents/samesame/research/papers/dw/scripts/generate_lambda_sensitivity.py",
+    "--n-repeats",
+    "100",
+    "--n-resamples",
+    "499",
+    "--n-source",
+    "180",
+    "--n-target",
+    "180",
+    "--severity",
+    "0.25",
+    "--effect-size",
+    "0.4",
+    "--lambda-grid",
+    "0.0",
+    "0.25",
+    "0.5",
+    "0.75",
+    "1.0"
+  ],
+  "commit": "7058212c12b84be8cfa4f1fffe130ba15d9fbe52",
+  "dirty": true,
+  "experiments": {
+    "calibration": 0.0,
+    "power": 0.4
+  },
+  "input_sha256": {},
+  "script": "generate_lambda_sensitivity.py",
+  "script_sha256": "ed65bc6c5e5aad02b2f65fcf46e1a6f2a7f50701406f90502a145e6bd83db69d",
+  "unweighted_baseline_lambda_value": -1.0
+}

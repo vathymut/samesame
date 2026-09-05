@@ -1,0 +1,120 @@
+{
+  "arguments": {
+    "domain_cv": 5,
+    "lambda_value": 0.5,
+    "max_eval_rows": 4000,
+    "max_train_rows": 30000,
+    "metadata_output": "results/real_data_workflow_metadata.json",
+    "n_resamples": 499,
+    "output": "results/real_data_workflow_summary.csv",
+    "random_seed": 123456,
+    "tasks": [
+      "heloc",
+      "diabetes_readmission",
+      "acsincome",
+      "acspubcov"
+    ]
+  },
+  "command": [
+    "/Users/vathymut/Documents/samesame/research/papers/dw/scripts/generate_real_data_workflow_summary.py",
+    "--output",
+    "results/real_data_workflow_summary.csv",
+    "--metadata-output",
+    "results/real_data_workflow_metadata.json"
+  ],
+  "commit": "7058212c12b84be8cfa4f1fffe130ba15d9fbe52",
+  "dirty": true,
+  "input_sha256": {},
+  "note": "This OpenML-backed workflow keeps the HELOC package-doc split as the anchor, fetches pinned OpenML mirrors when they preserve the needed task ingredients, and recreates the TableShift split rules locally without relying on the upstream TableShift runtime.",
+  "script": "generate_real_data_workflow_summary.py",
+  "script_sha256": "2bb76ef14104a39f0b39fc29d4d033d70ca2ee31bde9763d31762779b0830225",
+  "task_metadata": [
+    {
+      "data_source": "OpenML heloc (46932)",
+      "domain": "credit risk",
+      "identifier": "heloc",
+      "label": "FICO HELOC",
+      "label_definition": "RiskPerformance == 'Bad'",
+      "narrative_role": "anchor",
+      "note": null,
+      "openml_data_id": 46932,
+      "openml_dataset_name": "heloc",
+      "shift_variable": "ExternalRiskEstimate",
+      "short_label": "HELOC",
+      "source_definition": "ExternalRiskEstimate > 63 with a stratified source holdout",
+      "source_size": 1536,
+      "status": "ready",
+      "target_definition": "ExternalRiskEstimate <= 63",
+      "target_size": 2776,
+      "train_size": 6147
+    },
+    {
+      "data_source": "OpenML Diabetes130US (46922)",
+      "domain": "healthcare",
+      "identifier": "diabetes_readmission",
+      "label": "Hospital readmission",
+      "label_definition": "EarlyReadmission == 'Yes'",
+      "narrative_role": "comparison",
+      "note": null,
+      "openml_data_id": 46922,
+      "openml_dataset_name": "Diabetes130US",
+      "shift_variable": "admission_source_id",
+      "short_label": "Readmission",
+      "source_definition": "admission_source_id != 7 with a stratified source holdout",
+      "source_size": 6645,
+      "status": "ready",
+      "target_definition": "admission_source_id == 7",
+      "target_size": 4000,
+      "train_size": 26583
+    },
+    {
+      "data_source": "OpenML ACSIncome (43141)",
+      "domain": "socioeconomic screening",
+      "identifier": "acsincome",
+      "label": "ACS income",
+      "label_definition": "PINCP <= 56000",
+      "narrative_role": "comparison",
+      "note": null,
+      "openml_data_id": 43141,
+      "openml_dataset_name": "ACSIncome",
+      "shift_variable": "DIVISION (derived from ST)",
+      "short_label": "Income",
+      "source_definition": "DIVISION != '01' with a stratified source holdout",
+      "source_size": 4000,
+      "status": "ready",
+      "target_definition": "DIVISION == '01' (New England)",
+      "target_size": 4000,
+      "train_size": 30000
+    },
+    {
+      "data_source": "OpenML ACSPublicCoverage (43140)",
+      "domain": "public benefits screening",
+      "identifier": "acspubcov",
+      "label": "ACS public coverage",
+      "label_definition": "PUBCOV == 1",
+      "narrative_role": "comparison",
+      "note": null,
+      "openml_data_id": 43140,
+      "openml_dataset_name": "ACSPublicCoverage",
+      "shift_variable": "DIS",
+      "short_label": "Coverage",
+      "source_definition": "DIS != 1 with a stratified source holdout",
+      "source_size": 4000,
+      "status": "ready",
+      "target_definition": "DIS == 1 (with a disability)",
+      "target_size": 4000,
+      "train_size": 30000
+    }
+  ],
+  "tasks": [
+    "heloc",
+    "diabetes_readmission",
+    "acsincome",
+    "acspubcov"
+  ],
+  "workflows": {
+    "confidence": "higher-is-better",
+    "error": "higher-is-worse",
+    "risk": "higher-is-worse"
+  }
+}

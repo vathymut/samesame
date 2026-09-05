@@ -1,0 +1,83 @@
+% Part I: provenance ----------------------------------------------------------------
+\begin{table*}[!ht]
+  \centering
+  \footnotesize
+  \setlength{\tabcolsep}{4pt}
+  \caption{%
+    Real-data task provenance.
+    Most tasks are fetched by pinned OpenML data ID; the NSW data comes from
+    the MatchIt R package (Rdatasets mirror). The split recreates the
+    TableShift source and target pools locally without the TableShift runtime.
+    The NSW task uses a raw outcome score (no source model).
+    $N_{\mathrm{train}}$\,=\,source training rows;
+    $N_{\mathrm{src}}$\,=\,held-out source evaluation rows;
+    $N_{\mathrm{tgt}}$\,=\,target rows.%
+  }
+  \label{tab:appendix-provenance}
+  \setlength{\tabcolsep}{3pt}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{l p{6em} l p{6em} p{5em} p{5em} r r r}
+    \toprule
+    Task         & OpenML dataset (ID)       & Domain          & Split variable        & Source pool           & Target pool            & $N_{\mathrm{train}}$ & $N_{\mathrm{src}}$ & $N_{\mathrm{tgt}}$ \\
+    \midrule
+    HELOC        & heloc (46932)             & Credit          & External Risk Estimate & $>63$                 & $\leq 63$              & 6{,}147 & 1{,}536 & 2{,}776 \\
+    Readmission  & Diabetes130US (46922)     & Healthcare      & admission source id   & $\neq 7$              & $=7$                   & 26{,}583 & 6{,}645 & 4{,}000 \\
+    Income       & ACSIncome (43141)         & Socioeconomic   & DIVISION              & $\neq$ New England    & $=$ New England        & 30{,}000 & 4{,}000 & 4{,}000 \\
+    Coverage     & ACSPublicCoverage (43140) & Socioeconomic   & DIS                   & no disability         & disability ($=1$)      & 30{,}000 & 4{,}000 & 4{,}000 \\
+    NSW Employment & n/a (MatchIt::lalonde)  & Employment      & treat                 & PSID control ($=0$)   & NSW treatment ($=1$)   & 0        & 85      & 185 \\
+    \bottomrule
+  \end{tabular}%
+  }
+\end{table*}
+
+% Part II: per-workflow results -----------------------------------------------------
+\begin{table*}[!ht]
+  \centering
+  \footnotesize
+  \setlength{\tabcolsep}{3.5pt}
+  \caption{%
+    Per-workflow $p$-values, decision flips, and effective sample sizes
+    for the real-data tasks.
+    \emph{Unw.}\,$p$\,=\,unweighted p-value;
+    \emph{DW}\,$p$\,=\,doubly weighted p-value ($\lambda = 0.5$, 499 permutations).
+    Flip\,=\,decision change at $\alpha = 0.05$ between unweighted and
+    doubly weighted; $\dagger$ marks a borderline flip.
+    $N_{\mathrm{src}}$ and $N_{\mathrm{tgt}}$ are the original sample sizes;
+    $\mathrm{ESS}_{\mathrm{src}}$ and $\mathrm{ESS}_{\mathrm{tgt}}$ are Kish's
+    effective sample sizes for the doubly weighted mode.
+    ESS is constant within each task because the domain classifier does not
+    depend on the monitoring score.
+    Reading a row---e.g., HELOC Risk: $N_{\mathrm{src}}=1{,}536$,
+    $N_{\mathrm{tgt}}=2{,}776$, $\mathrm{ESS}=401$ and $803$---shows that
+    most observations fall outside the common support, explaining why the
+    unweighted rejection ($p=0.002$) does not survive common-support
+    restriction ($p=0.376$).
+    Direction: $\uparrow$\,=\,higher target score is adverse;
+    $\downarrow$\,=\,lower target score is adverse (score is higher-is-better).%
+  }
+  \label{tab:appendix-results}
+  \begin{tabular}{l l c r r r r c r r}
+    \toprule
+    Task & Workflow & Dir. & $N_{\mathrm{src}}$ & $N_{\mathrm{tgt}}$ &
+    Unw.~$p$ & DW~$p$ & Flip & $\mathrm{ESS}_{\mathrm{src}}$ & $\mathrm{ESS}_{\mathrm{tgt}}$ \\
+    \midrule
+    HELOC        & Risk       & $\uparrow$   & 1{,}536 & 2{,}776 & 0.002 & 0.376 & $\checkmark$ & 401   & 803   \\
+                 & Confidence & $\downarrow$ & 1{,}536 & 2{,}776 & 1.000 & 0.862 &              & 401   & 803   \\
+                 & Error      & $\uparrow$   & 1{,}536 & 2{,}776 & 1.000 & 0.998 &              & 401   & 803   \\
+    \cmidrule(lr){1-10}
+    Readmission  & Risk       & $\uparrow$   & 6{,}645 & 4{,}000 & 0.002 & 0.044 &              & 1{,}598 & 1{,}492 \\
+                 & Confidence & $\downarrow$ & 6{,}645 & 4{,}000 & 0.002 & 0.042 &              & 1{,}598 & 1{,}492 \\
+                 & Error      & $\uparrow$   & 6{,}645 & 4{,}000 & 0.002 & 0.114 & $\checkmark$ & 1{,}598 & 1{,}492 \\
+    \cmidrule(lr){1-10}
+    Income       & Risk       & $\uparrow$   & 4{,}000 & 4{,}000 & 0.490 & 0.630 &              & 2{,}321 & 2{,}051 \\
+                 & Confidence & $\downarrow$ & 4{,}000 & 4{,}000 & 0.848 & 0.238 &              & 2{,}321 & 2{,}051 \\
+                 & Error      & $\uparrow$   & 4{,}000 & 4{,}000 & 0.046 & 0.054 & $\dagger$    & 2{,}321 & 2{,}051 \\
+    \cmidrule(lr){1-10}
+    Coverage     & Risk       & $\uparrow$   & 4{,}000 & 4{,}000 & 0.002 & 0.002 &              & 1{,}538 & 1{,}450 \\
+                  & Confidence & $\downarrow$ & 4{,}000 & 4{,}000 & 0.002 & 0.002 &              & 1{,}538 & 1{,}450 \\
+                  & Error      & $\uparrow$   & 4{,}000 & 4{,}000 & 0.002 & 0.002 &              & 1{,}538 & 1{,}450 \\
+    \cmidrule(lr){1-10}
+    NSW          & Outcome    & $\downarrow$ & 85     & 185    & 0.350 & 0.885 &              & 32     & 102   \\
+    \bottomrule
+  \end{tabular}
+\end{table*}

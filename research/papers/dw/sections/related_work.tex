@@ -1,0 +1,31 @@
+Most monitoring tools detect any distribution change irrespective of direction. Restricting the comparison to common support---the question closest to this paper---draws on three weighting traditions: hard threshold trimming, continuous propensity-score weighting, and density-ratio stabilization.
+
+\paragraph{Overlap trimming and weighting in causal inference.}
+Restricting comparisons to common support is familiar from causal inference, where treatment and control groups rarely share full covariate support. Three approaches define the space of options.
+
+Crump et al.~\cite{Crump_2009} formalized \emph{overlap trimming}: discard observations where the propensity score $e(x)$ falls below a threshold $\alpha$ or above $1-\alpha$, then estimate the treatment effect on the remainder. The hard threshold discards data and introduces sensitivity to $\alpha$.
+
+Li et al.~\cite{Li_2018_balancing,Li_2019} developed \emph{overlap weights}, assigning continuous weight $w(x) = e(x)(1-e(x))$ to each observation. This targets the subpopulation with most treatment equipoise. Unlike Crump trimming, the weight approaches zero smoothly rather than by cutoff. Overlap weights are bounded ($\max = 0.25$), symmetric, and treat both groups identically.
+
+Morgan and Winship~\cite{Morgan_2015} provide the counterfactual framework that connects overlap to estimand identification.
+
+\paragraph{Density-ratio weighting for covariate shift.}
+A separate line of work uses the \emph{density ratio} $r(x) = p_{\mathrm{tgt}}(x) / p_{\mathrm{src}}(x)$ rather than the propensity score. Bickel et al.~\cite{Bickel_2007} showed that a classifier distinguishing source from target yields covariate-shift correction weights via Bayes' theorem: $r(x) = \frac{p}{1-p} \cdot \frac{n_s}{n_t}$.
+
+Density-ratio and overlap weights use the same domain probabilities but transform them differently: RIW incorporates the prior ratio from group sizes and produces weights monotonic in the relative density of the two groups rather than symmetric around $p=0.5$. The raw ratio is unbounded, so practitioners apply stabilization. Yamada et al.~\cite{Yamada_2013} introduced relative importance weighting (RIW), which blends the density ratio toward uniform via a parameter $\lambda \in [0,1]$. Kanamori et al.~\cite{Kanamori_2012} and Sugiyama et al.~\cite{Sugiyama_2012} developed related unconstrained least-squares approaches.
+
+The key distinction is that RIW targets the \emph{density ratio} while overlap weights target the \emph{propensity score variance}. Both produce continuous, bounded weights that downweight extremes, but the weight shape diverges under asymmetric overlap---precisely where overlap weights fail and the doubly weighted RIW correction succeeds (Section~\ref{sec:calibration}, Table~\ref{tab:weighting-benchmarks}).
+
+Segovia-Mart{\'\i}n et al.~\cite{SegoviaMartin_2023} found that estimating density ratios for both source and target---a ``doubly weighted'' correction---improves finite-sample behavior over a single correction in the any-change two-sample testing setting.
+
+\paragraph{Harmful-shift detection.}
+The closest non-sequential directional test is D-SOS~\cite{pmlr-v180-kamulete22a}, which formalized the one-sided harmful-shift objective on the full observed population. Our contribution inserts a weighting step that restricts the comparison to the common support.
+
+\paragraph{Risk tracking and sequential monitoring.}
+Podkopaev and Ramdas~\cite{Podkopaev_Ramdas_2022} formalized harmful shift as a risk-function increase with sequential tests. Nguy{\~e}n et al.~\cite{Nguyen_D3M_2025}, Amoukou et al.~\cite{Amoukou_2024}, Prinster et al.~\cite{Prinster_2025}, and Ginsberg et al.~\cite{Ginsberg_2023} extended risk tracking to label-free, conformal, and learning-based settings. These methods operate sequentially or require a trained harm proxy---neither condition applies to our setting.
+
+\paragraph{Conditional distribution testing.}
+Cobb and Van Looveren~\cite{pmlr-v162-cobb22a} proposed context-aware drift detection by comparing predictor residuals. Hu and Lei~\cite{Hu_2024} developed a conformal conditional distribution test. Xu et al.~\cite{Xu_2024_crt} corrected the conditional randomization test using importance weights. These methods ask whether the \emph{relationship} between features and outcome changed---complementary to whether the outcome distribution itself worsened.
+
+\paragraph{Common-support tests.}
+Gagnon-Bartsch and Shem-Tov~\cite{GagnonBartsch_2019} introduced the Classification Permutation Test, which tests whether treated and control groups share common support by combining a classifier with permutation inference. Their test statistic is classifier accuracy rather than weighted scores, and the null is exchangeability rather than directional harm.

@@ -1,0 +1,70 @@
+# Temporary and binary files
+*~
+*.py[cod]
+*.so
+*.cfg
+!.isort.cfg
+!setup.cfg
+*.orig
+*.log
+*.pot
+__pycache__/*
+.cache/*
+.*.swp
+*/.ipynb_checkpoints/*
+.DS_Store
+
+# Project files
+.ropeproject
+.project
+.pydevproject
+.settings
+.idea
+.vscode
+.pypirc
+tags
+
+# Package files
+*.egg
+*.eggs/
+.installed.cfg
+*.egg-info
+
+# Unittest and coverage
+htmlcov/*
+.coverage
+.coverage.*
+.tox
+junit*.xml
+coverage.xml
+.pytest_cache/
+.nox
+
+# Build and docs folder/files
+build/*
+dist/*
+sdist/*
+docs/_rst/*
+docs/_build/*
+cover/*
+site/*
+MANIFEST
+
+# Per-project virtualenvs
+.venv*/
+.conda*/
+.python-version
+
+# Paper build artifacts
+research/papers/dw/main.aux
+research/papers/dw/main.bbl
+research/papers/dw/main.blg
+research/papers/dw/main.fdb_latexmk
+research/papers/dw/main.fls
+research/papers/dw/main.log
+research/papers/dw/main.out
+research/papers/dw/main.pdf
+research/papers/dw/main.synctex.gz
+
+# Generated repo-graph output
+graphify-out/

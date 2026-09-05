@@ -1,0 +1,46 @@
+{
+  "frozen_snapshot": true,
+  "alternative": "Target scores shift upward on common support while overlap mismatch remains fixed.",
+  "arguments": {
+    "detail_output": "/Users/vathymut/Documents/samesame/research/papers/dw/results/power_curve_detail.csv",
+    "effect_grid": [
+      0.0,
+      0.15,
+      0.3,
+      0.45,
+      0.6
+    ],
+    "lambda_value": 0.5,
+    "metadata_output": "/Users/vathymut/Documents/samesame/research/papers/dw/results/power_curve_metadata.json",
+    "n_repeats": 100,
+    "n_resamples": 499,
+    "n_source": 180,
+    "n_target": 180,
+    "output": "/Users/vathymut/Documents/samesame/research/papers/dw/results/power_curve_summary.csv",
+    "severity": 0.25
+  },
+  "command": [
+    "/Users/vathymut/Documents/samesame/research/papers/dw/scripts/generate_power_curves.py",
+    "--n-repeats",
+    "100",
+    "--n-resamples",
+    "499",
+    "--n-source",
+    "180",
+    "--n-target",
+    "180",
+    "--severity",
+    "0.25",
+    "--effect-grid",
+    "0.0",
+    "0.15",
+    "0.3",
+    "0.45",
+    "0.6"
+  ],
+  "commit": "7058212c12b84be8cfa4f1fffe130ba15d9fbe52",
+  "dirty": true,
+  "input_sha256": {},
+  "script": "generate_power_curves.py",
+  "script_sha256": "373bbf767bd651ff0dd0423f38ebb3be01b70b74783f7953055655cc5ce20075"
+}

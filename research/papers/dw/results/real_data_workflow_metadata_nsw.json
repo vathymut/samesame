@@ -1,0 +1,63 @@
+{
+  "arguments": {
+    "domain_cv": 5,
+    "lambda_value": 0.5,
+    "max_eval_rows": 4000,
+    "max_train_rows": 30000,
+    "metadata_output": "results/real_data_workflow_metadata_nsw.json",
+    "n_resamples": 199,
+    "output": "results/real_data_workflow_summary_nsw.csv",
+    "random_seed": 123456,
+    "tasks": [
+      "nsw"
+    ]
+  },
+  "command": [
+    "/Users/vathymut/Documents/samesame/research/papers/dw/scripts/generate_real_data_workflow_summary.py",
+    "--tasks",
+    "nsw",
+    "--n-resamples",
+    "199",
+    "--random-seed",
+    "123456",
+    "--output",
+    "results/real_data_workflow_summary_nsw.csv",
+    "--metadata-output",
+    "results/real_data_workflow_metadata_nsw.json"
+  ],
+  "commit": "01c821e8a94ec36e40af8d62a9401542e041e315",
+  "dirty": true,
+  "input_sha256": {},
+  "note": "This OpenML-backed workflow keeps the HELOC package-doc split as the anchor, fetches pinned OpenML mirrors when they preserve the needed task ingredients, and recreates the TableShift split rules locally without relying on the upstream TableShift runtime.",
+  "script": "generate_real_data_workflow_summary.py",
+  "script_sha256": "dc6f9dc68ef81aa581ecca227f5b8854f719154f36dbf7b15b92a016cf41746a",
+  "task_metadata": [
+    {
+      "data_source": "Rdatasets MatchIt::lalonde (614 obs)",
+      "domain": "employment policy",
+      "identifier": "nsw",
+      "label": "NSW employment program",
+      "label_definition": "re78 > 5000 (post-program earnings above ~$5K)",
+      "narrative_role": "motivation",
+      "note": "LaLonde (1986) NSW employment experiment; downloaded from Rdatasets MatchIt::lalonde",
+      "openml_data_id": 0,
+      "openml_dataset_name": "",
+      "shift_variable": "treat",
+      "short_label": "NSW",
+      "source_definition": "treat == 0 (PSID control group, n=429)",
+      "source_size": 85,
+      "status": "ready",
+      "target_definition": "treat == 1 (NSW treatment group, n=185)",
+      "target_size": 185,
+      "train_size": 0
+    }
+  ],
+  "tasks": [
+    "nsw"
+  ],
+  "workflows": {
+    "confidence": "higher-is-better",
+    "error": "higher-is-worse",
+    "risk": "higher-is-worse"
+  }
+}
