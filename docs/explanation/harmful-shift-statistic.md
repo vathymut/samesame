@@ -4,7 +4,11 @@
 
 Not every shift is a harmful shift. A credit portfolio, for example, may contain fewer safe applicants and more medium-risk applicants while the high-risk tail stays the same. A generic shift test detects this redistribution, but it cannot say whether the change is harmful for the outcome you care about.
 
-The harmful-shift test asks a narrower question. After orienting the score so that larger values mean worse outcomes, does the target place more mass beyond thresholds that the source rarely exceeds? The API therefore requires you to declare the harmful direction with `worse`.
+The harmful-shift test asks a narrower question. After orienting the interpretable severity score `ϕ(x)` so that larger values mean worse outcomes, does the target place more mass beyond thresholds that the source rarely exceeds? The API therefore requires you to declare the harmful direction with `worse`. See [Shift testing](../api/testing.md) for how the choice of `ϕ` (risk, error, uncertainty, density) defines *worse*.
+
+??? example "Same shift, different verdict — iris (§2)"
+
+    Kamulete (2022) tests four notions of `ϕ` on iris with two splits. With a *random* split, two-sample `P(target|x)` rejects (benign `s≈8`) while residual, density, and confidence scores do not — a pure distribution false alarm. With an *in-distribution* (dense) split, density-based OOD does not reject, yet residual and confidence scores are fairly incompatible — the densest points sit where versicolor/virginica overlap and are hardest to predict. Across 62 OpenML-CC18 tasks (Kamulete 2022 §6.2), residual↔uncertainty correlate at `r=0.82`, but each vs classification only at `r≈0.5`. Density is not safety; a generic shift test alone gives a narrow view. The full vignette is in the R package: [dsos: motivation](https://cran.r-project.org/web/packages/dsos/vignettes/motivation.html).
 
 --8<-- "snippets/worse-tip.txt"
 
@@ -17,10 +21,10 @@ The harmful-shift test asks a narrower question. After orienting the score so th
 
 ## What the tests measure
 
-Both tests use permutations on the same source-versus-target comparison, keeping scores and weights fixed. `test_shift` weighs all thresholds equally and summarizes overall separation with the ROC AUC. `test_harmful_shift` gives extra weight to thresholds that are rare in the source, so it responds more to target mass in the harmful tail. Their statistics are:
+Both tests use permutations on the same source-versus-target comparison, keeping scores and weights fixed. `test_shift` weighs all thresholds equally and summarizes overall separation with the ROC AUC. `test_harmful_shift` gives extra weight to thresholds that are rare in the source, so it responds more to target mass in the harmful tail. In paper notation (Kamulete 2022 §3): for a threshold `t`, the contamination rate is `C(t)=Pr(ϕ ≥ t)` and `F̂_source(t)=1−C_source(t)`. Then `1−FPR = F̂_source` and `w(t)=F̂_source(t)²` downweights low thresholds (safe, common) and emphasizes high thresholds (harmful, source-rare). Their statistics are:
 
 - `test_shift`: `∫ TPR dFPR`
-- `test_harmful_shift`: `∫ TPR·(1−FPR)² dFPR`
+- `test_harmful_shift`: `∫ TPR·(1−FPR)² dFPR = ∫ TPR·F̂_source² dFPR` (one-sided `greater`; a cleaner target does *not* reject — the null is `T₀ ≤ T|H₀`)
 
 ## AUC versus harm
 
@@ -29,9 +33,9 @@ Both tests use permutations on the same source-versus-target comparison, keeping
 | Question | Do source and target differ? | Did the target move toward the harmful tail you specified? |
 | Statistic | AUC: `∫ TPR dFPR` | Weighted AUC: `∫ TPR·(1−FPR)² dFPR` |
 | Threshold weighting | Uniform | Emphasis on low `FPR` — the source-rare tail |
-| Direction | Two-sided | One-sided (`greater`) |
+| Direction | Two-sided | One-sided (`greater`) — cleaner target does not reject |
 
-Use `test_shift` when any change in the score distribution matters. Use `test_harmful_shift` when you can define the harmful direction in advance and want to focus on that tail. An AUC near `0.5` means little separation; read the harmful-shift statistic against `result.null_distribution` and use its p-value as evidence against the null.
+Use `test_shift` when any change in the score distribution matters. Use `test_harmful_shift` when you can define the harmful direction in advance and want to focus on that tail. An AUC near `0.5` means little separation; read the harmful-shift statistic against `result.null_distribution` and use its p-value as evidence against the null. No equivalence margin is needed — unlike noninferiority tests that pre-specify a 5% drop, the reference itself defines the bar (Kamulete 2022 §3).
 
 --8<-- "snippets/worse-declaration.txt"
 

@@ -1,8 +1,24 @@
 # Shift testing
 
-`samesame` compares a single interpretable score — predicted risk, prediction error, confidence, or an outlier score — between **source** (the reference) and **target** (the current deployment), rather than scanning a full feature table. Choose a score that captures the question you care about and compute it for every observation.
+`samesame` compares a single interpretable severity score — call it `ϕ(x)` — between **source** (the reference) and **target** (the current deployment), rather than scanning a full feature table. Larger values mean worse outcomes for your application; the paper calls this an *outlier score* (Kamulete, 2022) and monitoring practice calls it an interpretable severity, harm, or degradation score. Choose `ϕ` to encode the notion of *worse* you care about and compute it for every observation.
 
 `samesame` provides two tests for this comparison. `test_shift` is a broad, two-sided screen based on the ROC AUC (`∫ TPR dFPR`; `0.5` means chance-level separation). `test_harmful_shift` is a focused, one-sided test for the harmful tail based on a weighted AUC (`∫ TPR·(1−FPR)² dFPR`) that gives more weight to thresholds rarely exceeded in the source. Use the first when any distributional change matters; use the second when you can state the harmful direction in advance with `worse`.
+
+??? tip "Bring your own score — which `ϕ` to use"
+
+    The test is agnostic to `ϕ` as long as ranking is consistent (higher = more abnormal for your task). Different `ϕ` ask different questions about the same source/target split:
+
+    | Family | Example `ϕ` | `worse` | What it detects |
+    |---|---|---|---|
+    | Two-sample classification | `P(target\|x)` from a domain classifier | `higher` | Any feature shift (§5 in Kamulete 2022 — gentle praise of classifier tests) |
+    | Predicted risk | `P(default)`, `P(fraud)` | `higher` | Movement toward higher business risk |
+    | Residual / error | Brier `(y−p)²`, absolute residual, `−log p(y\|x)` | `higher` | Larger post-outcome mistakes |
+    | Uncertainty / confidence | prediction-interval width, `SE(mean prediction)`, `−LogitGap` | `higher` / `lower` for `LogitGap` | Harder-to-predict regions (§2, §4) |
+    | Density / OOD | isolation-forest score, `−log density` | `higher` | Low-density outliers |
+    | Dimension reduction | reconstruction error (PCA/autoencoder) | `higher` | Deviations in stable subspace |
+    | Domain trust | trust score / distance to training manifold | `higher` | Points the classifier is likely to mislabel |
+
+    The same deployment can look benign on one `ϕ` and harmful on another — e.g. dense in-distribution points that are hard to predict (Kamulete 2022 §2 iris, §6.2 CC18: residual↔uncertainty `r=0.82`, vs classification `r≈0.5`). Pick the family that matches the failure you want to alarm on, not just the shift you can measure.
 
 A domain classifier's estimate of `P(target|x)` can serve as a useful generic score for detecting any shift. Do not reuse it as the harm score: it describes how target-like an observation is, not whether the outcome is harmful. Reserve it for building weights when you need a common-support comparison.
 
@@ -32,6 +48,16 @@ Interpret `.pvalue` as evidence against label exchangeability, not as the probab
 Valid p-values depend on out-of-sample scores. `samesame` only sees the scores you pass in, not how they were constructed.
 
 --8<-- "snippets/honest-scores.txt"
+
+??? note "How to make `ϕ` honest — `Φ(D,λ)` in the paper"
+
+    The score function `ϕ = Φ(D,λ)` is estimated from data, so the same rows must not be used for both fitting `ϕ` and testing with it (Kamulete 2022 §5). Use one of:
+
+    - **Permutation (PT, default)** — fit `ϕ` once, then permute group labels (`n_resamples=9999`; `R=1000` with early stopping in the paper). The `site/` docs you are reading were built this way.
+    - **Out-of-bag** — `RandomForestClassifier(oob_score=True).oob_decision_function_` for risk/confidence scores; free honest `ϕ` when you already use a bagged model (`docs/examples/credit/monitor-credit.md`).
+    - **Cross-fit / CV** — `cross_val_predict` (`docs/examples/tutorials/get-started.md:39`) or any `k`-fold that scores each row from a model that did not see it. Unifies accuracy and inference.
+
+    All three keep the null distribution valid; CV/OOB avoid the split-sample `N(1/12,σ)` cost of holding out half the data.
 
 ??? tip "Reproducibility"
     Pass `rng=np.random.default_rng(12345)` to make permutation p-values reproducible. The default is `n_resamples=9999`; use `999` while exploring and `19999` when you need finer resolution for p-values below `0.001`.
