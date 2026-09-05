@@ -61,3 +61,6 @@ research/**/*.pdf
 .venv*/
 .conda*/
 .python-version
+
+# Local git worktrees
+.worktrees/
