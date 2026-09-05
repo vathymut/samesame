@@ -1,7 +1,7 @@
 # Monitor a credit model
 
 An alarm should tell you whether the score moved toward worse outcomes, not
-just that it moved. Here is the story that demand comes from.
+just that it moved. A lender trained on its safest book shows why.
 
 A lender trains a default-risk model on its safest book: applicants the
 bureau already smiles on. Then the book changes: a new partner channel, a
@@ -16,12 +16,12 @@ model; they answer different questions and arrive at different times.
 | Signal | Requires labels? | Harmful direction | `worse` |
 |--------|-------------------|-------------------|---------|
 | Predicted risk | No | Higher risk | `higher` |
-| Confidence (`LogitGap`) | No | Lower certainty | `lower` |
+| Outlier score — confidence (`LogitGap`) | No | Lower certainty | `lower` |
 | Prediction error (Brier) | Yes | Larger error | `higher` |
 
-**Source** is the reference distribution, such as training data or a past
-deployment; **target** is the current deployment. Which signal to lead with is
-a working choice; [Which signal when?](#which-signal-when) compares them. If
+--8<-- "snippets/source-target.txt"
+
+Which signal to lead with is a working choice; [Which signal when?](#which-signal-when) compares them. If
 you are new to `samesame`, start with [Get started](../tutorials/get-started.md)
 or with [Is the new drug good
 enough?](../trials/check-drug-efficacy.md), the same test told as a clinical
@@ -100,9 +100,9 @@ p-value is expected.
     print(f"Harm {harm.statistic:.4f} p={harm.pvalue:.4f}")    # → 0.2483, 0.0001
     ```
 
-    The domain classifier separates the books almost perfectly (AUC 1.0000);
-    no surprise, since the split variable itself is a feature. The harm test
-    confirms the move is toward higher risk, not just any change.
+    The domain classifier separates the books almost perfectly (AUC 1.0000),
+    which is expected because the split variable itself is a feature. The harm
+    test confirms the move is toward higher risk, not just any change.
 
     | `test_shift` | `test_harmful_shift` | Meaning |
     |--------------|----------------------|---------|
@@ -118,7 +118,7 @@ p-value is expected.
     scale (0–1). See [How the harm test
     works](../../explanation/harmful-shift-statistic.md).
 
-=== "Confidence — no labels needed"
+=== "Outlier score — confidence — no labels needed"
 
     `LogitGap` is an **outlier score** for confidence: larger = more certain,
     so a drop (`worse="lower"`) is harm. It is the gap between the top logit
@@ -190,7 +190,7 @@ To reproduce these examples end to end, see the full runnable scripts in `exampl
 ## Which signal when?
 
 - **Predicted risk** — use when the model output already represents the harmful outcome.
-- **Confidence** — use for an early warning when labels are not yet available.
+- **Outlier score — confidence** — use for an early warning when labels are not yet available.
 - **Prediction error** — use for the clearest post-outcome accuracy check.
 
 Risk and confidence moved without a single label arriving; that is what

@@ -57,13 +57,7 @@ and target labels can be swapped). It is not evidence of business impact,
 causality, effect size, or the probability that the null is true. Evidence of
 a shift is not evidence of harm.
 
-> **Toy scores vs. real scores:** The example uses synthetic normal scores for
-> brevity. For real features, build the score with a domain classifier. When a
-> fitted model produces the scores, generate them out of sample with
-> `cross_val_predict`, `oob_decision_function_`, or a held-out set. In-sample
-> predictions use information the model has already seen; they can make source
-> and target look more separable than they are and invalidate the test. See
-> [Get started](https://vathymut.github.io/samesame/examples/tutorials/get-started/).
+> **Toy scores vs. real scores:** Synthetic normals keep the example brief. With real features, build the score with a domain classifier and generate it out of sample (`cross_val_predict`, `oob_decision_function_`, or a held-out set) — in-sample scores can inflate separation and invalidate the test. See [Get started](https://vathymut.github.io/samesame/examples/tutorials/get-started/).
 
 ## Workflow
 

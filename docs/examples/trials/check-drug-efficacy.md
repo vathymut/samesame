@@ -113,7 +113,7 @@ much data, the observed difference is not surprising under no meaningful
 harm. Two cautions carry over from trials to monitoring:
 
 - **Absence of evidence is not evidence of absence.** With 28 versus 42
-  patients, the test may simply lack power. A larger study, or a larger
+  patients, the test may lack power. A larger study, or a larger
   deployment window, could sharpen the verdict.
 - **The direction is part of the protocol.** `worse="higher"` here because
   larger discomfort is worse. Choosing the direction after seeing the p-values

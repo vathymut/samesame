@@ -6,6 +6,14 @@ support (the regions represented by both groups). It does not create
 information where the groups do not overlap, and it changes the population
 the test describes. It is not a default correction.
 
+!!! note "Prerequisites"
+    You have run an unweighted comparison and seen a shift, and you can
+    estimate honest `P(target|x)` out of sample (e.g., `cross_val_predict`
+    or `oob_decision_function_`). Keep the domain probability separate from
+    the interpretable score you test for harm. If you are new to `samesame`,
+    start with [Get started](../tutorials/get-started.md) and
+    [Monitor a credit model](../credit/monitor-credit.md) first.
+
 ## Why weight?
 
 A few low-overlap observations can dominate the permutation test, even if the
@@ -20,8 +28,8 @@ source and target sample sizes, the odds correction
 `p̂/(1-p̂)·n_source/n_target` (Bickel et al., 2007) estimates relative density
 and produces importance weights. This correction can be unstable when the
 groups separate well, because a few observations may receive huge weights.
-`samesame` stabilizes the weights with shrinkage `λ`, which blends them toward
-uniform weights (default `0.5`, Yamada et al., 2013):
+`samesame` stabilizes the weights with shrinkage `λ` toward uniform weights.
+The default is `0.5` (Yamada et al., 2013):
 
 --8<-- "snippets/shrinkage-table.txt"
 
@@ -75,7 +83,7 @@ This example uses the same source and target split as [Monitor a credit
 model](../credit/monitor-credit.md): the lender that trained on calm seas
 and sailed into a storm. There, the risk alarm fired. Here we ask the
 question it leaves open: did comparable applicants get worse, or did
-incomparable ones simply arrive?
+incomparable ones arrive?
 
 ```python
 import samesame as ss
@@ -144,9 +152,14 @@ support too, not a low-overlap artifact.
         print(f"shrinkage={lam:<4}  source ESS={e.source:7.2f}  target ESS={e.target:7.2f}")
     ```
 
-    Compare each ESS to its ``n`` via ``ESS/n``: a low ratio warns that a few
-    observations dominate the weighted result. What counts as "low", the
-    caveats, and why there is no universal cutoff: see [Effective sample
-    size](../../api/weighting.md#effective-sample-size) in the reference.
+    Compare each ESS to its ``n`` via ``ESS/n``. A low ratio (e.g., substantially
+    below ``0.5``) warns that the weighted result is fragile and largely driven by
+    a few observations. It is a warning, not a hard validation rule, and there is
+    no universal cutoff from Kish. The often-quoted ``ESS < n/4`` is only a rough
+    illustrative heuristic with no published empirical threshold (see Elvira et
+    al., 2022). If ``ESS/n`` remains low even at ``shrinkage=0.5``, the groups may
+    not have enough common support for a reliable weighted comparison; consider
+    leaving the comparison unweighted. See [Effective sample
+    size](../../api/weighting.md#effective-sample-size) for details.
 
 Full scripts: `examples/weighting/_code/` · Reference: [Importance weights](../../api/weighting.md).

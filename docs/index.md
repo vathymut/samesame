@@ -22,8 +22,10 @@ space is too large to interpret directly, and labels often arrive late. A model
 score reduces each observation (predicted risk, prediction error, confidence,
 or an outlier score) to a single interpretable number, one per row.
 
-`samesame` compares that score between **source** (the reference, such as
-training data or a past deployment) and **target** (the current deployment).
+`samesame` compares that score between source and target.
+
+--8<-- "snippets/source-target.txt"
+
 It separates two questions that should not be conflated. Two functions
 implement them:
 

@@ -3,7 +3,7 @@
 ## The question
 
 A distributional change is not necessarily a harmful change. For example, a
-credit portfolio may contain fewer very safe applicants and more medium-risk
+credit portfolio may contain fewer safe applicants and more medium-risk
 applicants while the high-risk tail remains unchanged. A generic shift test can
 detect this redistribution, but it cannot determine whether the change is
 harmful according to the outcome you care about.
