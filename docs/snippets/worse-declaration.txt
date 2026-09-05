@@ -1,0 +1,1 @@
+Declare the harmful direction from the meaning of the score before testing. Pass it as a string or as `ss.Worse`; the two forms are interchangeable:

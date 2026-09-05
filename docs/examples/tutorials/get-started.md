@@ -3,8 +3,7 @@
 In this tutorial, you will build a minimal monitoring workflow: create one score
 per observation, test for a difference between source and target, and test
 whether the change moved in a declared harmful direction. By the end, the
-two-question habit (*did it change? did it get worse?*) should feel as
-natural as checking a pulse.
+two-question habit (*did it change? did it get worse?*) should feel routine.
 
 **Source** is the reference distribution, such as training data or a past
 deployment; **target** is the distribution you want to evaluate, typically the
@@ -12,19 +11,17 @@ current deployment. Compare them using one interpretable score for each
 observation, such as predicted risk, prediction error, confidence, or an
 outlier score.
 
-- **Any shift?** Use `ss.test_shift` — a broad, two-sided screen for whether the score distinguishes source from target; an AUC of `0.5` is chance.
-- **Harmful shift?** Use `ss.test_harmful_shift(..., worse="higher"|"lower")` — a focused, one-sided test for whether the target moved toward the harmful tail you specify (`worse="lower"` flips the sign).
+- **Any shift?** Use `ss.test_shift`: a broad, two-sided screen for whether the score distinguishes source from target; an AUC of `0.5` is chance.
+- **Harmful shift?** Use `ss.test_harmful_shift(..., worse="higher"|"lower")`: a focused, one-sided test for whether the target moved toward the harmful tail you specify (`worse="lower"` flips the sign).
 
 The two tests can reach different conclusions because a shift may be
 harmless, harmful, or even beneficial depending on where it occurs. See
 [How the harm test works](../../explanation/harmful-shift-statistic.md) for the
 intuition and formula.
 
-Interpret `.pvalue` alongside the statistic and the distributions. A small
-p-value is evidence against label exchangeability (the assumption that source
-and target labels can be swapped). It is not evidence of business impact,
-causality, effect size, or the probability that the null is true. Evidence of
-a shift is not evidence of harm.
+Interpret `.pvalue` alongside the statistic and the distributions.
+
+--8<-- "snippets/pvalue-caveat.txt"
 
 ## 1 — Make source and target
 
@@ -61,7 +58,9 @@ domain_prob = cross_val_predict(
 ```
 
 !!! warning "Honest scores"
-    `samesame` only sees scores, not how they were made. When a fitted model produces the scores, generate them out of sample with `cross_val_predict`, `oob_decision_function_`, or a held-out set. In-sample predictions use information the model has already seen; they can make source and target look more separable than they are and invalidate the test.
+    `samesame` only sees scores, not how they were made.
+
+    --8<-- "snippets/honest-scores.txt"
 
 When testing a score with a clear interpretation of what constitutes a good or
 bad outcome, keep it separate from the domain probability. Domain probability
@@ -85,9 +84,9 @@ either direction (for example, `0.8` or `0.2`) can reject the null.
 ## 4 — Did it get worse?
 
 This is the question with a stake attached: not *did it change*, but *did it
-move toward the outcomes you fear*. Before running the test, declare which
-direction is harmful. Pass it as a string or as `ss.Worse`; the two forms
-are interchangeable.
+move toward the outcomes you fear*.
+
+--8<-- "snippets/worse-declaration.txt"
 
 --8<-- "snippets/worse-table.txt"
 
@@ -116,9 +115,9 @@ are interchangeable.
   toward the harmful tail you declared, not merely that some shift occurred.
 
 The test is directional by design: changing `worse` changes the harmful
-direction being tested. Decide whether higher or lower values are worse before
-looking at the result; do not choose the direction based on whichever gives a
-smaller p-value.
+direction being tested.
+
+--8<-- "snippets/worse-tip.txt"
 
 ??? tip "Reproducibility"
     Pass `rng=np.random.default_rng(12345)` to make the permutation-based p-values reproducible. The default is `n_resamples=9999`; `999` is useful while exploring, while `19999` gives better resolution for p-values below `0.001`.

@@ -10,9 +10,9 @@ harmful according to the outcome you care about.
 
 The harmful-shift test asks a narrower question: after orienting the score so
 that larger values mean worse outcomes, does the target place more mass beyond
-thresholds that the source rarely exceeds? The API therefore requires an
-explicit `worse` argument. Choose `worse` from the meaning of the score before
-looking at the result, not from whichever direction produces a smaller p-value.
+thresholds that the source rarely exceeds? The API therefore requires an explicit `worse` argument.
+
+--8<-- "snippets/worse-tip.txt"
 
 ## What the tests measure
 
@@ -41,8 +41,7 @@ AUC relative to its chance value of `0.5`; interpret the harmful-shift statistic
 relative to `result.null_distribution`, using the p-value as evidence against
 the null.
 
-Declare the harmful direction from the meaning of the score before testing.
-Pass it as a string or as `ss.Worse`; the two forms are interchangeable.
+--8<-- "snippets/worse-declaration.txt"
 
 --8<-- "snippets/worse-table.txt"
 

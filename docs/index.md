@@ -13,9 +13,9 @@
 > *Same, same but different ...*
 
 Every monitoring question starts as one word: *same?* Is the new sample the
-same as the reference? The name is the answer you hope to give. The work, and
-the reason this package exists, is the second half of the phrase: when the
-target is different, is it different in the way that matters, **worse**?
+same as the reference? The name is the answer you hope to give. The work is
+the second half of the phrase: when the target differs, does it differ in
+the way that matters? Is it **worse**?
 
 Production monitoring usually starts with a practical problem: the raw feature
 space is too large to interpret directly, and labels often arrive late. A model
@@ -24,11 +24,12 @@ or an outlier score) to a single interpretable number, one per row.
 
 `samesame` compares that score between **source** (the reference, such as
 training data or a past deployment) and **target** (the current deployment).
-It separates two questions that should not be conflated:
+It separates two questions that should not be conflated. Two functions
+implement them:
 
-- `ss.test_shift` — broad, two-sided screen for any shift (ROC AUC
+- `ss.test_shift`: broad, two-sided screen for any shift (ROC AUC
   `∫ TPR dFPR`, `0.5` is chance).
-- `ss.test_harmful_shift(..., worse="higher"|"lower")` — focused, one-sided
+- `ss.test_harmful_shift(..., worse="higher"|"lower")`: focused, one-sided
   test for movement toward the tail you declare harmful (weighted AUC
   `∫ TPR·(1−FPR)² dFPR`, which emphasizes the harmful tail).
 
@@ -36,10 +37,7 @@ It separates two questions that should not be conflated:
 --8<-- "snippets/quick-example.py:quick-example"
 ```
 
-A small p-value is evidence against label exchangeability (the assumption
-that source and target labels can be swapped). It is not evidence of business
-impact, causality, effect size, or the probability that the null is true.
-Evidence of a shift is not evidence of harm.
+--8<-- "snippets/pvalue-caveat.txt"
 
 ## Workflow
 
@@ -49,14 +47,14 @@ Evidence of a shift is not evidence of harm.
 3. **Ask whether the change is harmful** with `ss.test_harmful_shift(...,
    worse=...)`.
 4. **Address poor feature overlap** with `ss.domain_weights` only when it is a
-   real concern, since weighting changes the population the comparison
-   describes and is not a default correction.
+   real concern. Weighting changes the population the comparison describes
+   and is not a default correction.
 
 ## Where next
 
 - **[Get started](examples/tutorials/get-started.md)** — 5 min, both tests.
 - **[Is the new drug good enough?](examples/trials/check-drug-efficacy.md)** — the harm test, told as a trial with 70 scores and no model.
-- **[Monitor a credit model](examples/credit/monitor-credit.md)** — HELOC: one model, three signals, one storm.
+- **[Monitor a credit model](examples/credit/monitor-credit.md)** — HELOC: one model, three signals under the same shift.
 - **[Weight for common support](examples/weighting/weight-for-common-support.md)** — when to reweight, and what it costs.
 
 ## Installation

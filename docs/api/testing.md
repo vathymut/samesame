@@ -27,8 +27,7 @@ when you need a common-support comparison.
 | `ss.test_shift` | Do source and target differ? | Any score distributional change matters |
 | `ss.test_harmful_shift` | Did target move toward the specified harmful tail? | You can declare `worse` in advance |
 
-Declare the harmful direction from the meaning of the score before testing.
-Pass it as a string or as `ss.Worse`; the two forms are interchangeable:
+--8<-- "snippets/worse-declaration.txt"
 
 --8<-- "snippets/worse-table.txt"
 
@@ -52,11 +51,9 @@ p-values above zero (Phipson & Smyth, 2010).
   test works](../explanation/harmful-shift-statistic.md)). The result also
   records `.worse`.
 
-Honest p-values require out-of-sample scores. When a fitted model produces
-the scores, generate them out of sample with `cross_val_predict`,
-`oob_decision_function_`, or a held-out set. In-sample predictions use
-information the model has already seen; they can make source and target look
-more separable than they are and invalidate the test.
+Honest p-values require out-of-sample scores. `samesame` only sees scores, not how they were made.
+
+--8<-- "snippets/honest-scores.txt"
 
 ??? tip "Reproducibility"
     Pass `rng=np.random.default_rng(12345)` to make the permutation-based p-values reproducible. The default is `n_resamples=9999`; `999` is useful while exploring, while `19999` gives better resolution for p-values below `0.001`.

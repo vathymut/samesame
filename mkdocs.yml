@@ -9,9 +9,10 @@ copyright: Copyright &copy; Vathy M. Kamulete
 nav:
   - Home: index.md
   - Get started: examples/tutorials/get-started.md
-  - Guides:
+  - Examples:
     - Is the new drug good enough?: examples/trials/check-drug-efficacy.md
     - Monitor a credit model: examples/credit/monitor-credit.md
+  - How-to:
     - Weight for common support: examples/weighting/weight-for-common-support.md
   - Explanation:
     - How the harm test works: explanation/harmful-shift-statistic.md
