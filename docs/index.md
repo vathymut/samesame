@@ -12,28 +12,18 @@
 
 > *Same, same but different ...*
 
-Every monitoring question starts as one word: *same?* Is the new sample the
-same as the reference? The name is the answer you hope to give. The work is
-the second half of the phrase: when the target differs, does it differ in
-the way that matters? Is it **worse**?
+Every monitoring question starts with a simple check: *is this the same as the reference?* The package name is the answer you hope to give. The harder question follows when the answer is no — has the difference moved toward worse outcomes?
 
-Production monitoring usually starts with a practical problem: the raw feature
-space is too large to interpret directly, and labels often arrive late. A model
-score reduces each observation (predicted risk, prediction error, confidence,
-or an outlier score) to a single interpretable number, one per row.
+Production monitoring often starts from a practical constraint: the raw feature space is too large to scan directly, and labels arrive too late to guide early action. A model score addresses this by reducing each observation to one interpretable number per row, such as predicted risk, prediction error, confidence, or an outlier score.
 
 `samesame` compares that score between source and target.
 
 --8<-- "snippets/source-target.txt"
 
-It separates two questions that should not be conflated. Two functions
-implement them:
+It separates two questions that are easy to conflate. Two functions address them:
 
-- `ss.test_shift`: broad, two-sided screen for any shift (ROC AUC
-  `∫ TPR dFPR`, `0.5` is chance).
-- `ss.test_harmful_shift(..., worse="higher"|"lower")`: focused, one-sided
-  test for movement toward the tail you declare harmful (weighted AUC
-  `∫ TPR·(1−FPR)² dFPR`, which emphasizes the harmful tail).
+- `ss.test_shift`: a broad, two-sided screen for any shift. Its statistic is the ROC AUC (`∫ TPR dFPR`); `0.5` means the score does not separate source from target.
+- `ss.test_harmful_shift(..., worse="higher"|"lower")`: a focused, one-sided test for movement toward the tail you declare harmful. Its statistic is a weighted AUC (`∫ TPR·(1−FPR)² dFPR`) that gives more weight to the harmful tail.
 
 ```python
 --8<-- "snippets/quick-example.py:quick-example"
@@ -43,20 +33,16 @@ implement them:
 
 ## Workflow
 
-1. **Choose a score** that represents the outcome you care about; generate it
-   out of sample if it comes from a fitted model.
+1. **Choose a score** that captures the outcome you care about. If it comes from a fitted model, generate it out of sample.
 2. **Ask whether anything changed** with `ss.test_shift`.
-3. **Ask whether the change is harmful** with `ss.test_harmful_shift(...,
-   worse=...)`.
-4. **Address poor feature overlap** with `ss.domain_weights` only when it is a
-   real concern. Weighting changes the population the comparison describes
-   and is not a default correction.
+3. **Ask whether the change is harmful** with `ss.test_harmful_shift(..., worse=...)`.
+4. **Address poor feature overlap** with `ss.domain_weights` only when it is a real concern. Weighting reframes the comparison around common support and is not a default correction.
 
 ## Where next
 
-- **[Get started](examples/tutorials/get-started.md)** — 5 min, both tests.
-- **[Is the new drug good enough?](examples/trials/check-drug-efficacy.md)** — the harm test, told as a trial with 70 scores and no model.
-- **[Monitor a credit model](examples/credit/monitor-credit.md)** — HELOC: one model, three signals under the same shift.
+- **[Get started](examples/tutorials/get-started.md)** — 5 minutes, both tests.
+- **[Is the new drug good enough?](examples/trials/check-drug-efficacy.md)** — the harm test through a trial of 70 scores, with no model.
+- **[Monitor a credit model](examples/credit/monitor-credit.md)** — HELOC data: one model, three signals under the same shift.
 - **[Weight for common support](examples/weighting/weight-for-common-support.md)** — when to reweight, and what it costs.
 
 ## Installation
@@ -65,4 +51,4 @@ implement them:
 python -m pip install samesame
 ```
 
-Requires Python 3.12+, `numpy`, `scipy`, and `scikit-learn`. Not for randomized experiments, subgroup discovery, or sequential monitoring.
+Requires Python 3.12+, `numpy`, `scipy`, and `scikit-learn`. The package is designed for score-based monitoring and is not intended for randomized experiments, subgroup discovery, or sequential monitoring.

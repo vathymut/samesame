@@ -2,18 +2,9 @@
 
 ## Why weighting exists
 
-An unweighted comparison describes the full source and target samples, including
-regions seen by only one group. This is appropriate when those regions are part
-of the populations you want to compare. But when the groups barely overlap, a
-few observations from these regions can dominate the statistic even though the
-data provide little evidence about the other group's behavior there.
+An unweighted comparison describes the full source and target samples, including regions that only one group occupies. That is appropriate when those regions belong to the populations you want to compare. When the groups barely overlap, however, a small number of observations from those regions can dominate the statistic even though the data contain little information about how the other group would behave there.
 
-Importance weighting changes the question to one about **common support**
-(the regions represented by both groups). It can make the comparison more
-stable. It does not create information where the groups do not overlap, and
-it changes the population the test describes. It is not a default
-correction. Start unweighted and use weights only when poor feature overlap
-is a real concern.
+Importance weighting reframes the comparison around **common support** — the regions represented by both groups. It can make the test more stable, but it does not create information where the groups do not overlap, and it changes the population the test describes. It is not a default correction. Start without weights and introduce them only when poor feature overlap is a genuine concern.
 
 ??? details "Source files"
     `src/samesame/weights.py` · `src/samesame/_permutation.py`
@@ -41,21 +32,15 @@ ss.test_harmful_shift(source=source_scores, target=target_scores, worse="higher"
                       rng=np.random.default_rng(12345))
 ```
 
-Weights are normalized to sum to each group's size, so the groups retain their
-original nominal sample sizes in the permutation calculation. An inactive group
-gets weight `1`. Weights change which observations count more; they do not
-repair a poorly estimated domain classifier.
+Weights are normalized to sum to each group's size, so the groups keep their original nominal sample sizes in the permutation. A group that is not reweighted receives a weight of `1` for every observation. Weights change how much each observation counts; they do not compensate for a poorly estimated domain classifier.
 
 ## Domain weights
 
-Pass separate 1-D arrays of domain probabilities `P(target|x)`, aligned to the
-scores you intend to test; estimate them honestly, out of sample if a model
-produces them. Which group(s) to reweight:
+Pass separate one-dimensional arrays of domain probabilities `P(target|x)`, each aligned with the scores you intend to test. Estimate these probabilities honestly — out of sample when a model produces them. Choose which group or groups to reweight:
 
 --8<-- "snippets/reweight-table.txt"
 
-Shrinkage λ controls the bias–variance tradeoff of the correction; start at
-the default and check `ESS/n` before going more aggressive:
+Shrinkage `λ` controls the bias–variance trade-off of the correction. Start at the default and check `ESS/n` before making the correction more aggressive:
 
 --8<-- "snippets/shrinkage-table.txt"
 
@@ -68,19 +53,9 @@ ess = weights.effective_sample_size()  # Kish (1965): (sum w)² / sum w²
 print(ess.source, ess.target)  # compare each to its n
 ```
 
-Effective sample size (ESS) translates unequal weights into an approximate
-number of equally weighted observations (Kish, 1965: ``(sum w)² / sum w²``).
-Uniform weights give `ESS = n`; when one or two observations carry most of the
-mass, ESS approaches `1`.
+Effective sample size (ESS) translates unequal weights into an approximate count of equally weighted observations (Kish, 1965: `(sum w)² / sum w²`). Uniform weights yield `ESS = n`; when one or two observations carry most of the weight, ESS falls toward `1`.
 
-Compare each ESS to its ``n`` via ``ESS/n``. A low ratio (e.g., substantially
-below ``0.5``) warns that the weighted result is fragile and largely driven by
-a few observations; it is a warning, not a hard validation rule, and there is
-no universal cutoff from Kish. The often-quoted ``ESS < n/4`` is only a rough
-illustrative heuristic with no published empirical threshold (see Elvira et
-al., 2022). If ``ESS/n`` remains low even at ``shrinkage=0.5``, the groups may
-not have enough common support for a reliable weighted comparison; consider
-leaving the comparison unweighted.
+Compare each ESS to its `n` through `ESS/n`. A low ratio — for example well below `0.5` — signals that the weighted result is fragile and driven by a few observations. This is a warning, not a hard validation rule, and there is no universal cutoff from Kish. The often-quoted `ESS < n/4` is a rough illustrative heuristic with no published empirical threshold (see Elvira et al., 2022). If `ESS/n` stays low even at `shrinkage=0.5`, the groups may lack enough common support for a reliable weighted comparison; consider keeping the comparison unweighted.
 
 ## API
 

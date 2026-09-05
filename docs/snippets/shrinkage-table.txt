@@ -4,4 +4,4 @@
 | `0.5` | Default. Good balance — start here and check `ESS/n` before lowering. |
 | `1.0` | Uniform weights. No correction. |
 
-Lower = more aggressive; higher = more conservative.
+Lower values are more aggressive; higher values are more conservative.
