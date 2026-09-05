@@ -928,9 +928,9 @@ the way that matters? Is it <strong>worse</strong>?</p>
 space is too large to interpret directly, and labels often arrive late. A model
 score reduces each observation (predicted risk, prediction error, confidence,
 or an outlier score) to a single interpretable number, one per row.</p>
-<p><code>samesame</code> compares that score between <strong>source</strong> (the reference, such as
-training data or a past deployment) and <strong>target</strong> (the current deployment).
-It separates two questions that should not be conflated. Two functions
+<p><code>samesame</code> compares that score between source and target.</p>
+<p><strong>Source</strong> is the reference distribution (training data or a past deployment); <strong>target</strong> is the current deployment under evaluation.</p>
+<p>It separates two questions that should not be conflated. Two functions
 implement them:</p>
 <ul>
 <li><code>ss.test_shift</code>: broad, two-sided screen for any shift (ROC AUC

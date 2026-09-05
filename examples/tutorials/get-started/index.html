@@ -922,13 +922,12 @@
 per observation, test for a difference between source and target, and test
 whether the change moved in a declared harmful direction. By the end, the
 two-question habit (<em>did it change? did it get worse?</em>) should feel routine.</p>
-<p><strong>Source</strong> is the reference distribution, such as training data or a past
-deployment; <strong>target</strong> is the distribution you want to evaluate, typically the
-current deployment. Compare them using one interpretable score for each
+<p><strong>Source</strong> is the reference distribution (training data or a past deployment); <strong>target</strong> is the current deployment under evaluation.</p>
+<p>Compare source and target using one interpretable score for each
 observation, such as predicted risk, prediction error, confidence, or an
 outlier score.</p>
 <ul>
-<li><strong>Any shift?</strong> Use <code>ss.test_shift</code>: a broad, two-sided screen for whether the score distinguishes source from target; an AUC of <code>0.5</code> is chance.</li>
+<li><strong>Any shift?</strong> Use <code>ss.test_shift</code>: a broad, two-sided screen for whether the score distinguishes source from target. An AUC of <code>0.5</code> is chance.</li>
 <li><strong>Harmful shift?</strong> Use <code>ss.test_harmful_shift(..., worse="higher"|"lower")</code>: a focused, one-sided test for whether the target moved toward the harmful tail you specify (<code>worse="lower"</code> flips the sign).</li>
 </ul>
 <p>The two tests can reach different conclusions because a shift may be

@@ -917,6 +917,15 @@ overlap is a real concern. Weighting reframes the comparison around common
 support (the regions represented by both groups). It does not create
 information where the groups do not overlap, and it changes the population
 the test describes. It is not a default correction.</p>
+<div class="admonition note">
+<p class="admonition-title">Prerequisites</p>
+<p>You have run an unweighted comparison and seen a shift, and you can
+estimate honest <code>P(target|x)</code> out of sample (e.g., <code>cross_val_predict</code>
+or <code>oob_decision_function_</code>). Keep the domain probability separate from
+the interpretable score you test for harm. If you are new to <code>samesame</code>,
+start with <a href="../../tutorials/get-started/">Get started</a> and
+<a href="../../credit/monitor-credit/">Monitor a credit model</a> first.</p>
+</div>
 <h2 id="why-weight">Why weight?<a class="headerlink" href="#why-weight" title="Permanent link">&para;</a></h2>
 <p>A few low-overlap observations can dominate the permutation test, even if the
 region you care about has genuinely changed. Weighting reduces their influence
@@ -930,8 +939,8 @@ source and target sample sizes, the odds correction
 <code>p̂/(1-p̂)·n_source/n_target</code> (Bickel et al., 2007) estimates relative density
 and produces importance weights. This correction can be unstable when the
 groups separate well, because a few observations may receive huge weights.
-<code>samesame</code> stabilizes the weights with shrinkage <code>λ</code>, which blends them toward
-uniform weights (default <code>0.5</code>, Yamada et al., 2013):</p>
+<code>samesame</code> stabilizes the weights with shrinkage <code>λ</code> toward uniform weights.
+The default is <code>0.5</code> (Yamada et al., 2013):</p>
 <table>
 <thead>
 <tr>
@@ -1022,7 +1031,7 @@ the harmful shift is also present in the common-support region.</p>
 model</a>: the lender that trained on calm seas
 and sailed into a storm. There, the risk alarm fired. Here we ask the
 question it leaves open: did comparable applicants get worse, or did
-incomparable ones simply arrive?</p>
+incomparable ones arrive?</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ss</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
@@ -1120,10 +1129,15 @@ higher <code>shrinkage</code> gives more stable, more uniform weights. The defau
     <span class="n">e</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">effective_sample_size</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;shrinkage=</span><span class="si">{</span><span class="n">lam</span><span class="si">:</span><span class="s2">&lt;4</span><span class="si">}</span><span class="s2">  source ESS=</span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">source</span><span class="si">:</span><span class="s2">7.2f</span><span class="si">}</span><span class="s2">  target ESS=</span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">target</span><span class="si">:</span><span class="s2">7.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
-<p>Compare each ESS to its <code>n</code> via <code>ESS/n</code>: a low ratio warns that a few
-observations dominate the weighted result. What counts as "low", the
-caveats, and why there is no universal cutoff: see <a href="../../../api/weighting/#effective-sample-size">Effective sample
-size</a> in the reference.</p>
+<p>Compare each ESS to its <code>n</code> via <code>ESS/n</code>. A low ratio (e.g., substantially
+below <code>0.5</code>) warns that the weighted result is fragile and largely driven by
+a few observations. It is a warning, not a hard validation rule, and there is
+no universal cutoff from Kish. The often-quoted <code>ESS &lt; n/4</code> is only a rough
+illustrative heuristic with no published empirical threshold (see Elvira et
+al., 2022). If <code>ESS/n</code> remains low even at <code>shrinkage=0.5</code>, the groups may
+not have enough common support for a reliable weighted comparison; consider
+leaving the comparison unweighted. See <a href="../../../api/weighting/#effective-sample-size">Effective sample
+size</a> for details.</p>
 </details>
 <p>Full scripts: <code>examples/weighting/_code/</code> · Reference: <a href="../../../api/weighting/">Importance weights</a>.</p>
 
