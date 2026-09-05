@@ -856,15 +856,15 @@
 <h1 id="monitor-a-credit-model">Monitor a credit model<a class="headerlink" href="#monitor-a-credit-model" title="Permanent link">&para;</a></h1>
 <p>An alarm should tell you whether the score moved toward worse outcomes, not
 just that it moved. Here is the story that demand comes from.</p>
-<p>A lender trains a default-risk model on its safest book — applicants the
+<p>A lender trains a default-risk model on its safest book: applicants the
 bureau already smiles on. Then the book changes: a new partner channel, a
 bolder marketing push, a market that cooled. Riskier applicants start
 arriving, the model is still scoring, and two readings of the same dashboard
 look identical from the outside: <strong>the model decayed</strong>, or <strong>the population
 changed</strong>. One wants a retraining ticket; the other wants a business meeting.
-Using one HELOC split (External Risk Estimate &gt; 63 vs ≤ 63, Gardner et al.
-2023), this example works that story with three scores from the same model —
-they answer different questions and arrive at different times.</p>
+Using one HELOC split (ExternalRiskEstimate &gt; 63 vs ≤ 63; Gardner et al.,
+2023), this example works through that story with three scores from the same
+model; they answer different questions and arrive at different times.</p>
 <table>
 <thead>
 <tr>
@@ -895,16 +895,15 @@ they answer different questions and arrive at different times.</p>
 </tr>
 </tbody>
 </table>
-<p>Start with predicted risk when the model output already represents a harmful
-outcome. Use confidence for an early warning when labels are delayed, and
-prediction error for the clearest post-outcome check. <strong>Source</strong> is the
-reference distribution, such as training data or a past deployment; <strong>target</strong>
-is the current deployment. If you are new to <code>samesame</code>, start with <a href="../../tutorials/get-started/">Get
-started</a> — or with <a href="../../trials/check-drug-efficacy/">Is the new drug good
+<p><strong>Source</strong> is the reference distribution, such as training data or a past
+deployment; <strong>target</strong> is the current deployment. Which signal to lead with is
+a working choice; <a href="#which-signal-when">Which signal when?</a> compares them. If
+you are new to <code>samesame</code>, start with <a href="../../tutorials/get-started/">Get started</a>
+or with <a href="../../trials/check-drug-efficacy/">Is the new drug good
 enough?</a>, the same test told as a clinical
 trial with no model in sight.</p>
 <h2 id="the-dataset">The dataset<a class="headerlink" href="#the-dataset" title="Permanent link">&para;</a></h2>
-<p>HELOC stands for <strong>home equity line of credit</strong> — a revolving credit line
+<p>HELOC stands for <strong>home equity line of credit</strong>: a revolving credit line
 secured by the borrower's home. The data comes from the FICO Community
 Explainable AI Challenge: anonymized credit-bureau features for each
 applicant, and a target that records whether the borrower went 90 days past
@@ -915,7 +914,7 @@ mirror (<code>data_id=45554</code>) with <code>fetch_openml</code>, so the examp
 manual download.</p>
 <h2 id="the-split">The split<a class="headerlink" href="#the-split" title="Permanent link">&para;</a></h2>
 <p>A HELOC applicant arrives with a risk estimate from a third-party bureau
-service — the <code>ExternalRiskEstimate</code> feature; higher values mean a safer
+service, the <code>ExternalRiskEstimate</code> feature. Higher values mean a safer
 applicant. The challenge-winning model of the original FICO competition
 zeroed in on a cutoff of <strong>63</strong> on that estimate, and the
 <a href="https://tableshift.org">TableShift</a> benchmark (Gardner et al., 2023) adopted
@@ -927,7 +926,7 @@ as a deployment story:</p>
 <li><strong>Target</strong> — 2,188 applicants with estimate ≤ 63: the riskier book that
   arrives after deployment. Observed bad rate 81.9%.</li>
 </ul>
-<p>A model trained on the first group is deployed on the second — trained on
+<p>A model trained on the first group is deployed on the second: trained on
 calm seas, sailing into a storm. Mean predicted default risk climbs from
 about 44% to 73%, and the two rival readings return: model harm, or context
 change? The three signals below give the evidence; the <a href="../../weighting/weight-for-common-support/">weighting
@@ -957,7 +956,7 @@ p-value is expected.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Risk — no labels needed</label><label for="__tabbed_1_2">Confidence — no labels needed</label><label for="__tabbed_1_3">Errors — needs labels</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<p>Predicted risk — the model's <code>P(default)</code>; larger is worse, so
+<p>Predicted risk is the model's <code>P(default)</code>; larger is worse, so
 <code>worse="higher"</code>. Declare the direction before testing; never pick it by
 p-value.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -1004,9 +1003,9 @@ p-value.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;AUC </span><span class="si">{</span><span class="n">shift</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> p=</span><span class="si">{</span><span class="n">shift</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>   <span class="c1"># → 1.0000, 0.0002</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Harm </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> p=</span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>    <span class="c1"># → 0.2483, 0.0001</span>
 </code></pre></div>
-<p>The domain classifier separates the books almost perfectly (AUC 1.0000) —
-no surprise, since the split variable itself is a feature — and the harm
-test confirms the move is toward higher risk, not just any change.</p>
+<p>The domain classifier separates the books almost perfectly (AUC 1.0000);
+no surprise, since the split variable itself is a feature. The harm test
+confirms the move is toward higher risk, not just any change.</p>
 <table>
 <thead>
 <tr>
@@ -1042,7 +1041,8 @@ test confirms the move is toward higher risk, not just any change.</p>
 change is consistent with higher risk. This is a reason to investigate, not an
 automatic retraining decision. An AUC of <code>0.5</code> is chance; read the
 harmful-shift statistic against its null distribution and the model's risk
-scale (0–1). See <a href="../../../explanation/harmful-shift-statistic/">How it works</a>.</p>
+scale (0–1). See <a href="../../../explanation/harmful-shift-statistic/">How the harm test
+works</a>.</p>
 </div>
 <div class="tabbed-block">
 <p><code>LogitGap</code> is an <strong>outlier score</strong> for confidence: larger = more certain,
@@ -1106,8 +1106,8 @@ risk tab provides the probabilities.</p>
 <span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Harm </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> p=</span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># → 0.0409, 1.0000</span>
 </code></pre></div>
-<p>Not only is there no evidence of a harmful confidence drop — the direction
-of the statistic suggests the model is, if anything, <em>more</em> certain on the
+<p>There is no evidence of a harmful confidence drop; if anything, the
+direction of the statistic suggests the model is <em>more</em> certain on the
 deployment book. With a bad rate near 82%, predicted probabilities
 polarize toward the extremes, and certainty rides along. A model may
 become more confident while also becoming more risky: confidence is a
@@ -1152,11 +1152,11 @@ the target.</p>
 <li><strong>Confidence</strong> — use for an early warning when labels are not yet available.</li>
 <li><strong>Prediction error</strong> — use for the clearest post-outcome accuracy check.</li>
 </ul>
-<p>Risk and confidence moved without a single label arriving — that is what
+<p>Risk and confidence moved without a single label arriving; that is what
 makes them early. The error check waits for outcomes; here it runs on a
-random split where nothing is wrong, and finds exactly that. The question the
-storm book leaves open — did the alarm fire because comparable applicants got
-worse, or because incomparable ones arrived? — is precisely what <a href="../../weighting/weight-for-common-support/">Weight for
+random split where nothing is wrong, and finds exactly that. Did the alarm
+fire because comparable applicants got worse, or because incomparable ones
+arrived? That is precisely the question <a href="../../weighting/weight-for-common-support/">Weight for
 common support</a> interrogates.</p>
 
 

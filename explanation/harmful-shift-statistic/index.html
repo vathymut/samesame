@@ -958,11 +958,11 @@ Pass it as a string or as <code>ss.Worse</code>; the two forms are interchangeab
 are rare in the source, so the harmful statistic is large. When it rises late,
 the groups differ mainly in regions where the source already has substantial
 mass. AUC can still be large in that case, but the harmful statistic is smaller.</p>
-<p>Here, the ROC curve is an analysis tool for visualizing how a monitoring score
-ranks target relative to source across thresholds. AUC summarizes performance
-across all thresholds equally; the harmful statistic emphasizes thresholds
-rarely exceeded by source observations. For a worked example of this intuition
-on 70 real trial scores, see <a href="../../examples/trials/check-drug-efficacy/">Is the new drug good
+<p>In this view, the ROC curve is a diagnostic device: it shows how a monitoring
+score ranks target against source across thresholds. AUC summarizes
+performance across all thresholds equally; the harmful statistic emphasizes
+thresholds rarely exceeded by source observations. For a worked example of
+this intuition on 70 real trial scores, see <a href="../../examples/trials/check-drug-efficacy/">Is the new drug good
 enough?</a>.</p>
 <details class="details">
 <summary>The formula</summary>
@@ -991,14 +991,14 @@ costs <code>O(n log n)</code> per resample and <code>O(n)</code> memory.</p>
 <li>Phipson, B., Smyth, G. K. (2010). <em>Permutation P-values should never be
   zero: calculating exact P-values when permutations are randomly drawn</em>.
   <em>Statistical Applications in Genetics and Molecular Biology</em> 9(1):Article 39.
-  https://doi.org/10.2202/1544-6115.1585 — the <code>+1</code> smoothing used for both tests.</li>
+  <a href="https://doi.org/10.2202/1544-6115.1585">doi:10.2202/1544-6115.1585</a> — the <code>+1</code> smoothing used for both tests.</li>
 <li>Kish, L. (1965). <em>Survey Sampling</em>. Wiley — Kish's <code>(sum w)² / sum w²</code> effective sample size.</li>
 <li>Bickel, S., Brückner, M., Scheffer, T. (2007). <em>Discriminative learning for
-  differing training and test distributions</em>. <em>ICML</em> 24:81-88.
-  https://doi.org/10.1145/1273496.1273507 — density ratio <code>r = p/(1-p)·n_s/n_t</code>.</li>
+  differing training and test distributions</em>.   <em>ICML</em> 24:81-88.
+  <a href="https://doi.org/10.1145/1273496.1273507">doi:10.1145/1273496.1273507</a> — density ratio <code>r = p/(1-p)·n_s/n_t</code>.</li>
 <li>Yamada, M. et al. (2013). <em>Relative density-ratio estimation for robust
-  distribution comparison</em>. <em>Neural Comput.</em> 25(5):1324-1370.
-  https://doi.org/10.1162/NECO_a_00442 — relative importance weighting with <code>λ</code>.</li>
+  distribution comparison</em>.   <em>Neural Comput.</em> 25(5):1324-1370.
+  <a href="https://doi.org/10.1162/NECO_a_00442">doi:10.1162/NECO_a_00442</a> — relative importance weighting with <code>λ</code>.</li>
 <li>Elvira, V. et al. (2022). <em>Rethinking the effective sample size</em>.
   <em>Int. Stat. Rev.</em> 90(3):525-550 — caveats on ESS thresholds (no universal <code>n/4</code> cutoff).</li>
 </ul>

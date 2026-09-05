@@ -782,9 +782,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#domain_weights" class="md-nav__link">
+  <a href="#domain-weights" class="md-nav__link">
     <span class="md-ellipsis">
-      domain_weights
+      Domain weights
     </span>
   </a>
   
@@ -902,15 +902,17 @@
 regions seen by only one group. This is appropriate when those regions are part
 of the populations you want to compare. But when the groups barely overlap, a
 few observations from these regions can dominate the statistic even though the
-data provide little evidence about the other group's behaviour there.</p>
-<p>Importance weighting changes the question to one about <strong>common support</strong> — the
-regions represented by both groups. It can make the comparison more stable, but
-it does not create information where groups do not overlap, and it changes the
-population the test describes. It is not a default correction. Start unweighted
-and use weights only when poor feature overlap is a real concern.</p>
-<blockquote>
-<p>Source: <code>src/samesame/weights.py</code> · <code>src/samesame/_permutation.py</code></p>
-</blockquote>
+data provide little evidence about the other group's behavior there.</p>
+<p>Importance weighting changes the question to one about <strong>common support</strong>
+(the regions represented by both groups). It can make the comparison more
+stable. It does not create information where the groups do not overlap, and
+it changes the population the test describes. It is not a default
+correction. Start unweighted and use weights only when poor feature overlap
+is a real concern.</p>
+<details class="details">
+<summary>Source files</summary>
+<p><code>src/samesame/weights.py</code> · <code>src/samesame/_permutation.py</code></p>
+</details>
 <h2 id="when-to-use">When to use<a class="headerlink" href="#when-to-use" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -951,10 +953,10 @@ and use weights only when poor feature overlap is a real concern.</p>
 original nominal sample sizes in the permutation calculation. An inactive group
 gets weight <code>1</code>. Weights change which observations count more; they do not
 repair a poorly estimated domain classifier.</p>
-<h2 id="domain_weights"><code>domain_weights</code><a class="headerlink" href="#domain_weights" title="Permanent link">&para;</a></h2>
+<h2 id="domain-weights">Domain weights<a class="headerlink" href="#domain-weights" title="Permanent link">&para;</a></h2>
 <p>Pass separate 1-D arrays of domain probabilities <code>P(target|x)</code>, aligned to the
-scores you intend to test; estimate them out of sample or otherwise honestly.
-Which group(s) to reweight:</p>
+scores you intend to test; estimate them honestly, out of sample if a model
+produces them. Which group(s) to reweight:</p>
 <table>
 <thead>
 <tr>
@@ -981,7 +983,7 @@ Which group(s) to reweight:</p>
 </tr>
 </tbody>
 </table>
-<p>Shrinkage λ controls the bias–variance tradeoff of the correction — start at
+<p>Shrinkage λ controls the bias–variance tradeoff of the correction; start at
 the default and check <code>ESS/n</code> before going more aggressive:</p>
 <table>
 <thead>
@@ -997,7 +999,7 @@ the default and check <code>ESS/n</code> before going more aggressive:</p>
 </tr>
 <tr>
 <td><code>0.5</code></td>
-<td>Default (0.5). Good balance — start here and check <code>ESS/n</code> before lowering.</td>
+<td>Default. Good balance — start here and check <code>ESS/n</code> before lowering.</td>
 </tr>
 <tr>
 <td><code>1.0</code></td>
@@ -1015,13 +1017,14 @@ the default and check <code>ESS/n</code> before going more aggressive:</p>
 number of equally weighted observations (Kish, 1965: <code>(sum w)² / sum w²</code>).
 Uniform weights give <code>ESS = n</code>; when one or two observations carry most of the
 mass, ESS approaches <code>1</code>.</p>
-<p>Compare each ESS to its <code>n</code> via <code>ESS/n</code> — there is no universal cutoff from
-Kish. Treat a low ratio (e.g., substantially below <code>0.5</code>) as a warning that
-the weighted result is fragile and largely driven by a few observations, not as
-a hard validation rule. The often-quoted <code>ESS &lt; n/4</code> is only a rough
-illustrative heuristic with no published empirical threshold (see Elvira et al.,
-2022). If <code>ESS/n</code> remains low even at <code>shrinkage=0.5</code>, the groups may not
-have enough common support for a reliable weighted comparison.</p>
+<p>Compare each ESS to its <code>n</code> via <code>ESS/n</code>. A low ratio (e.g., substantially
+below <code>0.5</code>) warns that the weighted result is fragile and largely driven by
+a few observations; it is a warning, not a hard validation rule, and there is
+no universal cutoff from Kish. The often-quoted <code>ESS &lt; n/4</code> is only a rough
+illustrative heuristic with no published empirical threshold (see Elvira et
+al., 2022). If <code>ESS/n</code> remains low even at <code>shrinkage=0.5</code>, the groups may
+not have enough common support for a reliable weighted comparison; consider
+leaving the comparison unweighted.</p>
 <h2 id="api">API<a class="headerlink" href="#api" title="Permanent link">&para;</a></h2>
 
 

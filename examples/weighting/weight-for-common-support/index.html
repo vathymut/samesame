@@ -837,10 +837,10 @@
 
 <h1 id="weight-for-common-support">Weight for common support<a class="headerlink" href="#weight-for-common-support" title="Permanent link">&para;</a></h1>
 <p>Start with an unweighted comparison. Use weighting only when poor feature
-overlap is a real concern, because weighting changes the question to common
-support — the regions represented by both groups — without creating information
-where groups do not overlap. It also changes the population the test describes
-and is not a default correction.</p>
+overlap is a real concern. Weighting reframes the comparison around common
+support (the regions represented by both groups). It does not create
+information where the groups do not overlap, and it changes the population
+the test describes. It is not a default correction.</p>
 <h2 id="why-weight">Why weight?<a class="headerlink" href="#why-weight" title="Permanent link">&para;</a></h2>
 <p>A few low-overlap observations can dominate the permutation test, even if the
 region you care about has genuinely changed. Weighting reduces their influence
@@ -870,7 +870,7 @@ uniform weights (default <code>0.5</code>, Yamada et al., 2013):</p>
 </tr>
 <tr>
 <td><code>0.5</code></td>
-<td>Default (0.5). Good balance — start here and check <code>ESS/n</code> before lowering.</td>
+<td>Default. Good balance — start here and check <code>ESS/n</code> before lowering.</td>
 </tr>
 <tr>
 <td><code>1.0</code></td>
@@ -935,16 +935,18 @@ distributional membership, not outcome quality.</p>
 <span class="n">weighted</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_scores</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_scores</span><span class="p">,</span> <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unweighted p=</span><span class="si">{</span><span class="n">unweighted</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> Weighted p=</span><span class="si">{</span><span class="n">weighted</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># → 1.0, 0.62</span>
 </code></pre></div>
+<p>Neither test finds a shift in this synthetic draw; the example shows the
+plumbing. The HELOC case below shows the contrast between modes on real data.</p>
 <p>Use the same <code>worse</code> value for both comparisons so that they test the same
 harmful direction. If a strong unweighted result becomes weak after weighting,
 the evidence was concentrated in low-overlap regions. If the result persists,
 the harmful shift is also present in the common-support region.</p>
 <h2 id="heloc-example">HELOC example<a class="headerlink" href="#heloc-example" title="Permanent link">&para;</a></h2>
 <p>This example uses the same source and target split as <a href="../../credit/monitor-credit/">Monitor a credit
-model</a> — the lender that trained on calm seas
+model</a>: the lender that trained on calm seas
 and sailed into a storm. There, the risk alarm fired. Here we ask the
-question it begs: did comparable applicants get worse, or did incomparable
-ones simply arrive?</p>
+question it leaves open: did comparable applicants get worse, or did
+incomparable ones simply arrive?</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ss</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
@@ -1004,7 +1006,7 @@ ones simply arrive?</p>
 sizes say how much water that carries: the source side of the comparison
 rests on an effective 2,491 of 7,683 applications (ESS/n ≈ 0.32), the target
 side on 1,532 of 2,188 (≈ 0.70). The harmful shift is present on common
-support too — not a low-overlap artifact.</p>
+support too, not a low-overlap artifact.</p>
 <details class="details">
 <summary>What a stricter protocol finds (research)</summary>
 <p>A companion research study on common-support weighting (under review,
@@ -1012,20 +1014,16 @@ support too — not a low-overlap artifact.</p>
 variable is dropped from the features, the domain classifier is
 cross-validated, and the test runs on held-out subsamples (1,536 source
 and 2,776 target applications; 499 permutations, <code>shrinkage=0.5</code>).
-Under that protocol, the three standard modes — unweighted,
-source-weighted, target-weighted — all reject at the permutation minimum
+Under that protocol, the three standard modes (unweighted,
+source-weighted, target-weighted) all reject at the permutation minimum
 (p = 0.002), but the doubly weighted test does not (p = 0.376; ESS 401 of
 1,536 source, 803 of 2,776 target). The verdict flips because most of
-each population lies outside the common support: the alarm was carried by
-applicant profiles from low-overlap regions — context change, not model
+each population lies outside the common support. The alarm was carried by
+applicant profiles from low-overlap regions: context change, not model
 harm on comparable applicants. The protocols differ, and that is the
 lesson: check the contrast between modes on <em>your</em> protocol before
 trusting any single p-value.</p>
 </details>
-<p>Use <code>source</code> when source has low-overlap cases outside target support
-(reweight source toward target; target unchanged). Use <code>target</code> for the
-reverse (reweight target toward source). Use <code>both</code> (default) when both groups
-have low-overlap regions and the intended comparison is their mutual support.</p>
 <details class="details">
 <summary>Diagnose weight concentration (ESS)</summary>
 <p>Weighting can concentrate the comparison on a few observations. Check the effective sample size (ESS) to see whether the weighted result is supported by enough information.</p>
@@ -1040,14 +1038,16 @@ have low-overlap regions and the intended comparison is their mutual support.</p
 </code></pre></div>
 <p>Lower <code>shrinkage</code> gives a stronger correction but higher-variance weights;
 higher <code>shrinkage</code> gives more stable, more uniform weights. The default
-<code>shrinkage=0.5</code> is empirically supported as a good tradeoff between
-correction strength and stability.</p>
+<code>shrinkage=0.5</code> balances correction strength and stability.</p>
 <div class="highlight"><pre><span></span><code><span class="k">for</span> <span class="n">lam</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]:</span>
     <span class="n">w</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">domain_weights</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_prob_demo</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_prob_demo</span><span class="p">,</span> <span class="n">reweight</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">shrinkage</span><span class="o">=</span><span class="n">lam</span><span class="p">)</span>
     <span class="n">e</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">effective_sample_size</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;shrinkage=</span><span class="si">{</span><span class="n">lam</span><span class="si">:</span><span class="s2">&lt;4</span><span class="si">}</span><span class="s2">  source ESS=</span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">source</span><span class="si">:</span><span class="s2">7.2f</span><span class="si">}</span><span class="s2">  target ESS=</span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">target</span><span class="si">:</span><span class="s2">7.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
-<p>Compare each ESS to its <code>n</code> via <code>ESS/n</code> — a low ratio (e.g., substantially below <code>0.5</code>) warns that a few observations dominate, not a hard cutoff. The <code>ESS &lt; n/4</code> figure sometimes quoted is only a rough illustrative heuristic with no published threshold (Kish gives no cutoff; see Elvira et al., 2022). If <code>ESS/n</code> remains low even at the default <code>shrinkage=0.5</code>, the groups have insufficient common support for reliable weighting; consider leaving the comparison unweighted.</p>
+<p>Compare each ESS to its <code>n</code> via <code>ESS/n</code>: a low ratio warns that a few
+observations dominate the weighted result. What counts as "low", the
+caveats, and why there is no universal cutoff: see <a href="../../../api/weighting/#effective-sample-size">Effective sample
+size</a> in the reference.</p>
 </details>
 <p>Full scripts: <code>examples/weighting/_code/</code> · Reference: <a href="../../../api/weighting/">Importance weights</a>.</p>
 

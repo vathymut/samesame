@@ -890,23 +890,24 @@
 
 
 <h1 id="shift-testing">Shift testing<a class="headerlink" href="#shift-testing" title="Permanent link">&para;</a></h1>
-<p>Reduce each observation to one interpretable score — predicted risk,
-prediction error, confidence, or outlier score — and compare its
-distribution between <strong>source</strong> (reference) and <strong>target</strong> (current
-deployment), not raw feature tables. First, choose a score that represents
-the question you care about and compute it for every observation.</p>
+<p>Reduce each observation to one interpretable score, such as predicted risk,
+prediction error, confidence, or an outlier score. Compare its distribution
+between <strong>source</strong> (reference) and <strong>target</strong> (current deployment) rather than
+a raw feature table. Choose a score that represents the question you care
+about and compute it for every observation.</p>
 <p><code>test_shift</code> is a broad, two-sided screen (AUC <code>∫ TPR dFPR</code>, <code>0.5</code> is
 chance). <code>test_harmful_shift</code> is a focused, one-sided tail test (weighted AUC
-<code>∫ TPR·(1−FPR)² dFPR</code>) that emphasizes thresholds source rarely exceeds. Use
-the first when any change matters; the second when you can pre-specify
-<code>worse</code>.</p>
+<code>∫ TPR·(1−FPR)² dFPR</code>) that emphasizes thresholds the source rarely
+exceeds. Use the first when any change matters; the second when you can
+pre-specify <code>worse</code>.</p>
 <p><code>P(target|x)</code> from a domain classifier can be a useful score for detecting any
 shift, but do not reuse it as the harm score. It describes how target-like an
 observation is, not whether its outcome is harmful. Use it to build weights
 when you need a common-support comparison.</p>
-<blockquote>
-<p>Source: <code>src/samesame/shift.py</code> · <code>src/samesame/_permutation.py</code> · <code>src/samesame/_statistics.py</code></p>
-</blockquote>
+<details class="details">
+<summary>Source files</summary>
+<p><code>src/samesame/shift.py</code> · <code>src/samesame/_permutation.py</code> · <code>src/samesame/_statistics.py</code></p>
+</details>
 <h2 id="which-function">Which function?<a class="headerlink" href="#which-function" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -965,25 +966,26 @@ Pass it as a string or as <code>ss.Worse</code>; the two forms are interchangeab
 <h2 id="reading-results">Reading results<a class="headerlink" href="#reading-results" title="Permanent link">&para;</a></h2>
 <p>Both return <code>.statistic</code>, <code>.pvalue</code>, and <code>.null_distribution</code>. The null
 distribution is produced by permuting group labels while keeping scores and
-weights fixed. In other words, it represents what values are plausible if the
-source and target labels were interchangeable.</p>
-<p>Interpret <code>.pvalue</code> as evidence against that null, not as the probability that
-the null is true and not as an effect size. Two-sided <code>test_shift</code> doubles the
-smaller tail, capped at 1; <code>test_harmful_shift</code> uses the one-sided <code>greater</code>
-alternative. A <code>+1</code> correction keeps permutation p-values above zero
-(Phipson &amp; Smyth, 2010).</p>
+weights fixed. It represents what values are plausible if the source and
+target labels were interchangeable.</p>
+<p>Interpret <code>.pvalue</code> as evidence against label exchangeability, not as the
+probability that the null is true and not as an effect size. Two-sided
+<code>test_shift</code> doubles the smaller tail, capped at 1; <code>test_harmful_shift</code> uses
+the one-sided <code>greater</code> alternative. A <code>+1</code> correction keeps permutation
+p-values above zero (Phipson &amp; Smyth, 2010).</p>
 <ul>
 <li><code>test_shift</code>: <code>.statistic</code> is AUC. An AUC of <code>0.5</code> means the score does not
   separate the groups; values farther from <code>0.5</code> indicate stronger separation.</li>
-<li><code>test_harmful_shift</code>: <code>.statistic</code> is weighted AUC — read it against
+<li><code>test_harmful_shift</code>: <code>.statistic</code> is weighted AUC; read it against
   <code>result.null_distribution</code> and the score's own scale (see <a href="../../explanation/harmful-shift-statistic/">How the harm
   test works</a>). The result also
   records <code>.worse</code>.</li>
 </ul>
-<p>For honest p-values, scores from a fitted model must be generated out of sample
-(<code>cross_val_predict</code>, <code>oob_decision_function_</code>, or a held-out set). In-sample
-predictions can make source and target look more separable simply because the
-scoring model has memorized its inputs, invalidating the test.</p>
+<p>Honest p-values require out-of-sample scores. When a fitted model produces
+the scores, generate them out of sample with <code>cross_val_predict</code>,
+<code>oob_decision_function_</code>, or a held-out set. In-sample predictions use
+information the model has already seen; they can make source and target look
+more separable than they are and invalidate the test.</p>
 <details class="tip">
 <summary>Reproducibility</summary>
 <p>Pass <code>rng=np.random.default_rng(12345)</code> to make the permutation-based p-values reproducible. The default is <code>n_resamples=9999</code>; <code>999</code> is useful while exploring, while <code>19999</code> gives better resolution for p-values below <code>0.001</code>.</p>

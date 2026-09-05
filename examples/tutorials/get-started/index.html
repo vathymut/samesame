@@ -845,13 +845,13 @@
 <p>In this tutorial, you will build a minimal monitoring workflow: create one score
 per observation, test for a difference between source and target, and test
 whether the change moved in a declared harmful direction. By the end, the
-two-question habit — <em>did it change? did it get worse?</em> — should feel as
+two-question habit (<em>did it change? did it get worse?</em>) should feel as
 natural as checking a pulse.</p>
-<p>In this tutorial, <strong>source</strong> is the reference distribution, such as training
-data or a past deployment, and <strong>target</strong> is the distribution you want to
-evaluate, typically the current deployment. Compare them using one
-interpretable score for each observation, such as predicted risk, prediction
-error, confidence, or an outlier score.</p>
+<p><strong>Source</strong> is the reference distribution, such as training data or a past
+deployment; <strong>target</strong> is the distribution you want to evaluate, typically the
+current deployment. Compare them using one interpretable score for each
+observation, such as predicted risk, prediction error, confidence, or an
+outlier score.</p>
 <ul>
 <li><strong>Any shift?</strong> Use <code>ss.test_shift</code> — a broad, two-sided screen for whether the score distinguishes source from target; an AUC of <code>0.5</code> is chance.</li>
 <li><strong>Harmful shift?</strong> Use <code>ss.test_harmful_shift(..., worse="higher"|"lower")</code> — a focused, one-sided test for whether the target moved toward the harmful tail you specify (<code>worse="lower"</code> flips the sign).</li>
@@ -860,9 +860,11 @@ error, confidence, or an outlier score.</p>
 harmless, harmful, or even beneficial depending on where it occurs. See
 <a href="../../../explanation/harmful-shift-statistic/">How the harm test works</a> for the
 intuition and formula.</p>
-<p>Interpret <code>.pvalue</code> alongside the statistic and the distributions: a small
-p-value indicates evidence against label exchangeability, i.e. the assumption
-that the two samples can be swapped, not the size or cause of the change.</p>
+<p>Interpret <code>.pvalue</code> alongside the statistic and the distributions. A small
+p-value is evidence against label exchangeability (the assumption that source
+and target labels can be swapped). It is not evidence of business impact,
+causality, effect size, or the probability that the null is true. Evidence of
+a shift is not evidence of harm.</p>
 <h2 id="1-make-source-and-target">1 — Make source and target<a class="headerlink" href="#1-make-source-and-target" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">)</span>
@@ -872,14 +874,14 @@ that the two samples can be swapped, not the size or cause of the change.</p>
 <span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">source</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">target</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)]</span>
 </code></pre></div>
 <p>In production, the source and target should represent the two populations
-relevant to your monitoring question - for example, training data versus a
-current deployment. Choose the source carefully: every conclusion describes
+relevant to your monitoring question (for example, training data versus a
+current deployment). Choose the source carefully: every conclusion describes
 the target relative to that reference.</p>
 <h2 id="2-score-out-of-sample">2 — Score out of sample<a class="headerlink" href="#2-score-out-of-sample" title="Permanent link">&para;</a></h2>
 <p>Each row must be scored by a model that did not see that row. Here, a domain
 classifier estimates <code>P(target|x)</code>, the probability that the row belongs to the
 target rather than the source. Differences in this probability indicate how
-well the features distinguish the two distributions, making it a useful
+well the features distinguish the two distributions. That makes it a useful
 generic score for detecting <em>any</em> shift:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">HistGradientBoostingClassifier</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">cross_val_predict</span>
@@ -891,7 +893,7 @@ generic score for detecting <em>any</em> shift:</p>
 </code></pre></div>
 <div class="admonition warning">
 <p class="admonition-title">Honest scores</p>
-<p><code>samesame</code> only sees scores, not how they were made. If scores come from a fitted model, generate them out of sample using <code>cross_val_predict</code>, <code>oob_decision_function_</code>, or a held-out set. In-sample predictions let the model separate source from target using information it has already seen, which can produce misleading results and invalidate the test.</p>
+<p><code>samesame</code> only sees scores, not how they were made. When a fitted model produces the scores, generate them out of sample with <code>cross_val_predict</code>, <code>oob_decision_function_</code>, or a held-out set. In-sample predictions use information the model has already seen; they can make source and target look more separable than they are and invalidate the test.</p>
 </div>
 <p>When testing a score with a clear interpretation of what constitutes a good or
 bad outcome, keep it separate from the domain probability. Domain probability
@@ -906,12 +908,12 @@ weights, and use the interpretable score as the harm score.</p>
 </code></pre></div>
 <p>An AUC near <code>0.5</code> indicates little separation, while values farther from <code>0.5</code>
 indicate stronger separation. Because <code>test_shift</code> is two-sided, separation in
-either direction - for example, <code>0.8</code> or <code>0.2</code> - can reject the null.</p>
+either direction (for example, <code>0.8</code> or <code>0.2</code>) can reject the null.</p>
 <h2 id="4-did-it-get-worse">4 — Did it get worse?<a class="headerlink" href="#4-did-it-get-worse" title="Permanent link">&para;</a></h2>
 <p>This is the question with a stake attached: not <em>did it change</em>, but <em>did it
-move toward the outcomes you fear</em>. Before running the test, declare whether
-higher or lower scores represent worse outcomes. Pass this choice as a string
-or as <code>ss.Worse</code>; the two forms are interchangeable.</p>
+move toward the outcomes you fear</em>. Before running the test, declare which
+direction is harmful. Pass it as a string or as <code>ss.Worse</code>; the two forms
+are interchangeable.</p>
 <table>
 <thead>
 <tr>

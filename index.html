@@ -845,14 +845,13 @@
 <p><em>Same, same but different ...</em></p>
 </blockquote>
 <p>Every monitoring question starts as one word: <em>same?</em> Is the new sample the
-same as the reference? The name is the answer you hope to give. The work —
-and the reason this package exists — is the second half of the phrase: when
-the target is different, is it different in the way that matters, <strong>worse</strong>?</p>
+same as the reference? The name is the answer you hope to give. The work, and
+the reason this package exists, is the second half of the phrase: when the
+target is different, is it different in the way that matters, <strong>worse</strong>?</p>
 <p>Production monitoring usually starts with a practical problem: the raw feature
 space is too large to interpret directly, and labels often arrive late. A model
-score reduces each observation to one interpretable score — predicted risk,
-prediction error, confidence, or outlier score — so each row has one number to
-monitor.</p>
+score reduces each observation (predicted risk, prediction error, confidence,
+or an outlier score) to a single interpretable number, one per row.</p>
 <p><code>samesame</code> compares that score between <strong>source</strong> (the reference, such as
 training data or a past deployment) and <strong>target</strong> (the current deployment).
 It separates two questions that should not be conflated:</p>
@@ -884,18 +883,20 @@ It separates two questions that should not be conflated:</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Harm  statistic: </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, p-value: </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="c1"># → Harm  statistic: 0.155, p-value: 0.0001</span>
 </code></pre></div>
-<p>Read <code>.pvalue</code> as evidence against label exchangeability — not business
-impact, causality, or the probability the null is true. Evidence of a shift
-is not evidence of harm.</p>
+<p>A small p-value is evidence against label exchangeability (the assumption
+that source and target labels can be swapped). It is not evidence of business
+impact, causality, effect size, or the probability that the null is true.
+Evidence of a shift is not evidence of harm.</p>
 <h2 id="workflow">Workflow<a class="headerlink" href="#workflow" title="Permanent link">&para;</a></h2>
 <ol>
-<li><strong>Choose a score</strong> that represents the outcome you care about. Generate it
+<li><strong>Choose a score</strong> that represents the outcome you care about; generate it
    out of sample if it comes from a fitted model.</li>
 <li><strong>Ask whether anything changed</strong> with <code>ss.test_shift</code>.</li>
 <li><strong>Ask whether the change is harmful</strong> with <code>ss.test_harmful_shift(...,
    worse=...)</code>.</li>
 <li><strong>Address poor feature overlap</strong> with <code>ss.domain_weights</code> only when it is a
-   real concern; weighting changes the population the comparison describes.</li>
+   real concern, since weighting changes the population the comparison
+   describes and is not a default correction.</li>
 </ol>
 <h2 id="where-next">Where next<a class="headerlink" href="#where-next" title="Permanent link">&para;</a></h2>
 <ul>
@@ -907,7 +908,7 @@ is not evidence of harm.</p>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>samesame
 </code></pre></div>
-<p>Requires Python 3.12+, <code>numpy</code>, <code>scipy</code>, <code>scikit-learn</code>. Not for randomized experiments, subgroup discovery, or sequential alarming.</p>
+<p>Requires Python 3.12+, <code>numpy</code>, <code>scipy</code>, and <code>scikit-learn</code>. Not for randomized experiments, subgroup discovery, or sequential monitoring.</p>
 
 
 
