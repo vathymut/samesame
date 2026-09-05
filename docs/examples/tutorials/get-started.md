@@ -49,6 +49,13 @@ domain_prob = cross_val_predict(
 
 When you test a score with a clear notion of better and worse, keep it separate from the domain probability. Domain probability describes group membership, not outcome quality. Use it to build weights when needed, and use the interpretable score as the harm score.
 
+??? tip "Why a classifier?"
+    Estimating `P(target|x)` and checking whether it separates source from target
+    *is* a two-sample test — fit a classifier to the source/target labels and see
+    if it does better than chance. For intuition on why this humble test often
+    rivals kernel tests and needs no RKHS machinery, see
+    [In gentle praise of classifier tests](https://vathymut.org/posts/2022-01-22-in-gentle-praise-of-modern-tests/).
+
 ## 3 — Did anything change?
 
 ```python

@@ -64,3 +64,6 @@ research/**/*.pdf
 
 # Local git worktrees
 .worktrees/
+
+# Unslop voice samples (local, contains author voice fingerprint)
+.unslop/

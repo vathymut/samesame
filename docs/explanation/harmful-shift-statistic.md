@@ -8,6 +8,13 @@ The harmful-shift test asks a narrower question. After orienting the score so th
 
 --8<-- "snippets/worse-tip.txt"
 
+??? note "Why not just test for equal distribution?"
+    Tests of equal distribution reject on any difference — even a benign one
+    (e.g. fewer outliers in the target) — and tests of means miss heavy-tail
+    harm (e.g. Netflix PlayDelay). For the story behind *The Question: are we
+    worse off?* and why `test_harmful_shift` answers it, see
+    [Are you OK? Test for harmful (adverse) shift](https://vathymut.org/posts/2023-01-03-are-you-ok/).
+
 ## What the tests measure
 
 Both tests use permutations on the same source-versus-target comparison, keeping scores and weights fixed. `test_shift` weighs all thresholds equally and summarizes overall separation with the ROC AUC. `test_harmful_shift` gives extra weight to thresholds that are rare in the source, so it responds more to target mass in the harmful tail. Their statistics are:
