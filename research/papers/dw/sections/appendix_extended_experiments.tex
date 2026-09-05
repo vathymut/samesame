@@ -39,7 +39,7 @@ The main text uses logistic regression as the domain classifier. This appendix r
 
 Table~\ref{tab:domain-clf-sensitivity} reports the rejection rate of the doubly weighted test at each severity level. All three classifiers produce similar calibration: the doubly weighted test stays near the nominal $5\%$ level across the severity grid. The random forest and HistGBM produce more concentrated weights (lower ESS) because their flexible decision boundaries separate source and target more sharply, but this does not inflate false alarms.
 
-\paragraph{Real-data classifier and split robustness (pre-registration for revision).} The synthetic sensitivity study isolates classifier choice from feature dimensionality. For the revision we will repeat the HELOC real-data workflow with an alternative domain classifier (random forest with $100$ trees) and with a perturbed split variable (ACS Income re-split on a different \texttt{DIVISION} threshold) to verify that the $401/803$ ESS and the $p=0.376$ non-rejection are not artifacts of a single classifier or split definition. Committed \texttt{results/} will be regenerated from the rebased branch before submission; until then \texttt{verify\_result\_metadata} reports the current artifacts as pre-stale (see Reproducibility Plan).
+\paragraph{Real-data classifier and split robustness.} The synthetic study isolates classifier choice; for the revision the HELOC checks will be repeated with an alternative domain classifier (random forest) and a perturbed split (ExternalRiskEstimate $>60$) to confirm the reported ESS and $p$-value regime. Committed \texttt{results/} remain pre-stale until regeneration (see Reproducibility Plan).
 
 \begin{table}[t]
 	\centering
