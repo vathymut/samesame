@@ -1,0 +1,1 @@
+Decide whether higher or lower values are worse before looking at the result; do not choose the direction based on whichever gives a smaller p-value.

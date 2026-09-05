@@ -1,0 +1,1 @@
+When a fitted model produces the scores, generate them out of sample with `cross_val_predict`, `oob_decision_function_`, or a held-out set. In-sample predictions use information the model has already seen; they can make source and target look more separable than they are and invalidate the test.

@@ -273,7 +273,29 @@
   
     
   
-  Guides
+  Examples
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="examples/weighting/weight-for-common-support/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  How-to
 
         </a>
       </li>
@@ -504,8 +526,6 @@
       
         
       
-        
-      
     
     
     
@@ -529,7 +549,7 @@
   
   
   <span class="md-ellipsis">
-    Guides
+    Examples
     
   </span>
   
@@ -540,7 +560,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
-            Guides
+            Examples
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -589,6 +609,62 @@
   
 
               
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    How-to
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            How-to
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -646,10 +722,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
             
   
   
@@ -662,8 +738,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             Explanation
           </label>
@@ -727,10 +803,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
             
   
   
@@ -743,8 +819,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             Reference
           </label>
@@ -845,20 +921,21 @@
 <p><em>Same, same but different ...</em></p>
 </blockquote>
 <p>Every monitoring question starts as one word: <em>same?</em> Is the new sample the
-same as the reference? The name is the answer you hope to give. The work, and
-the reason this package exists, is the second half of the phrase: when the
-target is different, is it different in the way that matters, <strong>worse</strong>?</p>
+same as the reference? The name is the answer you hope to give. The work is
+the second half of the phrase: when the target differs, does it differ in
+the way that matters? Is it <strong>worse</strong>?</p>
 <p>Production monitoring usually starts with a practical problem: the raw feature
 space is too large to interpret directly, and labels often arrive late. A model
 score reduces each observation (predicted risk, prediction error, confidence,
 or an outlier score) to a single interpretable number, one per row.</p>
 <p><code>samesame</code> compares that score between <strong>source</strong> (the reference, such as
 training data or a past deployment) and <strong>target</strong> (the current deployment).
-It separates two questions that should not be conflated:</p>
+It separates two questions that should not be conflated. Two functions
+implement them:</p>
 <ul>
-<li><code>ss.test_shift</code> — broad, two-sided screen for any shift (ROC AUC
+<li><code>ss.test_shift</code>: broad, two-sided screen for any shift (ROC AUC
   <code>∫ TPR dFPR</code>, <code>0.5</code> is chance).</li>
-<li><code>ss.test_harmful_shift(..., worse="higher"|"lower")</code> — focused, one-sided
+<li><code>ss.test_harmful_shift(..., worse="higher"|"lower")</code>: focused, one-sided
   test for movement toward the tail you declare harmful (weighted AUC
   <code>∫ TPR·(1−FPR)² dFPR</code>, which emphasizes the harmful tail).</li>
 </ul>
@@ -883,10 +960,7 @@ It separates two questions that should not be conflated:</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Harm  statistic: </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, p-value: </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="c1"># → Harm  statistic: 0.155, p-value: 0.0001</span>
 </code></pre></div>
-<p>A small p-value is evidence against label exchangeability (the assumption
-that source and target labels can be swapped). It is not evidence of business
-impact, causality, effect size, or the probability that the null is true.
-Evidence of a shift is not evidence of harm.</p>
+<p>A small p-value is evidence against label exchangeability (the assumption that source and target labels can be swapped). It is not evidence of business impact, causality, effect size, or the probability that the null is true. Evidence of a shift is not evidence of harm.</p>
 <h2 id="workflow">Workflow<a class="headerlink" href="#workflow" title="Permanent link">&para;</a></h2>
 <ol>
 <li><strong>Choose a score</strong> that represents the outcome you care about; generate it
@@ -895,14 +969,14 @@ Evidence of a shift is not evidence of harm.</p>
 <li><strong>Ask whether the change is harmful</strong> with <code>ss.test_harmful_shift(...,
    worse=...)</code>.</li>
 <li><strong>Address poor feature overlap</strong> with <code>ss.domain_weights</code> only when it is a
-   real concern, since weighting changes the population the comparison
-   describes and is not a default correction.</li>
+   real concern. Weighting changes the population the comparison describes
+   and is not a default correction.</li>
 </ol>
 <h2 id="where-next">Where next<a class="headerlink" href="#where-next" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong><a href="examples/tutorials/get-started/">Get started</a></strong> — 5 min, both tests.</li>
 <li><strong><a href="examples/trials/check-drug-efficacy/">Is the new drug good enough?</a></strong> — the harm test, told as a trial with 70 scores and no model.</li>
-<li><strong><a href="examples/credit/monitor-credit/">Monitor a credit model</a></strong> — HELOC: one model, three signals, one storm.</li>
+<li><strong><a href="examples/credit/monitor-credit/">Monitor a credit model</a></strong> — HELOC: one model, three signals under the same shift.</li>
 <li><strong><a href="examples/weighting/weight-for-common-support/">Weight for common support</a></strong> — when to reweight, and what it costs.</li>
 </ul>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>

@@ -273,7 +273,29 @@
   
     
   
-  Guides
+  Examples
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../examples/weighting/weight-for-common-support/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  How-to
 
         </a>
       </li>
@@ -437,8 +459,6 @@
       
         
       
-        
-      
     
     
     
@@ -462,7 +482,7 @@
   
   
   <span class="md-ellipsis">
-    Guides
+    Examples
     
   </span>
   
@@ -473,7 +493,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
-            Guides
+            Examples
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -522,6 +542,62 @@
   
 
               
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    How-to
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            How-to
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -582,10 +658,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
             
   
   
@@ -598,8 +674,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             Explanation
           </label>
@@ -750,10 +826,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
             
   
   
@@ -766,8 +842,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             Reference
           </label>
@@ -862,9 +938,8 @@ detect this redistribution, but it cannot determine whether the change is
 harmful according to the outcome you care about.</p>
 <p>The harmful-shift test asks a narrower question: after orienting the score so
 that larger values mean worse outcomes, does the target place more mass beyond
-thresholds that the source rarely exceeds? The API therefore requires an
-explicit <code>worse</code> argument. Choose <code>worse</code> from the meaning of the score before
-looking at the result, not from whichever direction produces a smaller p-value.</p>
+thresholds that the source rarely exceeds? The API therefore requires an explicit <code>worse</code> argument.</p>
+<p>Decide whether higher or lower values are worse before looking at the result; do not choose the direction based on whichever gives a smaller p-value.</p>
 <h2 id="what-the-tests-measure">What the tests measure<a class="headerlink" href="#what-the-tests-measure" title="Permanent link">&para;</a></h2>
 <p>Both tests use permutations to assess the same source-versus-target comparison,
 keeping scores and weights fixed. <code>test_shift</code> treats all thresholds equally and
@@ -913,8 +988,7 @@ harmful direction in advance and want to focus on the harmful tail. Interpret
 AUC relative to its chance value of <code>0.5</code>; interpret the harmful-shift statistic
 relative to <code>result.null_distribution</code>, using the p-value as evidence against
 the null.</p>
-<p>Declare the harmful direction from the meaning of the score before testing.
-Pass it as a string or as <code>ss.Worse</code>; the two forms are interchangeable.</p>
+<p>Declare the harmful direction from the meaning of the score before testing. Pass it as a string or as <code>ss.Worse</code>; the two forms are interchangeable:</p>
 <table>
 <thead>
 <tr>
