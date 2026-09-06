@@ -287,7 +287,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../examples/weighting/weight-for-common-support/" class="md-tabs__link">
+        <a href="../../how-to/weight-for-common-support/" class="md-tabs__link">
           
   
   
@@ -309,7 +309,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../explanation/harmful-shift-statistic/" class="md-tabs__link">
+        <a href="../../explanation/core-concepts/" class="md-tabs__link">
           
   
   
@@ -604,7 +604,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../examples/weighting/weight-for-common-support/" class="md-nav__link">
+      <a href="../../how-to/weight-for-common-support/" class="md-nav__link">
         
   
   
@@ -635,6 +635,8 @@
   
     
     
+      
+        
       
         
       
@@ -675,6 +677,29 @@
             Explanation
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../explanation/core-concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Core concepts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -840,18 +865,18 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#why-weighting-exists" class="md-nav__link">
+  <a href="#scope" class="md-nav__link">
     <span class="md-ellipsis">
-      Why weighting exists
+      Scope
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#when-to-use" class="md-nav__link">
+  <a href="#which-weights" class="md-nav__link">
     <span class="md-ellipsis">
-      When to use
+      Which weights?
     </span>
   </a>
   
@@ -973,19 +998,20 @@
 
 
 <h1 id="importance-weights">Importance weights<a class="headerlink" href="#importance-weights" title="Permanent link">&para;</a></h1>
-<h2 id="why-weighting-exists">Why weighting exists<a class="headerlink" href="#why-weighting-exists" title="Permanent link">&para;</a></h2>
-<p>An unweighted comparison describes the full source and target samples, including regions that only one group occupies. That is appropriate when those regions belong to the populations you want to compare. When the groups barely overlap, however, a small number of observations from those regions can dominate the statistic even though the data contain little information about how the other group would behave there.</p>
-<p>Importance weighting reframes the comparison around <strong>common support</strong> — the regions represented by both groups. It can make the test more stable, but it does not create information where the groups do not overlap, and it changes the population the test describes. It is not a default correction. Start without weights and introduce them only when poor feature overlap is a real concern.</p>
+<p>Reframe the comparison around <strong>common support</strong>, the regions both groups share. If source and target barely overlap, reweight. Otherwise, don't.</p>
+<h2 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
+<p>Reference for weighting utilities. For when and how to weight, see <a href="../../how-to/weight-for-common-support/">Weight for common support</a>; for the statistic they modify, see <a href="../../explanation/harmful-shift-statistic/">How the harm test works</a>. Concepts: <a href="../../explanation/core-concepts/">Core concepts</a>.</p>
+<p>Start unweighted. An unweighted comparison keeps all regions both groups occupy. When overlap is poor, a few points can dominate. Weighting reframes around common support and adds no information; it changes the population you describe, so it is not a default correction.</p>
 <details class="details">
 <summary>Source files</summary>
 <p><code>src/samesame/weights.py</code> · <code>src/samesame/_permutation.py</code></p>
 </details>
-<h2 id="when-to-use">When to use<a class="headerlink" href="#when-to-use" title="Permanent link">&para;</a></h2>
+<h2 id="which-weights">Which weights?<a class="headerlink" href="#which-weights" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
 <th>Situation</th>
-<th>Recommendation</th>
+<th>Action</th>
 </tr>
 </thead>
 <tbody>
@@ -998,7 +1024,7 @@
 <td>Pass <code>ss.ImportanceWeights(source=..., target=...)</code></td>
 </tr>
 <tr>
-<td>You have <code>P(target\|x)</code></td>
+<td>You have <code>P(target|x)</code></td>
 <td>Build weights with <code>ss.domain_weights(source=..., target=...)</code></td>
 </tr>
 </tbody>
@@ -1012,13 +1038,13 @@
               <span class="n">weights</span><span class="o">=</span><span class="n">ss</span><span class="o">.</span><span class="n">ImportanceWeights</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_weights</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_weights</span><span class="p">),</span>
               <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">))</span>
 
-<span class="n">weights</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">domain_weights</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_prob</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_prob</span><span class="p">,</span> <span class="n">reweight</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">shrinkage</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
-<span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_scores</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_scores</span><span class="p">,</span> <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span>
+<span class="n">weights</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">domain_weights</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_prob</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_prob</span><span class="p">,</span> <span class="n">reweight</span><span class="o">=</span><span class="s2">"both"</span><span class="p">,</span> <span class="n">shrinkage</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_scores</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_scores</span><span class="p">,</span> <span class="n">worse</span><span class="o">=</span><span class="s2">"higher"</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span>
                       <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">))</span>
 </code></pre></div>
-<p>Weights are normalized to sum to each group's size, so the groups keep their original nominal sample sizes in the permutation. A group that is not reweighted receives a weight of <code>1</code> for every observation. Weights change how much each observation counts; they do not compensate for a poorly estimated domain classifier.</p>
+<p>Weights preserve nominal size (<code>Σw = n</code> per group; <code>1</code> if unweighted). They change influence, not classifier quality. Use them when poor overlap would let a few points dominate; otherwise omit <code>weights</code>.</p>
 <h2 id="domain-weights">Domain weights<a class="headerlink" href="#domain-weights" title="Permanent link">&para;</a></h2>
-<p>Pass separate one-dimensional arrays of domain probabilities <code>P(target|x)</code>, each aligned with the scores you intend to test. Estimate these probabilities honestly — out of sample when a model produces them. Choose which group or groups to reweight:</p>
+<p>Pass separate <code>P(target|x)</code> arrays aligned with your scores (estimate out of sample). Choose which group(s) to reweight:</p>
 <table>
 <thead>
 <tr>
@@ -1045,7 +1071,7 @@
 </tr>
 </tbody>
 </table>
-<p>Shrinkage <code>λ</code> controls the bias–variance trade-off of the correction. Start at the default and check <code>ESS/n</code> before making the correction more aggressive:</p>
+<p>Shrinkage <code>λ</code> trades bias versus variance. Start at <code>0.5</code> and check <code>ESS/n</code> before going more aggressive:</p>
 <table>
 <thead>
 <tr>
@@ -1060,7 +1086,7 @@
 </tr>
 <tr>
 <td><code>0.5</code></td>
-<td>Default. Good balance — start here and check <code>ESS/n</code> before lowering.</td>
+<td>Default. Good balance: start here and check <code>ESS/n</code> before lowering.</td>
 </tr>
 <tr>
 <td><code>1.0</code></td>
@@ -1069,13 +1095,12 @@
 </tbody>
 </table>
 <p>Lower values are more aggressive; higher values are more conservative.</p>
-<p>See <a href="../../examples/weighting/weight-for-common-support/">Weight for common support</a> for guidance on diagnosing overlap and weight concentration.</p>
 <h2 id="effective-sample-size">Effective sample size<a class="headerlink" href="#effective-sample-size" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="n">ess</span> <span class="o">=</span> <span class="n">weights</span><span class="o">.</span><span class="n">effective_sample_size</span><span class="p">()</span>  <span class="c1"># Kish (1965): (sum w)² / sum w²</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">ess</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="n">ess</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>  <span class="c1"># compare each to its n</span>
 </code></pre></div>
-<p>Effective sample size (ESS) translates unequal weights into an approximate count of equally weighted observations (Kish, 1965: <code>(sum w)² / sum w²</code>). Uniform weights yield <code>ESS = n</code>; when one or two observations carry most of the weight, ESS falls toward <code>1</code>.</p>
-<p>Compare each ESS to its <code>n</code> through <code>ESS/n</code>. A low ratio — for example well below <code>0.5</code> — signals that the weighted result is fragile and driven by a few observations. This is a warning, not a hard validation rule, and there is no universal cutoff from Kish. The often-quoted <code>ESS &lt; n/4</code> is a rough illustrative heuristic with no published empirical threshold (see Elvira et al., 2022). If <code>ESS/n</code> stays low even at <code>shrinkage=0.5</code>, the groups may lack enough common support for a reliable weighted comparison; consider keeping the comparison unweighted.</p>
+<p>ESS translates unequal weights into equally weighted counts (Kish 1965: <code>(Σw)²/Σw²</code>). Uniform weights give <code>ESS=n</code>; concentrated weights give about <code>≈1</code>. Compare <code>ess.source</code> to <code>len(source)</code> and <code>ess.target</code> to <code>len(target)</code>.</p>
+<p><code>ESS/n</code> well below <code>0.5</code> warns the result rests on few points. There is no universal cutoff (the <code>n/4</code> heuristic has no published threshold; Elvira et al., 2022). If low even at <code>shrinkage=0.5</code>, groups lack common support. Keep the comparison unweighted and report the unweighted p-value.</p>
 <h2 id="api">API<a class="headerlink" href="#api" title="Permanent link">&para;</a></h2>
 
 
@@ -1290,7 +1315,7 @@ Elvira, V. et al. (2022). Rethinking the effective sample size.
 
 
             <details class="quote">
-              <summary>Source code in <code>src/samesame/weights.py</code></summary>
+              <summary>Source code in <code>samesame/weights.py</code></summary>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">280</span>
 <span class="normal">281</span>
 <span class="normal">282</span>
@@ -1427,7 +1452,7 @@ Elvira, V. et al. (2022). Rethinking the effective sample size.
     <span class="n">reweight</span><span class="p">:</span> <span class="n">ReweightMode</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">ReweightMode</span><span class="o">.</span><span class="n">BOTH</span><span class="p">,</span>
     <span class="n">shrinkage</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ImportanceWeights</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Turn domain probabilities into weights that focus on where both groups live.</span>
+<span class="w">    </span><span class="sd">"""Turn domain probabilities into weights that focus on where both groups live.</span>
 
 <span class="sd">    Give it separate ``P(target|x)`` arrays for source and target</span>
 <span class="sd">    observations — the probability that each row belongs to target rather</span>
@@ -1450,10 +1475,10 @@ Elvira, V. et al. (2022). Rethinking the effective sample size.
 <span class="sd">    target : ArrayLike</span>
 <span class="sd">        Domain probabilities ``P(target|x)`` for target observations, each</span>
 <span class="sd">        in ``[0, 1]``. Estimate out of sample.</span>
-<span class="sd">    reweight : {&#39;source&#39;, &#39;target&#39;, &#39;both&#39;} or ReweightMode, optional</span>
+<span class="sd">    reweight : {'source', 'target', 'both'} or ReweightMode, optional</span>
 <span class="sd">        Which group(s) to adjust toward common support. Default</span>
-<span class="sd">        ``&#39;both&#39;`` — reweight both toward mutual support. ``&#39;source&#39;``</span>
-<span class="sd">        reweights source toward target; ``&#39;target&#39;`` does the reverse.</span>
+<span class="sd">        ``'both'`` — reweight both toward mutual support. ``'source'``</span>
+<span class="sd">        reweights source toward target; ``'target'`` does the reverse.</span>
 <span class="sd">        Accepts a plain string or :class:`ReweightMode`.</span>
 <span class="sd">    shrinkage : float, optional</span>
 <span class="sd">        Shrinkage ``λ`` in ``[0, 1]`` (default ``0.5``) blending RIW</span>
@@ -1495,7 +1520,7 @@ Elvira, V. et al. (2022). Rethinking the effective sample size.
 <span class="sd">    --------</span>
 <span class="sd">    ImportanceWeights : Container that normalizes and validates weights.</span>
 <span class="sd">    EffectiveSampleSize : Per-group ESS and ESS/n interpretation.</span>
-<span class="sd">    ReweightMode : ``&quot;source&quot;``, ``&quot;target&quot;``, ``&quot;both&quot;`` in plain language.</span>
+<span class="sd">    ReweightMode : ``"source"``, ``"target"``, ``"both"`` in plain language.</span>
 <span class="sd">    samesame.shift.test_shift : Any-shift test that can consume weights.</span>
 <span class="sd">    samesame.shift.test_harmful_shift : Directional test that can consume weights.</span>
 
@@ -1520,17 +1545,17 @@ Elvira, V. et al. (2022). Rethinking the effective sample size.
 <span class="sd">    array([0.7692, 1.2308])</span>
 <span class="sd">    &gt;&gt;&gt; w.effective_sample_size().source &lt; 2.0</span>
 <span class="sd">    True</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">reweight_enum</span> <span class="o">=</span> <span class="n">_coerce_reweight</span><span class="p">(</span><span class="n">reweight</span><span class="p">)</span>
-    <span class="n">source_p</span> <span class="o">=</span> <span class="n">_as_prob_vector</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;source&quot;</span><span class="p">)</span>
-    <span class="n">target_p</span> <span class="o">=</span> <span class="n">_as_prob_vector</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;target&quot;</span><span class="p">)</span>
+    <span class="n">source_p</span> <span class="o">=</span> <span class="n">_as_prob_vector</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"source"</span><span class="p">)</span>
+    <span class="n">target_p</span> <span class="o">=</span> <span class="n">_as_prob_vector</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"target"</span><span class="p">)</span>
 
     <span class="n">source_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">source_p</span><span class="p">,</span> <span class="n">_CLIP</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">_CLIP</span><span class="p">)</span>
     <span class="n">target_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">target_p</span><span class="p">,</span> <span class="n">_CLIP</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">_CLIP</span><span class="p">)</span>
 
     <span class="n">lam</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">shrinkage</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">lam</span><span class="p">)</span> <span class="ow">or</span> <span class="n">lam</span> <span class="o">&lt;</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">lam</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;shrinkage must be in [0, 1] and finite.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"shrinkage must be in [0, 1] and finite."</span><span class="p">)</span>
 
     <span class="n">n_source</span><span class="p">,</span> <span class="n">n_target</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">source_p</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">target_p</span><span class="p">)</span>
     <span class="n">prior_ratio</span> <span class="o">=</span> <span class="n">n_source</span> <span class="o">/</span> <span class="n">n_target</span>
@@ -1643,7 +1668,7 @@ samesame.shift.test_shift : The tests that consume these weights.</p>
 
 
               <details class="quote">
-                <summary>Source code in <code>src/samesame/weights.py</code></summary>
+                <summary>Source code in <code>samesame/weights.py</code></summary>
                 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">179</span>
 <span class="normal">180</span>
 <span class="normal">181</span>
@@ -1739,15 +1764,15 @@ samesame.shift.test_shift : The tests that consume these weights.</p>
 <span class="normal">271</span>
 <span class="normal">272</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ImportanceWeights</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validated, ready-to-use importance weights for source and target.</span>
+<span class="w">    </span><span class="sd">"""Validated, ready-to-use importance weights for source and target.</span>
 
 <span class="sd">    Bring your own sample weights, or let :func:`domain_weights` estimate</span>
 <span class="sd">    them from domain probabilities ``P(target|x)``. Either way, this class</span>
 <span class="sd">    validates, normalizes, and carries them to the test.</span>
 
 <span class="sd">    Reweighting changes which observations count more; it does not change</span>
-<span class="sd">    nominal group sizes in the permutation test — each group&#39;s weights are</span>
-<span class="sd">    normalized to sum to that group&#39;s size, so the labels still permute</span>
+<span class="sd">    nominal group sizes in the permutation test — each group's weights are</span>
+<span class="sd">    normalized to sum to that group's size, so the labels still permute</span>
 <span class="sd">    over ``n_source + n_target`` slots.</span>
 
 <span class="sd">    Attributes</span>
@@ -1779,27 +1804,27 @@ samesame.shift.test_shift : The tests that consume these weights.</p>
 <span class="sd">    &gt;&gt;&gt; w = ImportanceWeights(source=np.array([0.5, 1.5]), target=np.array([1.0, 1.0]))</span>
 <span class="sd">    &gt;&gt;&gt; float(w.source.sum()), float(w.target.sum())</span>
 <span class="sd">    (2.0, 2.0)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">source</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
     <span class="n">target</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">src</span> <span class="o">=</span> <span class="n">_normalize</span><span class="p">(</span><span class="n">_as_weight_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;weights.source&quot;</span><span class="p">))</span>
-        <span class="n">tgt</span> <span class="o">=</span> <span class="n">_normalize</span><span class="p">(</span><span class="n">_as_weight_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;weights.target&quot;</span><span class="p">))</span>
-        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;source&quot;</span><span class="p">,</span> <span class="n">src</span><span class="p">)</span>
-        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">,</span> <span class="n">tgt</span><span class="p">)</span>
+        <span class="n">src</span> <span class="o">=</span> <span class="n">_normalize</span><span class="p">(</span><span class="n">_as_weight_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"weights.source"</span><span class="p">))</span>
+        <span class="n">tgt</span> <span class="o">=</span> <span class="n">_normalize</span><span class="p">(</span><span class="n">_as_weight_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"weights.target"</span><span class="p">))</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"source"</span><span class="p">,</span> <span class="n">src</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"target"</span><span class="p">,</span> <span class="n">tgt</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">def</span><span class="w"> </span><span class="nf">_render</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array2string</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">edgeitems</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(source=</span><span class="si">{</span><span class="n">_render</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">)</span><span class="si">}</span><span class="s2">, target=</span><span class="si">{</span><span class="n">_render</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(source=</span><span class="si">{</span><span class="n">_render</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">)</span><span class="si">}</span><span class="s2">, target=</span><span class="si">{</span><span class="n">_render</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">)</span><span class="si">}</span><span class="s2">)"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">effective_sample_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EffectiveSampleSize</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;How much independent information remains after weighting.</span>
+<span class="w">        </span><span class="sd">"""How much independent information remains after weighting.</span>
 
-<span class="sd">        Returns Kish&#39;s ``(sum w)² / sum w²`` (Kish, 1965) per group. Uniform</span>
+<span class="sd">        Returns Kish's ``(sum w)² / sum w²`` (Kish, 1965) per group. Uniform</span>
 <span class="sd">        weights give ``ESS == n``; concentrated weights where a handful</span>
 <span class="sd">        dominate push ESS toward ``1``. Interpret ``ESS/n`` continuously; a</span>
 <span class="sd">        low ratio warns that the weighted result leans on a few observations.</span>
@@ -1827,7 +1852,7 @@ samesame.shift.test_shift : The tests that consume these weights.</p>
 <span class="sd">        &gt;&gt;&gt; ess = w.effective_sample_size()</span>
 <span class="sd">        &gt;&gt;&gt; round(ess.source, 4)</span>
 <span class="sd">        1.8989</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">src</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
         <span class="n">tgt</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">EffectiveSampleSize</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">src</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">tgt</span><span class="p">)</span>
@@ -1909,7 +1934,7 @@ Elvira, V. et al. (2022). Rethinking the effective sample size.
 
 
             <details class="quote">
-              <summary>Source code in <code>src/samesame/weights.py</code></summary>
+              <summary>Source code in <code>samesame/weights.py</code></summary>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">238</span>
 <span class="normal">239</span>
 <span class="normal">240</span>
@@ -1945,9 +1970,9 @@ Elvira, V. et al. (2022). Rethinking the effective sample size.
 <span class="normal">270</span>
 <span class="normal">271</span>
 <span class="normal">272</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">effective_sample_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EffectiveSampleSize</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;How much independent information remains after weighting.</span>
+<span class="w">    </span><span class="sd">"""How much independent information remains after weighting.</span>
 
-<span class="sd">    Returns Kish&#39;s ``(sum w)² / sum w²`` (Kish, 1965) per group. Uniform</span>
+<span class="sd">    Returns Kish's ``(sum w)² / sum w²`` (Kish, 1965) per group. Uniform</span>
 <span class="sd">    weights give ``ESS == n``; concentrated weights where a handful</span>
 <span class="sd">    dominate push ESS toward ``1``. Interpret ``ESS/n`` continuously; a</span>
 <span class="sd">    low ratio warns that the weighted result leans on a few observations.</span>
@@ -1975,7 +2000,7 @@ Elvira, V. et al. (2022). Rethinking the effective sample size.
 <span class="sd">    &gt;&gt;&gt; ess = w.effective_sample_size()</span>
 <span class="sd">    &gt;&gt;&gt; round(ess.source, 4)</span>
 <span class="sd">    1.8989</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">src</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
     <span class="n">tgt</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
     <span class="k">return</span> <span class="n">EffectiveSampleSize</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">src</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">tgt</span><span class="p">)</span>
@@ -2068,7 +2093,7 @@ samesame.weights.ImportanceWeights : What you get back.</p>
 
 <p><span class="doc-section-title">Examples:</span></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">samesame.weights</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReweightMode</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ReweightMode</span><span class="p">(</span><span class="s2">&quot;both&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">ReweightMode</span><span class="o">.</span><span class="n">BOTH</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ReweightMode</span><span class="p">(</span><span class="s2">"both"</span><span class="p">)</span> <span class="o">==</span> <span class="n">ReweightMode</span><span class="o">.</span><span class="n">BOTH</span>
 <span class="go">True</span>
 </code></pre></div>
 
@@ -2080,7 +2105,7 @@ samesame.weights.ImportanceWeights : What you get back.</p>
 
 
               <details class="quote">
-                <summary>Source code in <code>src/samesame/weights.py</code></summary>
+                <summary>Source code in <code>samesame/weights.py</code></summary>
                 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">43</span>
 <span class="normal">44</span>
 <span class="normal">45</span>
@@ -2116,7 +2141,7 @@ samesame.weights.ImportanceWeights : What you get back.</p>
 <span class="normal">75</span>
 <span class="normal">76</span>
 <span class="normal">77</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ReweightMode</span><span class="p">(</span><span class="n">StrEnum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Which group(s) to reweight toward common support.</span>
+<span class="w">    </span><span class="sd">"""Which group(s) to reweight toward common support.</span>
 
 <span class="sd">    Reweighting does not invent information where the groups do not</span>
 <span class="sd">    overlap — it changes which observations count more. Pick the mode</span>
@@ -2143,13 +2168,13 @@ samesame.weights.ImportanceWeights : What you get back.</p>
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; from samesame.weights import ReweightMode</span>
-<span class="sd">    &gt;&gt;&gt; ReweightMode(&quot;both&quot;) == ReweightMode.BOTH</span>
+<span class="sd">    &gt;&gt;&gt; ReweightMode("both") == ReweightMode.BOTH</span>
 <span class="sd">    True</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="n">SOURCE</span> <span class="o">=</span> <span class="s2">&quot;source&quot;</span>
-    <span class="n">TARGET</span> <span class="o">=</span> <span class="s2">&quot;target&quot;</span>
-    <span class="n">BOTH</span> <span class="o">=</span> <span class="s2">&quot;both&quot;</span>
+    <span class="n">SOURCE</span> <span class="o">=</span> <span class="s2">"source"</span>
+    <span class="n">TARGET</span> <span class="o">=</span> <span class="s2">"target"</span>
+    <span class="n">BOTH</span> <span class="o">=</span> <span class="s2">"both"</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -2254,7 +2279,7 @@ Elvira, V., Martino, L., Robert, C. P. (2022). Rethinking the effective
 
 
               <details class="quote">
-                <summary>Source code in <code>src/samesame/weights.py</code></summary>
+                <summary>Source code in <code>samesame/weights.py</code></summary>
                 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">137</span>
 <span class="normal">138</span>
 <span class="normal">139</span>
@@ -2296,9 +2321,9 @@ Elvira, V., Martino, L., Robert, C. P. (2022). Rethinking the effective
 <span class="normal">175</span>
 <span class="normal">176</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">EffectiveSampleSize</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Kish effective sample size — how much information is left after weighting.</span>
+<span class="w">    </span><span class="sd">"""Kish effective sample size — how much information is left after weighting.</span>
 
-<span class="sd">    Kish&#39;s ESS ``(sum w)² / sum w²`` (Kish, 1965): uniform weights keep</span>
+<span class="sd">    Kish's ESS ``(sum w)² / sum w²`` (Kish, 1965): uniform weights keep</span>
 <span class="sd">    every voice — ``ESS == n``; when a few observations shout while the</span>
 <span class="sd">    rest whisper, ESS slides toward ``1``. It interpolates between ``n``</span>
 <span class="sd">    (uniform) and ``1`` (one observation dominates).</span>
@@ -2330,7 +2355,7 @@ Elvira, V., Martino, L., Robert, C. P. (2022). Rethinking the effective
 <span class="sd">    Elvira, V., Martino, L., Robert, C. P. (2022). Rethinking the effective</span>
 <span class="sd">        sample size. *International Statistical Review* 90(3):525-550.</span>
 <span class="sd">        https://doi.org/10.1111/insr.12500</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">source</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">target</span><span class="p">:</span> <span class="nb">float</span>

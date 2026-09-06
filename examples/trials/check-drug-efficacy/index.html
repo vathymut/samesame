@@ -291,7 +291,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../weighting/weight-for-common-support/" class="md-tabs__link">
+        <a href="../../../how-to/weight-for-common-support/" class="md-tabs__link">
           
   
   
@@ -313,7 +313,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../explanation/harmful-shift-statistic/" class="md-tabs__link">
+        <a href="../../../explanation/core-concepts/" class="md-tabs__link">
           
   
   
@@ -696,7 +696,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../weighting/weight-for-common-support/" class="md-nav__link">
+      <a href="../../../how-to/weight-for-common-support/" class="md-nav__link">
         
   
   
@@ -727,6 +727,8 @@
   
     
     
+      
+        
       
         
       
@@ -767,6 +769,29 @@
             Explanation
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../explanation/core-concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Core concepts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -930,96 +955,54 @@
 
 
 <h1 id="is-the-new-drug-good-enough">Is the new drug good enough?<a class="headerlink" href="#is-the-new-drug-good-enough" title="Permanent link">&para;</a></h1>
-<p>Medicine has a name for the question this guide explores: <strong>noninferiority</strong>. A new treatment — cheaper, faster to make, or easier to tolerate — does not need to beat the established standard. It needs to be <em>not meaningfully worse</em>. The harmful-shift test was introduced for exactly this setting: a nonparametric noninferiority test that requires no pre-specified margin and no normality assumption (Kamulete, 2022).</p>
-<p>The example comes from a classic case study reprinted in the <a href="https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf">SAS proceedings</a>. A new, less expensive drug — call it <strong>Bowl</strong> — is compared with the established standard, <strong>Armanaleg</strong>. Patients report relief on a scale from 4 to 16, where higher is better. Bowl does not look better on average: mean relief is 9.4 for Bowl versus 10.1 for Armanaleg (42 and 28 patients, respectively). But <em>not better</em> is not the question here. The question is whether Bowl is meaningfully worse.</p>
-<p>Contrast two questions. “Are the two drugs different?” is a two-sided comparison that is easy to ask and easy to answer. “Is the challenger not meaningfully worse?” is a one-sided judgment that depends on a declared direction. In a trial that direction is pre-registered; in monitoring you pre-specify <code>worse</code> from the meaning of the score, before you look at any p-value.</p>
+<p>Medicine calls this <strong>noninferiority</strong>: a cheaper, faster, or more tolerable treatment need not beat the standard. It must be <em>not meaningfully worse</em>. The harmful-shift test is a nonparametric noninferiority test with no margin and no normality assumption (Kamulete, 2022).</p>
+<p>The example is a classic <a href="https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf">SAS case study</a>: <strong>Bowl</strong> (cheaper) versus <strong>Armanaleg</strong> (standard). Relief is 4 to 16 (higher is better); mean 9.4 versus 10.1 across 42 and 28 patients. Not better, but is it <em>meaningfully worse</em>? You have one score per patient and no model. Pre-register <code>worse</code>, as you would choose one side before unblinding.</p>
 <p>If you are new to <code>samesame</code>, start with <a href="../../tutorials/get-started/">Get started</a>.</p>
 <h2 id="the-data">The data<a class="headerlink" href="#the-data" title="Permanent link">&para;</a></h2>
-<p>Seventy relief scores from two arms. <code>samesame</code> sees one score per observation and nothing else — no model, no features. <strong>Source</strong> is the standard (Armanaleg, the reference); <strong>target</strong> is the challenger (Bowl, the group under evaluation).</p>
+<p>Seventy relief scores, no model, no features. <code>samesame</code> sees one score per observation. <strong>Source</strong> is the standard (Armanaleg); <strong>target</strong> is the challenger (Bowl).</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="n">datalines</span> <span class="o">=</span> <span class="p">(</span>
-  <span class="s2">&quot;9 14 13 8 10 5 11 9 12 10 9 11 8 11 &quot;</span>
-  <span class="s2">&quot;4 8 11 16 12 10 9 10 13 12 11 13 9 4 &quot;</span>
-  <span class="s2">&quot;7 14 8 4 10 11 7 7 13 8 8 13 10 9 &quot;</span>
-  <span class="s2">&quot;12 9 11 10 12 7 8 5 10 7 13 12 13 11 &quot;</span>
-  <span class="s2">&quot;7 12 10 11 10 8 6 9 11 8 5 11 10 8&quot;</span>
+  <span class="s2">"9 14 13 8 10 5 11 9 12 10 9 11 8 11 "</span>
+  <span class="s2">"4 8 11 16 12 10 9 10 13 12 11 13 9 4 "</span>
+  <span class="s2">"7 14 8 4 10 11 7 7 13 8 8 13 10 9 "</span>
+  <span class="s2">"12 9 11 10 12 7 8 5 10 7 13 12 13 11 "</span>
+  <span class="s2">"7 12 10 11 10 8 6 9 11 8 5 11 10 8"</span>
 <span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
 <span class="n">relief</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">datalines</span><span class="p">])</span>
 <span class="n">armanaleg</span><span class="p">,</span> <span class="n">bowl</span> <span class="o">=</span> <span class="n">relief</span><span class="p">[:</span><span class="mi">28</span><span class="p">],</span> <span class="n">relief</span><span class="p">[</span><span class="mi">28</span><span class="p">:]</span>  <span class="c1"># source: standard, target: challenger</span>
 </code></pre></div>
-<p>The harmful-shift test is oriented so that larger values mean worse outcomes. Relief runs the other way, so we flip it into a <strong>discomfort score</strong>, <code>max(relief) − relief</code>, where a large value means the patient stayed far from the best possible relief.</p>
-<div class="highlight"><pre><span></span><code><span class="n">discomfort</span> <span class="o">=</span> <span class="n">relief</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">relief</span>           <span class="c1"># flip: larger = worse</span>
-<span class="n">armanaleg_harm</span> <span class="o">=</span> <span class="n">discomfort</span><span class="p">[:</span><span class="mi">28</span><span class="p">]</span>
-<span class="n">bowl_harm</span> <span class="o">=</span> <span class="n">discomfort</span><span class="p">[</span><span class="mi">28</span><span class="p">:]</span>
-</code></pre></div>
-<p>Flipping the score and declaring <code>worse="lower"</code> are equivalent: the test negates internally, so both choices lead to the same verdict. Declare the direction that matches the meaning of the score and let the arithmetic follow.</p>
+<p>Relief is 4 to 16 where higher is better. Declare that directly. <code>ss.Worse</code> orients the score for you (<code>worse="lower"</code> means <code>S = -scores</code> under the hood, <code>src/samesame/shift.py:214</code>).</p>
 <h2 id="the-verdict">The verdict<a class="headerlink" href="#the-verdict" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ss</span>
 
 <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">)</span>
-<span class="n">harm</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">armanaleg_harm</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">bowl_harm</span><span class="p">,</span> <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Harm statistic: </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># → 0.1813</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;p-value:        </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>     <span class="c1"># → 0.1319</span>
+<span class="n">harm</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">armanaleg</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">bowl</span><span class="p">,</span> <span class="n">worse</span><span class="o">=</span><span class="s2">"lower"</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>  <span class="c1"># or ss.Worse.LOWER</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Harm statistic: </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># → 0.1813</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"p-value:        </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>     <span class="c1"># → 0.1319</span>
 
 <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">)</span>
-<span class="n">shift</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_shift</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">armanaleg_harm</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">bowl_harm</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;AUC </span><span class="si">{</span><span class="n">shift</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> p=</span><span class="si">{</span><span class="n">shift</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># → 0.5829, 0.2548</span>
+<span class="n">shift</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_shift</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">armanaleg</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">bowl</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"AUC </span><span class="si">{</span><span class="n">shift</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> p=</span><span class="si">{</span><span class="n">shift</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># → 0.4171, 0.2548</span>
 </code></pre></div>
-<p>Read the two results together:</p>
+<p>Together:</p>
 <ul>
-<li><code>test_shift</code> (two-sided, AUC 0.58) finds little evidence that the arms differ at all.</li>
-<li><code>test_harmful_shift</code> (one-sided) finds little evidence that Bowl is meaningfully worse, with p = 0.13 — well above conventional thresholds for concern.</li>
+<li><code>test_shift</code> (AUC 0.42, p=0.25): little evidence the arms differ. AUC below 0.5 reflects lower relief in Bowl (0.5829 if you flip to discomfort, <code>1 − 0.4171</code>).</li>
+<li><code>test_harmful_shift</code> (p=0.13): little evidence Bowl is meaningfully worse.</li>
 </ul>
-<p>This matches the original parametric analysis of the same study, which concluded:</p>
-<blockquote>
-<p>This suggests, as you'd hoped, that the efficacy of Bowl is not appreciably worse than that of Armanaleg.</p>
-</blockquote>
-<p>The same conclusion follows without a pre-specified margin, without a normality assumption, and with only 70 observations.</p>
+<p>Same conclusion as the original parametric analysis, with no margin, no normality assumption, and only 70 observations.</p>
 <h2 id="what-the-statistic-is-asking">What the statistic is asking<a class="headerlink" href="#what-the-statistic-is-asking" title="Permanent link">&para;</a></h2>
-<p>The harmful-shift statistic is a weighted AUC, <code>∫ TPR·(1−FPR)² dFPR</code>, that focuses on the harmful tail. In this trial it asks one question: <strong>does Bowl push more patients into discomfort that Armanaleg rarely produces?</strong></p>
-<p>For any discomfort threshold, <code>FPR</code> is the fraction of Armanaleg patients above it, so <code>(1−FPR)²</code> is largest where Armanaleg is rarest. The statistic grows when Bowl's worst outcomes cluster beyond those rare thresholds; it stays modest when the arms differ only where Armanaleg is already common, as they do here. A standard AUC weighs every threshold equally; the harm statistic does not. See <a href="../../../explanation/harmful-shift-statistic/">How the harm test works</a> for the formula and ROC intuition.</p>
+<p>The harm statistic <code>∫ TPR·(1−FPR)² dFPR</code> weights the harmful tail: <strong>does Bowl push patients into low relief that Armanaleg rarely produces?</strong> Larger <code>(1−FPR)²</code> where Armanaleg is rarest. See <a href="../../../explanation/harmful-shift-statistic/">How the harm test works</a>.</p>
 <h2 id="how-to-read-a-non-rejection">How to read a non-rejection<a class="headerlink" href="#how-to-read-a-non-rejection" title="Permanent link">&para;</a></h2>
-<p>A p-value of 0.13 is not a certificate of equivalence. It says that, with this much data, the observed difference is not unusual if there were no meaningful harm. Two cautions from trials carry over to monitoring:</p>
+<p>A p-value of 0.13 is not a certificate of equivalence. It says the observed difference is not unusual if there were no meaningful harm.</p>
 <ul>
-<li><strong>Absence of evidence is not evidence of absence.</strong> With 28 versus 42 patients, the test may lack power. A larger study — or a wider deployment window — could sharpen the verdict.</li>
-<li><strong>The direction is part of the protocol.</strong> Here <code>worse="higher"</code> because larger discomfort is worse. Choosing the direction after seeing the p-values turns a pre-specified comparison into a search for significance.</li>
+<li><strong>Absence of evidence ≠ evidence of absence.</strong> With 28 vs 42 patients the test may lack power; a larger study or wider deployment window could sharpen the verdict.</li>
+<li><strong>Direction is part of the protocol.</strong> Here <code>worse="lower"</code> because lower relief is worse. Choosing direction after seeing p-values turns a pre-specified test into a search.</li>
 </ul>
 <h2 id="why-a-drug-trial-belongs-in-a-monitoring-guide">Why a drug trial belongs in a monitoring guide<a class="headerlink" href="#why-a-drug-trial-belongs-in-a-monitoring-guide" title="Permanent link">&para;</a></h2>
-<p>Every deployed model is a challenger drug in this analogy. The correspondence is:</p>
-<table>
-<thead>
-<tr>
-<th>Trial</th>
-<th>Monitoring</th>
-<th><code>samesame</code></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Standard (Armanaleg)</td>
-<td>Training data or past deployment</td>
-<td><code>source</code></td>
-</tr>
-<tr>
-<td>Challenger (Bowl)</td>
-<td>Current deployment</td>
-<td><code>target</code></td>
-</tr>
-<tr>
-<td>Relief score</td>
-<td>One interpretable score per observation</td>
-<td>score</td>
-</tr>
-<tr>
-<td>"Not meaningfully worse"</td>
-<td>No harmful shift</td>
-<td><code>test_harmful_shift</code></td>
-</tr>
-</tbody>
-</table>
-<p>The challenger passes when it stays close enough to the standard; when it does not, <code>samesame</code> helps you see where and how.</p>
-<p>For the same test applied to a model score on a real credit benchmark, see <a href="../../credit/monitor-credit/">Monitor a credit model</a>. To compare the deployment with reweighting for common support, see <a href="../../weighting/weight-for-common-support/">Weight for common support</a>.</p>
+<p>Every deployed model is a challenger drug. The standard arm is <code>source</code>; the deployed challenger is <code>target</code>. One interpretable score per observation, and "not meaningfully worse" is <code>test_harmful_shift</code>. The challenger passes when it stays close to the standard. When it does not, <code>samesame</code> shows you where and how.</p>
+<p>For the same test on a model score, see <a href="../../credit/monitor-credit/">Monitor a credit model</a>. To reweight for common support, see <a href="../../../how-to/weight-for-common-support/">Weight for common support</a> and <a href="../../../explanation/core-concepts/">Core concepts</a>.</p>
+<p>For your own question about "not meaningfully worse," swap in your score and declare <code>worse</code> before you look.</p>
 
 
 
