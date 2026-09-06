@@ -14,13 +14,7 @@ uv sync --extra test
 
 The paper's experiment stack (`skrub`, `polars`, `typer`, `pandas`, `matplotlib`) is declared in `pyproject.toml` and installed automatically.
 
-For the NSW employment experiment, restore the LaLonde CSV (ignored via `research/papers/dw/.gitignore`):
-
-```bash
-git show develop:research/papers/dw/data/nsw/lalonde.csv > research/papers/dw/data/nsw/lalonde.csv
-# or from the backup branch
-git show paper-dw-robust-adverse-shift-backup-603ea37:research/papers/dw/data/nsw/lalonde.csv > research/papers/dw/data/nsw/lalonde.csv
-```
+For the NSW employment experiment, the loader fetches the Dehejia–Wahba files directly from the NBER mirror (CPS comparison group `cps3_controls.txt`, NSW treated `nswre74_treated.txt`), so no local data restore is needed. The OpenML tasks fetch by pinned dataset ID.
 
 ## Building the manuscript
 
@@ -35,9 +29,9 @@ pdflatex main && bibtex main && pdflatex main && pdflatex main
 
 ```bash
 # from research/papers/dw/
-uv run python -m scripts.generate_synthetic_calibration --help
-uv run python -m scripts.generate_real_data_workflow_summary --help
-uv run --with matplotlib python -m scripts.plot_intro_figure --help
+uv run python -m scripts.synthetic --help
+uv run python -m scripts.real_data --help
+uv run python -m scripts.intro --help
 ```
 
 ## Tests

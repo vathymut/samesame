@@ -86,7 +86,7 @@ def _evaluate_task(task: str, *, max_train_rows: int, max_eval_rows: int, lambda
 @app.command()
 def main(
     tasks: list[str] = typer.Option(list(TASK_ORDER)),
-    n_resamples: int = typer.Option(499),
+    n_resamples: int = typer.Option(9999),
     random_seed: int = typer.Option(123_456),
     lambda_value: float = typer.Option(0.5),
     max_train_rows: int = typer.Option(30_000),

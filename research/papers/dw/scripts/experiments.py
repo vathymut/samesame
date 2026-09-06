@@ -38,7 +38,7 @@ def clip_domain_probabilities(p: NDArray[np.float64]) -> NDArray[np.float64]:
     return np.clip(np.asarray(p, dtype=np.float64), 1e-6, 1.0 - 1e-6)
 
 
-def _cross_val_probs(est: Any, X: Any, y: NDArray[np.int_], n_source: int, *, cv: int = 5) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+def _cross_val_probs(est: Any, X: Any, y: NDArray[np.int_], n_source: int, *, cv: int = 10) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     prob = cross_val_predict(est, X, y, cv=cv, method="predict_proba")[:, 1]
     clipped = clip_domain_probabilities(prob)
     return clipped[:n_source], clipped[n_source:]
@@ -48,7 +48,7 @@ def _hgb_pipeline() -> Any:
     return tabular_pipeline(HistGradientBoostingClassifier(random_state=42, **DEFAULT_HGB_PARAMS))
 
 
-def cross_fitted_domain_probs(source_feature: Any, target_feature: Any, *, make_estimator: Callable[[], Any], cv: int = 5) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+def cross_fitted_domain_probs(source_feature: Any, target_feature: Any, *, make_estimator: Callable[[], Any], cv: int = 10) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     s2d, t2d = _as_2d(source_feature), _as_2d(target_feature)
     X = np.vstack([s2d, t2d])
     y = np.concatenate([np.zeros(len(s2d), dtype=int), np.ones(len(t2d), dtype=int)])

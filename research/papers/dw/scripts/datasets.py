@@ -206,19 +206,14 @@ def _load_acspubcov(feature: pd.DataFrame, raw: pd.Series, **kw) -> LoadedTask:
 
 
 _NSW_COLS = ["treat","age","educ","black","hisp","married","nodegr","re74","re75","re78"]
-_NBER_CONTROL = "https://www.nber.org/~rdehejia/data/nswre74_control.txt"
-_NBER_TREATED = "https://www.nber.org/~rdehejia/data/nswre74_treated.txt"
+_NBER_TREATED = "https://users.nber.org/~rdehejia/data/nswre74_treated.txt"
+_NBER_CPS_COMPARISON = "https://users.nber.org/~rdehejia/data/cps3_controls.txt"
+
 
 def _fetch_nsw() -> pd.DataFrame:
-    try:
-        from dowhy.datasets import lalonde_dataset  # type: ignore
-        frame = lalonde_dataset()
-        return frame[[c for c in _NSW_COLS if c in frame.columns]].copy()
-    except Exception:
-        pass
-    ctrl = pd.read_csv(_NBER_CONTROL, sep=r"\s+", header=None, names=_NSW_COLS)
+    cps = pd.read_csv(_NBER_CPS_COMPARISON, sep=r"\s+", header=None, names=_NSW_COLS)
     trt = pd.read_csv(_NBER_TREATED, sep=r"\s+", header=None, names=_NSW_COLS)
-    return pd.concat([ctrl, trt], ignore_index=True)
+    return pd.concat([cps, trt], ignore_index=True)
 
 
 def load_nsw_task(task_name: str, *, max_train_rows: int, max_eval_rows: int, seed: int) -> LoadedTask:
@@ -226,7 +221,7 @@ def load_nsw_task(task_name: str, *, max_train_rows: int, max_eval_rows: int, se
     feat = frame.drop(columns=["treat","re78"])
     label = pd.to_numeric(frame["re78"], errors="coerce").astype(float)
     mask = frame["treat"] == 0
-    return _finalize(task_name, feature=feat, label=label, source_mask=mask, msg="NSW split must produce non-empty treat pools", max_train_rows=max_train_rows, max_eval_rows=max_eval_rows, seed=seed)
+    return _finalize(task_name, feature=feat, label=label, source_mask=mask, msg="NSW split must produce non-empty pools", max_train_rows=max_train_rows, max_eval_rows=max_eval_rows, seed=seed)
 
 
 _TASK_LOADERS = {
