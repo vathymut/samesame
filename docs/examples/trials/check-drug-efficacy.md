@@ -24,15 +24,7 @@ relief = np.array([float(s) for s in datalines])
 armanaleg, bowl = relief[:28], relief[28:]  # source: standard, target: challenger
 ```
 
-The harm test expects larger = worse, so flip relief into a **discomfort score**, `max(relief) − relief`, where larger means farther from the best outcome.
-
-```python
-discomfort = relief.max() - relief           # flip: larger = worse
-armanaleg_harm = discomfort[:28]
-bowl_harm = discomfort[28:]
-```
-
-Either flip or pass `worse="lower"` — same test.
+Relief is 4–16 where higher is better — declare that directly. `ss.Worse` orients the score for you (`worse="lower"` → `S = -scores` under the hood, `src/samesame/shift.py:214`).
 
 ## The verdict
 
@@ -40,32 +32,32 @@ Either flip or pass `worse="lower"` — same test.
 import samesame as ss
 
 rng = np.random.default_rng(12345)
-harm = ss.test_harmful_shift(source=armanaleg_harm, target=bowl_harm, worse="higher", rng=rng)
+harm = ss.test_harmful_shift(source=armanaleg, target=bowl, worse="lower", rng=rng)  # or ss.Worse.LOWER
 print(f"Harm statistic: {harm.statistic:.4f}")  # → 0.1813
 print(f"p-value:        {harm.pvalue:.4f}")     # → 0.1319
 
 rng = np.random.default_rng(12345)
-shift = ss.test_shift(source=armanaleg_harm, target=bowl_harm, rng=rng)
-print(f"AUC {shift.statistic:.4f} p={shift.pvalue:.4f}")  # → 0.5829, 0.2548
+shift = ss.test_shift(source=armanaleg, target=bowl, rng=rng)
+print(f"AUC {shift.statistic:.4f} p={shift.pvalue:.4f}")  # → 0.4171, 0.2548
 ```
 
 Together:
 
-- `test_shift` (AUC 0.58, p=0.25) — little evidence the arms differ.
+- `test_shift` (AUC 0.42, p=0.25) — little evidence the arms differ (AUC < 0.5 reflects lower relief in Bowl; `1 − 0.4171 = 0.5829` if you flip to discomfort).
 - `test_harmful_shift` (p=0.13) — little evidence Bowl is meaningfully worse.
 
 Same conclusion as the original parametric analysis — with no margin, no normality assumption, and only 70 observations.
 
 ## What the statistic is asking
 
-The harm statistic `∫ TPR·(1−FPR)² dFPR` weights the harmful tail: **does Bowl push patients into discomfort Armanaleg rarely produces?** Larger `(1−FPR)²` where Armanaleg is rarest — see [How the harm test works](../../explanation/harmful-shift-statistic.md).
+The harm statistic `∫ TPR·(1−FPR)² dFPR` weights the harmful tail: **does Bowl push patients into low relief Armanaleg rarely produces?** Larger `(1−FPR)²` where Armanaleg is rarest — see [How the harm test works](../../explanation/harmful-shift-statistic.md).
 
 ## How to read a non-rejection
 
 A p-value of 0.13 is not a certificate of equivalence — it says the observed difference is not unusual if there were no meaningful harm.
 
 - **Absence of evidence ≠ evidence of absence.** With 28 vs 42 patients the test may lack power; a larger study or wider deployment window could sharpen the verdict.
-- **Direction is part of the protocol.** Here `worse="higher"` because larger discomfort is worse. Choosing direction after seeing p-values turns a pre-specified test into a search.
+- **Direction is part of the protocol.** Here `worse="lower"` because lower relief is worse. Choosing direction after seeing p-values turns a pre-specified test into a search.
 
 ## Why a drug trial belongs in a monitoring guide
 
