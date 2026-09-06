@@ -1,21 +1,21 @@
 # Get started
 
-In this tutorial you will build a minimal monitoring workflow: create one score per observation, check whether source and target differ, and then check whether the change moved toward a harmful direction you declare. By the end, the two-question habit — *did it change? did it get worse?* — should feel familiar.
+You will run one score through two tests — *did it change?* and *did it get worse?* — and leave with a habit for your own scores.
+
+## Prerequisites
+
+- Python 3.12+ with `numpy`, `scikit-learn`, and `samesame` installed.
+- Comfort with p-values and training a classifier (you will use `cross_val_predict` once).
 
 --8<-- "snippets/source-target.txt"
 
-Compare source and target with one interpretable score per observation, such as predicted risk, prediction error, confidence, or an outlier score.
+## Steps
 
-- **Any shift?** Use `ss.test_shift` — a broad, two-sided screen for whether the score separates source from target. An AUC of `0.5` means no separation.
-- **Harmful shift?** Use `ss.test_harmful_shift(..., worse="higher"|"lower")` — a focused, one-sided test for whether the target moved toward the harmful tail you specify. Use `worse="lower"` when smaller values mean more harm.
+You will use two tests: `ss.test_shift` — broad, two-sided (AUC `0.5` is no separation) — and `ss.test_harmful_shift(..., worse="higher"|"lower")` — focused, one-sided on the tail you declare. Both appear below.
 
-The two tests can reach different conclusions because a distributional shift may be benign, harmful, or even beneficial depending on where it falls. See [How the harm test works](../../explanation/harmful-shift-statistic.md) for intuition and the formula.
+### 1 — Create source and target
 
-Interpret `.pvalue` alongside the statistic and the score distributions.
-
---8<-- "snippets/pvalue-caveat.txt"
-
-## 1 — Make source and target
+Create the two populations your question compares — for example, training versus current deployment. Every conclusion describes target relative to source.
 
 ```python
 import numpy as np
@@ -26,11 +26,9 @@ X = np.vstack([source, target])
 labels = np.r_[np.zeros(len(source), dtype=int), np.ones(len(target), dtype=int)]
 ```
 
-In production, source and target should reflect the two populations that define your monitoring question — for example, training data versus the current deployment. Choose the source with care: every conclusion describes the target relative to that reference.
+### 2 — Score out of sample
 
-## 2 — Score out of sample
-
-Each row should be scored by a model that did not see that row during training. Here, a domain classifier estimates `P(target|x)`, the probability that a row belongs to the target rather than the source. When this probability separates the two groups well, it signals a distributional difference, which makes it a useful generic score for detecting *any* shift:
+Score each row with a model that did not see it. Here a domain classifier estimates the domain probability `P(target|x)` — a useful generic score for detecting *any* shift. It measures membership, not outcome quality — keep it separate from your harm score.
 
 ```python
 from sklearn.ensemble import HistGradientBoostingClassifier
@@ -42,21 +40,9 @@ domain_prob = cross_val_predict(
 )[:, 1]
 ```
 
-!!! warning "Honest scores"
-    `samesame` only sees scores, not how they were made.
+### 3 — Did anything change?
 
-    --8<-- "snippets/honest-scores.txt"
-
-When you test a score with a clear notion of better and worse, keep it separate from the domain probability. Domain probability describes group membership, not outcome quality. Use it to build weights when needed, and use the interpretable score as the harm score.
-
-??? tip "Why a classifier?"
-    Estimating `P(target|x)` and checking whether it separates source from target
-    *is* a two-sample test — fit a classifier to the source/target labels and see
-    if it does better than chance. For intuition on why this humble test often
-    rivals kernel tests and needs no RKHS machinery, see
-    [In gentle praise of classifier tests](https://vathymut.org/posts/2022-01-22-in-gentle-praise-of-modern-tests/).
-
-## 3 — Did anything change?
+Test whether the score separates source from target (expect AUC ~0.61 here):
 
 ```python
 import samesame as ss
@@ -66,11 +52,11 @@ shift = ss.test_shift(source=source_scores, target=target_scores, rng=rng)
 print(f"AUC {shift.statistic:.3f} p={shift.pvalue:.4f}")  # → 0.611, 0.0002
 ```
 
-An AUC near `0.5` means the score hardly separates the groups, while values well above or below `0.5` mean stronger separation. Because `test_shift` is two-sided, separation in either direction — for example `0.8` or `0.2` — can lead to rejection.
+Near `0.5` means little separation; values near `0` or `1` mean stronger separation. The test is two-sided — either direction can reject.
 
-## 4 — Did it get worse?
+### 4 — Did it get worse?
 
-The more important question is whether the change moved toward outcomes you want to avoid.
+Declare the harmful direction from what the score means — *before* you look. Never choose `worse` by p-value. See [Core concepts](../../explanation/core-concepts.md) for the full table.
 
 --8<-- "snippets/worse-declaration.txt"
 
@@ -95,18 +81,20 @@ The more important question is whether the change moved toward outcomes you want
     print(f"Harm p={harm.pvalue:.4f}")  # → 0.0001
     ```
 
-- A small `test_shift` p-value is evidence that the score distributions differ.
-- A small `test_harmful_shift` p-value is evidence that the target shifted toward the harmful tail you declared.
+- A small `test_shift` p-value → the distributions differ.
+- A small `test_harmful_shift` p-value → the target moved toward the tail you declared.
 
-The test is directional by design: changing `worse` changes the tail under examination.
+??? note "Honest and reproducible scores"
+    `samesame` only sees the scores you pass in. --8<-- "snippets/honest-scores.txt"
 
---8<-- "snippets/worse-tip.txt"
-
-??? tip "Reproducibility"
-    Pass `rng=np.random.default_rng(12345)` to make permutation p-values reproducible. The default is `n_resamples=9999`; use `999` while exploring and `19999` when you need finer resolution for p-values below `0.001`.
+    Pass `rng=np.random.default_rng(12345)` for reproducible p-values (`n_resamples=9999`; `999` while exploring, `19999` below `0.001`). Details: [Core concepts](../../explanation/core-concepts.md).
 
 ## Recap
 
-You created a score for each observation, checked for any distributional shift with `test_shift`, and then tested a specific harmful direction with `test_harmful_shift`. The first tells you whether the score separates source from target; the second tells you whether the target moved toward the tail you care about.
+You created one score per observation, screened for any shift (AUC), and tested a harmful direction (`worse`). `test_shift` tells you whether the groups differ; `test_harmful_shift` tells you whether the target moved toward the tail you declared.
 
-For the same harm test on real trial data with no model at all, see [Is the new drug good enough?](../trials/check-drug-efficacy.md). If source and target overlap poorly in feature space, see [Weight for common support](../weighting/weight-for-common-support.md) to learn how to reweight the comparison.
+**Next steps:**
+
+- [Is the new drug good enough?](../trials/check-drug-efficacy.md) — same test on 70 trial scores, no model.
+- [Weight for common support](../../how-to/weight-for-common-support.md) — when overlap is poor, reweight around common support.
+- [How the harm test works](../../explanation/harmful-shift-statistic.md) — why the weighted AUC focuses on the harmful tail.

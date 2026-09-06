@@ -1,16 +1,14 @@
 # Is the new drug good enough?
 
-Medicine has a name for the question this guide explores: **noninferiority**. A new treatment — cheaper, faster to make, or easier to tolerate — does not need to beat the established standard. It needs to be *not meaningfully worse*. The harmful-shift test was introduced for exactly this setting: a nonparametric noninferiority test that requires no pre-specified margin and no normality assumption (Kamulete, 2022).
+Medicine calls this **noninferiority**: a cheaper, faster, or more tolerable treatment need not beat the standard — it must be *not meaningfully worse*. The harmful-shift test is a nonparametric noninferiority test with no margin and no normality assumption (Kamulete, 2022).
 
-The example comes from a classic case study reprinted in the [SAS proceedings](https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf). A new, less expensive drug — call it **Bowl** — is compared with the established standard, **Armanaleg**. Patients report relief on a scale from 4 to 16, where higher is better. Bowl does not look better on average: mean relief is 9.4 for Bowl versus 10.1 for Armanaleg (42 and 28 patients, respectively). But *not better* is not the question here. The question is whether Bowl is meaningfully worse.
-
-Contrast two questions. “Are the two drugs different?” is a two-sided comparison that is easy to ask and easy to answer. “Is the challenger not meaningfully worse?” is a one-sided judgment that depends on a declared direction. In a trial that direction is pre-registered; in monitoring you pre-specify `worse` from the meaning of the score, before you look at any p-value.
+The example is a classic [SAS case study](https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf): **Bowl** (cheaper) vs **Armanaleg** (standard). Relief is 4–16 (higher is better); mean 9.4 vs 10.1 (42 and 28 patients). Not better — but is it *meaningfully worse*? You have one score per patient — no model. Pre-register `worse` — like choosing one side before unblinding.
 
 If you are new to `samesame`, start with [Get started](../tutorials/get-started.md).
 
 ## The data
 
-Seventy relief scores from two arms. `samesame` sees one score per observation and nothing else — no model, no features. **Source** is the standard (Armanaleg, the reference); **target** is the challenger (Bowl, the group under evaluation).
+Seventy relief scores, no model, no features. `samesame` sees one score per observation. **Source** is the standard (Armanaleg); **target** is the challenger (Bowl).
 
 ```python
 import numpy as np
@@ -26,7 +24,7 @@ relief = np.array([float(s) for s in datalines])
 armanaleg, bowl = relief[:28], relief[28:]  # source: standard, target: challenger
 ```
 
-The harmful-shift test is oriented so that larger values mean worse outcomes. Relief runs the other way, so we flip it into a **discomfort score**, `max(relief) − relief`, where a large value means the patient stayed far from the best possible relief.
+The harm test expects larger = worse, so flip relief into a **discomfort score**, `max(relief) − relief`, where larger means farther from the best outcome.
 
 ```python
 discomfort = relief.max() - relief           # flip: larger = worse
@@ -34,7 +32,7 @@ armanaleg_harm = discomfort[:28]
 bowl_harm = discomfort[28:]
 ```
 
-Flipping the score and declaring `worse="lower"` are equivalent: the test negates internally, so both choices lead to the same verdict. Declare the direction that matches the meaning of the score and let the arithmetic follow.
+Either flip or pass `worse="lower"` — same test.
 
 ## The verdict
 
@@ -51,41 +49,28 @@ shift = ss.test_shift(source=armanaleg_harm, target=bowl_harm, rng=rng)
 print(f"AUC {shift.statistic:.4f} p={shift.pvalue:.4f}")  # → 0.5829, 0.2548
 ```
 
-Read the two results together:
+Together:
 
-- `test_shift` (two-sided, AUC 0.58) finds little evidence that the arms differ at all.
-- `test_harmful_shift` (one-sided) finds little evidence that Bowl is meaningfully worse, with p = 0.13 — well above conventional thresholds for concern.
+- `test_shift` (AUC 0.58, p=0.25) — little evidence the arms differ.
+- `test_harmful_shift` (p=0.13) — little evidence Bowl is meaningfully worse.
 
-This matches the original parametric analysis of the same study, which concluded:
-
-> This suggests, as you'd hoped, that the efficacy of Bowl is not appreciably worse than that of Armanaleg.
-
-The same conclusion follows without a pre-specified margin, without a normality assumption, and with only 70 observations.
+Same conclusion as the original parametric analysis — with no margin, no normality assumption, and only 70 observations.
 
 ## What the statistic is asking
 
-The harmful-shift statistic is a weighted AUC, `∫ TPR·(1−FPR)² dFPR`, that focuses on the harmful tail. In this trial it asks one question: **does Bowl push more patients into discomfort that Armanaleg rarely produces?**
-
-For any discomfort threshold, `FPR` is the fraction of Armanaleg patients above it, so `(1−FPR)²` is largest where Armanaleg is rarest. The statistic grows when Bowl's worst outcomes cluster beyond those rare thresholds; it stays modest when the arms differ only where Armanaleg is already common, as they do here. A standard AUC weighs every threshold equally; the harm statistic does not. See [How the harm test works](../../explanation/harmful-shift-statistic.md) for the formula and ROC intuition.
+The harm statistic `∫ TPR·(1−FPR)² dFPR` weights the harmful tail: **does Bowl push patients into discomfort Armanaleg rarely produces?** Larger `(1−FPR)²` where Armanaleg is rarest — see [How the harm test works](../../explanation/harmful-shift-statistic.md).
 
 ## How to read a non-rejection
 
-A p-value of 0.13 is not a certificate of equivalence. It says that, with this much data, the observed difference is not unusual if there were no meaningful harm. Two cautions from trials carry over to monitoring:
+A p-value of 0.13 is not a certificate of equivalence — it says the observed difference is not unusual if there were no meaningful harm.
 
-- **Absence of evidence is not evidence of absence.** With 28 versus 42 patients, the test may lack power. A larger study — or a wider deployment window — could sharpen the verdict.
-- **The direction is part of the protocol.** Here `worse="higher"` because larger discomfort is worse. Choosing the direction after seeing the p-values turns a pre-specified comparison into a search for significance.
+- **Absence of evidence ≠ evidence of absence.** With 28 vs 42 patients the test may lack power; a larger study or wider deployment window could sharpen the verdict.
+- **Direction is part of the protocol.** Here `worse="higher"` because larger discomfort is worse. Choosing direction after seeing p-values turns a pre-specified test into a search.
 
 ## Why a drug trial belongs in a monitoring guide
 
-Every deployed model is a challenger drug in this analogy. The correspondence is:
+Every deployed model is a challenger drug: the standard (Armanaleg) is `source`, the challenger (Bowl) is `target`, a relief score is one interpretable score per observation, and “not meaningfully worse” is `test_harmful_shift`. The challenger passes when it stays close to the standard; when it does not, `samesame` shows you where and how.
 
-| Trial | Monitoring | `samesame` |
-|---|---|---|
-| Standard (Armanaleg) | Training data or past deployment | `source` |
-| Challenger (Bowl) | Current deployment | `target` |
-| Relief score | One interpretable score per observation | score |
-| "Not meaningfully worse" | No harmful shift | `test_harmful_shift` |
+For the same test on a model score, see [Monitor a credit model](../credit/monitor-credit.md). To reweight for common support, see [Weight for common support](../../how-to/weight-for-common-support.md) and [Core concepts](../../explanation/core-concepts.md).
 
-The challenger passes when it stays close enough to the standard; when it does not, `samesame` helps you see where and how.
-
-For the same test applied to a model score on a real credit benchmark, see [Monitor a credit model](../credit/monitor-credit.md). To compare the deployment with reweighting for common support, see [Weight for common support](../weighting/weight-for-common-support.md).
+You now have a template for any “not meaningfully worse” question — swap in your score and declare worse before you look.

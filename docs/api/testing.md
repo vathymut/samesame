@@ -1,66 +1,56 @@
 # Shift testing
 
-`samesame` compares a single interpretable severity score — call it `ϕ(x)` — between **source** (the reference) and **target** (the current deployment), rather than scanning a full feature table. Larger values mean worse outcomes for your application; the paper calls this an *outlier score* (Kamulete, 2022) and monitoring practice calls it an interpretable severity, harm, or degradation score. Choose `ϕ` to encode the notion of *worse* you care about and compute it for every observation.
+One interpretable score `ϕ(x)` per observation — an outlier score (severity/harm score in monitoring). Compare it between **source** (reference) and **target** (current deployment). Larger means worse. Choose `ϕ` to encode the notion of *worse* you care about.
 
-`samesame` provides two tests for this comparison. `test_shift` is a broad, two-sided screen based on the ROC AUC (`∫ TPR dFPR`; `0.5` means chance-level separation). `test_harmful_shift` is a focused, one-sided test for the harmful tail based on a weighted AUC (`∫ TPR·(1−FPR)² dFPR`) that gives more weight to thresholds rarely exceeded in the source. Use the first when any distributional change matters; use the second when you can state the harmful direction in advance with `worse`.
+## Scope
 
-??? tip "Bring your own score — which `ϕ` to use"
+Reference for the two permutation tests. For choosing `ϕ` and `worse`, see [Core concepts](../explanation/core-concepts.md) and [How the harm test works](../explanation/harmful-shift-statistic.md). For weighting, see [Importance weights](weighting.md). Hands-on: [Get started](../examples/tutorials/get-started.md).
 
-    The test is agnostic to `ϕ` as long as ranking is consistent (higher = more abnormal for your task). Different `ϕ` ask different questions about the same source/target split:
-
-    | Family | Example `ϕ` | `worse` | What it detects |
-    |---|---|---|---|
-    | Two-sample classification | `P(target\|x)` from a domain classifier | `higher` | Any feature shift (§5 in Kamulete 2022 — gentle praise of classifier tests) |
-    | Predicted risk | `P(default)`, `P(fraud)` | `higher` | Movement toward higher business risk |
-    | Residual / error | Brier `(y−p)²`, absolute residual, `−log p(y\|x)` | `higher` | Larger post-outcome mistakes |
-    | Uncertainty / confidence | prediction-interval width, `SE(mean prediction)`, `−LogitGap` | `higher` / `lower` for `LogitGap` | Harder-to-predict regions (§2, §4) |
-    | Density / OOD | isolation-forest score, `−log density` | `higher` | Low-density outliers |
-    | Dimension reduction | reconstruction error (PCA/autoencoder) | `higher` | Deviations in stable subspace |
-    | Domain trust | trust score / distance to training manifold | `higher` | Points the classifier is likely to mislabel |
-
-    The same deployment can look benign on one `ϕ` and harmful on another — e.g. dense in-distribution points that are hard to predict (Kamulete 2022 §2 iris, §6.2 CC18: residual↔uncertainty `r=0.82`, vs classification `r≈0.5`). Pick the family that matches the failure you want to alarm on, not just the shift you can measure.
-
-A domain classifier's estimate of `P(target|x)` can serve as a useful generic score for detecting any shift. Do not reuse it as the harm score: it describes how target-like an observation is, not whether the outcome is harmful. Reserve it for building weights when you need a common-support comparison.
-
-??? details "Source files"
-    `src/samesame/shift.py` · `src/samesame/_permutation.py` · `src/samesame/_statistics.py`
-
-## Which function?
+## Which test?
 
 | Function | Question | When to use |
 |----------|----------|-------------|
-| `ss.test_shift` | Do source and target differ? | Any change in the score distribution matters |
-| `ss.test_harmful_shift` | Did the target move toward the harmful tail you specified? | You can declare `worse` in advance |
+| `ss.test_shift` | Do source and target differ? | Any change matters — screen first, then ask about harm |
+| `ss.test_harmful_shift` | Did the target move toward the harmful tail you specified? | You can declare `worse` in advance and care about one tail |
+
+`ss.test_shift(source, target, *, weights=None, n_resamples=9999, rng=None)` — permutation test for any shift. Pass one score `ϕ(x)` per observation (see [Core concepts](../explanation/core-concepts.md)). Returns AUC in `.statistic` (`0.5` no separation) and a two-sided p-value (doubles smaller tail, `+1` smoothing). Example: `ss.test_shift(source=scores_ref, target=scores_cur, rng=rng)`. Details below under [Reading results](#reading-results).
+
+`ss.test_harmful_shift(source, target, *, worse, weights=None, n_resamples=9999, rng=None)` — permutation test for tail harm. Same `ϕ(x)` plus `worse="higher"|"lower"` (or `ss.Worse`) declared before looking. Returns weighted AUC and one-sided `greater` p-value. Example: `ss.test_harmful_shift(source=risk_ref, target=risk_cur, worse="higher", rng=rng)`. Reads tail mass where source is rare — see [How the harm test works](../explanation/harmful-shift-statistic.md).
 
 --8<-- "snippets/worse-declaration.txt"
 
 --8<-- "snippets/worse-table.txt"
 
+Concepts and full definitions: [Core concepts](../explanation/core-concepts.md).
+
 ## Reading results
 
-Both functions return `.statistic`, `.pvalue`, and `.null_distribution`. The null distribution is generated by permuting group labels while keeping scores and weights fixed. It shows which statistic values would be plausible if source and target labels were interchangeable.
+Both return `.statistic`, `.pvalue`, and `.null_distribution` (permuted labels, scores fixed).
 
-Interpret `.pvalue` as evidence against label exchangeability, not as the probability that the null is true and not as a measure of effect size. The two tests handle tails differently: `test_shift` is two-sided and doubles the smaller tail (capped at 1), while `test_harmful_shift` is one-sided with the `greater` alternative. Both use a `+1` correction so permutation p-values never reach zero (Phipson & Smyth, 2010).
+--8<-- "snippets/pvalue-caveat.txt"
 
-- `test_shift`: `.statistic` is the ROC AUC. An AUC of `0.5` means the score does not separate the groups; values well above or below `0.5` mean stronger separation.
-- `test_harmful_shift`: `.statistic` is the weighted AUC. Read it against `result.null_distribution` and the score's own scale (see [How the harm test works](../explanation/harmful-shift-statistic.md)). The result also records the chosen `.worse`.
+Tails: `test_shift` is two-sided (doubles smaller tail, capped at 1); `test_harmful_shift` is one-sided `greater`. Both use `+1` smoothing (Phipson & Smyth, 2010).
 
-Valid p-values depend on out-of-sample scores. `samesame` only sees the scores you pass in, not how they were constructed.
+- `test_shift` — `.statistic` is AUC (`0.5` = no separation; near `0` or `1` = strong).
+- `test_harmful_shift` — `.statistic` is weighted AUC; read against `null_distribution` and your score's scale (see [How the harm test works](../explanation/harmful-shift-statistic.md)); records `.worse`.
+
+### Honest scores {#honest-scores}
+
+Valid p-values need out-of-sample scores — `samesame` only sees what you pass in.
 
 --8<-- "snippets/honest-scores.txt"
 
-??? note "How to make `ϕ` honest — `Φ(D,λ)` in the paper"
+Never fit and test on the same rows (Kamulete 2022 §5):
 
-    The score function `ϕ = Φ(D,λ)` is estimated from data, so the same rows must not be used for both fitting `ϕ` and testing with it (Kamulete 2022 §5). Use one of:
-
-    - **Permutation (PT, default)** — fit `ϕ` once, then permute group labels (`n_resamples=9999`; `R=1000` with early stopping in the paper). The `site/` docs you are reading were built this way.
-    - **Out-of-bag** — `RandomForestClassifier(oob_score=True).oob_decision_function_` for risk/confidence scores; free honest `ϕ` when you already use a bagged model (`docs/examples/credit/monitor-credit.md`).
-    - **Cross-fit / CV** — `cross_val_predict` (`docs/examples/tutorials/get-started.md:39`) or any `k`-fold that scores each row from a model that did not see it. Unifies accuracy and inference.
-
-    All three keep the null distribution valid; CV/OOB avoid the split-sample `N(1/12,σ)` cost of holding out half the data.
+- **Permutation (default)** — fit `ϕ` once, permute labels (`n_resamples=9999`).
+- **Out-of-bag** — `oob_decision_function_` for bagged models (`examples/credit/monitor-credit.md`).
+- **Cross-fit** — `cross_val_predict` or any k-fold scoring each row out-of-sample (`examples/tutorials/get-started.md`).
 
 ??? tip "Reproducibility"
-    Pass `rng=np.random.default_rng(12345)` to make permutation p-values reproducible. The default is `n_resamples=9999`; use `999` while exploring and `19999` when you need finer resolution for p-values below `0.001`.
+    Pass `rng=np.random.default_rng(12345)` (`n_resamples=9999`; `999` while exploring, `19999` below `0.001`).
+
+??? details "Source files"
+    `src/samesame/shift.py` · `src/samesame/_permutation.py` · `src/samesame/_statistics.py`
 
 ## API
 

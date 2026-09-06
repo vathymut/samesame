@@ -12,11 +12,9 @@
 
 > *Same, same but different ...*
 
-Every monitoring question starts with the same check: *is this still like the reference?* The package name is the answer you hope to give. When the answer is no, the more important question is whether the difference moved toward worse outcomes.
+You bring one score per observation — predicted risk, prediction error, or an outlier score (e.g., confidence gap) — and `samesame` compares it between source and target to answer two questions: did it change, and did it get worse?
 
-Production monitoring often starts from a practical constraint: the raw feature space is too large to scan directly, and labels arrive too late to guide early action. A model score addresses this by reducing each observation to one interpretable number — predicted risk, prediction error, confidence, or an outlier score.
-
-`samesame` compares that score between source and target.
+Production monitoring is often constrained: the feature space is too wide to scan directly, and labels arrive too late. A score reduces each row to one number you can test.
 
 --8<-- "snippets/source-target.txt"
 
@@ -29,21 +27,21 @@ It separates two questions that are easy to conflate:
 --8<-- "snippets/quick-example.py:quick-example"
 ```
 
---8<-- "snippets/pvalue-caveat.txt"
+A small p-value rejects label exchangeability — not impact, causality, effect size, or the chance the null is true. Evidence of a shift is not evidence of harm. Details: [Core concepts](explanation/core-concepts.md).
 
 ## Workflow
 
-1. **Choose a score** that captures the outcome you care about. If it comes from a fitted model, generate it out of sample.
+1. **Choose a score** that captures the outcome you care about. If a fitted model produces the scores, generate them out of sample ([Core concepts](explanation/core-concepts.md)).
 2. **Ask whether anything changed** with `ss.test_shift`.
 3. **Ask whether the change is harmful** with `ss.test_harmful_shift(..., worse=...)`.
-4. **Address poor feature overlap** with `ss.domain_weights` only when it is a real concern. Weighting reframes the comparison around common support and is not a default correction.
+4. **Address poor overlap** with `ss.domain_weights` only when overlap is poor — weighting reframes around common support, not a default correction.
 
 ## Where next
 
-- **[Get started](examples/tutorials/get-started.md)** — 5 minutes, both tests.
-- **[Is the new drug good enough?](examples/trials/check-drug-efficacy.md)** — the harm test through a trial of 70 scores, with no model.
-- **[Monitor a credit model](examples/credit/monitor-credit.md)** — HELOC data: one model, three signals under the same shift.
-- **[Weight for common support](examples/weighting/weight-for-common-support.md)** — when to reweight, and what it costs.
+- **[Get started](examples/tutorials/get-started.md)** — run both tests in 5 minutes.
+- **[Is the new drug good enough?](examples/trials/check-drug-efficacy.md)** — the harm test on 70 trial scores, with no model.
+- **[Monitor a credit model](examples/credit/monitor-credit.md)** — one HELOC model, three signals under the same shift.
+- **[Weight for common support](how-to/weight-for-common-support.md)** — when and how to reweight.
 
 ## Installation
 
@@ -51,4 +49,7 @@ It separates two questions that are easy to conflate:
 python -m pip install samesame
 ```
 
-Requires Python 3.12+, `numpy`, `scipy`, and `scikit-learn`. The package is designed for score-based monitoring and is not intended for randomized experiments, subgroup discovery, or sequential monitoring.
+Requires Python 3.12+, `numpy`, `scipy`, and `scikit-learn`.
+
+!!! note "Scope"
+    Score-based monitoring only — not for randomized experiments, subgroup discovery, or sequential monitoring.
