@@ -12,7 +12,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import typer
 
-from scripts.style import EXPERIMENT_STYLE, MODE_ORDER, MODE_STYLE, SCENARIO_LABELS, SCENARIO_ORDER
+from scripts.style import (
+    EXPERIMENT_STYLE,
+    MODE_ORDER,
+    MODE_STYLE,
+    SCENARIO_LABELS,
+    SCENARIO_ORDER,
+)
 from scripts.utils import MANUSCRIPT_DIR, read_csv
 
 app = typer.Typer()
@@ -53,16 +59,20 @@ def _plot_lines(ax, rows, modes, x_key, y_key, xlabel, ylabel, show_legend, lege
         ax.legend(frameon=False, ncol=legend_ncol, fontsize=8)
 
 
-# --- first figures ---
-
-def _plot_calibration(rows, x_key, y_key, xlabel, ylabel, title, output, detail_rows=None):
-    fig, ax = plt.subplots(figsize=(5.4, 3.6), constrained_layout=True)
-    _plot_lines(ax, rows, MODE_ORDER, x_key, y_key, xlabel, ylabel, True, 2, detail_rows)
-    ax.set_title(title)
+def _save(fig, output: Path) -> None:
     output.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(output)
     plt.close(fig)
 
+
+def _line_figure(rows, x_key, y_key, xlabel, ylabel, title, output, *, detail_rows=None):
+    fig, ax = plt.subplots(figsize=(5.4, 3.6), constrained_layout=True)
+    _plot_lines(ax, rows, MODE_ORDER, x_key, y_key, xlabel, ylabel, True, 2, detail_rows)
+    ax.set_title(title)
+    _save(fig, output)
+
+
+# --- first figures ---
 
 def _plot_power(rows, x_key, y_key, xlabel, output, detail_rows=None):
     fig, axes = plt.subplots(1, 3, figsize=(9.0, 3.2), constrained_layout=True)
@@ -70,21 +80,9 @@ def _plot_power(rows, x_key, y_key, xlabel, output, detail_rows=None):
     axes[0].set_title("(a) Density-ratio weighting")
     _plot_lines(axes[1], rows, ["unweighted", "crump", "overlap"], x_key, y_key, xlabel, "Rejection rate", True, detail_rows=detail_rows)
     axes[1].set_title("(b) Causal-inference baselines")
-    grouped = _group_by_mode(rows, x_key, "statistic")
-    for mode in MODE_ORDER:
-        if mode not in grouped:
-            continue
-        x, y = grouped[mode]
-        s = MODE_STYLE[mode]
-        axes[2].plot(x, y, color=s["color"], marker=s["marker"], linewidth=2.0, markersize=6.0, label=s["label"])
-    axes[2].set_xlabel(xlabel)
-    axes[2].set_ylabel("Mann-Whitney statistic")
+    _plot_lines(axes[2], rows, MODE_ORDER, x_key, "statistic", xlabel, "Mann-Whitney statistic", True, 2)
     axes[2].set_title("(c) Test statistic (shared scale)")
-    axes[2].grid(alpha=0.25, linewidth=0.8)
-    axes[2].legend(frameon=False, ncol=2, fontsize=8)
-    output.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(output)
-    plt.close(fig)
+    _save(fig, output)
 
 
 @app.command("first")
@@ -100,8 +98,8 @@ def first(
     pow_rows = read_csv(power_summary)
     cal_detail = read_csv(calibration_detail) if calibration_detail else None
     pow_detail = read_csv(power_detail) if power_detail else None
-    _plot_calibration(cal_rows, "severity", "reject", "Low-overlap severity", "False positive rate", "Calibration under support mismatch", calibration_output, cal_detail)
-    _plot_power(pow_rows, "effect_size", "reject", "Effect size on common support", power_output, pow_detail)
+    _line_figure(cal_rows, "severity", "reject", "Low-overlap severity", "False positive rate", "Calibration under support mismatch", calibration_output, detail_rows=cal_detail)
+    _plot_power(pow_rows, "effect_size", "reject", "Effect size on common support", power_output, detail_rows=pow_detail)
 
 
 # --- follow-up ---
@@ -120,9 +118,7 @@ def _plot_mode_comparison(rows, output):
     ax.set_title("Weighting modes under asymmetric contamination")
     ax.grid(axis="y", alpha=0.25, linewidth=0.8)
     ax.legend(frameon=False, ncol=2)
-    output.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(output)
-    plt.close(fig)
+    _save(fig, output)
 
 
 def _plot_lambda(rows, output):
@@ -145,9 +141,7 @@ def _plot_lambda(rows, output):
     ea.set_ylabel("Minimum effective sample size")
     ea.set_title("Weight stability")
     ea.grid(alpha=0.25, linewidth=0.8)
-    output.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(output)
-    plt.close(fig)
+    _save(fig, output)
 
 
 @app.command("followup")
@@ -163,21 +157,6 @@ def followup(
 
 # --- second DGP ---
 
-def _plot_line(rows, x_key, y_key, xlabel, ylabel, title, output):
-    fig, ax = plt.subplots(figsize=(5.4, 3.6), constrained_layout=True)
-    for mode, (x, y) in _group_by_mode(rows, x_key, y_key).items():
-        s = MODE_STYLE[mode]
-        ax.plot(x, y, color=s["color"], marker=s["marker"], linewidth=2.0, markersize=6.0, label=s["label"])
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
-    ax.set_title(title)
-    ax.grid(alpha=0.25, linewidth=0.8)
-    ax.legend(frameon=False, ncol=2)
-    output.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(output)
-    plt.close(fig)
-
-
 @app.command("second-dgp")
 def second_dgp(
     calibration_summary: Path = typer.Option(MANUSCRIPT_DIR / "results/second_dgp_calibration_summary.csv"),
@@ -185,8 +164,8 @@ def second_dgp(
     calibration_output: Path = typer.Option(MANUSCRIPT_DIR / "figures/second_dgp_calibration_plot.pdf"),
     power_output: Path = typer.Option(MANUSCRIPT_DIR / "figures/second_dgp_power_plot.pdf"),
 ) -> None:
-    _plot_line(read_csv(calibration_summary), "overlap_severity", "reject", "Low-overlap severity", "False positive rate", "Second DGP: Calibration under support mismatch", calibration_output)
-    _plot_line(read_csv(power_summary), "effect_size", "reject", "Harmful-shift effect size on common support", "Rejection rate", "Second DGP: Power under harmful shift on common support", power_output)
+    _line_figure(read_csv(calibration_summary), "overlap_severity", "reject", "Low-overlap severity", "False positive rate", "Second DGP: Calibration under support mismatch", calibration_output)
+    _line_figure(read_csv(power_summary), "effect_size", "reject", "Harmful-shift effect size on common support", "Rejection rate", "Second DGP: Power under harmful shift on common support", power_output)
 
 
 if __name__ == "__main__":

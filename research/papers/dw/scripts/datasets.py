@@ -78,12 +78,8 @@ def _locate(frame: pd.DataFrame | pl.DataFrame, *candidates: str) -> str:
 
 
 def _as_series(v: Any) -> pd.Series:
-    if isinstance(v, pd.Series):
-        return v.reset_index(drop=True)
     if isinstance(v, pd.DataFrame):
-        if v.shape[1] != 1:
-            raise ValueError("label frame must have one column")
-        return v.iloc[:, 0].reset_index(drop=True)
+        v = v.iloc[:, 0]
     return pd.Series(v).reset_index(drop=True)
 
 
@@ -233,21 +229,22 @@ def load_nsw_task(task_name: str, *, max_train_rows: int, max_eval_rows: int, se
     return _finalize(task_name, feature=feat, label=label, source_mask=mask, msg="NSW split must produce non-empty treat pools", max_train_rows=max_train_rows, max_eval_rows=max_eval_rows, seed=seed)
 
 
+_TASK_LOADERS = {
+    "heloc": _load_heloc,
+    "diabetes_readmission": _load_diabetes,
+    "acsincome": _load_acsincome,
+    "acspubcov": _load_acspubcov,
+}
+
+
 def load_task(task_name: str, *, max_train_rows: int, max_eval_rows: int, seed: int) -> LoadedTask:
     if task_name == "nsw":
         return load_nsw_task(task_name, max_train_rows=max_train_rows, max_eval_rows=max_eval_rows, seed=seed)
-    if task_name not in TASK_IDS:
-        raise ValueError(f"unknown task {task_name!r}; expected one of: {sorted(TASK_IDS)} + ['nsw']")
+    if task_name not in _TASK_LOADERS:
+        raise ValueError(f"unknown task {task_name!r}; expected one of: {sorted(_TASK_LOADERS)} + ['nsw']")
     feature, raw = fetch_openml_frame(TASK_IDS[task_name])
     common_kw = dict(max_train_rows=max_train_rows, max_eval_rows=max_eval_rows, seed=seed)
-    if task_name == "acsincome":
-        return _load_acsincome(feature, raw, **common_kw)
-    valid = raw.notna()
-    feature, raw = feature.loc[valid].reset_index(drop=True), raw.loc[valid].reset_index(drop=True)
-    if task_name == "heloc":
-        return _load_heloc(feature, raw, **common_kw)
-    if task_name == "diabetes_readmission":
-        return _load_diabetes(feature, raw, **common_kw)
-    if task_name == "acspubcov":
-        return _load_acspubcov(feature, raw, **common_kw)
-    raise RuntimeError(f"no loader for {task_name!r}")
+    if task_name != "acsincome":
+        valid = raw.notna()
+        feature, raw = feature.loc[valid].reset_index(drop=True), raw.loc[valid].reset_index(drop=True)
+    return _TASK_LOADERS[task_name](feature, raw, **common_kw)

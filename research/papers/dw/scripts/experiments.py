@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from typing import Any
 
 import numpy as np
@@ -12,7 +12,7 @@ from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.model_selection import cross_val_predict
 from skrub import tabular_pipeline
 
-from samesame.shift import HarmfulShiftResult, test_harmful_shift
+from samesame.shift import test_harmful_shift
 from samesame.weights import ImportanceWeights, domain_weights
 from scripts.style import MODE_ORDER
 
@@ -27,108 +27,91 @@ DomainProbabilityEstimator = Callable[
 
 
 def _as_2d(feature: Any) -> NDArray[np.float64]:
-    if isinstance(feature, pl.DataFrame):
+    if isinstance(feature, pl.DataFrame | pl.Series):
         arr = feature.to_numpy()
-        if arr.ndim == 1:
-            arr = arr.reshape(-1, 1)
-        return arr.astype(np.float64, copy=False)
-    if isinstance(feature, pl.Series):
-        arr = feature.to_numpy()
-        if arr.ndim == 1:
-            arr = arr.reshape(-1, 1)
-        return arr.astype(np.float64, copy=False)
-    arr = np.asarray(feature, dtype=np.float64)
-    if arr.ndim == 1:
-        arr = arr.reshape(-1, 1)
-    return arr
+    else:
+        arr = np.asarray(feature, dtype=np.float64)
+    return arr.astype(np.float64, copy=False).reshape(len(arr), -1)
 
 
 def clip_domain_probabilities(p: NDArray[np.float64]) -> NDArray[np.float64]:
     return np.clip(np.asarray(p, dtype=np.float64), 1e-6, 1.0 - 1e-6)
 
 
-def estimate_domain_probabilities_hgb(
-    source_feature: Any, target_feature: Any
-) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
-    if isinstance(source_feature, pl.DataFrame) and isinstance(target_feature, pl.DataFrame):
-        X = pl.concat([source_feature, target_feature], how="vertical")
-        y = np.concatenate([np.zeros(source_feature.height, dtype=int), np.ones(target_feature.height, dtype=int)])
-        est = HistGradientBoostingClassifier(random_state=42, **DEFAULT_HGB_PARAMS)
-        prob = cross_val_predict(tabular_pipeline(est), X, y, cv=5, method="predict_proba")[:, 1]
-        clipped = clip_domain_probabilities(prob)
-        return clipped[: source_feature.height], clipped[source_feature.height :]
+def _cross_val_probs(est: Any, X: Any, y: NDArray[np.int_], n_source: int, *, cv: int = 5) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    prob = cross_val_predict(est, X, y, cv=cv, method="predict_proba")[:, 1]
+    clipped = clip_domain_probabilities(prob)
+    return clipped[:n_source], clipped[n_source:]
+
+
+def _hgb_pipeline() -> Any:
+    return tabular_pipeline(HistGradientBoostingClassifier(random_state=42, **DEFAULT_HGB_PARAMS))
+
+
+def cross_fitted_domain_probs(source_feature: Any, target_feature: Any, *, make_estimator: Callable[[], Any], cv: int = 5) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     s2d, t2d = _as_2d(source_feature), _as_2d(target_feature)
     X = np.vstack([s2d, t2d])
     y = np.concatenate([np.zeros(len(s2d), dtype=int), np.ones(len(t2d), dtype=int)])
-    est = HistGradientBoostingClassifier(random_state=42, **DEFAULT_HGB_PARAMS)
-    prob = cross_val_predict(tabular_pipeline(est), X, y, cv=5, method="predict_proba")[:, 1]
-    clipped = clip_domain_probabilities(prob)
-    return clipped[: len(s2d)], clipped[len(s2d) :]
+    return _cross_val_probs(make_estimator(), X, y, len(s2d), cv=cv)
 
 
-def crump_trimming_mask(
-    s_p: NDArray[np.float64], t_p: NDArray[np.float64], *, threshold: float = 0.1
-) -> tuple[NDArray[np.bool_], NDArray[np.bool_]]:
+def estimate_domain_probabilities_hgb(source_feature: Any, target_feature: Any) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    if isinstance(source_feature, pl.DataFrame) and isinstance(target_feature, pl.DataFrame):
+        n_s = source_feature.height
+        X = pl.concat([source_feature, target_feature], how="vertical")
+        y = np.concatenate([np.zeros(n_s, dtype=int), np.ones(len(X) - n_s, dtype=int)])
+        return _cross_val_probs(_hgb_pipeline(), X, y, n_s)
+    return cross_fitted_domain_probs(source_feature, target_feature, make_estimator=_hgb_pipeline)
+
+
+def crump_trimming_mask(s_p: NDArray[np.float64], t_p: NDArray[np.float64], *, threshold: float = 0.1) -> tuple[NDArray[np.bool_], NDArray[np.bool_]]:
     return (
         (np.minimum(s_p, 1 - s_p) >= threshold).astype(bool),
         (np.minimum(t_p, 1 - t_p) >= threshold).astype(bool),
     )
 
 
-def estimate_overlap_weights(
-    s_p: NDArray[np.float64], t_p: NDArray[np.float64]
-) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+def estimate_overlap_weights(s_p: NDArray[np.float64], t_p: NDArray[np.float64]) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     return s_p * (1 - s_p), t_p * (1 - t_p)
 
 
-def weight_diagnostics(
-    w: ImportanceWeights | None, *, n_source: int, n_target: int
-) -> dict[str, float]:
+def weight_diagnostics(w: ImportanceWeights | None, *, n_source: int, n_target: int) -> dict[str, float]:
     if w is None:
         return {"source_ess": float(n_source), "target_ess": float(n_target), "source_max_weight": 1.0, "target_max_weight": 1.0}
     ess = w.effective_sample_size()
-    return {
-        "source_ess": ess.source,
-        "target_ess": ess.target,
-        "source_max_weight": float(np.asarray(w.source).max()),
-        "target_max_weight": float(np.asarray(w.target).max()),
-    }
+    return {"source_ess": ess.source, "target_ess": ess.target, "source_max_weight": float(np.asarray(w.source).max()), "target_max_weight": float(np.asarray(w.target).max())}
 
 
-def _build_weights(s_p, t_p, mode: str, lam: float) -> ImportanceWeights | None:
-    if mode == "unweighted":
-        return None
-    return domain_weights(source=s_p, target=t_p, reweight=mode, shrinkage=lam)
-
-
-def run_weighted_harm_test(
-    source_score, target_score, *, direction: str, source_domain_prob, target_domain_prob,
-    mode: str, lambda_value: float, n_resamples: int, seed: int, alpha: float = ALPHA,
-) -> dict[str, float | str]:
+def run_weighted_harm_test(source_score, target_score, *, direction: str, source_domain_prob, target_domain_prob, mode: str, lambda_value: float, n_resamples: int, seed: int, alpha: float = ALPHA) -> dict[str, float | str]:
     if mode == "crump":
-        s_mask, t_mask = crump_trimming_mask(source_domain_prob, target_domain_prob)
-        result: HarmfulShiftResult = test_harmful_shift(
-            source_score[s_mask], target_score[t_mask], worse=direction, weights=None, n_resamples=n_resamples, rng=seed
-        )
-        return {"mode": "crump", "statistic": float(result.statistic), "pvalue": float(result.pvalue), "reject": float(result.pvalue < alpha), "source_ess": float(s_mask.sum()), "target_ess": float(t_mask.sum()), "source_max_weight": 1.0, "target_max_weight": 1.0}
-    if mode == "overlap":
-        s_ow, t_ow = estimate_overlap_weights(source_domain_prob, target_domain_prob)
-        w = ImportanceWeights(source=s_ow, target=t_ow)
+        s_keep, t_keep = crump_trimming_mask(source_domain_prob, target_domain_prob)
+        result = test_harmful_shift(source_score[s_keep], target_score[t_keep], worse=direction, weights=None, n_resamples=n_resamples, rng=seed)
+        ess = {"source_ess": float(s_keep.sum()), "target_ess": float(t_keep.sum()), "source_max_weight": 1.0, "target_max_weight": 1.0}
     else:
-        w = _build_weights(source_domain_prob, target_domain_prob, mode, lambda_value)
-    result: HarmfulShiftResult = test_harmful_shift(source_score, target_score, worse=direction, weights=w, n_resamples=n_resamples, rng=seed)
-    diag = weight_diagnostics(w, n_source=len(source_score), n_target=len(target_score))
-    return {"mode": mode, "statistic": float(result.statistic), "pvalue": float(result.pvalue), "reject": float(result.pvalue < alpha), **diag}
+        if mode == "unweighted":
+            w = None
+        elif mode == "overlap":
+            s_ow, t_ow = estimate_overlap_weights(source_domain_prob, target_domain_prob)
+            w = ImportanceWeights(source=s_ow, target=t_ow)
+        else:
+            w = domain_weights(source=source_domain_prob, target=target_domain_prob, reweight=mode, shrinkage=lambda_value)
+        result = test_harmful_shift(source_score, target_score, worse=direction, weights=w, n_resamples=n_resamples, rng=seed)
+        ess = weight_diagnostics(w, n_source=len(source_score), n_target=len(target_score))
+    return {"mode": mode, "statistic": float(result.statistic), "pvalue": float(result.pvalue), "reject": float(result.pvalue < alpha), **ess}
 
 
-def run_harm_test_with_estimator(
-    source_score, target_score, *, source_feature, target_feature,
-    estimator: DomainProbabilityEstimator, direction: str, mode: str,
-    lambda_value: float, n_resamples: int, seed: int, alpha: float = ALPHA,
-) -> dict[str, float | str]:
+def run_harm_test(source_score, target_score, *, source_feature, target_feature, mode: str, lambda_value: float, n_resamples: int, seed: int, estimator: DomainProbabilityEstimator = estimate_domain_probabilities_hgb, direction: str = "higher", alpha: float = ALPHA) -> dict[str, float | str]:
     s_p, t_p = estimator(source_feature, target_feature)
     return run_weighted_harm_test(source_score, target_score, direction=direction, source_domain_prob=s_p, target_domain_prob=t_p, mode=mode, lambda_value=lambda_value, n_resamples=n_resamples, seed=seed, alpha=alpha)
 
 
-def run_harm_test(source_score, target_score, *, source_feature, target_feature, mode: str, lambda_value: float, n_resamples: int, seed: int) -> dict:
-    return run_harm_test_with_estimator(source_score, target_score, source_feature=source_feature, target_feature=target_feature, estimator=estimate_domain_probabilities_hgb, direction="higher", mode=mode, lambda_value=lambda_value, n_resamples=n_resamples, seed=seed, alpha=ALPHA)
+def run_mode_grid(*, n_repeats: int, values: Sequence[Any], draw: Callable[[Any, int], dict[str, NDArray[np.float64]]], extra: Callable[[Any], dict[str, Any]], lambda_value: float, n_resamples: int, draw_seed: int, test_seed: int) -> list[dict[str, Any]]:
+    """Run all weighting modes over repeats x grid values with common random numbers."""
+    rows: list[dict[str, Any]] = []
+    for rep in range(n_repeats):
+        for value in values:
+            ds = draw(value, draw_seed + rep)
+            for mode in MODE_ORDER:
+                r = run_harm_test(ds["source_score"], ds["target_score"], source_feature=ds["source_feature"], target_feature=ds["target_feature"], mode=mode, lambda_value=lambda_value, n_resamples=n_resamples, seed=test_seed + rep)
+                rows.append({"repeat": rep, **extra(value), **r})
+    return rows

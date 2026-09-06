@@ -7,9 +7,8 @@ from pathlib import Path
 import typer
 
 from scripts.dgp import draw_overlap_dataset
-from scripts.experiments import run_harm_test
-from scripts.style import MODE_ORDER
-from scripts.utils import RESULTS_DIR, result_metadata, summarize_rows, write_csv, write_json
+from scripts.experiments import run_harm_test, run_mode_grid
+from scripts.utils import RESULTS_DIR, result_metadata, write_experiment_outputs
 
 app = typer.Typer()
 
@@ -29,16 +28,17 @@ def calibration(
     metadata_output: Path = typer.Option(RESULTS_DIR / "synthetic_calibration_metadata.json"),
 ) -> None:
     meta = result_metadata(Path(__file__), locals(), note="No harmful change on common support; mismatch only in low-overlap regions.")
-    rows: list[dict] = []
-    for rep in range(n_repeats):
-        for sev in severity_grid:
-            ds = draw_overlap_dataset(n_source=n_source, n_target=n_target, source_private_fraction=sev, target_private_fraction=sev, target_shared_shift=0.0, seed=10_000 + rep)
-            for mode in MODE_ORDER:
-                r = run_harm_test(ds["source_score"], ds["target_score"], source_feature=ds["source_feature"], target_feature=ds["target_feature"], mode=mode, lambda_value=lambda_value, n_resamples=n_resamples, seed=20_000 + rep)
-                rows.append({"repeat": rep, "severity": sev, **r})
-    write_csv(detail_output, rows)
-    write_csv(output, summarize_rows(rows, ("severity", "mode")))
-    write_json(metadata_output, meta)
+    rows = run_mode_grid(
+        n_repeats=n_repeats,
+        values=severity_grid,
+        draw=lambda sev, seed: draw_overlap_dataset(n_source=n_source, n_target=n_target, source_private_fraction=sev, target_private_fraction=sev, target_shared_shift=0.0, seed=seed),
+        extra=lambda sev: {"severity": sev},
+        lambda_value=lambda_value,
+        n_resamples=n_resamples,
+        draw_seed=10_000,
+        test_seed=20_000,
+    )
+    write_experiment_outputs(detail=detail_output, summary=output, rows=rows, group_keys=("severity", "mode"), metadata=metadata_output, meta=meta)
 
 
 @app.command("power")
@@ -55,16 +55,17 @@ def power(
     metadata_output: Path = typer.Option(RESULTS_DIR / "power_curve_metadata.json"),
 ) -> None:
     meta = result_metadata(Path(__file__), locals())
-    rows: list[dict] = []
-    for rep in range(n_repeats):
-        for eff in effect_grid:
-            ds = draw_overlap_dataset(n_source=n_source, n_target=n_target, source_private_fraction=severity, target_private_fraction=severity, target_shared_shift=eff, seed=30_000 + rep)
-            for mode in MODE_ORDER:
-                r = run_harm_test(ds["source_score"], ds["target_score"], source_feature=ds["source_feature"], target_feature=ds["target_feature"], mode=mode, lambda_value=lambda_value, n_resamples=n_resamples, seed=40_000 + rep)
-                rows.append({"repeat": rep, "effect_size": eff, "severity": severity, **r})
-    write_csv(detail_output, rows)
-    write_csv(output, summarize_rows(rows, ("effect_size", "mode")))
-    write_json(metadata_output, meta)
+    rows = run_mode_grid(
+        n_repeats=n_repeats,
+        values=effect_grid,
+        draw=lambda eff, seed: draw_overlap_dataset(n_source=n_source, n_target=n_target, source_private_fraction=severity, target_private_fraction=severity, target_shared_shift=eff, seed=seed),
+        extra=lambda eff: {"effect_size": eff, "severity": severity},
+        lambda_value=lambda_value,
+        n_resamples=n_resamples,
+        draw_seed=30_000,
+        test_seed=40_000,
+    )
+    write_experiment_outputs(detail=detail_output, summary=output, rows=rows, group_keys=("effect_size", "mode"), metadata=metadata_output, meta=meta)
 
 
 @app.command("mode-comparison")
@@ -79,16 +80,17 @@ def mode_comparison(
     metadata_output: Path = typer.Option(RESULTS_DIR / "mode_comparison_metadata.json"),
 ) -> None:
     meta = result_metadata(Path(__file__), locals(), scenarios=SCENARIOS)
-    rows: list[dict] = []
-    for rep in range(n_repeats):
-        for scen, (sf, tf) in SCENARIOS.items():
-            ds = draw_overlap_dataset(n_source=n_source, n_target=n_target, source_private_fraction=sf, target_private_fraction=tf, target_shared_shift=0.0, seed=50_000 + rep)
-            for mode in MODE_ORDER:
-                r = run_harm_test(ds["source_score"], ds["target_score"], source_feature=ds["source_feature"], target_feature=ds["target_feature"], mode=mode, lambda_value=lambda_value, n_resamples=n_resamples, seed=60_000 + rep)
-                rows.append({"repeat": rep, "scenario": scen, **r})
-    write_csv(detail_output, rows)
-    write_csv(output, summarize_rows(rows, ("scenario", "mode")))
-    write_json(metadata_output, meta)
+    rows = run_mode_grid(
+        n_repeats=n_repeats,
+        values=list(SCENARIOS.items()),
+        draw=lambda item, seed: draw_overlap_dataset(n_source=n_source, n_target=n_target, source_private_fraction=item[1][0], target_private_fraction=item[1][1], target_shared_shift=0.0, seed=seed),
+        extra=lambda item: {"scenario": item[0]},
+        lambda_value=lambda_value,
+        n_resamples=n_resamples,
+        draw_seed=50_000,
+        test_seed=60_000,
+    )
+    write_experiment_outputs(detail=detail_output, summary=output, rows=rows, group_keys=("scenario", "mode"), metadata=metadata_output, meta=meta)
 
 
 @app.command("lambda")
@@ -107,16 +109,14 @@ def lambda_sensitivity(
     meta = result_metadata(Path(__file__), locals(), experiments={"calibration": 0.0, "power": effect_size})
     rows: list[dict] = []
     for rep in range(n_repeats):
-        for exp_name, eff in [("calibration", 0.0), ("power", effect_size)]:
+        for exp_name, eff in (("calibration", 0.0), ("power", effect_size)):
             ds = draw_overlap_dataset(n_source=n_source, n_target=n_target, source_private_fraction=severity, target_private_fraction=severity, target_shared_shift=eff, seed=70_000 + rep)
             base = run_harm_test(ds["source_score"], ds["target_score"], source_feature=ds["source_feature"], target_feature=ds["target_feature"], mode="unweighted", lambda_value=0.5, n_resamples=n_resamples, seed=80_000 + rep)
             rows.append({"repeat": rep, "experiment": exp_name, "lambda_value": -1.0, **base})
             for lam in lambda_grid:
                 r = run_harm_test(ds["source_score"], ds["target_score"], source_feature=ds["source_feature"], target_feature=ds["target_feature"], mode="both", lambda_value=lam, n_resamples=n_resamples, seed=90_000 + rep)
                 rows.append({"repeat": rep, "experiment": exp_name, "lambda_value": lam, **r})
-    write_csv(detail_output, rows)
-    write_csv(output, summarize_rows(rows, ("experiment", "mode", "lambda_value")))
-    write_json(metadata_output, meta)
+    write_experiment_outputs(detail=detail_output, summary=output, rows=rows, group_keys=("experiment", "mode", "lambda_value"), metadata=metadata_output, meta=meta)
 
 
 if __name__ == "__main__":

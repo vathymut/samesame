@@ -11,8 +11,7 @@ import polars as pl
 
 MANUSCRIPT_DIR = Path(__file__).resolve().parents[1]
 ROOT = MANUSCRIPT_DIR.parents[2]
-PAPER_DIR = MANUSCRIPT_DIR
-RESULTS_DIR = PAPER_DIR / "results"
+RESULTS_DIR = MANUSCRIPT_DIR / "results"
 
 
 def repo_commit_hash() -> str:
@@ -73,3 +72,18 @@ def summarize_rows(rows: list[dict[str, Any]], group_keys: tuple[str, ...]) -> l
     df = pl.DataFrame(rows)
     agg = [pl.col(k).mean().alias(k) for k in _EXPERIMENT_METRIC_KEYS if k in df.columns] + [pl.len().alias("count")]
     return df.group_by(group_keys).agg(agg).sort(group_keys).to_dicts()
+
+
+def write_experiment_outputs(
+    *,
+    detail: Path,
+    summary: Path,
+    rows: list[dict[str, Any]],
+    group_keys: tuple[str, ...],
+    metadata: Path | None = None,
+    meta: dict[str, Any] | None = None,
+) -> None:
+    write_csv(detail, rows)
+    write_csv(summary, summarize_rows(rows, group_keys))
+    if metadata is not None and meta is not None:
+        write_json(metadata, meta)

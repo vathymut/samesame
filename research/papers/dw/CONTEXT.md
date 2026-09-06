@@ -289,10 +289,8 @@ surface, use the repository root `CONTEXT.md` instead.
 ## Experiment infrastructure decisions
 
 - Use `typer` for all CLI argument parsing in experiment scripts; avoid `argparse`.
-- Use `polars` for tabular data manipulation in experiment scripts; prefer it over `pandas` unless a dependency (e.g., OpenML `fetch_openml`) requires the pandas interface.
-- Keep the core paper module seam in `scripts/` organised as focused modules: `_dgp.py` (data-generating processes), `_io.py` (file I/O and aggregation), `_repo.py` (git and hash metadata), `_plot_utils.py` (shared plot builders), and `_domain_clf.py` (domain-probability estimators).
-- Each experiment lives in a single `generate_*.py` script with a typer CLI and the `ExperimentConfig` dataclass for shared defaults.
-- Each figure lives in a single `plot_*.py` script with a typer CLI.
-- `render_calibration_table.py` and `verify_result_metadata.py` also use typer CLIs for consistency.
-- Dead experiment scripts (e.g., `generate_overlap_baseline.py`) are removed rather than left as historical artifacts.
-- CSV schema contracts live in `result_schemas.py`; no schema is defined locally in a generator script.
+- Use `polars` for tabular data manipulation in experiment scripts; `pandas` appears only at the OpenML/NSW fetch boundary inside `datasets.py`.
+- The core seam in `scripts/` is: `dgp.py` (data-generating processes), `experiments.py` (domain-probability estimators, weighting modes, harm-test entry points, and the shared `run_mode_grid` repeat-by-grid driver), `datasets.py` (task loaders and splits), `utils.py` (I/O, aggregation, `write_experiment_outputs`), and `style.py` (mode labels, colors, markers).
+- Experiment CLIs: `synthetic.py` (calibration, power, mode-comparison, lambda) and `appendix.py` (second-dgp, domain-clf) run grid experiments through `run_mode_grid` and emit a detail CSV, a summary CSV (via `summarize_rows`), and a metadata JSON through `write_experiment_outputs`. `real_data.py` runs the OpenML-backed workflow.
+- Figures live in `plots.py` (synthetic + appendix), `intro.py` (conceptual figure), and `real_data_plot.py` (real-data workflow); tables in `tables.py`. All use typer CLIs.
+- Dead experiment scripts are removed rather than left as historical artifacts.
