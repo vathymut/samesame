@@ -68,7 +68,7 @@ def split_source_pool(
     max_train_rows: int,
     max_eval_rows: int,
     seed: int,
-) -> tuple[pd.DataFrame, pd.DataFrame, NDArray[np.int_], NDArray[np.int_]]:
+) -> tuple[pd.DataFrame, pd.DataFrame, NDArray[np.int_] | NDArray[np.float64], NDArray[np.int_] | NDArray[np.float64]]:
     if len(feature) < 4:
         raise ValueError("source pool must contain at least four rows")
 
@@ -101,11 +101,13 @@ def split_source_pool(
         stratify=_stratify_or_none(pooled_label),
         random_state=seed,
     )
+    is_float = pd.api.types.is_float_dtype(pooled_label)
+    dtype: type = float if is_float else int
     return (
         train_feature.reset_index(drop=True),
         source_feature.reset_index(drop=True),
-        train_label.to_numpy(dtype=int),
-        source_label.to_numpy(dtype=int),
+        train_label.to_numpy(dtype=dtype),
+        source_label.to_numpy(dtype=dtype),
     )
 
 
@@ -142,6 +144,8 @@ def finalize_loaded_task(
         max_eval_rows=max_eval_rows,
         seed=seed,
     )
+    is_float = pd.api.types.is_float_dtype(label)
+    target_dtype: type = float if is_float else int
     return LoadedTask(
         task=task_name,
         train_feature=train_feature,
@@ -149,5 +153,5 @@ def finalize_loaded_task(
         target_feature=target_feature,
         train_label=train_label,
         source_label=source_label,
-        target_label=target_label.to_numpy(dtype=int),
+        target_label=target_label.to_numpy(dtype=target_dtype),
     )

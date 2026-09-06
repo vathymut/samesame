@@ -39,7 +39,7 @@ from scripts._loaders._openml_utils import (
     sample_split,
     split_source_pool,
 )
-from scripts._loaders.nsw import load_nsw_task, nsw_label_from_re78
+from scripts._loaders.nsw import load_nsw_task
 from scripts._loaders.task_recipes import TASK_RECIPES
 from scripts.real_data_workflow_config import TASK_SPECS
 
@@ -195,7 +195,6 @@ __all__ = [
     "normalize_name",
     "normalize_state_code",
     "normalize_token",
-    "nsw_label_from_re78",
     "sample_split",
     "source_greater_than",
     "source_less_equal",

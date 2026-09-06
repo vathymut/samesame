@@ -17,9 +17,9 @@ class LoadedTask:
     train_feature: pd.DataFrame
     source_feature: pd.DataFrame
     target_feature: pd.DataFrame
-    train_label: NDArray[np.int_]
-    source_label: NDArray[np.int_]
-    target_label: NDArray[np.int_]
+    train_label: NDArray[np.int_] | NDArray[np.float64]
+    source_label: NDArray[np.int_] | NDArray[np.float64]
+    target_label: NDArray[np.int_] | NDArray[np.float64]
 
 
 Loader = Callable[..., LoadedTask]
