@@ -1,31 +1,31 @@
 {
   "arguments": {
-    "lambda_value": 0.5,
+    "lambda_value": 0.75,
     "max_eval_rows": 4000,
     "max_train_rows": 30000,
-    "metadata_output": "results/real_data_workflow_metadata_nsw.json",
+    "metadata_output": "results/real_data_heloc_lambda_075_metadata.json",
     "n_resamples": 9999,
-    "output": "results/real_data_workflow_summary_nsw.csv",
+    "output": "results/real_data_heloc_lambda_075.csv",
     "random_seed": 123456,
     "tasks": [
-      "nsw"
+      "heloc"
     ]
   },
   "commit": "500e3bf5b583bc6425341f0ddfec9650bad06baf",
   "script": "real_data.py",
   "task_metadata": [
     {
-      "domain": "employment policy",
-      "label": "NSW employment program",
-      "short_label": "NSW",
-      "source_size": 85,
-      "target_size": 185,
-      "task": "nsw",
-      "train_size": 0
+      "domain": "credit risk",
+      "label": "FICO HELOC",
+      "short_label": "HELOC",
+      "source_size": 1536,
+      "target_size": 2776,
+      "task": "heloc",
+      "train_size": 6147
     }
   ],
   "tasks": [
-    "nsw"
+    "heloc"
   ],
   "workflows": {
     "confidence": "lower",
