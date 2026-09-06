@@ -6,7 +6,8 @@
   \caption{%
     Real-data task provenance.
     Most tasks are fetched by pinned OpenML data ID; the NSW data comes from
-    the MatchIt R package (Rdatasets mirror). The split recreates the
+    the NBER Dehejia--Wahba mirror (screened CPS comparison sample). The split
+    recreates the
     TableShift source and target pools locally without the TableShift runtime.
     The NSW task uses a raw outcome score (no source model).
     $N_{\mathrm{train}}$\,=\,source training rows;
@@ -24,7 +25,7 @@
     Readmission  & Diabetes130US (46922)     & Healthcare      & admission source id   & $\neq 7$              & $=7$                   & 26{,}583 & 6{,}645 & 4{,}000 \\
     Income       & ACSIncome (43141)         & Socioeconomic   & DIVISION              & $\neq$ New England    & $=$ New England        & 30{,}000 & 4{,}000 & 4{,}000 \\
     Coverage     & ACSPublicCoverage (43140) & Socioeconomic   & DIS                   & no disability         & disability ($=1$)      & 30{,}000 & 4{,}000 & 4{,}000 \\
-    NSW Employment & n/a (MatchIt::lalonde)  & Employment      & treat                 & PSID control ($=0$)   & NSW treatment ($=1$)   & 0        & 85      & 185 \\
+    NSW Employment & n/a (NBER mirror)         & Employment      & treat                 & CPS comparison ($=0$)  & NSW treated ($=1$)     & 0        & 85      & 185 \\
     \bottomrule
   \end{tabular}%
   }
@@ -39,19 +40,22 @@
     Per-workflow $p$-values, decision flips, and effective sample sizes
     for the real-data tasks.
     \emph{Unw.}\,$p$\,=\,unweighted p-value;
-    \emph{DW}\,$p$\,=\,doubly weighted p-value ($\lambda = 0.5$, 499 permutations).
+    \emph{DW}\,$p$\,=\,doubly weighted p-value ($\lambda = 0.5$, 9{,}999 permutations).
     Flip\,=\,decision change at $\alpha = 0.05$ between unweighted and
-    doubly weighted; $\dagger$ marks a borderline flip.
+    doubly weighted, in either direction (on HELOC Risk and Readmission rows
+    the unweighted test rejects and the doubly weighted test does not; on
+    HELOC Confidence and Income Risk rows only the doubly weighted test
+    rejects); $\dagger$ marks a borderline flip.
     $N_{\mathrm{src}}$ and $N_{\mathrm{tgt}}$ are the original sample sizes;
     $\mathrm{ESS}_{\mathrm{src}}$ and $\mathrm{ESS}_{\mathrm{tgt}}$ are Kish's
     effective sample sizes for the doubly weighted mode.
     ESS is constant within each task because the domain classifier does not
     depend on the monitoring score.
     Reading a row---e.g., HELOC Risk: $N_{\mathrm{src}}=1{,}536$,
-    $N_{\mathrm{tgt}}=2{,}776$, $\mathrm{ESS}=401$ and $803$---shows that
+    $N_{\mathrm{tgt}}=2{,}776$, $\mathrm{ESS}=310$ and $337$---shows that
     most observations fall outside the common support, explaining why the
-    unweighted rejection ($p=0.002$) does not survive common-support
-    restriction ($p=0.376$).
+    unweighted rejection ($p=0.0001$) does not survive common-support
+    restriction ($p=0.992$).
     Direction: $\uparrow$\,=\,higher target score is adverse;
     $\downarrow$\,=\,lower target score is adverse (score is higher-is-better).%
   }
@@ -61,23 +65,23 @@
     Task & Workflow & Dir. & $N_{\mathrm{src}}$ & $N_{\mathrm{tgt}}$ &
     Unw.~$p$ & DW~$p$ & Flip & $\mathrm{ESS}_{\mathrm{src}}$ & $\mathrm{ESS}_{\mathrm{tgt}}$ \\
     \midrule
-    HELOC        & Risk       & $\uparrow$   & 1{,}536 & 2{,}776 & 0.002 & 0.376 & $\checkmark$ & 401   & 803   \\
-                 & Confidence & $\downarrow$ & 1{,}536 & 2{,}776 & 1.000 & 0.862 &              & 401   & 803   \\
-                 & Error      & $\uparrow$   & 1{,}536 & 2{,}776 & 1.000 & 0.998 &              & 401   & 803   \\
+    HELOC        & Risk       & $\uparrow$   & 1{,}536 & 2{,}776 & 0.0001 & 0.992 & $\checkmark$ & 310   & 337   \\
+                 & Confidence & $\downarrow$ & 1{,}536 & 2{,}776 & 1.000 & 0.022 & $\checkmark$ & 310   & 337   \\
+                 & Error      & $\uparrow$   & 1{,}536 & 2{,}776 & 1.000 & 0.941 &              & 310   & 337   \\
     \cmidrule(lr){1-10}
-    Readmission  & Risk       & $\uparrow$   & 6{,}645 & 4{,}000 & 0.002 & 0.044 &              & 1{,}598 & 1{,}492 \\
-                 & Confidence & $\downarrow$ & 6{,}645 & 4{,}000 & 0.002 & 0.042 &              & 1{,}598 & 1{,}492 \\
-                 & Error      & $\uparrow$   & 6{,}645 & 4{,}000 & 0.002 & 0.114 & $\checkmark$ & 1{,}598 & 1{,}492 \\
+    Readmission  & Risk       & $\uparrow$   & 6{,}645 & 4{,}000 & 0.0001 & 0.581 & $\checkmark$ & 792   & 641   \\
+                 & Confidence & $\downarrow$ & 6{,}645 & 4{,}000 & 0.0001 & 0.571 & $\checkmark$ & 792   & 641   \\
+                 & Error      & $\uparrow$   & 6{,}645 & 4{,}000 & 0.0002 & 0.412 & $\checkmark$ & 792   & 641   \\
     \cmidrule(lr){1-10}
-    Income       & Risk       & $\uparrow$   & 4{,}000 & 4{,}000 & 0.490 & 0.630 &              & 2{,}321 & 2{,}051 \\
-                 & Confidence & $\downarrow$ & 4{,}000 & 4{,}000 & 0.848 & 0.238 &              & 2{,}321 & 2{,}051 \\
-                 & Error      & $\uparrow$   & 4{,}000 & 4{,}000 & 0.046 & 0.054 & $\dagger$    & 2{,}321 & 2{,}051 \\
+    Income       & Risk       & $\uparrow$   & 4{,}000 & 4{,}000 & 0.322 & 0.024 & $\checkmark$ & 1{,}704 & 1{,}501 \\
+                 & Confidence & $\downarrow$ & 4{,}000 & 4{,}000 & 0.878 & 0.913 &              & 1{,}704 & 1{,}501 \\
+                 & Error      & $\uparrow$   & 4{,}000 & 4{,}000 & 0.055 & 0.111 &              & 1{,}704 & 1{,}501 \\
     \cmidrule(lr){1-10}
-    Coverage     & Risk       & $\uparrow$   & 4{,}000 & 4{,}000 & 0.002 & 0.002 &              & 1{,}538 & 1{,}450 \\
-                  & Confidence & $\downarrow$ & 4{,}000 & 4{,}000 & 0.002 & 0.002 &              & 1{,}538 & 1{,}450 \\
-                  & Error      & $\uparrow$   & 4{,}000 & 4{,}000 & 0.002 & 0.002 &              & 1{,}538 & 1{,}450 \\
+    Coverage     & Risk       & $\uparrow$   & 4{,}000 & 4{,}000 & 0.0001 & 0.0001 &              & 1{,}025 & 1{,}182 \\
+                  & Confidence & $\downarrow$ & 4{,}000 & 4{,}000 & 0.0001 & 0.024 &              & 1{,}025 & 1{,}182 \\
+                  & Error      & $\uparrow$   & 4{,}000 & 4{,}000 & 0.0001 & 0.0001 &              & 1{,}025 & 1{,}182 \\
     \cmidrule(lr){1-10}
-    NSW          & Outcome    & $\downarrow$ & 85     & 185    & 0.350 & 0.885 &              & 32     & 102   \\
+    NSW          & Outcome    & $\downarrow$ & 85     & 185    & 0.131 & 0.508 &              & 24     & 57    \\
     \bottomrule
   \end{tabular}
 \end{table*}

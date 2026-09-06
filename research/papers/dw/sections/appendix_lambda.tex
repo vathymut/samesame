@@ -1,5 +1,7 @@
 This experiment tests how $\lambda$ controls the bias-variance trade-off. We scan $\lambda$ across a fixed grid. Figure~\ref{fig:lambda-sensitivity} tracks false positive rate, power, and effective sample size. Smaller $\lambda$ values more strongly correct weak-overlap bias but concentrate weights, lowering effective sample size. Larger values retain more sample mass but move the procedure toward the unweighted comparison. A moderate $\lambda$---around $0.5$ in these experiments---keeps the comparison focused on the common support while retaining enough sample mass to detect genuine harmful change.
 
+The real-data workflow mirrors this stability. For HELOC predicted risk, the doubly weighted test does not reject anywhere on the grid ($p = 0.9999$ at $\lambda = 0.25$, $p = 0.992$ at $\lambda = 0.5$, $p = 0.816$ at $\lambda = 0.75$), while the unweighted rejection persists at every $\lambda$; the corresponding runs are recorded in \texttt{results/}.
+
 \begin{figure}[t]
 	\centering
 	\includegraphics[width=0.98\linewidth]{figures/lambda_sensitivity_plot.pdf}

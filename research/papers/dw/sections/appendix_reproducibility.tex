@@ -60,10 +60,10 @@ The experiments use the following settings:
 \item Power: severity $0.25$ with shared-support effect-size grid $0.0, 0.15, 0.3, 0.45, 0.6$.
 \item Mode comparison: contamination settings $(0.25, 0.0)$, $(0.0, 0.25)$, and $(0.25, 0.25)$ with $\lambda = 0.5$.
 \item Lambda sensitivity: severity $0.25$, power effect size $0.4$, and $\lambda$ grid $0.0, 0.25, 0.5, 0.75, 1.0$.
-\item Real-data workflow study: four mirrored tasks (HELOC, diabetes readmission, ACS income, and ACS public coverage); five-fold domain-classifier CV; at most $30{,}000$ source-train rows and $4{,}000$ held-out source plus $4{,}000$ target evaluation rows per task; $499$ permutation resamples per test; seed $123456$; default $\lambda = 0.5$.
+\item Real-data workflow study: four mirrored tasks (HELOC, diabetes readmission, ACS income, and ACS public coverage) plus the NSW employment experiment (Dehejia--Wahba files from the NBER mirror: screened CPS comparison sample as source, NSW treated group as target); ten-fold domain-classifier CV; at most $30{,}000$ source-train rows and $4{,}000$ held-out source plus $4{,}000$ target evaluation rows per task; $9{,}999$ permutation resamples per test; seed $123456$; default $\lambda = 0.5$.
 \end{itemize}
 
-The real-data workflow study reports predicted risk, model confidence, and prediction error from one source-trained model per task. The metadata JSON records the exact OpenML IDs, split rules, task sizes, script arguments, and package commit. \emph{Snapshot note:} committed \texttt{results/} and \texttt{figures/} in this revision are carried from \texttt{2f42d61}; \texttt{verify\_result\_metadata} reports them as pre-stale until the full pipeline is regenerated from the rebased branch (port to \texttt{samesame} 0.4.1 verified via smoke tests in \S\ref{app:domain-clf-sensitivity}). Regeneration via \texttt{make} is planned before submission and will refresh all hashes.
+The real-data workflow study reports predicted risk, model confidence, and prediction error from one source-trained model per task. The metadata JSON records the exact OpenML IDs, split rules, task sizes, script arguments, and package commit. \emph{Snapshot note:} committed \texttt{results/} and \texttt{figures/} were regenerated at the current protocol ($9{,}999$ permutation resamples, ten-fold domain-classifier CV, NBER-backed NSW loader); metadata hashes match the current tree. The planned HELOC robustness checks (alternative classifier, perturbed split) remain future work (\S\ref{app:domain-clf-sensitivity}).
 
 \subsection{Reproducibility Checklist}
 
@@ -73,7 +73,7 @@ The real-data workflow study reports predicted risk, model confidence, and predi
     \item The full experiment pipeline is available in \texttt{research/papers/dw/scripts/} and executable via \texttt{make}.
     \item All result files include metadata recording the commit hash, script arguments, and input file checksums.
     \item Random seeds are explicitly recorded in each experiment script and incremented per repetition.
-    \item Permutation inference uses 499 resamples; sensitivity to resample count is verified in \S\ref{app:perm-sensitivity}. The second DGP uses 199 resamples and the domain-classifier experiment uses 999; both are within the stable regime documented there.
+    \item Permutation inference uses $499$ resamples for the synthetic experiments ($999$ for the domain-classifier study, $199$ for the second DGP); the real-data workflow uses $9{,}999$. Sensitivity to resample count is verified in \S\ref{app:perm-sensitivity}.
     \item Domain classifiers use default hyperparameters unless otherwise noted.
 \end{itemize}
 

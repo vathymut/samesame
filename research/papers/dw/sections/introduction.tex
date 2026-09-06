@@ -10,9 +10,9 @@ higher-risk applicants (estimate at or below 63)~\cite{Gardner_2023}. Mean
 predicted default risk rises from 44\% to 81\%---a large shift that could
 indicate model harm or merely context change. All three standard
 modes---unweighted, source-weighted, and target-weighted---reject at the
-permutation minimum $p = 0.002$. Most of each population lies outside the common
+permutation minimum $p = 0.0001$. Most of each population lies outside the common
 support. The doubly weighted test, which adjusts both sides, does not reject
-($p = 0.376$). The original rejection was driven by context change---applicant
+($p = 0.992$). The original rejection was driven by context change---applicant
 profiles from weak-overlap regions that produce higher predicted risk---rather
 than model harm on comparable cases. One-sided corrections still reject because
 each corrects only one side (Figure~\ref{fig:heloc-motivating}).
@@ -22,10 +22,12 @@ each corrects only one side (Figure~\ref{fig:heloc-motivating}).
 	\includegraphics[width=0.92\linewidth]{figures/heloc_motivating_example_plot.pdf}
 	\caption{HELOC credit-risk motivating example. Horizontal bar chart with
 	weighting modes on the y-axis and harm-test $p$-value on the x-axis. The
-	dashed line marks the 0.05 decision threshold. All three standard modes
-	(unweighted, source-weighted, target-weighted) reject; the doubly weighted
-	test does not. Effective sample sizes after reweighting to common support:
-	source 401 of 1,536; target 803 of 2,776. The non-rejection indicates
+	dashed line marks the 0.05 decision threshold. The three standard modes
+	(unweighted, source-weighted, target-weighted) reject at the permutation
+	minimum, and the causal-inference baselines (Crump-trimmed,
+	overlap-weighted) also reject; the doubly weighted test does not.
+	Effective sample sizes after reweighting to common support:
+	source 310 of 1,536; target 337 of 2,776. The non-rejection indicates
 	that comparable applicants receive similar predictions on common
 	support.}
 	\label{fig:heloc-motivating}
@@ -33,7 +35,7 @@ each corrects only one side (Figure~\ref{fig:heloc-motivating}).
 
 The same ambiguity appears in the National Supported Work (NSW) employment
 experiment~\cite{LaLonde_1986}, where the unweighted test fails to reject
-($p = 0.350$)---a non-rejection that common-support restriction does not
+($p = 0.131$)---a non-rejection that common-support restriction does not
 reverse, illustrating that contamination can mask harm as readily as it invents
 it. Together, HELOC and NSW demonstrate that weak-overlap contamination can
 both invent harm and hide it.
