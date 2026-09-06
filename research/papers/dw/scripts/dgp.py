@@ -37,12 +37,6 @@ def draw_overlap_dataset(
         "target_feature": target_feature,
         "source_score": source_score,
         "target_score": target_score,
-        "source_private_fraction": np.array(
-            [source_private_fraction], dtype=np.float64
-        ),
-        "target_private_fraction": np.array(
-            [target_private_fraction], dtype=np.float64
-        ),
     }
 
 

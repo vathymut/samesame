@@ -1,4 +1,4 @@
-"""Shared visual and naming style for manuscript outputs."""
+"""Visual style for manuscript outputs — single source of truth."""
 
 from __future__ import annotations
 
@@ -13,14 +13,8 @@ MODE_LABELS = {
     "overlap": "Overlap-weighted",
 }
 
-MODE_FIGURE_LABELS = {
-    "unweighted": "Unweighted D-SOS",
-    "source": "Source-weighted",
-    "target": "Target-weighted",
-    "both": "Doubly weighted",
-    "crump": "Crump-trimmed",
-    "overlap": "Overlap-weighted",
-}
+# Figure label differs only for unweighted; keep one dict and compose.
+FIGURE_LABELS = {**MODE_LABELS, "unweighted": "Unweighted D-SOS"}
 
 MODE_COLORS = {
     "unweighted": "#222222",
@@ -40,8 +34,12 @@ MODE_MARKERS = {
     "overlap": "p",
 }
 
-SCENARIO_ORDER: tuple[str, ...] = ("source_only", "target_only", "both_sides")
+MODE_STYLE = {
+    mode: {"color": MODE_COLORS[mode], "marker": MODE_MARKERS[mode], "label": FIGURE_LABELS[mode]}
+    for mode in MODE_ORDER
+}
 
+SCENARIO_ORDER: tuple[str, ...] = ("source_only", "target_only", "both_sides")
 SCENARIO_LABELS = {
     "source_only": "Source-only\ncontamination",
     "target_only": "Target-only\ncontamination",
@@ -51,13 +49,4 @@ SCENARIO_LABELS = {
 EXPERIMENT_STYLE = {
     "calibration": {"color": "#1b9e77", "label": "Calibration"},
     "power": {"color": "#d95f02", "label": "Power"},
-}
-
-MODE_STYLE = {
-    mode: {
-        "color": MODE_COLORS[mode],
-        "marker": MODE_MARKERS[mode],
-        "label": MODE_FIGURE_LABELS[mode],
-    }
-    for mode in MODE_ORDER
 }
