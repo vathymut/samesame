@@ -1,6 +1,6 @@
 # How to weight for common support
 
-You start unweighted — weight only when poor overlap is a real concern. Weighting reframes the comparison around **common support**, the overlap of source and target. It adds no information where groups do not overlap and changes the population you describe. Not a default correction.
+Start unweighted. Weight only when poor overlap is a real concern. Weighting reframes the comparison around **common support**, the overlap of source and target. It adds no information where groups do not overlap and changes the population you describe. Not a default correction.
 
 ## Prerequisites
 
@@ -9,9 +9,9 @@ You start unweighted — weight only when poor overlap is a real concern. Weight
 
 ## Steps
 
-### 1 — Estimate the domain probability
+### 1. Estimate the domain probability
 
-Estimate out of sample — membership, not outcome quality.
+Estimate out of sample. This is membership, not outcome quality.
 
 ```python
 --8<-- "snippets/heloc-split.py:heloc-domain"
@@ -19,7 +19,7 @@ source_prob = domain_prob[split.values == 0]
 target_prob = domain_prob[split.values == 1]
 ```
 
-### 2 — Build weights
+### 2. Build weights
 
 --8<-- "snippets/reweight-table.txt"
 
@@ -30,9 +30,9 @@ import samesame as ss
 weights = ss.domain_weights(source=source_prob, target=target_prob, reweight="both", shrinkage=0.5)
 ```
 
-Weights preserve nominal size (`Σw = n` per group; `1` if unweighted) — they change influence, not classifier quality. See [Core concepts](../explanation/core-concepts.md).
+Weights preserve nominal size (`Σw = n` per group; `1` if unweighted). They change influence, not classifier quality. See [Core concepts](../explanation/core-concepts.md).
 
-### 3 — Test with and without weights
+### 3. Test with and without weights
 
 Keep `worse` the same so both tests ask the same question.
 
@@ -48,18 +48,18 @@ print(f"Unweighted p={unweighted.pvalue:.4f} Weighted p={weighted.pvalue:.4f}")
 - Weaker after weighting → evidence in low-overlap regions.
 - Persists → harm present where groups overlap.
 
-### 4 — Check effective sample size
+### 4. Check effective sample size
 
 ```python
 ess = weights.effective_sample_size()  # Kish (1965): (sum w)² / sum w²
 print(f"source ESS {ess.source:.1f}/{len(source_prob)}  target ESS {ess.target:.1f}/{len(target_prob)}")
 ```
 
-`ESS/n` <<0.5 warns that few points drive the result — no universal cutoff (Elvira et al., 2022). If low even at `shrinkage=0.5`, keep the comparison unweighted. See [Effective sample size](../api/weighting.md#effective-sample-size).
+`ESS/n` well below `0.5` warns that few points drive the result. There is no universal cutoff (Elvira et al., 2022). If low even at `shrinkage=0.5`, keep the comparison unweighted. See [Effective sample size](../api/weighting.md#effective-sample-size).
 
 ## Expected outcome
 
-On HELOC the risk alarm survives at `shrinkage=0.5` (`p=0.0001` all modes). ESS 2,491/7,683 (≈0.32) and 1,532/2,188 (≈0.70) — harm where groups overlap.
+On HELOC the risk alarm survives at `shrinkage=0.5` (`p=0.0001` all modes). ESS 2,491/7,683 (about 0.32) and 1,532/2,188 (about 0.70) shows harm where groups overlap.
 
 ## Troubleshooting
 
@@ -79,4 +79,4 @@ On HELOC the risk alarm survives at `shrinkage=0.5` (`p=0.0001` all modes). ESS 
 
 See [Core concepts](../explanation/core-concepts.md), [Importance weights](../api/weighting.md), and [How the harm test works](../explanation/harmful-shift-statistic.md). Scripts: `examples/weighting/_code/`.
 
-You have reframed one shift to test where it matters — on common support. Report the unweighted result first; add the weighted one when overlap is poor.
+Report the unweighted result first. Add the weighted result when overlap is poor and the question is whether the shift survives on common support.

@@ -1,6 +1,6 @@
 # Monitor a credit model
 
-One HELOC split — ExternalRiskEstimate above vs ≤63 (Gardner et al., 2023) — traces model degradation versus population change through three scores. You have one model, one split, three ways to read harm.
+One HELOC split on ExternalRiskEstimate at 63 (Gardner et al., 2023) traces model degradation versus population change through three scores. You have one model and one split, with three ways to read harm.
 
 | Signal | Needs labels? | Harmful direction | `worse` |
 |--------|----------------|-------------------|---------|
@@ -14,13 +14,13 @@ Which signal to use depends on timing; [Which signal when?](#which-signal-when) 
 
 ## The dataset
 
-HELOC (**home equity line of credit**) — anonymized bureau features from the FICO Explainable AI Challenge (target: 90 days past due). Fetch 9,871 applications from [OpenML](https://openml.org/search?type=data&sort=runs&id=45554&status=active) (`data_id=45554`) via `fetch_openml`.
+HELOC (**home equity line of credit**): anonymized bureau features from the FICO Explainable AI Challenge (target: 90 days past due). Fetch 9,871 applications from [OpenML](https://openml.org/search?type=data&sort=runs&id=45554&status=active) (`data_id=45554`) via `fetch_openml`.
 
 ## The split
 
-`ExternalRiskEstimate` (higher = safer) at **63** — the FICO-winning and [TableShift](https://tableshift.org) split. Deployment story: 7,683 above 63 (**source**, calmer book, 43.5% bad) vs 2,188 at or below 63 (**target**, riskier deployment, 81.9% bad). Mean predicted risk ~44% → 73%.
+`ExternalRiskEstimate` (higher is safer) at **63** is the FICO-winning and [TableShift](https://tableshift.org) split. Deployment story: 7,683 above 63 (**source**, calmer book, 43.5% bad) versus 2,188 at or below 63 (**target**, riskier deployment, 81.9% bad). Mean predicted risk about 44% versus 73%.
 
-Same shift, two readings — model degraded or population changed. The signals below separate them; weighting ([Weight for common support](../../how-to/weight-for-common-support.md)) asks whether the alarm holds on common support. Setup:
+Same shift has two readings: model degraded or population changed. The signals below separate them; weighting ([Weight for common support](../../how-to/weight-for-common-support.md)) asks whether the alarm holds on common support. Setup:
 
 ```python
 --8<-- "snippets/heloc-split.py:heloc-split"
@@ -52,7 +52,7 @@ Same shift, two readings — model degraded or population changed. The signals b
     print(f"Harm {harm.statistic:.4f} p={harm.pvalue:.4f}")    # → 0.2483, 0.0001
     ```
 
-    AUC 1.00 is expected — the split variable is itself a feature. The harm test shows the shift points toward higher risk.
+    AUC 1.00 is expected because the split variable is itself a feature. The harm test shows the shift points toward higher risk.
 
     | `test_shift` | `test_harmful_shift` | Interpretation |
     |--------------|----------------------|---------|
@@ -61,11 +61,11 @@ Same shift, two readings — model degraded or population changed. The signals b
     | Not significant | Not significant | No clear shift |
     | Not significant | Significant | Tail signal missed by broad screen |
 
-    Both tests point to higher risk — investigate, don't auto-retrain. `0.5` is chance; read harm against its null and the 0–1 scale.
+    Both tests point to higher risk. Investigate, don't auto-retrain. `0.5` is chance; read harm against its null and the 0–1 scale.
 
-=== "Outlier score — confidence — no labels needed"
+=== "Outlier score: confidence, no labels needed"
 
-    `LogitGap` — gap between top logit and mean of the rest — is an **outlier score** for confidence. Larger means more certain, so a drop (`worse="lower"`) signals harm ([Core concepts](../../explanation/core-concepts.md)).
+    `LogitGap` (gap between top logit and mean of the rest) is an **outlier score** for confidence. Larger means more certain, so a drop (`worse="lower"`) signals harm ([Core concepts](../../explanation/core-concepts.md)).
 
     ```python
     --8<-- "snippets/heloc-split.py:heloc-domain"
@@ -86,11 +86,11 @@ Same shift, two readings — model degraded or population changed. The signals b
     print(f"Harm {harm.statistic:.4f} p={harm.pvalue:.4f}")  # → 0.0409, 1.0000
     ```
 
-    No harmful confidence drop — the statistic points the other way. At 82% bad rate predictions polarize and confidence rises. A model can grow more confident while predicting higher risk; confidence complements risk.
+    No harmful confidence drop. The statistic points the other way. At 82% bad rate predictions polarize and confidence rises. A model can grow more confident while predicting higher risk; confidence complements risk.
 
 ??? details "Errors — needs labels (under the null here)"
 
-    Once labels arrive, test prediction error (Brier) with `worse="higher"`. In this guide the error section uses a separate **random** split under the null — so `p=0.2737` is expected. In deployment a small p-value would signal worse accuracy.
+    Once labels arrive, test prediction error (Brier) with `worse="higher"`. In this guide the error section uses a separate **random** split under the null, so `p=0.2737` is expected. In deployment a small p-value would signal worse accuracy.
 
     ```python
     import samesame as ss
@@ -111,4 +111,4 @@ Full scripts: `examples/credit/_code/`.
 | Outlier score — confidence | No | Early warning before labels arrive |
 | Prediction error (Brier) | Yes | Clearest accuracy check once labels arrive |
 
-Whether the alarm reflects comparable applicants is the question weighting answers — [Weight for common support](../../how-to/weight-for-common-support.md) and [Core concepts](../../explanation/core-concepts.md). You have one model, one split, three lenses — pick the one that matches whether labels have arrived.
+Weighting answers whether the alarm reflects comparable applicants ([Weight for common support](../../how-to/weight-for-common-support.md); [Core concepts](../../explanation/core-concepts.md)). With one model and one split, choose the lens that matches whether labels have arrived.

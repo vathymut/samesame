@@ -1,8 +1,8 @@
 # Is the new drug good enough?
 
-Medicine calls this **noninferiority**: a cheaper, faster, or more tolerable treatment need not beat the standard — it must be *not meaningfully worse*. The harmful-shift test is a nonparametric noninferiority test with no margin and no normality assumption (Kamulete, 2022).
+Medicine calls this **noninferiority**: a cheaper, faster, or more tolerable treatment need not beat the standard, it must be *not meaningfully worse*. The harmful-shift test is a nonparametric noninferiority test with no margin and no normality assumption (Kamulete, 2022).
 
-The example is a classic [SAS case study](https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf): **Bowl** (cheaper) vs **Armanaleg** (standard). Relief is 4–16 (higher is better); mean 9.4 vs 10.1 (42 and 28 patients). Not better — but is it *meaningfully worse*? You have one score per patient — no model. Pre-register `worse` — like choosing one side before unblinding.
+The example is a classic [SAS case study](https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf): **Bowl** (cheaper) versus **Armanaleg** (standard). Relief is 4 to 16 (higher is better); mean 9.4 versus 10.1 (42 and 28 patients). Not better, but is it *meaningfully worse*? You have one score per patient and no model. Pre-register `worse`, as you would choose one side before unblinding.
 
 If you are new to `samesame`, start with [Get started](../tutorials/get-started.md).
 
@@ -24,7 +24,7 @@ relief = np.array([float(s) for s in datalines])
 armanaleg, bowl = relief[:28], relief[28:]  # source: standard, target: challenger
 ```
 
-Relief is 4–16 where higher is better — declare that directly. `ss.Worse` orients the score for you (`worse="lower"` → `S = -scores` under the hood, `src/samesame/shift.py:214`).
+Relief is 4 to 16 where higher is better. Declare that directly. `ss.Worse` orients the score for you (`worse="lower"` means `S = -scores` under the hood, `src/samesame/shift.py:214`).
 
 ## The verdict
 
@@ -43,18 +43,18 @@ print(f"AUC {shift.statistic:.4f} p={shift.pvalue:.4f}")  # → 0.4171, 0.2548
 
 Together:
 
-- `test_shift` (AUC 0.42, p=0.25) — little evidence the arms differ (AUC < 0.5 reflects lower relief in Bowl; `1 − 0.4171 = 0.5829` if you flip to discomfort).
-- `test_harmful_shift` (p=0.13) — little evidence Bowl is meaningfully worse.
+- `test_shift` (AUC 0.42, p=0.25): little evidence the arms differ. AUC below 0.5 reflects lower relief in Bowl (0.5829 if you flip to discomfort, `1 − 0.4171`).
+- `test_harmful_shift` (p=0.13): little evidence Bowl is meaningfully worse.
 
-Same conclusion as the original parametric analysis — with no margin, no normality assumption, and only 70 observations.
+Same conclusion as the original parametric analysis, with no margin, no normality assumption, and only 70 observations.
 
 ## What the statistic is asking
 
-The harm statistic `∫ TPR·(1−FPR)² dFPR` weights the harmful tail: **does Bowl push patients into low relief Armanaleg rarely produces?** Larger `(1−FPR)²` where Armanaleg is rarest — see [How the harm test works](../../explanation/harmful-shift-statistic.md).
+The harm statistic `∫ TPR·(1−FPR)² dFPR` weights the harmful tail: **does Bowl push patients into low relief that Armanaleg rarely produces?** Larger `(1−FPR)²` where Armanaleg is rarest. See [How the harm test works](../../explanation/harmful-shift-statistic.md).
 
 ## How to read a non-rejection
 
-A p-value of 0.13 is not a certificate of equivalence — it says the observed difference is not unusual if there were no meaningful harm.
+A p-value of 0.13 is not a certificate of equivalence. It says the observed difference is not unusual if there were no meaningful harm.
 
 - **Absence of evidence ≠ evidence of absence.** With 28 vs 42 patients the test may lack power; a larger study or wider deployment window could sharpen the verdict.
 - **Direction is part of the protocol.** Here `worse="lower"` because lower relief is worse. Choosing direction after seeing p-values turns a pre-specified test into a search.
@@ -65,4 +65,4 @@ Every deployed model is a challenger drug: the standard (Armanaleg) is `source`,
 
 For the same test on a model score, see [Monitor a credit model](../credit/monitor-credit.md). To reweight for common support, see [Weight for common support](../../how-to/weight-for-common-support.md) and [Core concepts](../../explanation/core-concepts.md).
 
-You now have a template for any “not meaningfully worse” question — swap in your score and declare worse before you look.
+For your own question about "not meaningfully worse," swap in your score and declare `worse` before you look.

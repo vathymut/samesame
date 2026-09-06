@@ -1,6 +1,6 @@
 # Get started
 
-You will run one score through two tests — *did it change?* and *did it get worse?* — and leave with a habit for your own scores.
+You will run one score through two tests ("did it change?" and "did it get worse?") and leave with a habit for your own scores.
 
 ## Prerequisites
 
@@ -11,11 +11,11 @@ You will run one score through two tests — *did it change?* and *did it get wo
 
 ## Steps
 
-You will use two tests: `ss.test_shift` — broad, two-sided (AUC `0.5` is no separation) — and `ss.test_harmful_shift(..., worse="higher"|"lower")` — focused, one-sided on the tail you declare. Both appear below.
+You will use two tests. `ss.test_shift` is broad and two-sided (AUC `0.5` is no separation). `ss.test_harmful_shift(..., worse="higher"|"lower")` is focused and one-sided on the tail you declare. Both appear below.
 
-### 1 — Create source and target
+### 1. Create source and target
 
-Create the two populations your question compares — for example, training versus current deployment. Every conclusion describes target relative to source.
+Create the two populations your question compares (for example, training versus current deployment). Every conclusion describes target relative to source.
 
 ```python
 import numpy as np
@@ -26,9 +26,9 @@ X = np.vstack([source, target])
 labels = np.r_[np.zeros(len(source), dtype=int), np.ones(len(target), dtype=int)]
 ```
 
-### 2 — Score out of sample
+### 2. Score out of sample
 
-Score each row with a model that did not see it. Here a domain classifier estimates the domain probability `P(target|x)` — a useful generic score for detecting *any* shift. It measures membership, not outcome quality — keep it separate from your harm score.
+Score each row with a model that did not see it. Here a domain classifier estimates the domain probability `P(target|x)`, a useful generic score for detecting *any* shift. It measures membership, not outcome quality. Keep it separate from your harm score.
 
 ```python
 from sklearn.ensemble import HistGradientBoostingClassifier
@@ -40,7 +40,7 @@ domain_prob = cross_val_predict(
 )[:, 1]
 ```
 
-### 3 — Did anything change?
+### 3. Did anything change?
 
 Test whether the score separates source from target (expect AUC ~0.61 here):
 
@@ -52,11 +52,11 @@ shift = ss.test_shift(source=source_scores, target=target_scores, rng=rng)
 print(f"AUC {shift.statistic:.3f} p={shift.pvalue:.4f}")  # → 0.611, 0.0002
 ```
 
-Near `0.5` means little separation; values near `0` or `1` mean stronger separation. The test is two-sided — either direction can reject.
+Near `0.5` means little separation; values near `0` or `1` mean stronger separation. The test is two-sided, so either direction can reject.
 
-### 4 — Did it get worse?
+### 4. Did it get worse?
 
-Declare the harmful direction from what the score means — *before* you look. Never choose `worse` by p-value. See [Core concepts](../../explanation/core-concepts.md) for the full table.
+Declare the harmful direction from what the score means, *before* you look. Never choose `worse` by p-value. See [Core concepts](../../explanation/core-concepts.md) for the full table.
 
 --8<-- "snippets/worse-declaration.txt"
 
@@ -91,10 +91,10 @@ Declare the harmful direction from what the score means — *before* you look. N
 
 ## Recap
 
-You created one score per observation, screened for any shift (AUC), and tested a harmful direction (`worse`). `test_shift` tells you whether the groups differ; `test_harmful_shift` tells you whether the target moved toward the tail you declared.
+You built one score per observation, screened for any shift (AUC), and tested a harmful direction (`worse`). `test_shift` shows whether the groups differ; `test_harmful_shift` shows whether the target moved toward the tail you declared.
 
 **Next steps:**
 
-- [Is the new drug good enough?](../trials/check-drug-efficacy.md) — same test on 70 trial scores, no model.
-- [Weight for common support](../../how-to/weight-for-common-support.md) — when overlap is poor, reweight around common support.
-- [How the harm test works](../../explanation/harmful-shift-statistic.md) — why the weighted AUC focuses on the harmful tail.
+- [Is the new drug good enough?](../trials/check-drug-efficacy.md): same test on 70 trial scores, no model.
+- [Weight for common support](../../how-to/weight-for-common-support.md): when overlap is poor, reweight around common support.
+- [How the harm test works](../../explanation/harmful-shift-statistic.md): why the weighted AUC focuses on the harmful tail.
