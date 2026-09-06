@@ -2,10 +2,10 @@
 
 One HELOC split on ExternalRiskEstimate at 63 (Gardner et al., 2023) traces model degradation versus population change through three scores. You have one model and one split, with three ways to read harm.
 
-| Signal | Needs labels? | Harmful direction | `worse` |
-|--------|----------------|-------------------|---------|
+| Signal | Labels? | Harmful direction | `worse` |
+|--------|---------|-------------------|---------|
 | Predicted risk | No | Higher risk | `higher` |
-| Outlier score — confidence (`LogitGap`) | No | Lower certainty | `lower` |
+| Outlier score: confidence (`LogitGap`) | No | Lower certainty | `lower` |
 | Prediction error (Brier) | Yes | Larger error | `higher` |
 
 --8<-- "snippets/source-target.txt"
@@ -18,9 +18,9 @@ HELOC (**home equity line of credit**): anonymized bureau features from the FICO
 
 ## The split
 
-`ExternalRiskEstimate` (higher is safer) at **63** is the FICO-winning and [TableShift](https://tableshift.org) split. Deployment story: 7,683 above 63 (**source**, calmer book, 43.5% bad) versus 2,188 at or below 63 (**target**, riskier deployment, 81.9% bad). Mean predicted risk about 44% versus 73%.
+The FICO-winning and [TableShift](https://tableshift.org) split is `ExternalRiskEstimate` (higher is safer) at **63**. Deployment story: 7,683 above 63 (**source**, calmer book, 43.5% bad) versus 2,188 at or below 63 (**target**, riskier deployment, 81.9% bad). Mean predicted risk about 44% versus 73%.
 
-Same shift has two readings: model degraded or population changed. The signals below separate them; weighting ([Weight for common support](../../how-to/weight-for-common-support.md)) asks whether the alarm holds on common support. Setup:
+Same shift has two readings: model degraded or population changed. The signals below tell them apart; weighting ([Weight for common support](../../how-to/weight-for-common-support.md)) asks whether the alarm holds on common support. Setup:
 
 ```python
 --8<-- "snippets/heloc-split.py:heloc-split"
@@ -28,7 +28,7 @@ Same shift has two readings: model degraded or population changed. The signals b
 
 ## Signals
 
-=== "Risk — no labels needed"
+=== "Risk, no labels needed"
 
     Predicted risk `P(default)`; larger means more harm, so `worse="higher"`. Risk and confidence share the 63-split (domain probabilities out-of-bag; see [Core concepts](../../explanation/core-concepts.md)).
 
@@ -88,7 +88,7 @@ Same shift has two readings: model degraded or population changed. The signals b
 
     No harmful confidence drop. The statistic points the other way. At 82% bad rate predictions polarize and confidence rises. A model can grow more confident while predicting higher risk; confidence complements risk.
 
-??? details "Errors — needs labels (under the null here)"
+??? details "Errors, needs labels (under the null here)"
 
     Once labels arrive, test prediction error (Brier) with `worse="higher"`. In this guide the error section uses a separate **random** split under the null, so `p=0.2737` is expected. In deployment a small p-value would signal worse accuracy.
 
@@ -105,10 +105,10 @@ Full scripts: `examples/credit/_code/`.
 
 ## Which signal when?
 
-| Signal | Needs labels? | When it helps |
-|--------|----------------|----------------|
+| Signal | Labels? | When it helps |
+|--------|---------|----------------|
 | Predicted risk | No | The output itself is harm |
-| Outlier score — confidence | No | Early warning before labels arrive |
-| Prediction error (Brier) | Yes | Clearest accuracy check once labels arrive |
+| Outlier score: confidence | No | Early warning before they arrive |
+| Prediction error (Brier) | Yes | Clearest accuracy check |
 
-Weighting answers whether the alarm reflects comparable applicants ([Weight for common support](../../how-to/weight-for-common-support.md); [Core concepts](../../explanation/core-concepts.md)). With one model and one split, choose the lens that matches whether labels have arrived.
+One 63-split, three signals, two questions. Weighting handles the comparability question ([Weight for common support](../../how-to/weight-for-common-support.md); [Core concepts](../../explanation/core-concepts.md)). Pick by timing: run risk when labels are absent, confidence for an early warning, and error once they arrive.

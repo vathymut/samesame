@@ -1,6 +1,6 @@
 # How to weight for common support
 
-Start unweighted. Weight only when poor overlap is a real concern. Weighting reframes the comparison around **common support**, the overlap of source and target. It adds no information where groups do not overlap and changes the population you describe. Not a default correction.
+Start unweighted. Weight only when poor overlap is a real concern. Weighting reframes the comparison around **common support**, the overlap of source and target, and adds no information where groups do not overlap. It changes the population you describe; it is not a default correction.
 
 ## Prerequisites
 

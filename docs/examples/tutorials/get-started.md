@@ -1,6 +1,6 @@
 # Get started
 
-You will run one score through two tests ("did it change?" and "did it get worse?") and leave with a habit for your own scores.
+One score, two tests. You will ask *did it change?* and *did it get worse?* of a score of your own, and leave with a habit you can reuse.
 
 ## Prerequisites
 
@@ -11,7 +11,7 @@ You will run one score through two tests ("did it change?" and "did it get worse
 
 ## Steps
 
-You will use two tests. `ss.test_shift` is broad and two-sided (AUC `0.5` is no separation). `ss.test_harmful_shift(..., worse="higher"|"lower")` is focused and one-sided on the tail you declare. Both appear below.
+You will use two tests. `ss.test_shift` is broad and two-sided (AUC `0.5` is no separation). `ss.test_harmful_shift(..., worse="higher"|"lower")` is focused and one-sided on the tail you declare.
 
 ### 1. Create source and target
 
@@ -56,7 +56,7 @@ Near `0.5` means little separation; values near `0` or `1` mean stronger separat
 
 ### 4. Did it get worse?
 
-Declare the harmful direction from what the score means, *before* you look. Never choose `worse` by p-value. See [Core concepts](../../explanation/core-concepts.md) for the full table.
+Pick the harmful direction from what the score means, *before* you look. Never choose `worse` by p-value. See [Core concepts](../../explanation/core-concepts.md) for the full table.
 
 --8<-- "snippets/worse-declaration.txt"
 
@@ -67,7 +67,7 @@ Declare the harmful direction from what the score means, *before* you look. Neve
     ```python
     rng = np.random.default_rng(12345)
     source_risk = rng.normal(loc=0.20, scale=0.07, size=400)
-    target_risk = rng.normal(loc=0.28, scale=0.07, size=400)  # shift up — harmful
+    target_risk = rng.normal(loc=0.28, scale=0.07, size=400)  # shift up: harmful
     harm = ss.test_harmful_shift(source=source_risk, target=target_risk, worse="higher", rng=rng)
     print(f"Harm p={harm.pvalue:.4f}")  # → 0.0001
     ```
@@ -76,7 +76,7 @@ Declare the harmful direction from what the score means, *before* you look. Neve
 
     ```python
     source_quality = rng.normal(loc=0.80, scale=0.07, size=400)
-    target_quality = rng.normal(loc=0.72, scale=0.07, size=400)  # shift down — harmful
+    target_quality = rng.normal(loc=0.72, scale=0.07, size=400)  # shift down: harmful
     harm = ss.test_harmful_shift(source=source_quality, target=target_quality, worse="lower", rng=rng)
     print(f"Harm p={harm.pvalue:.4f}")  # → 0.0001
     ```
@@ -91,7 +91,7 @@ Declare the harmful direction from what the score means, *before* you look. Neve
 
 ## Recap
 
-You built one score per observation, screened for any shift (AUC), and tested a harmful direction (`worse`). `test_shift` shows whether the groups differ; `test_harmful_shift` shows whether the target moved toward the tail you declared.
+One score, two verdicts. `test_shift` screens for any difference between the groups; `test_harmful_shift` asks whether the target moved toward the tail you declared, with `worse` fixed in advance.
 
 **Next steps:**
 

@@ -4,7 +4,7 @@ A score, a split, and a declaration: the three choices that shape every `samesam
 
 ## Context: why these concepts matter
 
-Production monitoring is constrained: features are wide, labels arrive late, and deployment populations shift. A single **outlier score** `ϕ(x)` per observation reduces each row to one number you can test (predicted risk, error, or confidence gap). Every conclusion is relative: **source** (reference) versus **target** (current deployment). Whether a shift is harmful depends on which tail you declare.
+Production monitoring is constrained. Features are wide, labels arrive late, and deployment populations shift. A single **outlier score** `ϕ(x)` per observation reduces each row to one number you can test (predicted risk, error, or confidence gap). Every conclusion is relative: **source** (reference) versus **target** (current deployment). Whether a shift is harmful depends on which tail you declare.
 
 ## What
 
@@ -12,13 +12,13 @@ Production monitoring is constrained: features are wide, labels arrive late, and
 
 **Score `ϕ(x)` and outlier score**: one interpretable scalar per observation. Choose `ϕ` to encode the outcome you care about. Outlier scores (confidence, typicality) follow the same rule: larger `ϕ` means more distant from source.
 
-**Worse**: the polarity that defines harm. Declare it from the meaning of the score *before* you look. Pass as `worse="higher"` / `"lower"` or `ss.Worse.HIGHER` / `LOWER` — interchangeable:
+**Worse**: the polarity that defines harm. Declare it from the meaning of the score *before* you look. Pass as `worse="higher"` / `"lower"` or `ss.Worse.HIGHER` / `LOWER`; the two forms are interchangeable:
 
 --8<-- "snippets/worse-table.txt"
 
-**Domain probability `P(target|x)`**: probability from a domain classifier that an observation belongs to target. It is a membership score, not outcome quality — keep it separate from the `ϕ` you test.
+**Domain probability `P(target|x)`**: probability from a domain classifier that an observation belongs to target. It is a membership score, not outcome quality. Keep it separate from the `ϕ` you test.
 
-**Reweight and common support**: when groups barely overlap, a few points dominate. Weighting reframes the comparison around shared regions; it creates no information and changes the population you describe. Start unweighted.
+**Reweight and common support**: when groups barely overlap, a few points dominate. Weighting reframes the comparison around shared regions and adds no information. It changes the population you describe, so start unweighted.
 
 --8<-- "snippets/reweight-table.txt"
 

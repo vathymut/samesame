@@ -12,15 +12,15 @@
 
 > *Same, same but different ...*
 
-You bring one score per observation (predicted risk, prediction error, or an outlier score such as a confidence gap). `samesame` compares it between source and target to answer two questions: did it change, and did it get worse?
+Bring one score per observation (predicted risk, prediction error, or an outlier score such as a confidence gap). `samesame` compares it between source and target and answers two questions: did it change, and did it get worse?
 
-Production monitoring is often constrained: the feature space is too wide to scan directly, and labels arrive too late. A score reduces each row to one number you can test.
+Production monitoring is often constrained. The feature space is too wide to scan directly, and labels arrive too late. A score reduces each row to one number you can test.
 
 --8<-- "snippets/source-target.txt"
 
 It separates two questions that are easy to conflate:
 
-- `ss.test_shift`: a broad, two-sided screen for any shift. Its statistic is the ROC AUC (`∫ TPR dFPR`); `0.5` means the score does not separate source from target.
+- `ss.test_shift`: a broad, two-sided screen for any shift. Its statistic is the ROC AUC (`∫ TPR dFPR`), and `0.5` means the score does not separate source from target.
 - `ss.test_harmful_shift(..., worse="higher"|"lower")`: a focused, one-sided test for movement toward the tail you declare harmful. Its statistic is a weighted AUC (`∫ TPR·(1−FPR)² dFPR`) that emphasizes the harmful tail.
 
 ```python
@@ -39,8 +39,8 @@ A small p-value rejects label exchangeability, not impact, causality, effect siz
 ## Where next
 
 - **[Get started](examples/tutorials/get-started.md)**: run both tests in 5 minutes.
-- **[Is the new drug good enough?](examples/trials/check-drug-efficacy.md)**: the harm test on 70 trial scores, with no model.
-- **[Monitor a credit model](examples/credit/monitor-credit.md)**: one HELOC model, three signals under the same shift.
+- **[Is the new drug good enough?](examples/trials/check-drug-efficacy.md)**: the harm test on 70 trial scores, no model.
+- **[Monitor a credit model](examples/credit/monitor-credit.md)**: one HELOC model, three signals.
 - **[Weight for common support](how-to/weight-for-common-support.md)**: when and how to reweight.
 
 ## Installation

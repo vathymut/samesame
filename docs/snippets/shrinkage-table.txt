@@ -1,7 +1,7 @@
 | `shrinkage` | Effect |
 |-------------|--------|
 | `0.0` | Plain density ratio. Strongest correction, highest variance. |
-| `0.5` | Default. Good balance — start here and check `ESS/n` before lowering. |
+| `0.5` | Default. Good balance: start here and check `ESS/n` before lowering. |
 | `1.0` | Uniform weights. No correction. |
 
 Lower values are more aggressive; higher values are more conservative.

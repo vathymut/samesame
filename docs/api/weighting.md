@@ -6,7 +6,7 @@ Reframe the comparison around **common support**, the regions both groups share.
 
 Reference for weighting utilities. For when and how to weight, see [Weight for common support](../how-to/weight-for-common-support.md); for the statistic they modify, see [How the harm test works](../explanation/harmful-shift-statistic.md). Concepts: [Core concepts](../explanation/core-concepts.md).
 
-Start unweighted. An unweighted comparison keeps all regions both groups occupy. When overlap is poor, a few points can dominate. Weighting reframes around common support. It creates no information and changes the population. Not a default correction.
+Start unweighted. An unweighted comparison keeps all regions both groups occupy. When overlap is poor, a few points can dominate. Weighting reframes around common support and adds no information; it changes the population you describe, so it is not a default correction.
 
 ??? details "Source files"
     `src/samesame/weights.py` · `src/samesame/_permutation.py`

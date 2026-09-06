@@ -1,8 +1,8 @@
 # Is the new drug good enough?
 
-Medicine calls this **noninferiority**: a cheaper, faster, or more tolerable treatment need not beat the standard, it must be *not meaningfully worse*. The harmful-shift test is a nonparametric noninferiority test with no margin and no normality assumption (Kamulete, 2022).
+Medicine calls this **noninferiority**: a cheaper, faster, or more tolerable treatment need not beat the standard. It must be *not meaningfully worse*. The harmful-shift test is a nonparametric noninferiority test with no margin and no normality assumption (Kamulete, 2022).
 
-The example is a classic [SAS case study](https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf): **Bowl** (cheaper) versus **Armanaleg** (standard). Relief is 4 to 16 (higher is better); mean 9.4 versus 10.1 (42 and 28 patients). Not better, but is it *meaningfully worse*? You have one score per patient and no model. Pre-register `worse`, as you would choose one side before unblinding.
+The example is a classic [SAS case study](https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf): **Bowl** (cheaper) versus **Armanaleg** (standard). Relief is 4 to 16 (higher is better); mean 9.4 versus 10.1 across 42 and 28 patients. Not better, but is it *meaningfully worse*? You have one score per patient and no model. Pre-register `worse`, as you would choose one side before unblinding.
 
 If you are new to `samesame`, start with [Get started](../tutorials/get-started.md).
 
@@ -61,7 +61,7 @@ A p-value of 0.13 is not a certificate of equivalence. It says the observed diff
 
 ## Why a drug trial belongs in a monitoring guide
 
-Every deployed model is a challenger drug: the standard (Armanaleg) is `source`, the challenger (Bowl) is `target`, a relief score is one interpretable score per observation, and “not meaningfully worse” is `test_harmful_shift`. The challenger passes when it stays close to the standard; when it does not, `samesame` shows you where and how.
+Every deployed model is a challenger drug. The standard arm is `source`; the deployed challenger is `target`. One interpretable score per observation, and "not meaningfully worse" is `test_harmful_shift`. The challenger passes when it stays close to the standard. When it does not, `samesame` shows you where and how.
 
 For the same test on a model score, see [Monitor a credit model](../credit/monitor-credit.md). To reweight for common support, see [Weight for common support](../../how-to/weight-for-common-support.md) and [Core concepts](../../explanation/core-concepts.md).
 
