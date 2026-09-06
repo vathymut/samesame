@@ -54,3 +54,22 @@ def result_metadata(script_path: Path, arguments: dict[str, Any], **extra: Any) 
         "arguments": arguments,
         **extra,
     }
+
+
+_EXPERIMENT_METRIC_KEYS: tuple[str, ...] = (
+    "statistic",
+    "pvalue",
+    "reject",
+    "source_ess",
+    "target_ess",
+    "source_max_weight",
+    "target_max_weight",
+)
+
+
+def summarize_rows(rows: list[dict[str, Any]], group_keys: tuple[str, ...]) -> list[dict[str, Any]]:
+    if not rows:
+        return []
+    df = pl.DataFrame(rows)
+    agg = [pl.col(k).mean().alias(k) for k in _EXPERIMENT_METRIC_KEYS if k in df.columns] + [pl.len().alias("count")]
+    return df.group_by(group_keys).agg(agg).sort(group_keys).to_dicts()

@@ -6,6 +6,7 @@ from collections.abc import Callable
 from typing import Any
 
 import numpy as np
+import polars as pl
 from numpy.typing import NDArray
 from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.model_selection import cross_val_predict
@@ -16,11 +17,9 @@ from samesame.weights import ImportanceWeights, domain_weights
 from scripts.style import MODE_ORDER
 
 ALPHA = 0.05
-MODES: tuple[str, ...] = MODE_ORDER
 DEFAULT_HGB_PARAMS: dict[str, Any] = dict(
     max_iter=1000, learning_rate=0.05, max_depth=6, min_samples_leaf=20
 )
-DEFAULT_DOMAIN_CV = 10
 
 DomainProbabilityEstimator = Callable[
     [Any, Any], tuple[NDArray[np.float64], NDArray[np.float64]]
@@ -28,6 +27,16 @@ DomainProbabilityEstimator = Callable[
 
 
 def _as_2d(feature: Any) -> NDArray[np.float64]:
+    if isinstance(feature, pl.DataFrame):
+        arr = feature.to_numpy()
+        if arr.ndim == 1:
+            arr = arr.reshape(-1, 1)
+        return arr.astype(np.float64, copy=False)
+    if isinstance(feature, pl.Series):
+        arr = feature.to_numpy()
+        if arr.ndim == 1:
+            arr = arr.reshape(-1, 1)
+        return arr.astype(np.float64, copy=False)
     arr = np.asarray(feature, dtype=np.float64)
     if arr.ndim == 1:
         arr = arr.reshape(-1, 1)
@@ -41,12 +50,18 @@ def clip_domain_probabilities(p: NDArray[np.float64]) -> NDArray[np.float64]:
 def estimate_domain_probabilities_hgb(
     source_feature: Any, target_feature: Any
 ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    if isinstance(source_feature, pl.DataFrame) and isinstance(target_feature, pl.DataFrame):
+        X = pl.concat([source_feature, target_feature], how="vertical")
+        y = np.concatenate([np.zeros(source_feature.height, dtype=int), np.ones(target_feature.height, dtype=int)])
+        est = HistGradientBoostingClassifier(random_state=42, **DEFAULT_HGB_PARAMS)
+        prob = cross_val_predict(tabular_pipeline(est), X, y, cv=5, method="predict_proba")[:, 1]
+        clipped = clip_domain_probabilities(prob)
+        return clipped[: source_feature.height], clipped[source_feature.height :]
     s2d, t2d = _as_2d(source_feature), _as_2d(target_feature)
     X = np.vstack([s2d, t2d])
     y = np.concatenate([np.zeros(len(s2d), dtype=int), np.ones(len(t2d), dtype=int)])
-    folds = min(DEFAULT_DOMAIN_CV, int(np.ceil(len(X) / 2)))
     est = HistGradientBoostingClassifier(random_state=42, **DEFAULT_HGB_PARAMS)
-    prob = cross_val_predict(tabular_pipeline(est), X, y, cv=folds, method="predict_proba")[:, 1]
+    prob = cross_val_predict(tabular_pipeline(est), X, y, cv=5, method="predict_proba")[:, 1]
     clipped = clip_domain_probabilities(prob)
     return clipped[: len(s2d)], clipped[len(s2d) :]
 

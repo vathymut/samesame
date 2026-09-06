@@ -1,4 +1,4 @@
-"""Dataset loaders for real-data workflow — explicit per-task logic."""
+"""Dataset loaders — polars-first, pandas only at OpenML boundary."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+import polars as pl
 from numpy.typing import NDArray
 from sklearn.datasets import fetch_openml
 from sklearn.model_selection import train_test_split
@@ -36,16 +37,16 @@ TASK_IDS: dict[str, int] = {
 
 @dataclass(frozen=True, slots=True)
 class LoadedTask:
+    """Polars-first container — pandas only inside fetch boundary."""
+
     task: str
-    train_feature: pd.DataFrame
-    source_feature: pd.DataFrame
-    target_feature: pd.DataFrame
+    train_feature: pl.DataFrame
+    source_feature: pl.DataFrame
+    target_feature: pl.DataFrame
     train_label: NDArray[np.int_] | NDArray[np.float64]
     source_label: NDArray[np.int_] | NDArray[np.float64]
     target_label: NDArray[np.int_] | NDArray[np.float64]
 
-
-# --- small helpers ---
 
 def _normalize_token(v: Any) -> str:
     if pd.isna(v):
@@ -66,13 +67,14 @@ def _normalize_name(s: str) -> str:
     return "".join(c for c in s.lower() if c.isalnum())
 
 
-def _locate(frame: pd.DataFrame, *candidates: str) -> str:
-    lookup = {_normalize_name(c): c for c in frame.columns}
+def _locate(frame: pd.DataFrame | pl.DataFrame, *candidates: str) -> str:
+    cols = list(frame.columns)
+    lookup = {_normalize_name(c): c for c in cols}
     for cand in candidates:
         m = lookup.get(_normalize_name(cand))
         if m is not None:
             return m
-    raise KeyError(f"none of {candidates!r} found in {list(frame.columns)}")
+    raise KeyError(f"none of {candidates!r} found in {cols}")
 
 
 def _as_series(v: Any) -> pd.Series:
@@ -102,8 +104,6 @@ def _state_division(feature: pd.DataFrame) -> pd.Series:
     return feature[col].map(_map)
 
 
-# --- OpenML fetch + splitting ---
-
 def fetch_openml_frame(data_id: int) -> tuple[pd.DataFrame, pd.Series]:
     try:
         ds = fetch_openml(data_id=data_id, as_frame=True, parser="auto")
@@ -113,6 +113,10 @@ def fetch_openml_frame(data_id: int) -> tuple[pd.DataFrame, pd.Series]:
         with tempfile.TemporaryDirectory(prefix=f"samesame-openml-{data_id}-") as td:
             ds = fetch_openml(data_id=data_id, as_frame=True, parser="auto", data_home=td)
     return _normalize_frame(pd.DataFrame(ds.data)), _as_series(ds.target)
+
+
+def _to_polars(df: pd.DataFrame) -> pl.DataFrame:
+    return pl.from_pandas(df)
 
 
 def _sample_split(feature: pd.DataFrame, label: pd.Series, *, max_rows: int | None, seed: int):
@@ -127,18 +131,18 @@ def _split_source_pool(feature: pd.DataFrame, label: pd.Series, *, max_train_row
     if len(feature) < 4:
         raise ValueError("source pool must contain at least four rows")
     max_total = max_train_rows + max_eval_rows
-    pf, pl = feature, label
+    pf, pl_series = feature, label
     if len(pf) > max_total:
-        pf, pl = _sample_split(pf, pl, max_rows=max_total, seed=seed)
+        pf, pl_series = _sample_split(pf, pl_series, max_rows=max_total, seed=seed)
     if len(pf) >= max_total:
         eval_rows, train_rows = max_eval_rows, max_train_rows
     else:
         eval_rows = max(1, len(pf) // 5)
         train_rows = min(max_train_rows, len(pf) - eval_rows)
         eval_rows = len(pf) - train_rows
-    strat = pl if pl.value_counts().min() >= 2 and len(pl.value_counts()) >= 2 else None
-    tr_f, src_f, tr_l, src_l = train_test_split(pf, pl, train_size=train_rows, test_size=eval_rows, stratify=strat, random_state=seed)
-    dtype = float if pd.api.types.is_float_dtype(pl) else int
+    strat = pl_series if pl_series.value_counts().min() >= 2 and len(pl_series.value_counts()) >= 2 else None
+    tr_f, src_f, tr_l, src_l = train_test_split(pf, pl_series, train_size=train_rows, test_size=eval_rows, stratify=strat, random_state=seed)
+    dtype = float if pd.api.types.is_float_dtype(pl_series) else int
     return tr_f.reset_index(drop=True), src_f.reset_index(drop=True), tr_l.to_numpy(dtype=dtype), src_l.to_numpy(dtype=dtype)
 
 
@@ -152,10 +156,16 @@ def _finalize(task_name: str, *, feature: pd.DataFrame, label: pd.Series, source
     tgt_f, tgt_l = _sample_split(tgt_f, tgt_l, max_rows=max_eval_rows, seed=seed + 1)
     tr_f, src_f, tr_l, src_l = _split_source_pool(src_pool_f, src_pool_l, max_train_rows=max_train_rows, max_eval_rows=max_eval_rows, seed=seed)
     dtype = float if pd.api.types.is_float_dtype(label) else int
-    return LoadedTask(task=task_name, train_feature=tr_f, source_feature=src_f, target_feature=tgt_f, train_label=tr_l, source_label=src_l, target_label=tgt_l.to_numpy(dtype=dtype))
+    return LoadedTask(
+        task=task_name,
+        train_feature=_to_polars(tr_f),
+        source_feature=_to_polars(src_f),
+        target_feature=_to_polars(tgt_f),
+        train_label=tr_l,
+        source_label=src_l,
+        target_label=tgt_l.to_numpy(dtype=dtype),
+    )
 
-
-# --- per-task loaders ---
 
 def _load_heloc(feature: pd.DataFrame, raw: pd.Series, **kw) -> LoadedTask:
     col = _locate(feature, "ExternalRiskEstimate", "External Risk Estimate")
@@ -169,7 +179,6 @@ def _load_heloc(feature: pd.DataFrame, raw: pd.Series, **kw) -> LoadedTask:
 def _load_diabetes(feature: pd.DataFrame, raw: pd.Series, **kw) -> LoadedTask:
     col = _locate(feature, "admission_source_id")
     vals = feature[col]
-    # source = not in (7, Emergency Room)
     mask = ~vals.map(lambda v: _normalize_token(v) in {"7", "emergency room"})
     label = raw.map(lambda v: _normalize_token(v) == "yes").astype(int)
     feat = feature.drop(columns=[c for c in ["encounter_id", "patient_nbr", col] if c in feature.columns])
@@ -181,7 +190,6 @@ def _load_acsincome(feature: pd.DataFrame, raw: pd.Series, **kw) -> LoadedTask:
     mask = div != "01"
     label = (pd.to_numeric(raw, errors="raise") <= 56000).astype(int)
     feat = feature.drop(columns=[_locate(feature, "ST", "State", "State_postcode")])
-    # need to align feature/label with valid div
     valid = div.notna() & raw.notna()
     feat = feat.loc[valid].reset_index(drop=True)
     label = label.loc[valid].reset_index(drop=True)
@@ -192,7 +200,6 @@ def _load_acsincome(feature: pd.DataFrame, raw: pd.Series, **kw) -> LoadedTask:
 def _load_acspubcov(feature: pd.DataFrame, raw: pd.Series, **kw) -> LoadedTask:
     col = _locate(feature, "DIS")
     mask = ~feature[col].map(lambda v: _normalize_token(v) in {"1", "1.0", "01", "with a disability"})
-    # label PUBCOV == 1
     numeric = pd.to_numeric(raw, errors="coerce")
     if numeric.notna().all():
         label = (numeric == 1).astype(int)
@@ -226,21 +233,15 @@ def load_nsw_task(task_name: str, *, max_train_rows: int, max_eval_rows: int, se
     return _finalize(task_name, feature=feat, label=label, source_mask=mask, msg="NSW split must produce non-empty treat pools", max_train_rows=max_train_rows, max_eval_rows=max_eval_rows, seed=seed)
 
 
-# --- public entry ---
-
 def load_task(task_name: str, *, max_train_rows: int, max_eval_rows: int, seed: int) -> LoadedTask:
     if task_name == "nsw":
         return load_nsw_task(task_name, max_train_rows=max_train_rows, max_eval_rows=max_eval_rows, seed=seed)
     if task_name not in TASK_IDS:
         raise ValueError(f"unknown task {task_name!r}; expected one of: {sorted(TASK_IDS)} + ['nsw']")
     feature, raw = fetch_openml_frame(TASK_IDS[task_name])
-    # acsincome needs special valid handling before finalize; others generic
     common_kw = dict(max_train_rows=max_train_rows, max_eval_rows=max_eval_rows, seed=seed)
-    # filter rows where split val or label is missing
     if task_name == "acsincome":
         return _load_acsincome(feature, raw, **common_kw)
-    # generic valid filtering
-    # derive split vals to filter na (for heloc/dis etc. we filter inside, but do here too)
     valid = raw.notna()
     feature, raw = feature.loc[valid].reset_index(drop=True), raw.loc[valid].reset_index(drop=True)
     if task_name == "heloc":

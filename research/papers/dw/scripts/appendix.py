@@ -5,7 +5,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import numpy as np
-import polars as pl
 import typer
 from numpy.typing import NDArray
 from sklearn.ensemble import RandomForestClassifier
@@ -13,24 +12,14 @@ from sklearn.model_selection import cross_val_predict
 from skrub import tabular_pipeline
 
 from scripts.dgp import draw_overlap_dataset, draw_second_dgp
-from scripts.experiments import MODES, clip_domain_probabilities, estimate_domain_probabilities_hgb, run_harm_test, run_harm_test_with_estimator
+from scripts.experiments import clip_domain_probabilities, estimate_domain_probabilities_hgb, run_harm_test, run_harm_test_with_estimator
 from scripts.style import MODE_ORDER
-from scripts.utils import RESULTS_DIR, result_metadata, write_csv, write_json
+from scripts.utils import RESULTS_DIR, result_metadata, summarize_rows, write_csv, write_json
 
 app = typer.Typer()
 
-METRIC_KEYS = ("statistic", "pvalue", "reject", "source_ess", "target_ess", "source_max_weight", "target_max_weight")
-
-
-def _summarize(rows, keys):
-    df = pl.DataFrame(rows)
-    agg = [pl.col(k).mean().alias(k) for k in METRIC_KEYS] + [pl.len().alias("count")]
-    return df.group_by(keys).agg(agg).sort(keys).to_dicts()
-
 
 def _rf_probs(source_feature, target_feature):
-    from scripts.experiments import DEFAULT_DOMAIN_CV
-
     est = RandomForestClassifier(n_estimators=500, max_features="sqrt", random_state=42)
     s = np.asarray(source_feature, dtype=float)
     t = np.asarray(target_feature, dtype=float)
@@ -39,7 +28,7 @@ def _rf_probs(source_feature, target_feature):
         t = t.reshape(-1, 1)
     X = np.vstack([s, t])
     y = np.concatenate([np.zeros(len(s)), np.ones(len(t))])
-    folds = min(DEFAULT_DOMAIN_CV, len(s), len(t))
+    folds = min(5, len(s), len(t))
     prob = cross_val_predict(tabular_pipeline(est), X, y, cv=folds, method="predict_proba")[:, 1]
     clipped = clip_domain_probabilities(prob)
     return clipped[: len(s)], clipped[len(s) :]
@@ -78,9 +67,9 @@ def second_dgp(
                 r = run_harm_test(ds["source_score"], ds["target_score"], source_feature=ds["source_feature"], target_feature=ds["target_feature"], mode=mode, lambda_value=lambda_value, n_resamples=n_resamples, seed=93_000 + rep)
                 pow_rows.append({"repeat": rep, "effect_size": eff, **r})
     write_csv(calibration_detail_output, cal_rows)
-    write_csv(calibration_output, _summarize(cal_rows, ("overlap_severity", "mode")))
+    write_csv(calibration_output, summarize_rows(cal_rows, ("overlap_severity", "mode")))
     write_csv(power_detail_output, pow_rows)
-    write_csv(power_output, _summarize(pow_rows, ("effect_size", "mode")))
+    write_csv(power_output, summarize_rows(pow_rows, ("effect_size", "mode")))
     write_json(metadata_output, meta)
 
 
@@ -107,7 +96,7 @@ def domain_clf(
                     r = run_harm_test_with_estimator(ds["source_score"], ds["target_score"], source_feature=ds["source_feature"], target_feature=ds["target_feature"], estimator=est, direction="higher", mode=mode, lambda_value=lambda_value, n_resamples=n_resamples, seed=80_000 + rep, alpha=0.05)
                     rows.append({"repeat": rep, "severity": sev, "classifier": clf_name, **r})
     write_csv(detail_output, rows)
-    write_csv(output, _summarize(rows, ("severity", "classifier", "mode")))
+    write_csv(output, summarize_rows(rows, ("severity", "classifier", "mode")))
     write_json(metadata_output, meta)
 
 

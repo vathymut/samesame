@@ -4,24 +4,16 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import polars as pl
 import typer
 
 from scripts.dgp import draw_overlap_dataset
-from scripts.experiments import MODES, run_harm_test
+from scripts.experiments import run_harm_test
 from scripts.style import MODE_ORDER
-from scripts.utils import RESULTS_DIR, result_metadata, write_csv, write_json
+from scripts.utils import RESULTS_DIR, result_metadata, summarize_rows, write_csv, write_json
 
 app = typer.Typer()
 
-METRIC_KEYS = ("statistic", "pvalue", "reject", "source_ess", "target_ess", "source_max_weight", "target_max_weight")
 SCENARIOS: dict[str, tuple[float, float]] = {"source_only": (0.25, 0.0), "target_only": (0.0, 0.25), "both_sides": (0.25, 0.25)}
-
-
-def _summarize(rows: list[dict], group_keys: tuple[str, ...]) -> list[dict]:
-    df = pl.DataFrame(rows)
-    agg = [pl.col(k).mean().alias(k) for k in METRIC_KEYS] + [pl.len().alias("count")]
-    return df.group_by(group_keys).agg(agg).sort(group_keys).to_dicts()
 
 
 @app.command("calibration")
@@ -45,7 +37,7 @@ def calibration(
                 r = run_harm_test(ds["source_score"], ds["target_score"], source_feature=ds["source_feature"], target_feature=ds["target_feature"], mode=mode, lambda_value=lambda_value, n_resamples=n_resamples, seed=20_000 + rep)
                 rows.append({"repeat": rep, "severity": sev, **r})
     write_csv(detail_output, rows)
-    write_csv(output, _summarize(rows, ("severity", "mode")))
+    write_csv(output, summarize_rows(rows, ("severity", "mode")))
     write_json(metadata_output, meta)
 
 
@@ -71,7 +63,7 @@ def power(
                 r = run_harm_test(ds["source_score"], ds["target_score"], source_feature=ds["source_feature"], target_feature=ds["target_feature"], mode=mode, lambda_value=lambda_value, n_resamples=n_resamples, seed=40_000 + rep)
                 rows.append({"repeat": rep, "effect_size": eff, "severity": severity, **r})
     write_csv(detail_output, rows)
-    write_csv(output, _summarize(rows, ("effect_size", "mode")))
+    write_csv(output, summarize_rows(rows, ("effect_size", "mode")))
     write_json(metadata_output, meta)
 
 
@@ -91,11 +83,11 @@ def mode_comparison(
     for rep in range(n_repeats):
         for scen, (sf, tf) in SCENARIOS.items():
             ds = draw_overlap_dataset(n_source=n_source, n_target=n_target, source_private_fraction=sf, target_private_fraction=tf, target_shared_shift=0.0, seed=50_000 + rep)
-            for mode in MODES:
+            for mode in MODE_ORDER:
                 r = run_harm_test(ds["source_score"], ds["target_score"], source_feature=ds["source_feature"], target_feature=ds["target_feature"], mode=mode, lambda_value=lambda_value, n_resamples=n_resamples, seed=60_000 + rep)
                 rows.append({"repeat": rep, "scenario": scen, **r})
     write_csv(detail_output, rows)
-    write_csv(output, _summarize(rows, ("scenario", "mode")))
+    write_csv(output, summarize_rows(rows, ("scenario", "mode")))
     write_json(metadata_output, meta)
 
 
@@ -123,7 +115,7 @@ def lambda_sensitivity(
                 r = run_harm_test(ds["source_score"], ds["target_score"], source_feature=ds["source_feature"], target_feature=ds["target_feature"], mode="both", lambda_value=lam, n_resamples=n_resamples, seed=90_000 + rep)
                 rows.append({"repeat": rep, "experiment": exp_name, "lambda_value": lam, **r})
     write_csv(detail_output, rows)
-    write_csv(output, _summarize(rows, ("experiment", "mode", "lambda_value")))
+    write_csv(output, summarize_rows(rows, ("experiment", "mode", "lambda_value")))
     write_json(metadata_output, meta)
 
 

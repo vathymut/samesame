@@ -31,3 +31,7 @@ data/
 figures/tableshift_workflow_plot.pdf
 results/tableshift_*
 results/test_real_data_*
+# generated experiment artifacts — regenerate via `make figures` / `make experiments-extended`
+results/*.csv
+results/*.json
+!results/README.md
