@@ -6,7 +6,9 @@ import re
 import numpy as np
 import pandas as pd
 from sklearn.datasets import fetch_openml
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import cross_val_predict
 
 import samesame as ss
 
@@ -22,9 +24,16 @@ X_deployment = X[~mask_high].reset_index(drop=True)
 
 split = pd.Series([0] * len(X_train) + [1] * len(X_deployment))
 X_concat = pd.concat([X_train, X_deployment], ignore_index=True)
-rf_domain = RandomForestClassifier(n_estimators=500, oob_score=True, random_state=12345, min_samples_leaf=10)
-rf_domain.fit(X_concat, split)
-domain_prob = rf_domain.oob_decision_function_[:, 1]
+rf_domain = CalibratedClassifierCV(
+    estimator=RandomForestClassifier(
+        n_estimators=500, random_state=12345, min_samples_leaf=10,
+    ),
+    method="sigmoid",
+    cv=5,
+)
+domain_prob = cross_val_predict(
+    rf_domain, X_concat, split, cv=5, method="predict_proba",
+)[:, 1]
 
 y_train_binary = y_train.map({"Good": 0, "Bad": 1}).values
 rf_bad = RandomForestClassifier(n_estimators=500, oob_score=True, random_state=12345, min_samples_leaf=10)

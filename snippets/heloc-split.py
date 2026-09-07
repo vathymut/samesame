@@ -18,19 +18,29 @@ y_deployment = y[~mask_high].reset_index(drop=True)
 # --8<-- [end:heloc-split]
 
 # --8<-- [start:heloc-domain]
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import cross_val_predict
 
 split = pd.Series([0] * len(X_train) + [1] * len(X_deployment))
 X_concat = pd.concat([X_train, X_deployment], ignore_index=True)
 
-rf_domain = RandomForestClassifier(
-    n_estimators=500,
-    oob_score=True,
-    random_state=12345,
-    min_samples_leaf=10,
+rf_domain = CalibratedClassifierCV(
+    estimator=RandomForestClassifier(
+        n_estimators=500,
+        random_state=12345,
+        min_samples_leaf=10,
+    ),
+    method="sigmoid",
+    cv=5,
 )
-rf_domain.fit(X_concat, split)
-domain_prob = rf_domain.oob_decision_function_[:, 1]
+domain_prob = cross_val_predict(
+    rf_domain,
+    X_concat,
+    split,
+    cv=5,
+    method="predict_proba",
+)[:, 1]
 # --8<-- [end:heloc-domain]
 
 # --8<-- [start:heloc-risk-model]
