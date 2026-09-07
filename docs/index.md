@@ -28,7 +28,7 @@ Requires Python 3.12+, `numpy`, `scipy`, and `scikit-learn`.
 It separates two questions that are easy to conflate:
 
 - `ss.test_shift`: a broad, two-sided screen for any shift.
-- `ss.test_harmful_shift(..., worse="higher")`: a focused, one-sided test for movement toward the tail you declare harmful (`worse="lower"` if that tail is the small one).
+- `ss.test_harm(..., worse="higher")`: a focused, one-sided test for movement toward the tail you declare harmful (`worse="lower"` if that tail is the small one).
 
 ```python
 import numpy as np
@@ -40,7 +40,7 @@ source_scores = rng.normal(loc=0.0, scale=1.0, size=600)
 target_scores = rng.normal(loc=0.6, scale=1.0, size=600)
 
 shift = ss.test_shift(source=source_scores, target=target_scores, rng=rng)
-harm = ss.test_harmful_shift(
+harm = ss.test_harm(
     source=source_scores,
     target=target_scores,
     worse="higher",  # larger = more harm (e.g., risk)
@@ -59,7 +59,7 @@ The small p-values provide strong evidence that the target distribution shifted 
 
 1. **Choose a score** that represents the outcome you care about. Generate it out of sample if it comes from a fitted model.
 2. **Ask whether anything changed** with `ss.test_shift`.
-3. **Ask whether the change is harmful** with `ss.test_harmful_shift(..., worse=...)`. Specify in advance whether higher or lower scores indicate harm.
+3. **Ask whether the change is harmful** with `ss.test_harm(..., worse=...)`. Specify in advance whether higher or lower scores indicate harm.
 4. **Address poor feature overlap** with `ss.domain_weights` only when it is a real concern. Weighting focuses the comparison on a different population: the region of common support. Details: [Weight for common support](examples/credit/weight-for-common-support.md).
 
 ## Where next

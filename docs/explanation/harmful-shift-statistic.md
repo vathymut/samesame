@@ -33,7 +33,7 @@ T = \int \operatorname{TPR}(t)\,[1-\operatorname{FPR}(t)]^2\,
 \]
 
 Here, `T` is the weighted AUC: the test statistic used by
-`test_harmful_shift`.
+`test_harm`.
 The statistic measures directional separation.
 
 Since `1 - FPR(t)` is the source probability below the threshold, this
@@ -46,7 +46,7 @@ movement among values commonly observed in benign source samples.
 ## How to choose the test
 
 - Use `test_shift` when any distributional difference matters.
-- Use `test_harmful_shift` when you can declare the harmful direction before
+- Use `test_harm` when you can declare the harmful direction before
   looking at the result.
 
 Both tests compare the same source and target scores by permutation. The

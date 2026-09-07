@@ -34,14 +34,14 @@ shift = ss.test_shift(source=armanaleg, target=bowl, rng=rng)
 print(f"Shift p-value:  {shift.pvalue:.4f}")    # → 0.2548
 
 rng = np.random.default_rng(12345)
-harm = ss.test_harmful_shift(source=armanaleg, target=bowl, worse="lower", rng=rng)
+harm = ss.test_harm(source=armanaleg, target=bowl, worse="lower", rng=rng)
 print(f"Harm p-value:   {harm.pvalue:.4f}")     # → 0.1319
 ```
 
 The two tests answer different questions:
 
 - `test_shift` (p=0.25) tests for any difference between the source and target score distributions.
-- `test_harmful_shift` (p=0.13) tests for movement toward the harmful, low-relief tail.
+- `test_harm` (p=0.13) tests for movement toward the harmful, low-relief tail.
 
 Neither p-value is small, so we do not reject the null of no shift or the null of no harmful shift.
 

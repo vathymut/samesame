@@ -47,7 +47,7 @@ import samesame as ss
     Start with predicted risk when the model output already represents harm. `P(default)` is directly tied to the outcome: larger means more harm, so use `worse="higher"`.
 
     ```python
-    harm = ss.test_harmful_shift(
+    harm = ss.test_harm(
         source=train_risk, target=deployment_risk,
         worse="higher", rng=np.random.default_rng(12345),
     )
@@ -67,7 +67,7 @@ import samesame as ss
     train_conf = outlier_scores_from_probabilities(rf_bad.oob_decision_function_)
     deploy_conf = outlier_scores_from_probabilities(rf_bad.predict_proba(X_deployment))
 
-    harm = ss.test_harmful_shift(
+    harm = ss.test_harm(
         source=train_conf, target=deploy_conf,
         worse="lower",  # lower confidence = harm
         rng=np.random.default_rng(12345),
@@ -86,7 +86,7 @@ import samesame as ss
     brier_source = (y_train_binary - train_risk) ** 2
     brier_target = (y_deployment_binary - deployment_risk) ** 2
 
-    harm = ss.test_harmful_shift(
+    harm = ss.test_harm(
         source=brier_source, target=brier_target,
         worse="higher", rng=np.random.default_rng(12345),
     )

@@ -354,7 +354,7 @@ def domain_weights(
     EffectiveSampleSize : Per-group ESS and ESS/n interpretation.
     ReweightMode : ``"source"``, ``"target"``, ``"both"`` in plain language.
     samesame.shift.test_shift : Any-shift test that can consume weights.
-    samesame.shift.test_harmful_shift : Directional test that can consume weights.
+    samesame.shift.test_harm : Directional test that can consume weights.
 
     References
     ----------

@@ -42,7 +42,7 @@ rf_bad = RandomForestClassifier(n_estimators=500, oob_score=True, random_state=1
 rf_bad.fit(X_train, y_train_binary)
 train_risk = rf_bad.oob_decision_function_[:, 1].ravel()
 deployment_risk = rf_bad.predict_proba(X_deployment)[:, 1].ravel()
-unweighted = ss.test_harmful_shift(source=train_risk, target=deployment_risk, worse="higher", rng=np.random.default_rng(12345))
+unweighted = ss.test_harm(source=train_risk, target=deployment_risk, worse="higher", rng=np.random.default_rng(12345))
 print(f"Unweighted p-value: {unweighted.pvalue:.4f}")
 for label, domain_prob in domain_probabilities.items():
     source_prob = domain_prob[split.values == 0]
@@ -59,7 +59,7 @@ for label, domain_prob in domain_probabilities.items():
             reweight=reweight,
             shrinkage=0.5,
         )
-        result = ss.test_harmful_shift(
+        result = ss.test_harm(
             source=train_risk,
             target=deployment_risk,
             worse="higher",

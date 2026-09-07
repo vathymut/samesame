@@ -58,7 +58,7 @@ rf_bad.fit(X_train, y_train_binary)
 train_risk = rf_bad.oob_decision_function_[:, 1].ravel()
 deployment_risk = rf_bad.predict_proba(X_deployment)[:, 1].ravel()
 
-harm = ss.test_harmful_shift(
+harm = ss.test_harm(
     source=train_risk,
     target=deployment_risk,
     worse="higher",

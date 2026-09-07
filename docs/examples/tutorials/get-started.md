@@ -11,7 +11,7 @@ This tutorial shows how to turn scores into two answers: *did it change?* and *d
 
 ## Steps
 
-The two tests answer different questions. `ss.test_shift` is a broad, two-sided test for any difference between source and target. `ss.test_harmful_shift(..., worse="higher"|"lower")` is a focused, one-sided test for detecting a harmful shift. You can apply both tests to the score that represents the outcome you care about.
+The two tests answer different questions. `ss.test_shift` is a broad, two-sided test for any difference between source and target. `ss.test_harm(..., worse="higher"|"lower")` is a focused, one-sided test for detecting a harmful shift. You can apply both tests to the score that represents the outcome you care about.
 
 ### 1. Create source and target
 
@@ -68,7 +68,7 @@ With this p-value, we reject the null of no shift, as expected.
 The domain probability can also serve as an outlier score when target-like observations represent the harmful direction: a higher domain probability means the observation looks less like the reference sample, so use `worse="higher"` when these deviations are harmful.
 
 ```python
-harm = ss.test_harmful_shift(
+harm = ss.test_harm(
     source=source_scores,
     target=target_scores,
     worse="higher",
@@ -93,7 +93,7 @@ The domain probability is one way to define an outlier score. You can also test 
     rng = np.random.default_rng(12345)
     source_risk = rng.normal(loc=0.20, scale=0.07, size=400)
     target_risk = rng.normal(loc=0.28, scale=0.07, size=400)  # shift up: harmful
-    harm = ss.test_harmful_shift(source=source_risk, target=target_risk, worse="higher", rng=rng)
+    harm = ss.test_harm(source=source_risk, target=target_risk, worse="higher", rng=rng)
     print(f"Harm p={harm.pvalue:.4f}")  # → 0.0001
     ```
 
@@ -102,13 +102,13 @@ The domain probability is one way to define an outlier score. You can also test 
     ```python
     source_quality = rng.normal(loc=0.80, scale=0.07, size=400)
     target_quality = rng.normal(loc=0.72, scale=0.07, size=400)  # shift down: harmful
-    harm = ss.test_harmful_shift(source=source_quality, target=target_quality, worse="lower", rng=rng)
+    harm = ss.test_harm(source=source_quality, target=target_quality, worse="lower", rng=rng)
     print(f"Harm p={harm.pvalue:.4f}")  # → 0.0001
     ```
 
 ## Recap
 
-You now have one score and two tests. `test_shift` tells you whether source and target differ at all. `test_harmful_shift` tells you whether target moved toward the harmful tail you specified before testing. Keeping those questions separate prevents a detectable shift from being mistaken for harmful shift.
+You now have one score and two tests. `test_shift` tells you whether source and target differ at all. `test_harm` tells you whether target moved toward the harmful tail you specified before testing. Keeping those questions separate prevents a detectable shift from being mistaken for harmful shift.
 
 Where you'd like to go next:
 

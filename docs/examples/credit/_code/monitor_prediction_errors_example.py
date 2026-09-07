@@ -35,7 +35,7 @@ deployment_prob = rf.predict_proba(X_deployment)[:, 1]
 brier_train = (y_train_binary - train_prob) ** 2
 brier_deployment = (y_deployment_binary - deployment_prob) ** 2
 
-harm = ss.test_harmful_shift(
+harm = ss.test_harm(
     source=brier_train,
     target=brier_deployment,
     worse="higher",

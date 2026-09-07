@@ -76,7 +76,7 @@ weighting methods for both probability models. Keep `worse` and the random seed
 fixed. The code uses `shrinkage=0.5` for each method.
 
 ```python
-unweighted = ss.test_harmful_shift(
+unweighted = ss.test_harm(
     source=train_risk,
     target=deployment_risk,
     worse="higher",
@@ -98,7 +98,7 @@ for label, (source_prob, target_prob) in probability_sets.items():
             reweight=reweight,
             shrinkage=0.5,
         )
-        weighted_results[method] = ss.test_harmful_shift(
+        weighted_results[method] = ss.test_harm(
             source=train_risk,
             target=deployment_risk,
             worse="higher",

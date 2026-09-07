@@ -8,7 +8,7 @@ source_scores = rng.normal(loc=0.0, scale=1.0, size=600)
 target_scores = rng.normal(loc=0.6, scale=1.0, size=600)
 
 shift = ss.test_shift(source=source_scores, target=target_scores, rng=rng)
-harm = ss.test_harmful_shift(
+harm = ss.test_harm(
     source=source_scores,
     target=target_scores,
     worse="higher",  # larger = more harm (e.g., risk)

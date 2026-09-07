@@ -9,7 +9,7 @@ Tests and result types for comparing source and target score distributions.
       show_root_heading: true
       heading_level: 3
 
-::: samesame.shift.test_harmful_shift
+::: samesame.shift.test_harm
     options:
       show_root_heading: true
       heading_level: 3

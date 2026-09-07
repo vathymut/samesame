@@ -12,7 +12,7 @@ not conflated:
 
 * ``test_shift`` — broad, two-sided screen for any distributional change
   (ROC AUC ``∫ TPR dFPR``, ``0.5`` is chance).
-* ``test_harmful_shift(..., worse=...)`` — focused, one-sided test for
+* ``test_harm(..., worse=...)`` — focused, one-sided test for
   movement toward the tail you declare harmful (weighted AUC
   ``∫ TPR·(1−FPR)² dFPR``).
 
@@ -27,7 +27,7 @@ Workflow: (1) choose one score per observation — generate it out of sample
 with ``cross_val_predict``, ``oob_decision_function_``, or a held-out set if
 it comes from a fitted model; (2) ask whether anything changed
 (``test_shift``); (3) ask whether it got worse
-(``test_harmful_shift`` with ``worse``); (4) reweight only if poor overlap
+(``test_harm`` with ``worse``); (4) reweight only if poor overlap
 is a real concern. A small p-value is evidence against label
 exchangeability — not business impact, causality, or the probability the null
 is true.
@@ -38,7 +38,7 @@ with :doc:`Get started <examples/tutorials/get-started>` or
 """
 
 from . import shift, weights
-from .shift import Worse, test_harmful_shift, test_shift
+from .shift import Worse, test_harm, test_shift
 from .weights import (
     EffectiveSampleSize,
     ImportanceWeights,
@@ -53,7 +53,7 @@ __all__ = [
     "Worse",
     "domain_weights",
     "shift",
-    "test_harmful_shift",
+    "test_harm",
     "test_shift",
     "weights",
 ]

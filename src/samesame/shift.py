@@ -17,7 +17,7 @@ conflated:
 * :func:`test_shift` — broad, two-sided screen. Can the score
   distinguish source from target at all? Reports ROC AUC ``∫ TPR dFPR``
   (``0.5`` is chance).
-* :func:`test_harmful_shift` — focused, one-sided tail test. After
+* :func:`test_harm` — focused, one-sided tail test. After
   orienting the score so larger means worse, does target put more mass
   beyond thresholds that source rarely exceeds? Reports the weighted AUC
   ``∫ TPR·(1−FPR)² dFPR`` of Kamulete (2022) that emphasizes that
@@ -54,7 +54,7 @@ from samesame.weights import ImportanceWeights
 
 
 class Worse(StrEnum):
-    """Polarity that defines which tail is harmful for :func:`test_harmful_shift`.
+    """Polarity that defines which tail is harmful for :func:`test_harm`.
 
     Choose ``worse`` from the score's definition (e.g., risk is higher-is-worse,
     confidence via ``LogitGap`` is lower-is-worse) and pre-register it; do not
@@ -73,7 +73,7 @@ class Worse(StrEnum):
 
     See Also
     --------
-    samesame.shift.test_harmful_shift : The test that consumes this choice.
+    samesame.shift.test_harm : The test that consumes this choice.
 
     Examples
     --------
@@ -123,7 +123,7 @@ class ShiftResult:
 
     See Also
     --------
-    test_harmful_shift : When you can name the harmful tail in advance.
+    test_harm : When you can name the harmful tail in advance.
     samesame.weights.domain_weights : If poor overlap is a real concern.
 
     References
@@ -145,7 +145,7 @@ class ShiftResult:
 
 @dataclass(frozen=True, repr=False)
 class HarmfulShiftResult(ShiftResult):
-    """Result of :func:`test_harmful_shift` — a one-sided tail result.
+    """Result of :func:`test_harm` — a one-sided tail result.
 
     One-sided tail result. The statistic is the weighted AUC
     ``∫ TPR·(1−FPR)² dFPR`` of Kamulete (2022) after orienting the score
@@ -273,7 +273,7 @@ def test_shift(
 
     See Also
     --------
-    test_harmful_shift : Directional test when you can declare the harmful tail.
+    test_harm : Directional test when you can declare the harmful tail.
     samesame.weights.domain_weights : Build weights from ``P(target|x)``.
     samesame.weights.ImportanceWeights : Container for per-group weights.
 
@@ -309,7 +309,7 @@ def test_shift(
     )
 
 
-def test_harmful_shift(
+def test_harm(
     source: ArrayLike,
     target: ArrayLike,
     *,
@@ -395,7 +395,7 @@ def test_harmful_shift(
     >>> rng = np.random.default_rng(12345)
     >>> source = rng.normal(0.20, 0.07, size=300)
     >>> target = rng.normal(0.28, 0.07, size=300)  # higher risk = worse
-    >>> res = ss.test_harmful_shift(source, target, worse="higher", rng=rng)
+    >>> res = ss.test_harm(source, target, worse="higher", rng=rng)
     >>> res.pvalue < 0.05
     True
     """
@@ -420,4 +420,4 @@ def test_harmful_shift(
     )
 
 
-__all__ = ["HarmfulShiftResult", "ShiftResult", "Worse", "test_harmful_shift", "test_shift"]
+__all__ = ["HarmfulShiftResult", "ShiftResult", "Worse", "test_harm", "test_shift"]

@@ -42,13 +42,13 @@ train_risk = rf_bad.oob_decision_function_[:, 1].ravel()
 deployment_risk = rf_bad.predict_proba(X_deployment)[:, 1].ravel()
 
 # --- Unweighted vs source-weighted harmful shift
-unweighted = ss.test_harmful_shift(
+unweighted = ss.test_harm(
     source=train_risk, target=deployment_risk, worse="higher", rng=np.random.default_rng(12345),
 )
 source_prob = domain_prob[split.values == 0]
 target_prob = domain_prob[split.values == 1]
 weights = ss.domain_weights(source=source_prob, target=target_prob, reweight="source", shrinkage=0.5)
-weighted = ss.test_harmful_shift(
+weighted = ss.test_harm(
     source=train_risk, target=deployment_risk, worse="higher", weights=weights, rng=np.random.default_rng(12345),
 )
 print(f"Unweighted p-value: {unweighted.pvalue:.4f}")

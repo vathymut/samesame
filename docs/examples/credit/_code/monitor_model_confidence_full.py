@@ -45,7 +45,7 @@ deployment_confidence = outlier_scores_from_probabilities(
 print(f"Training mean confidence:   {train_confidence.mean():.3f}")
 print(f"Deployment mean confidence: {deployment_confidence.mean():.3f}")
 
-harm = ss.test_harmful_shift(
+harm = ss.test_harm(
     source=train_confidence,
     target=deployment_confidence,
     worse="lower",

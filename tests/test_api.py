@@ -14,7 +14,7 @@ from samesame.weights import ImportanceWeights, domain_weights
 
 def test_root_exports() -> None:
     assert ss.test_shift is shift.test_shift
-    assert ss.test_harmful_shift is shift.test_harmful_shift
+    assert ss.test_harm is shift.test_harm
     assert ss.domain_weights is domain_weights
     assert ss.ImportanceWeights is ImportanceWeights
     assert ss.shift is shift
@@ -24,7 +24,7 @@ def test_root_exports() -> None:
         "ImportanceWeights",
         "ReweightMode",
         "Worse",
-        "test_harmful_shift",
+        "test_harm",
         "test_shift",
         "domain_weights",
         "shift",
@@ -38,7 +38,7 @@ def test_detect_shift_signature_is_minimal() -> None:
 
 
 def test_detect_harm_signature_is_minimal() -> None:
-    params = set(inspect.signature(shift.test_harmful_shift).parameters)
+    params = set(inspect.signature(shift.test_harm).parameters)
     assert params == {
         "source",
         "target",
@@ -52,12 +52,12 @@ def test_detect_harm_signature_is_minimal() -> None:
 def test_flat_harm_detection_matches_namespace(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
-    flat = ss.test_harmful_shift(
+    flat = ss.test_harm(
         **confidence_samples,
         worse="lower",
         n_resamples=64,
     )
-    namespaced = shift.test_harmful_shift(
+    namespaced = shift.test_harm(
         **confidence_samples,
         worse="lower",
         n_resamples=64,
@@ -68,7 +68,7 @@ def test_flat_harm_detection_matches_namespace(
 
 def test_signatures_take_positional_source_target() -> None:
     shift_sig = inspect.signature(shift.test_shift)
-    harm_sig = inspect.signature(shift.test_harmful_shift)
+    harm_sig = inspect.signature(shift.test_harm)
     assert (
         shift_sig.parameters["source"].kind is inspect.Parameter.POSITIONAL_OR_KEYWORD
     )
@@ -102,13 +102,13 @@ def test_detect_harmful_shift_requires_higher_is_worse(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
     with pytest.raises(TypeError):
-        shift.test_harmful_shift(**confidence_samples)
+        shift.test_harm(**confidence_samples)
 
 
 def test_detect_harmful_shift_accepts_higher_is_worse(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
-    result = shift.test_harmful_shift(
+    result = shift.test_harm(
         **confidence_samples,
         worse="lower",
         n_resamples=64,
@@ -122,7 +122,7 @@ def test_detect_harm_rejects_non_bool_higher_is_worse(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
     with pytest.raises(ValueError, match="worse must be"):
-        shift.test_harmful_shift(
+        shift.test_harm(
             **confidence_samples,
             worse="sideways",  # type: ignore[arg-type]
         )
@@ -131,12 +131,12 @@ def test_detect_harm_rejects_non_bool_higher_is_worse(
 def test_detect_harm_handles_higher_is_better(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
-    primary = shift.test_harmful_shift(
+    primary = shift.test_harm(
         **confidence_samples,
         worse="lower",
         n_resamples=64,
     )
-    mirrored = shift.test_harmful_shift(
+    mirrored = shift.test_harm(
         source=-confidence_samples["source"],
         target=-confidence_samples["target"],
         worse="higher",
@@ -218,7 +218,7 @@ def test_shift_supports_contextual_weights(
 def test_detect_harm_has_no_posterior_fields(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
-    result = shift.test_harmful_shift(
+    result = shift.test_harm(
         **confidence_samples,
         worse="lower",
         n_resamples=64,
@@ -237,8 +237,8 @@ def test_harm_detection_supports_importance_weights(
     source_prob = rng.uniform(0.2, 0.5, size=len(source))
     target_prob = rng.uniform(0.5, 0.8, size=len(target))
     weights = domain_weights(source=source_prob, target=target_prob, reweight="target")
-    base = shift.test_harmful_shift(**confidence_samples, worse="lower", n_resamples=64)
-    contextual = shift.test_harmful_shift(
+    base = shift.test_harm(**confidence_samples, worse="lower", n_resamples=64)
+    contextual = shift.test_harm(
         **confidence_samples,
         worse="lower",
         n_resamples=64,
@@ -262,7 +262,7 @@ def test_shift_result_repr_omits_null_distribution(
 def test_harm_result_repr_includes_higher_is_worse(
     confidence_samples: dict[str, np.ndarray],
 ) -> None:
-    result = shift.test_harmful_shift(
+    result = shift.test_harm(
         **confidence_samples,
         worse="higher",
         n_resamples=64,
@@ -297,7 +297,7 @@ def test_shift_rejects_non_positive_n_resamples(
     with pytest.raises(ValueError, match="n_resamples must be"):
         shift.test_shift(**shift_samples, n_resamples=0)
     with pytest.raises(ValueError, match="n_resamples must be"):
-        shift.test_harmful_shift(**shift_samples, worse="higher", n_resamples=-1)
+        shift.test_harm(**shift_samples, worse="higher", n_resamples=-1)
 
 
 def test_shift_rejects_empty_scores() -> None:
