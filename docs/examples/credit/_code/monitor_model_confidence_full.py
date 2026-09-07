@@ -23,7 +23,7 @@ def outlier_scores_from_probabilities(probabilities, *, clip=1e-6):
 # --- HELOC split (same as credit-risk guide)
 fico = fetch_openml(data_id=45554, as_frame=True)
 X, y = fico.data, fico.target
-re_obj = re.compile(r"external.*risk.*estimate", flags=re.I)
+re_obj = re.compile(r"external.*risk.*estimate", flags=re.IGNORECASE)
 col_split = next((c for c in X.columns if re_obj.search(c)), None)
 mask_high = X[col_split].astype(float) > 63
 X_train = X[mask_high].reset_index(drop=True)
