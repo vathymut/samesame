@@ -1,4 +1,5 @@
-"""samesame — score-based source-versus-target monitoring.
+"""
+samesame — score-based source-versus-target monitoring.
 
 Reduce each observation to one interpretable score — predicted risk,
 prediction error, confidence, or outlier score — and compare its

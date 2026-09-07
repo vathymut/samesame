@@ -1,4 +1,5 @@
-"""Shift tests — score-based source-versus-target monitoring.
+"""
+Shift tests — score-based source-versus-target monitoring.
 
 Compare one interpretable score per observation — predicted risk,
 prediction error, confidence, or outlier score — between **source**
@@ -54,7 +55,8 @@ from samesame.weights import ImportanceWeights
 
 
 class Worse(StrEnum):
-    """Polarity that defines which tail is harmful for :func:`test_harm`.
+    """
+    Polarity that defines which tail is harmful for :func:`test_harm`.
 
     Choose ``worse`` from the score's definition (e.g., risk is higher-is-worse,
     confidence via ``LogitGap`` is lower-is-worse) and pre-register it; do not
@@ -66,7 +68,7 @@ class Worse(StrEnum):
     ----------
     HIGHER : Worse
         Larger scores mean more harm (e.g., predicted risk, prediction
-        error, or atypicality outlier score).
+        error, or outlier score).
     LOWER : Worse
         Smaller scores mean more harm (e.g., confidence via ``LogitGap``;
         lower is worse).
@@ -101,13 +103,23 @@ def _fmt(v: object) -> str:
 
 @dataclass(frozen=True)
 class ShiftResult:
-    """Result of :func:`test_shift` — a two-sided permutation result.
+    """
+    Result of :func:`test_shift` — a two-sided permutation result.
 
     The statistic is ROC AUC ``∫ TPR dFPR`` — how well the score
     separates target from source (``0.5`` is chance; values farther from
     ``0.5`` signal stronger separation, in either direction). The p-value
     is evidence against label exchangeability — not business impact,
     causality, an effect size, or the probability the null is true.
+
+    Parameters
+    ----------
+    statistic : float
+        Observed ROC AUC.
+    pvalue : float
+        Two-sided permutation p-value.
+    null_distribution : NDArray[np.float64]
+        Permutation null distribution of the statistic.
 
     Attributes
     ----------
@@ -145,7 +157,8 @@ class ShiftResult:
 
 @dataclass(frozen=True, repr=False)
 class HarmfulShiftResult(ShiftResult):
-    """Result of :func:`test_harm` — a one-sided tail result.
+    """
+    Result of :func:`test_harm` — a one-sided tail result.
 
     One-sided tail result. The statistic is the weighted AUC
     ``∫ TPR·(1−FPR)² dFPR`` of Kamulete (2022) after orienting the score
@@ -154,6 +167,17 @@ class HarmfulShiftResult(ShiftResult):
     ``null_distribution`` and the score's own scale. See
     :doc:`How the harm test works <../explanation/harmful-shift-statistic>`
     for the ROC intuition.
+
+    Parameters
+    ----------
+    statistic : float
+        Observed harmful-shift statistic.
+    pvalue : float
+        One-sided permutation p-value.
+    null_distribution : NDArray[np.float64]
+        Permutation null distribution of the statistic.
+    worse : Worse
+        Declared harmful direction tested by the result.
 
     Attributes
     ----------
@@ -230,7 +254,11 @@ def test_shift(
     rng: Seed = None,
     weights: ImportanceWeights | None = None,
 ) -> ShiftResult:
-    """Test whether source and target score distributions differ.
+    """
+    Test whether the source and target score distributions differ.
+
+    The test uses ROC AUC to measure how well the score separates target from
+    source, then permutes the group labels to form a two-sided null.
 
     Parameters
     ----------
@@ -238,8 +266,8 @@ def test_shift(
         Scores for the source (reference) group — e.g., training data or a
         past deployment.
     target : ArrayLike
-        Scores for the target (evaluation) group — e.g., the current
-        deployment.
+        Scores for the target group — e.g., the current deployment or other
+        population under evaluation.
     n_resamples : int, optional
         Number of label permutations. Default ``9999``. Use ``999`` while
         exploring and ``19999`` for finer resolution below ``0.001``.
@@ -247,10 +275,11 @@ def test_shift(
         Random state for reproducibility. Pass ``np.random.default_rng(12345)``
         or an ``int`` seed. Default ``None``.
     weights : ImportanceWeights | None, optional
-        Per-observation importance weights from :class:`samesame.weights.ImportanceWeights`.
-        Omit for the full-population comparison; supply only to focus on common
-        support. Weights are normalized internally (each group's weights sum to
-        its ``n``; inactive groups stay at ``1``) (see
+        Per-observation importance weights from
+        :class:`samesame.weights.ImportanceWeights`. Omit to compare the full
+        source and target samples; supply to focus on common support. Weights
+        are normalized internally (each group's weights sum to its ``n``;
+        inactive groups stay at ``1``) (see
         :func:`samesame.weights.domain_weights`).
 
     Returns
@@ -259,6 +288,12 @@ def test_shift(
         Observed AUC, two-sided p-value, and null distribution. The null is
         formed by permuting group labels while keeping scores and weights
         fixed.
+
+    See Also
+    --------
+    test_harm : Directional test when you can declare the harmful tail.
+    samesame.weights.domain_weights : Build weights from ``P(target|x)``.
+    samesame.weights.ImportanceWeights : Container for per-group weights.
 
     Notes
     -----
@@ -270,12 +305,6 @@ def test_shift(
     * For honest p-values, scores from a fitted model must be out of
       sample. In-sample predictions can inflate separation because the
       scoring model has memorized its inputs.
-
-    See Also
-    --------
-    test_harm : Directional test when you can declare the harmful tail.
-    samesame.weights.domain_weights : Build weights from ``P(target|x)``.
-    samesame.weights.ImportanceWeights : Container for per-group weights.
 
     References
     ----------
@@ -318,7 +347,8 @@ def test_harm(
     rng: Seed = None,
     weights: ImportanceWeights | None = None,
 ) -> HarmfulShiftResult:
-    """Focused check — did target move toward the harmful tail you care about?
+    """
+    Test whether target moved toward the declared harmful tail.
 
     A small ``test_shift`` p-value says *something* changed. This test asks
     the narrower question: after orienting the score so larger means worse
@@ -338,12 +368,12 @@ def test_harm(
         Scores for the source (reference) group — e.g., training data or a
         past deployment.
     target : ArrayLike
-        Scores for the target (evaluation) group — e.g., the current
-        deployment.
+        Scores for the target group — e.g., the current deployment or other
+        population under evaluation.
     worse : {'higher', 'lower'} or Worse
         Which tail is harmful. ``"higher"`` when larger scores mean harm
-        (e.g., predicted risk, prediction error, atypicality outlier
-        score); ``"lower"`` when smaller scores mean harm (e.g.,
+        (e.g., predicted risk, prediction error, or outlier score);
+        ``"lower"`` when smaller scores mean harm (e.g.,
         confidence via ``LogitGap``). Accepts a plain string or
         :class:`Worse`.
     n_resamples : int, optional
@@ -353,18 +383,25 @@ def test_harm(
         Random state for reproducibility. Pass ``np.random.default_rng(12345)``
         or an ``int`` seed. Default ``None``.
     weights : ImportanceWeights | None, optional
-        Per-observation importance weights from :class:`samesame.weights.ImportanceWeights`.
-        Omit for the full-population comparison; supply only to focus on common
-        support. Weights are normalized internally (each group's weights sum to
-        its ``n``; inactive groups stay at ``1``) (see
+        Per-observation importance weights from
+        :class:`samesame.weights.ImportanceWeights`. Omit to compare the full
+        source and target samples; supply to focus on common support. Weights
+        are normalized internally (each group's weights sum to its ``n``;
+        inactive groups stay at ``1``) (see
         :func:`samesame.weights.domain_weights`).
 
     Returns
     -------
     HarmfulShiftResult
-        Observed weighted-AUC, one-sided p-value, declared ``worse``, and
+        Observed weighted AUC, one-sided p-value, declared ``worse``, and
         null distribution. The null is formed by permuting group labels
         while keeping scores and weights fixed.
+
+    See Also
+    --------
+    test_shift : Broad, two-sided screen when any change matters.
+    samesame.weights.domain_weights : Build weights from ``P(target|x)``.
+    Worse : The ``"higher"`` / ``"lower"`` choice in plain language.
 
     Notes
     -----
@@ -374,12 +411,6 @@ def test_harm(
       scale, not to ``0.5``. See :doc:`How the harm test works
       <../explanation/harmful-shift-statistic>` for the ROC intuition and
       the ``∫ TPR·(1−FPR)² dFPR`` form.
-
-    See Also
-    --------
-    test_shift : Broad, two-sided screen when any change matters.
-    samesame.weights.domain_weights : Build weights from ``P(target|x)``.
-    Worse : The ``"higher"`` / ``"lower"`` choice in plain language.
 
     References
     ----------

@@ -1,4 +1,5 @@
-"""Common support, not just common samples — importance weights for overlap.
+"""
+Common support, not just common samples — importance weights for overlap.
 
 Compare one interpretable score per observation between **source**
 (reference) and **target** (current deployment). An unweighted comparison
@@ -41,7 +42,8 @@ _CLIP = 1e-6
 
 
 class ReweightMode(StrEnum):
-    """Which group(s) to reweight toward common support.
+    """
+    Which group(s) to reweight toward common support.
 
     Reweighting does not invent information where the groups do not
     overlap — it changes which observations count more. Pick the mode
@@ -136,7 +138,8 @@ def _normalize(weights: NDArray[np.float64]) -> NDArray[np.float64]:
 
 @dataclass(frozen=True)
 class EffectiveSampleSize:
-    """Kish effective sample size — how much information is left after weighting.
+    """
+    Kish effective sample size — how much information is left after weighting.
 
     Kish's ESS ``(sum w)² / sum w²`` (Kish, 1965): uniform weights keep
     every voice — ``ESS == n``; when a few observations shout while the
@@ -151,6 +154,13 @@ class EffectiveSampleSize:
     not as a hard validation rule. The ``n/4`` figure is a package heuristic
     with no published empirical threshold (see Elvira et al., 2022 for
     caveats on ESS-based cutoffs).
+
+    Parameters
+    ----------
+    source : float
+        Effective sample size for source weights.
+    target : float
+        Effective sample size for target weights.
 
     Attributes
     ----------
@@ -178,7 +188,8 @@ class EffectiveSampleSize:
 
 @dataclass(frozen=True, repr=False)
 class ImportanceWeights:
-    """Validated, ready-to-use importance weights for source and target.
+    """
+    Validated, ready-to-use importance weights for source and target.
 
     Bring your own sample weights, or let :func:`domain_weights` estimate
     them from domain probabilities ``P(target|x)``. Either way, this class
@@ -189,6 +200,13 @@ class ImportanceWeights:
     normalized to sum to that group's size, so the labels still permute
     over ``n_source + n_target`` slots.
 
+    Parameters
+    ----------
+    source : ArrayLike
+        Raw weights for source observations.
+    target : ArrayLike
+        Raw weights for target observations.
+
     Attributes
     ----------
     source : NDArray[np.float64]
@@ -198,18 +216,18 @@ class ImportanceWeights:
         Weights for target observations, normalized to sum to ``len(target)``.
         Inactive groups stay at ``1``.
 
-    Notes
-    -----
-    On construction, inputs are coerced to finite one-dimensional float
-    arrays, checked for non-negativity, and normalized per group. An
-    inactive group keeps weight ``1`` for every observation.
-
     See Also
     --------
     domain_weights : Estimate weights from ``P(target|x)``.
     EffectiveSampleSize : Diagnose weight concentration via
         :meth:`effective_sample_size`.
     samesame.shift.test_shift : The tests that consume these weights.
+
+    Notes
+    -----
+    On construction, inputs are coerced to finite one-dimensional float
+    arrays, checked for non-negativity, and normalized per group. An
+    inactive group keeps weight ``1`` for every observation.
 
     Examples
     --------
@@ -236,7 +254,8 @@ class ImportanceWeights:
         return f"{type(self).__name__}(source={_render(self.source)}, target={_render(self.target)})"
 
     def effective_sample_size(self) -> EffectiveSampleSize:
-        """How much independent information remains after weighting.
+        """
+        How much independent information remains after weighting.
 
         Returns Kish's ``(sum w)² / sum w²`` (Kish, 1965) per group. Uniform
         weights give ``ESS == n``; concentrated weights where a handful
@@ -284,7 +303,8 @@ def domain_weights(
     reweight: ReweightMode | str = ReweightMode.BOTH,
     shrinkage: float = 0.5,
 ) -> ImportanceWeights:
-    """Turn domain probabilities into weights that focus on where both groups live.
+    """
+    Turn domain probabilities into weights that focus on common support.
 
     Give it separate ``P(target|x)`` arrays for source and target
     observations — the probability that each row belongs to target rather
@@ -332,6 +352,14 @@ def domain_weights(
         ``shrinkage`` is outside ``[0, 1]`` or non-finite; or if
         ``reweight`` is invalid.
 
+    See Also
+    --------
+    ImportanceWeights : Container that normalizes and validates weights.
+    EffectiveSampleSize : Per-group ESS and ESS/n interpretation.
+    ReweightMode : ``"source"``, ``"target"``, ``"both"`` in plain language.
+    samesame.shift.test_shift : Any-shift test that can consume weights.
+    samesame.shift.test_harm : Directional test that can consume weights.
+
     Notes
     -----
     * Start unweighted. Use weights only when poor feature overlap is a
@@ -347,14 +375,6 @@ def domain_weights(
       support for a reliable weighted comparison — consider leaving the
       comparison unweighted. The often-quoted ``ESS < n/4`` is only a rough
       illustrative heuristic, not a validated cutoff.
-
-    See Also
-    --------
-    ImportanceWeights : Container that normalizes and validates weights.
-    EffectiveSampleSize : Per-group ESS and ESS/n interpretation.
-    ReweightMode : ``"source"``, ``"target"``, ``"both"`` in plain language.
-    samesame.shift.test_shift : Any-shift test that can consume weights.
-    samesame.shift.test_harm : Directional test that can consume weights.
 
     References
     ----------

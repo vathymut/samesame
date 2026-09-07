@@ -1,4 +1,5 @@
-"""Weighted two-sample permutation testing (label-permutation null).
+"""
+Weighted two-sample permutation testing (label-permutation null).
 
 The ``+1`` smoothing follows Phipson & Smyth (2010): ``(count+1)/(n+1)``
 for one-sided and doubling the smaller tail (capped at 1) for two-sided,
@@ -26,7 +27,9 @@ Seed = int | Rng | None
 
 
 def _resolve_rng(rng: Seed) -> Rng:
-    """Normalize *rng* to a ``Generator`` or ``RandomState``."""
+    """
+    Normalize *rng* to a ``Generator`` or ``RandomState``.
+    """
     if rng is None:
         return np.random.default_rng()
     if isinstance(rng, np.random.Generator | np.random.RandomState):
@@ -80,7 +83,8 @@ def _pvalue(
     null: NDArray[np.float64],
     alternative: Literal["less", "greater", "two-sided"],
 ) -> float:
-    """Conservative permutation p-value with ``+1`` smoothing.
+    """
+    Conservative permutation p-value with ``+1`` smoothing.
 
     Implements the Phipson & Smyth (2010) exact ``(count+1)/(n+1)`` form
     (one-sided) and the two-sided doubling of the smaller tail (capped at
@@ -117,7 +121,9 @@ def _permutation_test(
     rng: Seed,
     weights: ImportanceWeights | None,
 ) -> tuple[float, float, NDArray[np.float64]]:
-    """Run a label-permutation test keeping scores (and weights) fixed."""
+    """
+    Run a label-permutation test keeping scores and weights fixed.
+    """
     if n_resamples < 1:
         raise ValueError("n_resamples must be a positive integer.")
     rng = _resolve_rng(rng)

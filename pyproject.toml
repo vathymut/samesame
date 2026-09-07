@@ -51,6 +51,7 @@ checks = [
   "EX01",
   "SA01",
   "ES01",
+  "PR01",  # enum constructors expose synthetic parameters
 ]
 
 [tool.ruff]

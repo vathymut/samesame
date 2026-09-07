@@ -1,4 +1,5 @@
-"""Harmful-shift statistic: weighted AUC with source-anchored weighting.
+"""
+Harmful-shift statistic: weighted AUC with source-anchored weighting.
 
 Implements ``∫ TPR·(1−FPR)² dFPR`` = ``∫ TPR·F_source(t)² dFPR``
 (Kamulete, 2022) via ``(1−FPR) = F_source``; see
@@ -24,7 +25,8 @@ def harmful_shift_statistic(
     *,
     sample_weight: NDArray[np.float64] | None = None,
 ) -> float:
-    """Directional shift statistic: ``∫ TPR·(1−FPR)² dFPR`` = ``∫ TPR·F_source(t)² dFPR``.
+    """
+    Directional shift statistic: ``∫ TPR·(1−FPR)² dFPR`` = ``∫ TPR·F_source(t)² dFPR``.
 
     Larger values mean the target distribution has more mass above high
     thresholds that source rarely exceeds. Since ``1−FPR(t) = F_source(t)``,
