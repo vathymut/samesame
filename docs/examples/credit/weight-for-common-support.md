@@ -33,11 +33,37 @@ domain classifier on the same source-target split used by the credit example.
 `CalibratedClassifierCV` calibrates the random-forest probabilities, while the
 outer `cross_val_predict` call keeps each row's probability out of sample.
 
+Because `ExternalRiskEstimate` defines the split, estimate probabilities both
+with all features and with that split feature excluded. The first version shows
+the result when the domain model can use the splitting rule directly; the
+second asks how much separation the remaining features support.
+
 ```python
 --8<-- "snippets/heloc-split.py:heloc-domain"
-source_prob = domain_prob[split.values == 0]
-target_prob = domain_prob[split.values == 1]
+probability_sets = {
+    label: (
+        probabilities[split.values == 0],
+        probabilities[split.values == 1],
+    )
+    for label, probabilities in domain_probabilities.items()
+}
 ```
+
+The two probability models differ substantially:
+
+| Metric | All features | Excluding split feature |
+|---|---:|---:|
+| Domain AUC | 1.000 | 0.951 |
+| Mean source probability | 0.001 | 0.094 |
+| Mean target probability | 0.996 | 0.673 |
+| Common-support source ESS | 2,530 | 2,988 |
+| Common-support target ESS | 23 | 856 |
+| Common-support p-value | 0.0019 | 0.0001 |
+
+Including the split feature produces almost perfect domain separation and very
+extreme probabilities. Excluding it produces more overlap and substantially
+more effective target information after weighting, while the classifier still
+distinguishes the groups well.
 
 Keep these domain probabilities separate from `train_risk` and
 `deployment_risk`. Use them to calibrate the weights; predicted risk remains
@@ -46,8 +72,8 @@ the score tested for harmful movement.
 ## Compare the three weighting methods
 
 Start with the unweighted result from the credit example, then compare all three
-weighting methods. Keep `worse` and the random seed fixed. The code uses
-`shrinkage=0.5` for each method.
+weighting methods for both probability models. Keep `worse` and the random seed
+fixed. The code uses `shrinkage=0.5` for each method.
 
 ```python
 unweighted = ss.test_harmful_shift(
@@ -56,66 +82,54 @@ unweighted = ss.test_harmful_shift(
     worse="higher",
     rng=np.random.default_rng(12345),
 )
+print(f"Unweighted p-value: {unweighted.pvalue:.4f}")
 
-w_source = ss.domain_weights(
-    source=source_prob,
-    target=target_prob,
-    reweight="source",
-    shrinkage=0.5,
-)
-w_target = ss.domain_weights(
-    source=source_prob,
-    target=target_prob,
-    reweight="target",
-    shrinkage=0.5,
-)
-w_common_support = ss.domain_weights(
-    source=source_prob,
-    target=target_prob,
-    reweight="both",
-    shrinkage=0.5,
-)
-
-source_weighted = ss.test_harmful_shift(
-    source=train_risk,
-    target=deployment_risk,
-    worse="higher",
-    weights=w_source,
-    rng=np.random.default_rng(12345),
-)
-target_weighted = ss.test_harmful_shift(
-    source=train_risk,
-    target=deployment_risk,
-    worse="higher",
-    weights=w_target,
-    rng=np.random.default_rng(12345),
-)
-common_support = ss.test_harmful_shift(
-    source=train_risk,
-    target=deployment_risk,
-    worse="higher",
-    weights=w_common_support,
-    rng=np.random.default_rng(12345),
-)
-
-print(f"Unweighted      p-value: {unweighted.pvalue:.4f}")
-print(f"Source-weighted p-value: {source_weighted.pvalue:.4f}")
-print(f"Target-weighted p-value: {target_weighted.pvalue:.4f}")
-print(f"Common-support p-value:  {common_support.pvalue:.4f}")
+for label, (source_prob, target_prob) in probability_sets.items():
+    print(f"\n{label}")
+    weighted_results = {}
+    for method, reweight in [
+        ("Source-weighted", "source"),
+        ("Target-weighted", "target"),
+        ("Common-support", "both"),
+    ]:
+        weights = ss.domain_weights(
+            source=source_prob,
+            target=target_prob,
+            reweight=reweight,
+            shrinkage=0.5,
+        )
+        weighted_results[method] = ss.test_harmful_shift(
+            source=train_risk,
+            target=deployment_risk,
+            worse="higher",
+            weights=weights,
+            rng=np.random.default_rng(12345),
+        )
+    for method, result in weighted_results.items():
+        print(f"{method}: p-value {result.pvalue:.4f}")
 ```
 
 Expected output:
 
 ```text
-Unweighted      p-value: 0.0001
-Source-weighted p-value: 0.0001
-Target-weighted p-value: 0.0019
-Common-support p-value:  0.0019
+Unweighted p-value: 0.0001
+
+all features
+Source-weighted: p-value 0.0001
+Target-weighted: p-value 0.0001
+Common-support: p-value 0.0019
+
+excluding split feature
+Source-weighted: p-value 0.0001
+Target-weighted: p-value 0.0001
+Common-support: p-value 0.0001
 ```
 
-The harmful shift remains detectable under all three weighting methods. The
-target-weighted and common-support results agree here because the target side
-contains the most concentrated low-overlap observations.
+The harmful shift remains detectable under all three weighting methods and both
+domain-model specifications. With all features, common-support weighting gives
+the less extreme p-value because the target weights are highly concentrated.
+After excluding the split feature, the common-support comparison has more
+effective target information and a smaller p-value.
 
 ## Check effective sample size
 
@@ -123,48 +137,62 @@ P-values do not show whether a few observations dominate the weighted result.
 Check the effective sample size (ESS) for each weighting policy:
 
 ```python
-for label, weights in [
-    ("source-weighted", w_source),
-    ("target-weighted", w_target),
-    ("common-support", w_common_support),
-]:
-    ess = weights.effective_sample_size()
-    print(
-        f"{label}: ESS source {ess.source:.0f}/{len(source_prob)}, "
-        f"target {ess.target:.0f}/{len(target_prob)}"
-    )
+for label, (source_prob, target_prob) in probability_sets.items():
+    print(label)
+    for method, reweight in [
+        ("source-weighted", "source"),
+        ("target-weighted", "target"),
+        ("common-support", "both"),
+    ]:
+        weights = ss.domain_weights(
+            source=source_prob,
+            target=target_prob,
+            reweight=reweight,
+            shrinkage=0.5,
+        )
+        ess = weights.effective_sample_size()
+        print(
+            f"{method}: ESS source {ess.source:.0f}/{len(source_prob)}, "
+            f"target {ess.target:.0f}/{len(target_prob)}"
+        )
 ```
 
 Expected output:
 
 ```text
+all features
 source-weighted: ESS source 2530/7683, target 2188/2188
 target-weighted: ESS source 7683/7683, target 23/2188
 common-support: ESS source 2530/7683, target 23/2188
+
+excluding split feature
+source-weighted: ESS source 2988/7683, target 2188/2188
+target-weighted: ESS source 7683/7683, target 856/2188
+common-support: ESS source 2988/7683, target 856/2188
 ```
 
 Source-weighted leaves the target ESS at `n`, while target-weighted leaves the
-source ESS at `n`. Common-support weighting reduces ESS on both sides. Here the
-source ESS is about `0.33n` and the target ESS is only `23/2188` for the
-target-weighted and common-support methods. That is the key diagnostic: the
-common-support comparison is based on very little effective target information.
+source ESS at `n`. Common-support weighting reduces ESS on both sides. Including
+the split feature leaves only `23/2188` effective target observations, whereas
+excluding it raises target ESS to `856/2188`. That is the key diagnostic for
+choosing which domain model to report.
 
 ## Choose the method for this comparison
 
 The HELOC split creates a low-risk source and a higher-risk target, so neither
 group should automatically be treated as the clean reference population. The
-ESS results show that the target has a particularly small common-support
-region, but the source also loses substantial effective sample size when it is
-reweighted. Because both groups may contain observations outside the other's
-support, **common-support** is the appropriate method for the primary
-overlap-adjusted comparison. Report its low target ESS as a limitation rather
-than presenting the weighted p-value without context.
+all-feature domain model uses the splitting variable directly and therefore
+creates an extremely narrow estimated common-support region. Excluding that
+feature still gives strong domain discrimination but produces a less
+concentrated comparison. Report both specifications when assessing sensitivity
+to the split variable, and prefer the excluded-feature result when the goal is
+to avoid encoding the split rule directly in the weights.
 
 ## Interpret the comparison
 
 - A weaker weighted result would mean that the unweighted evidence was driven
   by low-overlap regions.
-- A persistent result, as in this example, means harmful shift remains after
+- A persistent result in both specifications means harmful shift remains after
   restricting the comparison toward common support.
 - A low ESS means the weighted estimate is concentrated, not that the p-value
   is automatically invalid. Report ESS alongside the test result.
