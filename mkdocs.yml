@@ -15,9 +15,9 @@ nav:
     - Weight for common support: examples/credit/weight-for-common-support.md
   - Explanation:
      - How the harm test works: explanation/harmful-shift-statistic.md
-  - Reference:
-      - Testing: api/testing.md
-      - Weighting: api/weighting.md
+  - API:
+    - Testing: api/testing.md
+    - Weighting: api/weighting.md
 plugins:
   - search
   - autorefs
