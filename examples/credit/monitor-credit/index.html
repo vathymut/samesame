@@ -864,7 +864,7 @@
 <span class="n">fico</span> <span class="o">=</span> <span class="n">fetch_openml</span><span class="p">(</span><span class="n">data_id</span><span class="o">=</span><span class="mi">45554</span><span class="p">,</span> <span class="n">as_frame</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">fico</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">fico</span><span class="o">.</span><span class="n">target</span>
 
-<span class="n">re_obj</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;external.*risk.*estimate&quot;</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">)</span>
+<span class="n">re_obj</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;external.*risk.*estimate&quot;</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
 <span class="n">col_split</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">X</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">re_obj</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">c</span><span class="p">)),</span> <span class="kc">None</span><span class="p">)</span>
 <span class="n">mask_high</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">col_split</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">63</span>
 
@@ -933,7 +933,7 @@
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p>Start with predicted risk when the model output already represents harm. <code>P(default)</code> is directly tied to the outcome: larger means more harm, so use <code>worse="higher"</code>.</p>
-<div class="highlight"><pre><span></span><code><span class="n">harm</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span>
+<div class="highlight"><pre><span></span><code><span class="n">harm</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harm</span><span class="p">(</span>
     <span class="n">source</span><span class="o">=</span><span class="n">train_risk</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">deployment_risk</span><span class="p">,</span>
     <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">),</span>
 <span class="p">)</span>
@@ -964,7 +964,7 @@
 <span class="n">train_conf</span> <span class="o">=</span> <span class="n">outlier_scores_from_probabilities</span><span class="p">(</span><span class="n">rf_bad</span><span class="o">.</span><span class="n">oob_decision_function_</span><span class="p">)</span>
 <span class="n">deploy_conf</span> <span class="o">=</span> <span class="n">outlier_scores_from_probabilities</span><span class="p">(</span><span class="n">rf_bad</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_deployment</span><span class="p">))</span>
 
-<span class="n">harm</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span>
+<span class="n">harm</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harm</span><span class="p">(</span>
     <span class="n">source</span><span class="o">=</span><span class="n">train_conf</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">deploy_conf</span><span class="p">,</span>
     <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;lower&quot;</span><span class="p">,</span>  <span class="c1"># lower confidence = harm</span>
     <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">),</span>
@@ -979,7 +979,7 @@
 <span class="n">brier_source</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_train_binary</span> <span class="o">-</span> <span class="n">train_risk</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
 <span class="n">brier_target</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_deployment_binary</span> <span class="o">-</span> <span class="n">deployment_risk</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
 
-<span class="n">harm</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span>
+<span class="n">harm</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harm</span><span class="p">(</span>
     <span class="n">source</span><span class="o">=</span><span class="n">brier_source</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">brier_target</span><span class="p">,</span>
     <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">),</span>
 <span class="p">)</span>
@@ -1113,7 +1113,7 @@
     
     
       
-      <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.action.view"], "search": "../../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": "0.4.1"}</script>
+      <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.action.view"], "search": "../../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": "0.4.2"}</script>
     
     
       <script src="../../../assets/javascripts/bundle.92b07e13.min.js"></script>

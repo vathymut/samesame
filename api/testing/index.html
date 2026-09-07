@@ -762,9 +762,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#samesame.shift.test_harmful_shift" class="md-nav__link">
+  <a href="#samesame.shift.test_harm" class="md-nav__link">
     <span class="md-ellipsis">
-      test_harmful_shift
+      test_harm
     </span>
   </a>
   
@@ -914,7 +914,9 @@
 
     <div class="doc doc-contents first">
 
-        <p>Test whether source and target score distributions differ.</p>
+        <p>Test whether the source and target score distributions differ.</p>
+<p>The test uses ROC AUC to measure how well the score separates target from
+source, then permutes the group labels to form a two-sided null.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -954,8 +956,8 @@ past deployment.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Scores for the target (evaluation) group — e.g., the current
-deployment.</p>
+                <p>Scores for the target group — e.g., the current deployment or other
+population under evaluation.</p>
               </div>
             </td>
             <td>
@@ -1010,10 +1012,11 @@ or an <code>int</code> seed. Default <code>None</code>.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Per-observation importance weights from :class:<code>samesame.weights.ImportanceWeights</code>.
-Omit for the full-population comparison; supply only to focus on common
-support. Weights are normalized internally (each group's weights sum to
-its <code>n</code>; inactive groups stay at <code>1</code>) (see
+                <p>Per-observation importance weights from
+:class:<code>samesame.weights.ImportanceWeights</code>. Omit to compare the full
+source and target samples; supply to focus on common support. Weights
+are normalized internally (each group's weights sum to its <code>n</code>;
+inactive groups stay at <code>1</code>) (see
 :func:<code>samesame.weights.domain_weights</code>).</p>
               </div>
             </td>
@@ -1055,6 +1058,13 @@ fixed.</p>
     </table>
 
 
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <p>test_harm : Directional test when you can declare the harmful tail.
+samesame.weights.domain_weights : Build weights from <code>P(target|x)</code>.
+samesame.weights.ImportanceWeights : Container for per-group weights.</p>
+</details>
+
 <details class="note" open>
   <summary>Notes</summary>
   <ul>
@@ -1067,13 +1077,6 @@ fixed.</p>
   sample. In-sample predictions can inflate separation because the
   scoring model has memorized its inputs.</li>
 </ul>
-</details>
-
-<details class="see-also" open>
-  <summary>See Also</summary>
-  <p>test_harmful_shift : Directional test when you can declare the harmful tail.
-samesame.weights.domain_weights : Build weights from <code>P(target|x)</code>.
-samesame.weights.ImportanceWeights : Container for per-group weights.</p>
 </details>
 
 <details class="references" open>
@@ -1098,31 +1101,7 @@ samesame.weights.ImportanceWeights : Container for per-group weights.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/samesame/shift.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">225</span>
-<span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
-<span class="normal">240</span>
-<span class="normal">241</span>
-<span class="normal">242</span>
-<span class="normal">243</span>
-<span class="normal">244</span>
-<span class="normal">245</span>
-<span class="normal">246</span>
-<span class="normal">247</span>
-<span class="normal">248</span>
-<span class="normal">249</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">249</span>
 <span class="normal">250</span>
 <span class="normal">251</span>
 <span class="normal">252</span>
@@ -1182,7 +1161,36 @@ samesame.weights.ImportanceWeights : Container for per-group weights.</p>
 <span class="normal">306</span>
 <span class="normal">307</span>
 <span class="normal">308</span>
-<span class="normal">309</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_shift</span><span class="p">(</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_shift</span><span class="p">(</span>
     <span class="n">source</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
     <span class="n">target</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -1190,7 +1198,11 @@ samesame.weights.ImportanceWeights : Container for per-group weights.</p>
     <span class="n">rng</span><span class="p">:</span> <span class="n">Seed</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">weights</span><span class="p">:</span> <span class="n">ImportanceWeights</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ShiftResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test whether source and target score distributions differ.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Test whether the source and target score distributions differ.</span>
+
+<span class="sd">    The test uses ROC AUC to measure how well the score separates target from</span>
+<span class="sd">    source, then permutes the group labels to form a two-sided null.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1198,8 +1210,8 @@ samesame.weights.ImportanceWeights : Container for per-group weights.</p>
 <span class="sd">        Scores for the source (reference) group — e.g., training data or a</span>
 <span class="sd">        past deployment.</span>
 <span class="sd">    target : ArrayLike</span>
-<span class="sd">        Scores for the target (evaluation) group — e.g., the current</span>
-<span class="sd">        deployment.</span>
+<span class="sd">        Scores for the target group — e.g., the current deployment or other</span>
+<span class="sd">        population under evaluation.</span>
 <span class="sd">    n_resamples : int, optional</span>
 <span class="sd">        Number of label permutations. Default ``9999``. Use ``999`` while</span>
 <span class="sd">        exploring and ``19999`` for finer resolution below ``0.001``.</span>
@@ -1207,10 +1219,11 @@ samesame.weights.ImportanceWeights : Container for per-group weights.</p>
 <span class="sd">        Random state for reproducibility. Pass ``np.random.default_rng(12345)``</span>
 <span class="sd">        or an ``int`` seed. Default ``None``.</span>
 <span class="sd">    weights : ImportanceWeights | None, optional</span>
-<span class="sd">        Per-observation importance weights from :class:`samesame.weights.ImportanceWeights`.</span>
-<span class="sd">        Omit for the full-population comparison; supply only to focus on common</span>
-<span class="sd">        support. Weights are normalized internally (each group&#39;s weights sum to</span>
-<span class="sd">        its ``n``; inactive groups stay at ``1``) (see</span>
+<span class="sd">        Per-observation importance weights from</span>
+<span class="sd">        :class:`samesame.weights.ImportanceWeights`. Omit to compare the full</span>
+<span class="sd">        source and target samples; supply to focus on common support. Weights</span>
+<span class="sd">        are normalized internally (each group&#39;s weights sum to its ``n``;</span>
+<span class="sd">        inactive groups stay at ``1``) (see</span>
 <span class="sd">        :func:`samesame.weights.domain_weights`).</span>
 
 <span class="sd">    Returns</span>
@@ -1219,6 +1232,12 @@ samesame.weights.ImportanceWeights : Container for per-group weights.</p>
 <span class="sd">        Observed AUC, two-sided p-value, and null distribution. The null is</span>
 <span class="sd">        formed by permuting group labels while keeping scores and weights</span>
 <span class="sd">        fixed.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    test_harm : Directional test when you can declare the harmful tail.</span>
+<span class="sd">    samesame.weights.domain_weights : Build weights from ``P(target|x)``.</span>
+<span class="sd">    samesame.weights.ImportanceWeights : Container for per-group weights.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
@@ -1230,12 +1249,6 @@ samesame.weights.ImportanceWeights : Container for per-group weights.</p>
 <span class="sd">    * For honest p-values, scores from a fitted model must be out of</span>
 <span class="sd">      sample. In-sample predictions can inflate separation because the</span>
 <span class="sd">      scoring model has memorized its inputs.</span>
-
-<span class="sd">    See Also</span>
-<span class="sd">    --------</span>
-<span class="sd">    test_harmful_shift : Directional test when you can declare the harmful tail.</span>
-<span class="sd">    samesame.weights.domain_weights : Build weights from ``P(target|x)``.</span>
-<span class="sd">    samesame.weights.ImportanceWeights : Container for per-group weights.</span>
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
@@ -1276,15 +1289,15 @@ samesame.weights.ImportanceWeights : Container for per-group weights.</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="samesame.shift.test_harmful_shift" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">samesame</span><span class="o">.</span><span class="n">shift</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">worse</span><span class="p">,</span> <span class="n">n_resamples</span><span class="o">=</span><span class="mi">9999</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+<h3 id="samesame.shift.test_harm" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">samesame</span><span class="o">.</span><span class="n">shift</span><span class="o">.</span><span class="n">test_harm</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">worse</span><span class="p">,</span> <span class="n">n_resamples</span><span class="o">=</span><span class="mi">9999</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
-<a href="#samesame.shift.test_harmful_shift" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#samesame.shift.test_harm" class="headerlink" title="Permanent link">&para;</a></h3>
 
 
     <div class="doc doc-contents first">
 
-        <p>Focused check — did target move toward the harmful tail you care about?</p>
+        <p>Test whether target moved toward the declared harmful tail.</p>
 <p>A small <code>test_shift</code> p-value says <em>something</em> changed. This test asks
 the narrower question: after orienting the score so larger means worse
 (<code>worse="lower"</code> flips the sign internally), does target put more
@@ -1334,8 +1347,8 @@ past deployment.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Scores for the target (evaluation) group — e.g., the current
-deployment.</p>
+                <p>Scores for the target group — e.g., the current deployment or other
+population under evaluation.</p>
               </div>
             </td>
             <td>
@@ -1352,8 +1365,8 @@ deployment.</p>
             <td>
               <div class="doc-md-description">
                 <p>Which tail is harmful. <code>"higher"</code> when larger scores mean harm
-(e.g., predicted risk, prediction error, atypicality outlier
-score); <code>"lower"</code> when smaller scores mean harm (e.g.,
+(e.g., predicted risk, prediction error, or outlier score);
+<code>"lower"</code> when smaller scores mean harm (e.g.,
 confidence via <code>LogitGap</code>). Accepts a plain string or
 :class:<code>Worse</code>.</p>
               </div>
@@ -1410,10 +1423,11 @@ or an <code>int</code> seed. Default <code>None</code>.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Per-observation importance weights from :class:<code>samesame.weights.ImportanceWeights</code>.
-Omit for the full-population comparison; supply only to focus on common
-support. Weights are normalized internally (each group's weights sum to
-its <code>n</code>; inactive groups stay at <code>1</code>) (see
+                <p>Per-observation importance weights from
+:class:<code>samesame.weights.ImportanceWeights</code>. Omit to compare the full
+source and target samples; supply to focus on common support. Weights
+are normalized internally (each group's weights sum to its <code>n</code>;
+inactive groups stay at <code>1</code>) (see
 :func:<code>samesame.weights.domain_weights</code>).</p>
               </div>
             </td>
@@ -1445,7 +1459,7 @@ its <code>n</code>; inactive groups stay at <code>1</code>) (see
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Observed weighted-AUC, one-sided p-value, declared <code>worse</code>, and
+                <p>Observed weighted AUC, one-sided p-value, declared <code>worse</code>, and
 null distribution. The null is formed by permuting group labels
 while keeping scores and weights fixed.</p>
               </div>
@@ -1454,6 +1468,13 @@ while keeping scores and weights fixed.</p>
       </tbody>
     </table>
 
+
+<details class="see-also" open>
+  <summary>See Also</summary>
+  <p>test_shift : Broad, two-sided screen when any change matters.
+samesame.weights.domain_weights : Build weights from <code>P(target|x)</code>.
+Worse : The <code>"higher"</code> / <code>"lower"</code> choice in plain language.</p>
+</details>
 
 <details class="note" open>
   <summary>Notes</summary>
@@ -1465,13 +1486,6 @@ while keeping scores and weights fixed.</p>
   &lt;../explanation/harmful-shift-statistic&gt;</code> for the ROC intuition and
   the <code>∫ TPR·(1−FPR)² dFPR</code> form.</li>
 </ul>
-</details>
-
-<details class="see-also" open>
-  <summary>See Also</summary>
-  <p>test_shift : Broad, two-sided screen when any change matters.
-samesame.weights.domain_weights : Build weights from <code>P(target|x)</code>.
-Worse : The <code>"higher"</code> / <code>"lower"</code> choice in plain language.</p>
 </details>
 
 <details class="references" open>
@@ -1488,7 +1502,7 @@ Phipson, B., Smyth, G. K. (2010). Permutation P-values should never be
 <span class="gp">&gt;&gt;&gt; </span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">source</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.20</span><span class="p">,</span> <span class="mf">0.07</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.28</span><span class="p">,</span> <span class="mf">0.07</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>  <span class="c1"># higher risk = worse</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harm</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">pvalue</span> <span class="o">&lt;</span> <span class="mf">0.05</span>
 <span class="go">True</span>
 </code></pre></div>
@@ -1496,36 +1510,7 @@ Phipson, B., Smyth, G. K. (2010). Permutation P-values should never be
 
             <details class="quote">
               <summary>Source code in <code>src/samesame/shift.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">312</span>
-<span class="normal">313</span>
-<span class="normal">314</span>
-<span class="normal">315</span>
-<span class="normal">316</span>
-<span class="normal">317</span>
-<span class="normal">318</span>
-<span class="normal">319</span>
-<span class="normal">320</span>
-<span class="normal">321</span>
-<span class="normal">322</span>
-<span class="normal">323</span>
-<span class="normal">324</span>
-<span class="normal">325</span>
-<span class="normal">326</span>
-<span class="normal">327</span>
-<span class="normal">328</span>
-<span class="normal">329</span>
-<span class="normal">330</span>
-<span class="normal">331</span>
-<span class="normal">332</span>
-<span class="normal">333</span>
-<span class="normal">334</span>
-<span class="normal">335</span>
-<span class="normal">336</span>
-<span class="normal">337</span>
-<span class="normal">338</span>
-<span class="normal">339</span>
-<span class="normal">340</span>
-<span class="normal">341</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">341</span>
 <span class="normal">342</span>
 <span class="normal">343</span>
 <span class="normal">344</span>
@@ -1604,7 +1589,38 @@ Phipson, B., Smyth, G. K. (2010). Permutation P-values should never be
 <span class="normal">417</span>
 <span class="normal">418</span>
 <span class="normal">419</span>
-<span class="normal">420</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_harmful_shift</span><span class="p">(</span>
+<span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span>
+<span class="normal">423</span>
+<span class="normal">424</span>
+<span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span>
+<span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span>
+<span class="normal">442</span>
+<span class="normal">443</span>
+<span class="normal">444</span>
+<span class="normal">445</span>
+<span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span>
+<span class="normal">451</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_harm</span><span class="p">(</span>
     <span class="n">source</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
     <span class="n">target</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -1613,7 +1629,8 @@ Phipson, B., Smyth, G. K. (2010). Permutation P-values should never be
     <span class="n">rng</span><span class="p">:</span> <span class="n">Seed</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">weights</span><span class="p">:</span> <span class="n">ImportanceWeights</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HarmfulShiftResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Focused check — did target move toward the harmful tail you care about?</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Test whether target moved toward the declared harmful tail.</span>
 
 <span class="sd">    A small ``test_shift`` p-value says *something* changed. This test asks</span>
 <span class="sd">    the narrower question: after orienting the score so larger means worse</span>
@@ -1633,12 +1650,12 @@ Phipson, B., Smyth, G. K. (2010). Permutation P-values should never be
 <span class="sd">        Scores for the source (reference) group — e.g., training data or a</span>
 <span class="sd">        past deployment.</span>
 <span class="sd">    target : ArrayLike</span>
-<span class="sd">        Scores for the target (evaluation) group — e.g., the current</span>
-<span class="sd">        deployment.</span>
+<span class="sd">        Scores for the target group — e.g., the current deployment or other</span>
+<span class="sd">        population under evaluation.</span>
 <span class="sd">    worse : {&#39;higher&#39;, &#39;lower&#39;} or Worse</span>
 <span class="sd">        Which tail is harmful. ``&quot;higher&quot;`` when larger scores mean harm</span>
-<span class="sd">        (e.g., predicted risk, prediction error, atypicality outlier</span>
-<span class="sd">        score); ``&quot;lower&quot;`` when smaller scores mean harm (e.g.,</span>
+<span class="sd">        (e.g., predicted risk, prediction error, or outlier score);</span>
+<span class="sd">        ``&quot;lower&quot;`` when smaller scores mean harm (e.g.,</span>
 <span class="sd">        confidence via ``LogitGap``). Accepts a plain string or</span>
 <span class="sd">        :class:`Worse`.</span>
 <span class="sd">    n_resamples : int, optional</span>
@@ -1648,18 +1665,25 @@ Phipson, B., Smyth, G. K. (2010). Permutation P-values should never be
 <span class="sd">        Random state for reproducibility. Pass ``np.random.default_rng(12345)``</span>
 <span class="sd">        or an ``int`` seed. Default ``None``.</span>
 <span class="sd">    weights : ImportanceWeights | None, optional</span>
-<span class="sd">        Per-observation importance weights from :class:`samesame.weights.ImportanceWeights`.</span>
-<span class="sd">        Omit for the full-population comparison; supply only to focus on common</span>
-<span class="sd">        support. Weights are normalized internally (each group&#39;s weights sum to</span>
-<span class="sd">        its ``n``; inactive groups stay at ``1``) (see</span>
+<span class="sd">        Per-observation importance weights from</span>
+<span class="sd">        :class:`samesame.weights.ImportanceWeights`. Omit to compare the full</span>
+<span class="sd">        source and target samples; supply to focus on common support. Weights</span>
+<span class="sd">        are normalized internally (each group&#39;s weights sum to its ``n``;</span>
+<span class="sd">        inactive groups stay at ``1``) (see</span>
 <span class="sd">        :func:`samesame.weights.domain_weights`).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    HarmfulShiftResult</span>
-<span class="sd">        Observed weighted-AUC, one-sided p-value, declared ``worse``, and</span>
+<span class="sd">        Observed weighted AUC, one-sided p-value, declared ``worse``, and</span>
 <span class="sd">        null distribution. The null is formed by permuting group labels</span>
 <span class="sd">        while keeping scores and weights fixed.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    test_shift : Broad, two-sided screen when any change matters.</span>
+<span class="sd">    samesame.weights.domain_weights : Build weights from ``P(target|x)``.</span>
+<span class="sd">    Worse : The ``&quot;higher&quot;`` / ``&quot;lower&quot;`` choice in plain language.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
@@ -1669,12 +1693,6 @@ Phipson, B., Smyth, G. K. (2010). Permutation P-values should never be
 <span class="sd">      scale, not to ``0.5``. See :doc:`How the harm test works</span>
 <span class="sd">      &lt;../explanation/harmful-shift-statistic&gt;` for the ROC intuition and</span>
 <span class="sd">      the ``∫ TPR·(1−FPR)² dFPR`` form.</span>
-
-<span class="sd">    See Also</span>
-<span class="sd">    --------</span>
-<span class="sd">    test_shift : Broad, two-sided screen when any change matters.</span>
-<span class="sd">    samesame.weights.domain_weights : Build weights from ``P(target|x)``.</span>
-<span class="sd">    Worse : The ``&quot;higher&quot;`` / ``&quot;lower&quot;`` choice in plain language.</span>
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
@@ -1690,7 +1708,7 @@ Phipson, B., Smyth, G. K. (2010). Permutation P-values should never be
 <span class="sd">    &gt;&gt;&gt; rng = np.random.default_rng(12345)</span>
 <span class="sd">    &gt;&gt;&gt; source = rng.normal(0.20, 0.07, size=300)</span>
 <span class="sd">    &gt;&gt;&gt; target = rng.normal(0.28, 0.07, size=300)  # higher risk = worse</span>
-<span class="sd">    &gt;&gt;&gt; res = ss.test_harmful_shift(source, target, worse=&quot;higher&quot;, rng=rng)</span>
+<span class="sd">    &gt;&gt;&gt; res = ss.test_harm(source, target, worse=&quot;higher&quot;, rng=rng)</span>
 <span class="sd">    &gt;&gt;&gt; res.pvalue &lt; 0.05</span>
 <span class="sd">    True</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1746,6 +1764,69 @@ is evidence against label exchangeability — not business impact,
 causality, an effect size, or the probability the null is true.</p>
 
 
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>statistic</code>
+            </td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Observed ROC AUC.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>pvalue</code>
+            </td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Two-sided permutation p-value.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>null_distribution</code>
+            </td>
+            <td>
+                  <code><span title="numpy.typing.NDArray">NDArray</span>[<span title="numpy.float64">float64</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Permutation null distribution of the statistic.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
 <p><span class="doc-section-title">Attributes:</span></p>
     <table>
       <thead>
@@ -1798,7 +1879,7 @@ weights fixed.</p>
 
 <details class="see-also" open>
   <summary>See Also</summary>
-  <p>test_harmful_shift : When you can name the harmful tail in advance.
+  <p>test_harm : When you can name the harmful tail in advance.
 samesame.weights.domain_weights : If poor overlap is a real concern.</p>
 </details>
 
@@ -1816,9 +1897,7 @@ samesame.weights.domain_weights : If poor overlap is a real concern.</p>
 
               <details class="quote">
                 <summary>Source code in <code>src/samesame/shift.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">102</span>
-<span class="normal">103</span>
-<span class="normal">104</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">104</span>
 <span class="normal">105</span>
 <span class="normal">106</span>
 <span class="normal">107</span>
@@ -1857,15 +1936,37 @@ samesame.weights.domain_weights : If poor overlap is a real concern.</p>
 <span class="normal">140</span>
 <span class="normal">141</span>
 <span class="normal">142</span>
-<span class="normal">143</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ShiftResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Result of :func:`test_shift` — a two-sided permutation result.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Result of :func:`test_shift` — a two-sided permutation result.</span>
 
 <span class="sd">    The statistic is ROC AUC ``∫ TPR dFPR`` — how well the score</span>
 <span class="sd">    separates target from source (``0.5`` is chance; values farther from</span>
 <span class="sd">    ``0.5`` signal stronger separation, in either direction). The p-value</span>
 <span class="sd">    is evidence against label exchangeability — not business impact,</span>
 <span class="sd">    causality, an effect size, or the probability the null is true.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    statistic : float</span>
+<span class="sd">        Observed ROC AUC.</span>
+<span class="sd">    pvalue : float</span>
+<span class="sd">        Two-sided permutation p-value.</span>
+<span class="sd">    null_distribution : NDArray[np.float64]</span>
+<span class="sd">        Permutation null distribution of the statistic.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -1881,7 +1982,7 @@ samesame.weights.domain_weights : If poor overlap is a real concern.</p>
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
-<span class="sd">    test_harmful_shift : When you can name the harmful tail in advance.</span>
+<span class="sd">    test_harm : When you can name the harmful tail in advance.</span>
 <span class="sd">    samesame.weights.domain_weights : If poor overlap is a real concern.</span>
 
 <span class="sd">    References</span>
@@ -1948,7 +2049,7 @@ samesame.weights.domain_weights : If poor overlap is a real concern.</p>
   " href="#samesame.shift.ShiftResult">ShiftResult</a></code></p>
 
 
-        <p>Result of :func:<code>test_harmful_shift</code> — a one-sided tail result.</p>
+        <p>Result of :func:<code>test_harm</code> — a one-sided tail result.</p>
 <p>One-sided tail result. The statistic is the weighted AUC
 <code>∫ TPR·(1−FPR)² dFPR</code> of Kamulete (2022) after orienting the score
 so larger means worse (<code>worse="lower"</code> flips the sign); it leans
@@ -1956,6 +2057,85 @@ into thresholds the source rarely exceeds. Read it against
 <code>null_distribution</code> and the score's own scale. See
 :doc:<code>How the harm test works &lt;../explanation/harmful-shift-statistic&gt;</code>
 for the ROC intuition.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>statistic</code>
+            </td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Observed harmful-shift statistic.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>pvalue</code>
+            </td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>One-sided permutation p-value.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>null_distribution</code>
+            </td>
+            <td>
+                  <code><span title="numpy.typing.NDArray">NDArray</span>[<span title="numpy.float64">float64</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Permutation null distribution of the statistic.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>worse</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="samesame.shift.Worse" href="#samesame.shift.Worse">Worse</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Declared harmful direction tested by the result.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
 <p><span class="doc-section-title">Attributes:</span></p>
@@ -2041,19 +2221,7 @@ Phipson, B., Smyth, G. K. (2010). Permutation P-values should never be
 
               <details class="quote">
                 <summary>Source code in <code>src/samesame/shift.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">146</span>
-<span class="normal">147</span>
-<span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span>
-<span class="normal">153</span>
-<span class="normal">154</span>
-<span class="normal">155</span>
-<span class="normal">156</span>
-<span class="normal">157</span>
-<span class="normal">158</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">158</span>
 <span class="normal">159</span>
 <span class="normal">160</span>
 <span class="normal">161</span>
@@ -2087,9 +2255,34 @@ Phipson, B., Smyth, G. K. (2010). Permutation P-values should never be
 <span class="normal">189</span>
 <span class="normal">190</span>
 <span class="normal">191</span>
-<span class="normal">192</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">HarmfulShiftResult</span><span class="p">(</span><span class="n">ShiftResult</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Result of :func:`test_harmful_shift` — a one-sided tail result.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Result of :func:`test_harm` — a one-sided tail result.</span>
 
 <span class="sd">    One-sided tail result. The statistic is the weighted AUC</span>
 <span class="sd">    ``∫ TPR·(1−FPR)² dFPR`` of Kamulete (2022) after orienting the score</span>
@@ -2098,6 +2291,17 @@ Phipson, B., Smyth, G. K. (2010). Permutation P-values should never be
 <span class="sd">    ``null_distribution`` and the score&#39;s own scale. See</span>
 <span class="sd">    :doc:`How the harm test works &lt;../explanation/harmful-shift-statistic&gt;`</span>
 <span class="sd">    for the ROC intuition.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    statistic : float</span>
+<span class="sd">        Observed harmful-shift statistic.</span>
+<span class="sd">    pvalue : float</span>
+<span class="sd">        One-sided permutation p-value.</span>
+<span class="sd">    null_distribution : NDArray[np.float64]</span>
+<span class="sd">        Permutation null distribution of the statistic.</span>
+<span class="sd">    worse : Worse</span>
+<span class="sd">        Declared harmful direction tested by the result.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -2175,7 +2379,7 @@ Phipson, B., Smyth, G. K. (2010). Permutation P-values should never be
               Bases: <code><span title="enum.StrEnum">StrEnum</span></code></p>
 
 
-        <p>Polarity that defines which tail is harmful for :func:<code>test_harmful_shift</code>.</p>
+        <p>Polarity that defines which tail is harmful for :func:<code>test_harm</code>.</p>
 <p>Choose <code>worse</code> from the score's definition (e.g., risk is higher-is-worse,
 confidence via <code>LogitGap</code> is lower-is-worse) and pre-register it; do not
 pick the direction that gives the smaller p-value after seeing the data.
@@ -2201,7 +2405,7 @@ enum is; the two forms are interchangeable.</p>
             <td>
               <div class="doc-md-description">
                 <p>Larger scores mean more harm (e.g., predicted risk, prediction
-error, or atypicality outlier score).</p>
+error, or outlier score).</p>
               </div>
             </td>
           </tr>
@@ -2223,7 +2427,7 @@ lower is worse).</p>
 
 <details class="see-also" open>
   <summary>See Also</summary>
-  <p>samesame.shift.test_harmful_shift : The test that consumes this choice.</p>
+  <p>samesame.shift.test_harm : The test that consumes this choice.</p>
 </details>
 
 <p><span class="doc-section-title">Examples:</span></p>
@@ -2243,8 +2447,7 @@ lower is worse).</p>
 
               <details class="quote">
                 <summary>Source code in <code>src/samesame/shift.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">56</span>
-<span class="normal">57</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">57</span>
 <span class="normal">58</span>
 <span class="normal">59</span>
 <span class="normal">60</span>
@@ -2275,8 +2478,11 @@ lower is worse).</p>
 <span class="normal">85</span>
 <span class="normal">86</span>
 <span class="normal">87</span>
-<span class="normal">88</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Worse</span><span class="p">(</span><span class="n">StrEnum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Polarity that defines which tail is harmful for :func:`test_harmful_shift`.</span>
+<span class="normal">88</span>
+<span class="normal">89</span>
+<span class="normal">90</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Worse</span><span class="p">(</span><span class="n">StrEnum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Polarity that defines which tail is harmful for :func:`test_harm`.</span>
 
 <span class="sd">    Choose ``worse`` from the score&#39;s definition (e.g., risk is higher-is-worse,</span>
 <span class="sd">    confidence via ``LogitGap`` is lower-is-worse) and pre-register it; do not</span>
@@ -2288,14 +2494,14 @@ lower is worse).</p>
 <span class="sd">    ----------</span>
 <span class="sd">    HIGHER : Worse</span>
 <span class="sd">        Larger scores mean more harm (e.g., predicted risk, prediction</span>
-<span class="sd">        error, or atypicality outlier score).</span>
+<span class="sd">        error, or outlier score).</span>
 <span class="sd">    LOWER : Worse</span>
 <span class="sd">        Smaller scores mean more harm (e.g., confidence via ``LogitGap``;</span>
 <span class="sd">        lower is worse).</span>
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
-<span class="sd">    samesame.shift.test_harmful_shift : The test that consumes this choice.</span>
+<span class="sd">    samesame.shift.test_harm : The test that consumes this choice.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -2452,7 +2658,7 @@ lower is worse).</p>
     
     
       
-      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.action.view"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": "0.4.1"}</script>
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.action.view"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": "0.4.2"}</script>
     
     
       <script src="../../assets/javascripts/bundle.92b07e13.min.js"></script>

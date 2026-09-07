@@ -12,7 +12,7 @@ import samesame as ss
 fico = fetch_openml(data_id=45554, as_frame=True)
 X, y = fico.data, fico.target
 
-re_obj = re.compile(r"external.*risk.*estimate", flags=re.I)
+re_obj = re.compile(r"external.*risk.*estimate", flags=re.IGNORECASE)
 col_split = next((c for c in X.columns if re_obj.search(c)), None)
 mask_high = X[col_split].astype(float) > 63
 
@@ -35,7 +35,7 @@ deployment_prob = rf.predict_proba(X_deployment)[:, 1]
 brier_train = (y_train_binary - train_prob) ** 2
 brier_deployment = (y_deployment_binary - deployment_prob) ** 2
 
-harm = ss.test_harmful_shift(
+harm = ss.test_harm(
     source=brier_train,
     target=brier_deployment,
     worse="higher",

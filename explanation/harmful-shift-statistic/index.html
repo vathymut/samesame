@@ -870,7 +870,7 @@ T = \int \operatorname{TPR}(t)\,[1-\operatorname{FPR}(t)]^2\,
     d\operatorname{FPR}(t).
 \]</div>
 <p>Here, <code>T</code> is the weighted AUC: the test statistic used by
-<code>test_harmful_shift</code>.
+<code>test_harm</code>.
 The statistic measures directional separation.</p>
 <p>Since <code>1 - FPR(t)</code> is the source probability below the threshold, this
 emphasizes target observations entering the source's unusual upper tail. AUC
@@ -881,7 +881,7 @@ movement among values commonly observed in benign source samples.</p>
 <h2 id="how-to-choose-the-test">How to choose the test<a class="headerlink" href="#how-to-choose-the-test" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Use <code>test_shift</code> when any distributional difference matters.</li>
-<li>Use <code>test_harmful_shift</code> when you can declare the harmful direction before
+<li>Use <code>test_harm</code> when you can declare the harmful direction before
   looking at the result.</li>
 </ul>
 <p>Both tests compare the same source and target scores by permutation. The
@@ -1016,7 +1016,7 @@ Proceedings of UAI, PMLR 180:959-968.
     
     
       
-      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.action.view"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": "0.4.1"}</script>
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.action.view"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": "0.4.2"}</script>
     
     
       <script src="../../assets/javascripts/bundle.92b07e13.min.js"></script>

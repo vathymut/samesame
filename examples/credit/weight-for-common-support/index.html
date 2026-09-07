@@ -910,6 +910,10 @@ the same HELOC split, source-trained risk model, and variables:</p>
 domain classifier on the same source-target split used by the credit example.
 <code>CalibratedClassifierCV</code> calibrates the random-forest probabilities, while the
 outer <code>cross_val_predict</code> call keeps each row's probability out of sample.</p>
+<p>Because <code>ExternalRiskEstimate</code> defines the split, estimate probabilities both
+with all features and with that split feature excluded. The first version shows
+the result when the domain model can use the splitting rule directly; the
+second asks how much separation the remaining features support.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.calibration</span><span class="w"> </span><span class="kn">import</span> <span class="n">CalibratedClassifierCV</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestClassifier</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">cross_val_predict</span>
@@ -917,132 +921,190 @@ outer <code>cross_val_predict</code> call keeps each row's probability out of sa
 <span class="n">split</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_deployment</span><span class="p">))</span>
 <span class="n">X_concat</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">X_train</span><span class="p">,</span> <span class="n">X_deployment</span><span class="p">],</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-<span class="n">rf_domain</span> <span class="o">=</span> <span class="n">CalibratedClassifierCV</span><span class="p">(</span>
-    <span class="n">estimator</span><span class="o">=</span><span class="n">RandomForestClassifier</span><span class="p">(</span>
-        <span class="n">n_estimators</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
-        <span class="n">random_state</span><span class="o">=</span><span class="mi">12345</span><span class="p">,</span>
-        <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-    <span class="p">),</span>
-    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;sigmoid&quot;</span><span class="p">,</span>
-    <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="n">domain_prob</span> <span class="o">=</span> <span class="n">cross_val_predict</span><span class="p">(</span>
-    <span class="n">rf_domain</span><span class="p">,</span>
-    <span class="n">X_concat</span><span class="p">,</span>
-    <span class="n">split</span><span class="p">,</span>
-    <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
-    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;predict_proba&quot;</span><span class="p">,</span>
-<span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>
-<span class="n">source_prob</span> <span class="o">=</span> <span class="n">domain_prob</span><span class="p">[</span><span class="n">split</span><span class="o">.</span><span class="n">values</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
-<span class="n">target_prob</span> <span class="o">=</span> <span class="n">domain_prob</span><span class="p">[</span><span class="n">split</span><span class="o">.</span><span class="n">values</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
+<span class="n">domain_probabilities</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">X_domain</span> <span class="ow">in</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s2">&quot;all features&quot;</span><span class="p">,</span> <span class="n">X_concat</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;excluding split feature&quot;</span><span class="p">,</span> <span class="n">X_concat</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">col_split</span><span class="p">])),</span>
+<span class="p">]:</span>
+    <span class="n">rf_domain</span> <span class="o">=</span> <span class="n">CalibratedClassifierCV</span><span class="p">(</span>
+        <span class="n">estimator</span><span class="o">=</span><span class="n">RandomForestClassifier</span><span class="p">(</span>
+            <span class="n">n_estimators</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+            <span class="n">random_state</span><span class="o">=</span><span class="mi">12345</span><span class="p">,</span>
+            <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">method</span><span class="o">=</span><span class="s2">&quot;sigmoid&quot;</span><span class="p">,</span>
+        <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">domain_probabilities</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">cross_val_predict</span><span class="p">(</span>
+        <span class="n">rf_domain</span><span class="p">,</span>
+        <span class="n">X_domain</span><span class="p">,</span>
+        <span class="n">split</span><span class="p">,</span>
+        <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+        <span class="n">method</span><span class="o">=</span><span class="s2">&quot;predict_proba&quot;</span><span class="p">,</span>
+    <span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="n">probability_sets</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">label</span><span class="p">:</span> <span class="p">(</span>
+        <span class="n">probabilities</span><span class="p">[</span><span class="n">split</span><span class="o">.</span><span class="n">values</span> <span class="o">==</span> <span class="mi">0</span><span class="p">],</span>
+        <span class="n">probabilities</span><span class="p">[</span><span class="n">split</span><span class="o">.</span><span class="n">values</span> <span class="o">==</span> <span class="mi">1</span><span class="p">],</span>
+    <span class="p">)</span>
+    <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">probabilities</span> <span class="ow">in</span> <span class="n">domain_probabilities</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+<span class="p">}</span>
 </code></pre></div>
+<p>The two probability models differ substantially:</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th style="text-align: right;">All features</th>
+<th style="text-align: right;">Excluding split feature</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Domain AUC</td>
+<td style="text-align: right;">1.000</td>
+<td style="text-align: right;">0.951</td>
+</tr>
+<tr>
+<td>Mean source probability</td>
+<td style="text-align: right;">0.001</td>
+<td style="text-align: right;">0.094</td>
+</tr>
+<tr>
+<td>Mean target probability</td>
+<td style="text-align: right;">0.996</td>
+<td style="text-align: right;">0.673</td>
+</tr>
+<tr>
+<td>Common-support source ESS</td>
+<td style="text-align: right;">2,530</td>
+<td style="text-align: right;">2,988</td>
+</tr>
+<tr>
+<td>Common-support target ESS</td>
+<td style="text-align: right;">23</td>
+<td style="text-align: right;">856</td>
+</tr>
+<tr>
+<td>Common-support p-value</td>
+<td style="text-align: right;">0.0019</td>
+<td style="text-align: right;">0.0001</td>
+</tr>
+</tbody>
+</table>
+<p>Including the split feature produces almost perfect domain separation and very
+extreme probabilities. Excluding it produces more overlap and substantially
+more effective target information after weighting, while the classifier still
+distinguishes the groups well.</p>
 <p>Keep these domain probabilities separate from <code>train_risk</code> and
 <code>deployment_risk</code>. Use them to calibrate the weights; predicted risk remains
 the score tested for harmful movement.</p>
 <h2 id="compare-the-three-weighting-methods">Compare the three weighting methods<a class="headerlink" href="#compare-the-three-weighting-methods" title="Permanent link">&para;</a></h2>
 <p>Start with the unweighted result from the credit example, then compare all three
-weighting methods. Keep <code>worse</code> and the random seed fixed. The code uses
-<code>shrinkage=0.5</code> for each method.</p>
-<div class="highlight"><pre><span></span><code><span class="n">unweighted</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span>
+weighting methods for both probability models. Keep <code>worse</code> and the random seed
+fixed. The code uses <code>shrinkage=0.5</code> for each method.</p>
+<div class="highlight"><pre><span></span><code><span class="n">unweighted</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harm</span><span class="p">(</span>
     <span class="n">source</span><span class="o">=</span><span class="n">train_risk</span><span class="p">,</span>
     <span class="n">target</span><span class="o">=</span><span class="n">deployment_risk</span><span class="p">,</span>
     <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span>
     <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">),</span>
 <span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unweighted p-value: </span><span class="si">{</span><span class="n">unweighted</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-<span class="n">w_source</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">domain_weights</span><span class="p">(</span>
-    <span class="n">source</span><span class="o">=</span><span class="n">source_prob</span><span class="p">,</span>
-    <span class="n">target</span><span class="o">=</span><span class="n">target_prob</span><span class="p">,</span>
-    <span class="n">reweight</span><span class="o">=</span><span class="s2">&quot;source&quot;</span><span class="p">,</span>
-    <span class="n">shrinkage</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="n">w_target</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">domain_weights</span><span class="p">(</span>
-    <span class="n">source</span><span class="o">=</span><span class="n">source_prob</span><span class="p">,</span>
-    <span class="n">target</span><span class="o">=</span><span class="n">target_prob</span><span class="p">,</span>
-    <span class="n">reweight</span><span class="o">=</span><span class="s2">&quot;target&quot;</span><span class="p">,</span>
-    <span class="n">shrinkage</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="n">w_common_support</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">domain_weights</span><span class="p">(</span>
-    <span class="n">source</span><span class="o">=</span><span class="n">source_prob</span><span class="p">,</span>
-    <span class="n">target</span><span class="o">=</span><span class="n">target_prob</span><span class="p">,</span>
-    <span class="n">reweight</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span>
-    <span class="n">shrinkage</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
-<span class="p">)</span>
-
-<span class="n">source_weighted</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span>
-    <span class="n">source</span><span class="o">=</span><span class="n">train_risk</span><span class="p">,</span>
-    <span class="n">target</span><span class="o">=</span><span class="n">deployment_risk</span><span class="p">,</span>
-    <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span>
-    <span class="n">weights</span><span class="o">=</span><span class="n">w_source</span><span class="p">,</span>
-    <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">),</span>
-<span class="p">)</span>
-<span class="n">target_weighted</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span>
-    <span class="n">source</span><span class="o">=</span><span class="n">train_risk</span><span class="p">,</span>
-    <span class="n">target</span><span class="o">=</span><span class="n">deployment_risk</span><span class="p">,</span>
-    <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span>
-    <span class="n">weights</span><span class="o">=</span><span class="n">w_target</span><span class="p">,</span>
-    <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">),</span>
-<span class="p">)</span>
-<span class="n">common_support</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span>
-    <span class="n">source</span><span class="o">=</span><span class="n">train_risk</span><span class="p">,</span>
-    <span class="n">target</span><span class="o">=</span><span class="n">deployment_risk</span><span class="p">,</span>
-    <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span>
-    <span class="n">weights</span><span class="o">=</span><span class="n">w_common_support</span><span class="p">,</span>
-    <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">),</span>
-<span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unweighted      p-value: </span><span class="si">{</span><span class="n">unweighted</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Source-weighted p-value: </span><span class="si">{</span><span class="n">source_weighted</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Target-weighted p-value: </span><span class="si">{</span><span class="n">target_weighted</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Common-support p-value:  </span><span class="si">{</span><span class="n">common_support</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="p">(</span><span class="n">source_prob</span><span class="p">,</span> <span class="n">target_prob</span><span class="p">)</span> <span class="ow">in</span> <span class="n">probability_sets</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">weighted_results</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">method</span><span class="p">,</span> <span class="n">reweight</span> <span class="ow">in</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;Source-weighted&quot;</span><span class="p">,</span> <span class="s2">&quot;source&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;Target-weighted&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;Common-support&quot;</span><span class="p">,</span> <span class="s2">&quot;both&quot;</span><span class="p">),</span>
+    <span class="p">]:</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">domain_weights</span><span class="p">(</span>
+            <span class="n">source</span><span class="o">=</span><span class="n">source_prob</span><span class="p">,</span>
+            <span class="n">target</span><span class="o">=</span><span class="n">target_prob</span><span class="p">,</span>
+            <span class="n">reweight</span><span class="o">=</span><span class="n">reweight</span><span class="p">,</span>
+            <span class="n">shrinkage</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">weighted_results</span><span class="p">[</span><span class="n">method</span><span class="p">]</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harm</span><span class="p">(</span>
+            <span class="n">source</span><span class="o">=</span><span class="n">train_risk</span><span class="p">,</span>
+            <span class="n">target</span><span class="o">=</span><span class="n">deployment_risk</span><span class="p">,</span>
+            <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span>
+            <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span>
+            <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">),</span>
+        <span class="p">)</span>
+    <span class="k">for</span> <span class="n">method</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">weighted_results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">: p-value </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>Expected output:</p>
-<div class="highlight"><pre><span></span><code>Unweighted      p-value: 0.0001
-Source-weighted p-value: 0.0001
-Target-weighted p-value: 0.0019
-Common-support p-value:  0.0019
+<div class="highlight"><pre><span></span><code>Unweighted p-value: 0.0001
+
+all features
+Source-weighted: p-value 0.0001
+Target-weighted: p-value 0.0001
+Common-support: p-value 0.0019
+
+excluding split feature
+Source-weighted: p-value 0.0001
+Target-weighted: p-value 0.0001
+Common-support: p-value 0.0001
 </code></pre></div>
-<p>The harmful shift remains detectable under all three weighting methods. The
-target-weighted and common-support results agree here because the target side
-contains the most concentrated low-overlap observations.</p>
+<p>The harmful shift remains detectable under all three weighting methods and both
+domain-model specifications. With all features, common-support weighting gives
+the less extreme p-value because the target weights are highly concentrated.
+After excluding the split feature, the common-support comparison has more
+effective target information and a smaller p-value.</p>
 <h2 id="check-effective-sample-size">Check effective sample size<a class="headerlink" href="#check-effective-sample-size" title="Permanent link">&para;</a></h2>
 <p>P-values do not show whether a few observations dominate the weighted result.
 Check the effective sample size (ESS) for each weighting policy:</p>
-<div class="highlight"><pre><span></span><code><span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">weights</span> <span class="ow">in</span> <span class="p">[</span>
-    <span class="p">(</span><span class="s2">&quot;source-weighted&quot;</span><span class="p">,</span> <span class="n">w_source</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">&quot;target-weighted&quot;</span><span class="p">,</span> <span class="n">w_target</span><span class="p">),</span>
-    <span class="p">(</span><span class="s2">&quot;common-support&quot;</span><span class="p">,</span> <span class="n">w_common_support</span><span class="p">),</span>
-<span class="p">]:</span>
-    <span class="n">ess</span> <span class="o">=</span> <span class="n">weights</span><span class="o">.</span><span class="n">effective_sample_size</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">: ESS source </span><span class="si">{</span><span class="n">ess</span><span class="o">.</span><span class="n">source</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">source_prob</span><span class="p">)</span><span class="si">}</span><span class="s2">, &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;target </span><span class="si">{</span><span class="n">ess</span><span class="o">.</span><span class="n">target</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">target_prob</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="p">(</span><span class="n">source_prob</span><span class="p">,</span> <span class="n">target_prob</span><span class="p">)</span> <span class="ow">in</span> <span class="n">probability_sets</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">method</span><span class="p">,</span> <span class="n">reweight</span> <span class="ow">in</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;source-weighted&quot;</span><span class="p">,</span> <span class="s2">&quot;source&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;target-weighted&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;common-support&quot;</span><span class="p">,</span> <span class="s2">&quot;both&quot;</span><span class="p">),</span>
+    <span class="p">]:</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">domain_weights</span><span class="p">(</span>
+            <span class="n">source</span><span class="o">=</span><span class="n">source_prob</span><span class="p">,</span>
+            <span class="n">target</span><span class="o">=</span><span class="n">target_prob</span><span class="p">,</span>
+            <span class="n">reweight</span><span class="o">=</span><span class="n">reweight</span><span class="p">,</span>
+            <span class="n">shrinkage</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">ess</span> <span class="o">=</span> <span class="n">weights</span><span class="o">.</span><span class="n">effective_sample_size</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">: ESS source </span><span class="si">{</span><span class="n">ess</span><span class="o">.</span><span class="n">source</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">source_prob</span><span class="p">)</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;target </span><span class="si">{</span><span class="n">ess</span><span class="o">.</span><span class="n">target</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">target_prob</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
 </code></pre></div>
 <p>Expected output:</p>
-<div class="highlight"><pre><span></span><code>source-weighted: ESS source 2530/7683, target 2188/2188
+<div class="highlight"><pre><span></span><code>all features
+source-weighted: ESS source 2530/7683, target 2188/2188
 target-weighted: ESS source 7683/7683, target 23/2188
 common-support: ESS source 2530/7683, target 23/2188
+
+excluding split feature
+source-weighted: ESS source 2988/7683, target 2188/2188
+target-weighted: ESS source 7683/7683, target 856/2188
+common-support: ESS source 2988/7683, target 856/2188
 </code></pre></div>
 <p>Source-weighted leaves the target ESS at <code>n</code>, while target-weighted leaves the
-source ESS at <code>n</code>. Common-support weighting reduces ESS on both sides. Here the
-source ESS is about <code>0.33n</code> and the target ESS is only <code>23/2188</code> for the
-target-weighted and common-support methods. That is the key diagnostic: the
-common-support comparison is based on very little effective target information.</p>
+source ESS at <code>n</code>. Common-support weighting reduces ESS on both sides. Including
+the split feature leaves only <code>23/2188</code> effective target observations, whereas
+excluding it raises target ESS to <code>856/2188</code>. That is the key diagnostic for
+choosing which domain model to report.</p>
 <h2 id="choose-the-method-for-this-comparison">Choose the method for this comparison<a class="headerlink" href="#choose-the-method-for-this-comparison" title="Permanent link">&para;</a></h2>
 <p>The HELOC split creates a low-risk source and a higher-risk target, so neither
 group should automatically be treated as the clean reference population. The
-ESS results show that the target has a particularly small common-support
-region, but the source also loses substantial effective sample size when it is
-reweighted. Because both groups may contain observations outside the other's
-support, <strong>common-support</strong> is the appropriate method for the primary
-overlap-adjusted comparison. Report its low target ESS as a limitation rather
-than presenting the weighted p-value without context.</p>
+all-feature domain model uses the splitting variable directly and therefore
+creates an extremely narrow estimated common-support region. Excluding that
+feature still gives strong domain discrimination but produces a less
+concentrated comparison. Report both specifications when assessing sensitivity
+to the split variable, and prefer the excluded-feature result when the goal is
+to avoid encoding the split rule directly in the weights.</p>
 <h2 id="interpret-the-comparison">Interpret the comparison<a class="headerlink" href="#interpret-the-comparison" title="Permanent link">&para;</a></h2>
 <ul>
 <li>A weaker weighted result would mean that the unweighted evidence was driven
   by low-overlap regions.</li>
-<li>A persistent result, as in this example, means harmful shift remains after
+<li>A persistent result in both specifications means harmful shift remains after
   restricting the comparison toward common support.</li>
 <li>A low ESS means the weighted estimate is concentrated, not that the p-value
   is automatically invalid. Report ESS alongside the test result.</li>
@@ -1170,7 +1232,7 @@ the statistic being tested, see <a href="../../../explanation/harmful-shift-stat
     
     
       
-      <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.action.view"], "search": "../../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": "0.4.1"}</script>
+      <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.expand", "navigation.path", "navigation.indexes", "navigation.footer", "toc.follow", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.action.view"], "search": "../../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": "0.4.2"}</script>
     
     
       <script src="../../../assets/javascripts/bundle.92b07e13.min.js"></script>
