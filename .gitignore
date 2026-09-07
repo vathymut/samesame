@@ -68,3 +68,8 @@ research/papers/dw/main.synctex.gz
 
 # Generated repo-graph output
 graphify-out/
+
+# TableShift local pools (one-time local exercise; manifest documents schema)
+data/tableshift/*.parquet
+data/tableshift/*/id.parquet
+data/tableshift/*/ood.parquet
