@@ -99,4 +99,4 @@ import samesame as ss
 
 These three scores give three views of the same deployment change. Predicted risk tells us how harmful the target looks, confidence tells us how decisive the model is, and Brier score tells us whether its probabilities remain accurate once outcomes arrive. Here, the target looks riskier and the model is more confident, but prediction error does not increase. Together, the results suggest a riskier population rather than material model deterioration.
 
-The next question is whether the comparison is being driven by regions where source and target have little overlap. Continue with [Weight for common support](../../how-to/weight-for-common-support.md) to make that question explicit.
+The next question is whether the comparison is being driven by regions where source and target have little overlap. Continue with [Weight for common support](weight-for-common-support.md) to make that question explicit.

@@ -60,12 +60,12 @@ The small p-values provide strong evidence that the target distribution shifted 
 1. **Choose a score** that represents the outcome you care about. Generate it out of sample if it comes from a fitted model.
 2. **Ask whether anything changed** with `ss.test_shift`.
 3. **Ask whether the change is harmful** with `ss.test_harmful_shift(..., worse=...)`. Specify in advance whether higher or lower scores indicate harm.
-4. **Address poor feature overlap** with `ss.domain_weights` only when it is a real concern. Weighting focuses the comparison on a different population: the region of common support. Details: [Weight for common support](https://vathymut.github.io/samesame/how-to/weight-for-common-support/).
+4. **Address poor feature overlap** with `ss.domain_weights` only when it is a real concern. Weighting focuses the comparison on a different population: the region of common support. Details: [Weight for common support](examples/credit/weight-for-common-support.md).
 
 ## Where next
 
 - **[Get started](https://vathymut.github.io/samesame/examples/tutorials/get-started/)**: run both tests in 5 minutes.
 - **[Is the new drug good enough?](https://vathymut.github.io/samesame/examples/trials/check-drug-efficacy/)**: the harm test on 70 trial scores, no model.
 - **[Monitor a credit model](https://vathymut.github.io/samesame/examples/credit/monitor-credit/)**: one HELOC model, three signals.
-- **[Weight for common support](https://vathymut.github.io/samesame/how-to/weight-for-common-support/)**: when and how to reweight.
+- **[Weight for common support](examples/credit/weight-for-common-support.md)**: extend the HELOC monitoring example with common-support weighting.
 - **[API reference](https://vathymut.github.io/samesame/api/testing/)**: full docs for the tests and `domain_weights`.

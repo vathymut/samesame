@@ -6,7 +6,9 @@ import re
 import numpy as np
 import pandas as pd
 from sklearn.datasets import fetch_openml
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import cross_val_predict
 
 import samesame as ss
 
@@ -22,15 +24,20 @@ X_train = X[mask_high].reset_index(drop=True)
 y_train = y[mask_high].reset_index(drop=True)
 X_deployment = X[~mask_high].reset_index(drop=True)
 
-# --- Step 1: domain classifier — is deployment different? (OOB, so honest)
+# --- Step 1: domain classifier — is deployment different?
 split = pd.Series([0] * len(X_train) + [1] * len(X_deployment))
 X_concat = pd.concat([X_train, X_deployment], ignore_index=True)
 
-rf_domain = RandomForestClassifier(
-    n_estimators=500, oob_score=True, random_state=12345, min_samples_leaf=10,
+rf_domain = CalibratedClassifierCV(
+    estimator=RandomForestClassifier(
+        n_estimators=500, random_state=12345, min_samples_leaf=10,
+    ),
+    method="sigmoid",
+    cv=5,
 )
-rf_domain.fit(X_concat, split)
-domain_prob = rf_domain.oob_decision_function_[:, 1]
+domain_prob = cross_val_predict(
+    rf_domain, X_concat, split, cv=5, method="predict_proba",
+)[:, 1]
 
 shift = ss.test_shift(
     source=domain_prob[split.values == 0],
@@ -39,11 +46,6 @@ shift = ss.test_shift(
 )
 print(f"AUC statistic: {shift.statistic:.4f}")
 print(f"p-value:       {shift.pvalue:.4f}")
-print(
-    pd.Series(rf_domain.feature_importances_, index=X_concat.columns)
-    .sort_values(ascending=False)
-    .head(5)
-)
 
 # --- Step 2: credit risk model — did predicted risk rise?
 y_train_binary = y_train.map({"Good": 0, "Bad": 1}).values

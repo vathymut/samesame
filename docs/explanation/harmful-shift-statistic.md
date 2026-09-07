@@ -7,7 +7,7 @@ A distribution can change without getting worse. A credit portfolio might hold f
 !!! note "The question"
     After orienting the interpretable severity score `ϕ(x)` so larger means worse, does the target place more mass beyond thresholds the source rarely exceeds?
 
-Declare it with `worse`, chosen from what `ϕ` means rather than from p-values. Your choice of `ϕ` defines *worse* ([Core concepts](core-concepts.md); [Shift testing](../api/testing.md)). The same split can read differently through different scores: density can look safe while residual and confidence diverge (Kamulete 2022 §2, §6.2; [dsos: motivation](https://cran.r-project.org/web/packages/dsos/vignettes/motivation.html) (external)).
+Declare it with `worse`, chosen from what `ϕ` means rather than from p-values. Your choice of `ϕ` defines *worse* ([Shift testing](../api/testing.md)). The same split can read differently through different scores: density can look safe while residual and confidence diverge (Kamulete 2022 §2, §6.2; [dsos: motivation](https://cran.r-project.org/web/packages/dsos/vignettes/motivation.html) (external)).
 
 ## What it is
 
@@ -53,8 +53,8 @@ The ROC picture is a ranking intuition, not a claim that your score is a product
 
 ## Related concepts
 
-- **Common support:** poor overlap lets a few points dominate. See [Weight for common support](../how-to/weight-for-common-support.md) and [Core concepts](core-concepts.md) (one research case moves from `p=0.002` unweighted to `p=0.376` doubly weighted).
-- **Honest scores:** valid p-values need out-of-sample scores ([Core concepts](core-concepts.md); [Shift testing](../api/testing.md#honest-scores)).
+- **Common support:** poor overlap lets a few points dominate. See [Weight for common support](../examples/credit/weight-for-common-support.md) (one research case moves from `p=0.002` unweighted to `p=0.376` doubly weighted).
+- **Honest scores:** valid p-values need out-of-sample scores ([Shift testing](../api/testing.md)).
 
 ## References
 

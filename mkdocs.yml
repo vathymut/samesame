@@ -12,11 +12,9 @@ nav:
   - Examples:
     - Is the new drug good enough?: examples/trials/check-drug-efficacy.md
     - Monitor a credit model: examples/credit/monitor-credit.md
-  - How-to:
-    - Weight for common support: how-to/weight-for-common-support.md
+    - Weight for common support: examples/credit/weight-for-common-support.md
   - Explanation:
-    - Core concepts: explanation/core-concepts.md
-    - How the harm test works: explanation/harmful-shift-statistic.md
+     - How the harm test works: explanation/harmful-shift-statistic.md
   - Reference:
       - Testing: api/testing.md
       - Weighting: api/weighting.md

@@ -230,20 +230,7 @@ def test_shift(
     rng: Seed = None,
     weights: ImportanceWeights | None = None,
 ) -> ShiftResult:
-    """Broad screen — do source and target scores differ at all?
-
-    Any shift? Start here. Give it one interpretable score per observation —
-    predicted risk, prediction error, confidence, or outlier score — and
-    it measures separation with ROC AUC, then shuffles labels to see
-    whether separation is unusual. A small p-value is evidence that the
-    distributions differ — not that the shift is harmful, large, or
-    causal.
-
-    Choose the score that answers your monitoring question before testing.
-    If the score comes from a fitted model, generate it out of sample with
-    ``cross_val_predict``, ``oob_decision_function_``, or a held-out set
-    — in-sample scores can make the groups look spuriously separable
-    because the scoring model has memorized its inputs.
+    """Test whether source and target score distributions differ.
 
     Parameters
     ----------

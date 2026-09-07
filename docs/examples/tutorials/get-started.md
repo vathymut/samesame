@@ -47,7 +47,7 @@ domain_prob = cross_val_predict(
 
     --8<-- "snippets/honest-scores.txt"
 
-    Pass `rng=np.random.default_rng(12345)` for reproducible p-values (`n_resamples=9999`; use `999` while exploring and `19999` below `0.001`). Details: [Core concepts](../../explanation/core-concepts.md).
+    Pass `rng=np.random.default_rng(12345)` for reproducible p-values (`n_resamples=9999`; use `999` while exploring and `19999` below `0.001`). Details: [Shift testing](../../api/testing.md).
 
 ### 3. Did anything change?
 
@@ -81,7 +81,7 @@ Here again, we reject the null of no harmful shift, meaning the target sample of
 
 ### 5. Examples of harmful scores
 
-The domain probability is one way to define an outlier score. You can also test harmful shift using a score tied directly to the outcome you care about. The examples below show two possibilities: risk or error, where higher scores are harmful, and confidence or quality, where lower scores are harmful. Replace them with your own score if need be. See [Core concepts](../../explanation/core-concepts.md) for the full table.
+The domain probability is one way to define an outlier score. You can also test harmful shift using a score tied directly to the outcome you care about. The examples below show two possibilities: risk or error, where higher scores are harmful, and confidence or quality, where lower scores are harmful. Replace them with your own score if need be. See [Shift testing](../../api/testing.md) for the test signatures and polarity options.
 
 --8<-- "snippets/worse-declaration.txt"
 
@@ -113,5 +113,5 @@ You now have one score and two tests. `test_shift` tells you whether source and 
 Where you'd like to go next:
 
 - [Is the new drug good enough?](../trials/check-drug-efficacy.md): the same test on 70 trial scores, with no model to fit.
-- [Weight for common support](../../how-to/weight-for-common-support.md): when overlap is poor, reweight around common support.
+   - [Monitor a credit model](../credit/monitor-credit.md): apply the tests to a HELOC risk-monitoring example.
 - [How the harm test works](../../explanation/harmful-shift-statistic.md): why the weighted AUC leans into the harmful tail.
