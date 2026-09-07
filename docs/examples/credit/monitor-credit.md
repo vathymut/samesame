@@ -1,80 +1,69 @@
 # Monitor a credit model
 
-One HELOC split on ExternalRiskEstimate at 63 (Gardner et al., 2023) lets you trace model degradation versus population change through three scores. You have one model and one split, with three ways to read harm.
+An alarm should tell you whether a score moved toward worse outcomes, not just that it moved. Imagine a lender whose model was trained on a book of low-risk applicants. A new partner channel or a changing market brings in riskier applicants. The model is still scoring applications, and the shift could reflect model degradation, a change in the population, or both.
 
-| Signal | Labels? | Harmful direction | `worse` |
-|--------|---------|-------------------|---------|
-| Predicted risk | No | Higher risk | `higher` |
-| Outlier score: confidence (`LogitGap`) | No | Lower certainty | `lower` |
-| Prediction error (Brier) | Yes | Larger error | `higher` |
-
---8<-- "snippets/source-target.txt"
-
-Which signal you reach for depends on timing; [Which signal when?](#which-signal-when) compares them. New to `samesame`? Start with [Get started](../tutorials/get-started.md) or [Is the new drug good enough?](../trials/check-drug-efficacy.md) first.
+We start by describing the dataset and source-target comparison, then turn to the scores and the monitoring questions they can answer.
 
 ## The dataset
 
-HELOC (**home equity line of credit**): anonymized bureau features from the FICO Explainable AI Challenge (target: 90 days past due). Fetch 9,871 applications from [OpenML](https://openml.org/search?type=data&sort=runs&id=45554&status=active) (`data_id=45554`) via `fetch_openml`.
+HELOC means **home equity line of credit**: a revolving credit line secured by the borrower's home. This dataset contains anonymized credit-bureau features from the FICO Explainable AI Challenge and a target indicating whether an account went 90 days past due or worse during its first 24 months. The modeling goal is to predict each applicant's probability of a bad outcome, often called the **default probability**; averaged across a group, those predictions give an expected **bad rate**. The example fetches 9,871 applications from [OpenML](https://openml.org/search?type=data&sort=runs&id=45554&status=active) (`data_id=45554`) with `fetch_openml`.
 
 ## The split
 
-The FICO-winning and [TableShift](https://tableshift.org) split is `ExternalRiskEstimate` (higher is safer) at **63**. The deployment story reads like this: 7,683 applications above 63 (**source**, calmer book, 43.5% bad) versus 2,188 at or below 63 (**target**, riskier deployment, 81.9% bad). Mean predicted risk is about 44% versus 73%.
+To make the comparison concrete, we split applications at **63** on `ExternalRiskEstimate`, following Gardner et al. (2023). Higher values indicate safer applicants, so applications above 63 form the lower-risk source group, while applications at or below 63 form the higher-risk target group:
 
-The same shift supports two readings: the model degraded, or the population changed. The signals below help you tell them apart, and weighting ([Weight for common support](../../how-to/weight-for-common-support.md)) asks whether the alarm holds on common support. Setup:
+- **Source:** 7,683 applications above 63, the low-risk book, with a 43.5% observed bad rate.
+- **Target:** 2,188 applications at or below 63, the riskier book, with an 81.9% observed bad rate.
+
+The code below creates these source and target samples:
 
 ```python
 --8<-- "snippets/heloc-split.py:heloc-split"
 ```
 
-## Signals
+## Scores
+
+With source and target defined, we can compare three scores. They are not interchangeable: each answers a different question and becomes available at a different time.
+
+| Score | Requires labels? | Harmful direction | `worse` | When it helps |
+|--------|-------------------|-------------------|---------|---------------|
+| Predicted risk | No | Higher risk | `higher` | The output itself represents harm |
+| Outlier score: confidence (`LogitGap`) | No | Lower certainty | `lower` | Early warning before labels arrive |
+| Prediction error (Brier) | Yes | Larger error | `higher` | Post-outcome accuracy check |
+
+Use predicted risk when the model output already represents harm, confidence for an early warning while labels are delayed, and prediction error for the clearest post-outcome check.
+
+The score examples build on the same model and out-of-sample predictions:
+
+```python
+import numpy as np
+import samesame as ss
+
+--8<-- "snippets/heloc-split.py:heloc-risk-model"
+```
 
 === "Risk, no labels needed"
 
-    Predicted risk `P(default)`; larger means more harm, so `worse="higher"`. Risk and confidence share the 63-split (domain probabilities out-of-bag; see [Core concepts](../../explanation/core-concepts.md)).
+    Start with predicted risk when the model output already represents harm. `P(default)` is directly tied to the outcome: larger means more harm, so use `worse="higher"`.
 
     ```python
-    import numpy as np
-    import samesame as ss
-
-    --8<-- "snippets/heloc-split.py:heloc-domain"
-    --8<-- "snippets/heloc-split.py:heloc-risk-model"
-
-    shift = ss.test_shift(
-        source=domain_prob[split.values == 0],
-        target=domain_prob[split.values == 1],
-        rng=np.random.default_rng(12345),
-    )
     harm = ss.test_harmful_shift(
         source=train_risk, target=deployment_risk,
         worse="higher", rng=np.random.default_rng(12345),
     )
-    print(f"Shift p-value: {shift.pvalue:.4f}")  # → 0.0002
     print(f"Harm  p-value: {harm.pvalue:.4f}")   # → 0.0001
     ```
 
-    Perfect separation is expected because the split variable is itself a feature. The harm test adds the part you care about: the shift points toward higher risk.
-
-    | `test_shift` | `test_harmful_shift` | Interpretation |
-    |--------------|----------------------|---------|
-    | Significant | Significant | Changed and toward the harmful tail |
-    | Significant | Not significant | Changed, not clearly harmful |
-    | Not significant | Not significant | No clear shift |
-    | Not significant | Significant | Tail signal the broad screen missed |
-
-    Both tests point toward higher risk, so investigate rather than auto-retrain. `0.5` is chance; read harm against its null and the 0–1 scale.
+    The harmful-shift test points toward higher risk. Indeed, the mean predicted risk, or expected bad rate, rises from about 44% in source to 73% in target.
 
 === "Outlier score: confidence, no labels needed"
 
-    `LogitGap` (gap between top logit and mean of the rest) is an **outlier score** for confidence. Larger means more certain, so a drop (`worse="lower"`) signals harm ([Core concepts](../../explanation/core-concepts.md)).
+    [`LogitGap`](https://openreview.net/forum?id=FLdLPUqnsP) (Liang et al., 2025) measures how clearly the model favors one class over the other. A large gap means high confidence; a small gap means the model is undecided. Because lower confidence is harmful, we use `worse="lower"`.
 
     ```python
-    --8<-- "snippets/heloc-split.py:heloc-domain"
-    --8<-- "snippets/heloc-split.py:heloc-risk-model"
     --8<-- "examples/credit/_code/monitor_model_confidence_example.py:imports"
     --8<-- "examples/credit/_code/monitor_model_confidence_example.py:logit-gap"
     --8<-- "examples/credit/_code/monitor_model_confidence_example.py:outlier-scores"
-    import samesame as ss
-
     train_conf = outlier_scores_from_probabilities(rf_bad.oob_decision_function_)
     deploy_conf = outlier_scores_from_probabilities(rf_bad.predict_proba(X_deployment))
 
@@ -86,29 +75,28 @@ The same shift supports two readings: the model degraded, or the population chan
     print(f"Harm  p-value: {harm.pvalue:.4f}")  # → 1.0000
     ```
 
-    No harmful confidence drop here. The statistic points the other way: at an 82% bad rate, predictions polarize and confidence rises. A model can grow more confident while predicting higher risk, which is why confidence complements risk rather than repeating it.
+    Default probability and confidence answer different questions. Default probability asks, "How risky does the model think this applicant is?" `LogitGap` asks, "How sure is it?" Here, target predictions are both riskier and more confident, so there is no harmful confidence drop. The model is more decisive, not safer: confidence adds a second dimension to the risk score.
 
-??? details "Errors, needs labels (under the null here)"
+=== "Prediction error, labels needed"
 
-    Once labels arrive, test prediction error (Brier) with `worse="higher"`. In this guide the error section uses a separate **random** split under the null, so `p=0.2737` is exactly what you'd expect. In deployment, a small p-value would signal worse accuracy.
+    Once labels arrive, prediction error (Brier) gives the clearest post-outcome check. It uses the same source and target split and the same source-trained model as the other scores; the difference is that labels are now available to measure each prediction's error.
 
     ```python
-    import samesame as ss
+    y_deployment_binary = y_deployment.map({"Good": 0, "Bad": 1}).astype(int).values
+    brier_source = (y_train_binary - train_risk) ** 2
+    brier_target = (y_deployment_binary - deployment_risk) ** 2
 
-    harm = ss.test_harmful_shift(source=brier_train, target=brier_test, worse="higher", rng=np.random.default_rng(12345))
-    print(f"Brier p={harm.pvalue:.4f}")  # → 0.2737 (no shift, as expected)
+    harm = ss.test_harmful_shift(
+        source=brier_source, target=brier_target,
+        worse="higher", rng=np.random.default_rng(12345),
+    )
+    print(f"Brier p-value: {harm.pvalue:.4f}")  # -> 1.0000
     ```
 
-    Full script `examples/credit/_code/monitor_prediction_errors_example.py` loads HELOC, fits the RF out-of-sample, and computes Brier scores.
+    Default probability tells us what the model predicts; confidence tells us how sure it is. Brier score asks a different question: were those probabilities accurate once the outcomes arrived? With `p=1.0000`, we do not reject the null hypothesis of no harmful increase in prediction error. On this split, there is no evidence that the model's errors are larger in target. The higher risk appears to reflect a change in the population rather than material model deterioration.
 
-Full scripts: `examples/credit/_code/`.
+## Wrap up
 
-## Which signal when?
+These three scores give three views of the same deployment change. Predicted risk tells us how harmful the target looks, confidence tells us how decisive the model is, and Brier score tells us whether its probabilities remain accurate once outcomes arrive. Here, the target looks riskier and the model is more confident, but prediction error does not increase. Together, the results suggest a riskier population rather than material model deterioration.
 
-| Signal | Labels? | When it helps |
-|--------|---------|----------------|
-| Predicted risk | No | The output itself is harm |
-| Outlier score: confidence | No | Early warning before they arrive |
-| Prediction error (Brier) | Yes | Clearest accuracy check |
-
-One 63-split, three signals, two questions. Weighting handles the comparability question ([Weight for common support](../../how-to/weight-for-common-support.md); [Core concepts](../../explanation/core-concepts.md)). Pick by timing: run risk while labels are absent, watch confidence for an early warning, and turn to error once labels arrive.
+The next question is whether the comparison is being driven by regions where source and target have little overlap. Continue with [Weight for common support](../../how-to/weight-for-common-support.md) to make that question explicit.
