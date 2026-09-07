@@ -108,7 +108,7 @@ The domain probability is one way to define an outlier score. You can also test 
 
 ## Recap
 
-You now have one score and two verdicts. `test_shift` tells you whether source and target differ at all. `test_harmful_shift` tells you whether target moved toward the harmful tail you specified before testing. Keeping those questions separate prevents a detectable shift from being mistaken for harmful shift.
+You now have one score and two tests. `test_shift` tells you whether source and target differ at all. `test_harmful_shift` tells you whether target moved toward the harmful tail you specified before testing. Keeping those questions separate prevents a detectable shift from being mistaken for harmful shift.
 
 Where you'd like to go next:
 
