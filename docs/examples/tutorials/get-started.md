@@ -1,21 +1,21 @@
 # Get started
 
-One score, two tests. You'll ask *did it change?* and *did it get worse?* about a score of your own, and you'll leave with a habit you can reuse.
+This tutorial shows how to turn scores into two answers: *did it change?* and *did it get worse?*
 
 ## Prerequisites
 
-- Python 3.12+ with `numpy`, `scikit-learn`, and `samesame` installed.
+- Python 3.12+ with `numpy`, `scipy`, `scikit-learn`, and `samesame` installed.
 - Comfort with p-values and training a classifier (you will use `cross_val_predict` once).
 
 --8<-- "snippets/source-target.txt"
 
 ## Steps
 
-You'll use two tests for two different questions. `ss.test_shift` is broad and two-sided (AUC `0.5` means no separation). `ss.test_harmful_shift(..., worse="higher"|"lower")` is focused and one-sided on the tail you name in advance.
+The two tests answer different questions. `ss.test_shift` is a broad, two-sided test for any difference between source and target. `ss.test_harmful_shift(..., worse="higher"|"lower")` is a focused, one-sided test for detecting a harmful shift. You can apply both tests to the score that represents the outcome you care about.
 
 ### 1. Create source and target
 
-Create the two populations your question compares, for example training versus current deployment. Every conclusion you'll draw describes target relative to source.
+Start with two datasets. Here, source represents a sample from the reference population and target represents a sample from the current population. In practice, source might be training data or a past deployment.
 
 ```python
 import numpy as np
@@ -26,9 +26,11 @@ X = np.vstack([source, target])
 labels = np.r_[np.zeros(len(source), dtype=int), np.ones(len(target), dtype=int)]
 ```
 
+The target differs from the source in its first feature. That gives the classifier a deliberate shift to find, while the remaining features stay aligned.
+
 ### 2. Score out of sample
 
-Score each row with a model that didn't see it. Here a domain classifier estimates the domain probability `P(target|x)`, a handy generic score for catching *any* shift. It measures membership, not outcome quality, so keep it separate from the score you'll judge for harm.
+Each row must be scored by a model that did not see that row. Here, a domain classifier estimates `P(target|x)`, the probability that an observation looks like it came from the target population. This is a useful generic score for detecting *any* shift because it measures sample membership. For background on classifier-based two-sample tests, see [In gentle praise of classifier tests](https://vathymut.org/posts/2022-01-22-in-gentle-praise-of-modern-tests/).
 
 ```python
 from sklearn.ensemble import HistGradientBoostingClassifier
@@ -40,9 +42,16 @@ domain_prob = cross_val_predict(
 )[:, 1]
 ```
 
+??? note "Honest and reproducible scores"
+    `samesame` only sees the scores you pass in.
+
+    --8<-- "snippets/honest-scores.txt"
+
+    Pass `rng=np.random.default_rng(12345)` for reproducible p-values (`n_resamples=9999`; use `999` while exploring and `19999` below `0.001`). Details: [Core concepts](../../explanation/core-concepts.md).
+
 ### 3. Did anything change?
 
-Test whether the score separates source from target (expect clear separation here):
+Now test whether the domain score separates source from target. Because we introduced a difference in the first feature, you should expect clear separation here:
 
 ```python
 import samesame as ss
@@ -52,11 +61,27 @@ shift = ss.test_shift(source=source_scores, target=target_scores, rng=rng)
 print(f"Shift p-value: {shift.pvalue:.4f}")  # → 0.0002
 ```
 
-Near `0.5` means little separation; values near `0` or `1` mean stronger separation. The test is two-sided, so a shift in either direction can reject.
+With this p-value, we reject the null of no shift, as expected.
 
 ### 4. Did it get worse?
 
-Pick the harmful direction from what the score means, *before* you look at results. Never choose `worse` by p-value. See [Core concepts](../../explanation/core-concepts.md) for the full table.
+The domain probability can also serve as an outlier score when target-like observations represent the harmful direction: a higher domain probability means the observation looks less like the reference sample, so use `worse="higher"` when these deviations are harmful.
+
+```python
+harm = ss.test_harmful_shift(
+    source=source_scores,
+    target=target_scores,
+    worse="higher",
+    rng=rng,
+)
+print(f"Harm p-value: {harm.pvalue:.4f}")  # → 0.0002
+```
+
+Here again, we reject the null of no harmful shift, meaning the target sample often does not resemble the source sample.
+
+### 5. Examples of harmful scores
+
+The domain probability is one way to define an outlier score. You can also test harmful shift using a score tied directly to the outcome you care about. The examples below show two possibilities: risk or error, where higher scores are harmful, and confidence or quality, where lower scores are harmful. Replace them with your own score if need be. See [Core concepts](../../explanation/core-concepts.md) for the full table.
 
 --8<-- "snippets/worse-declaration.txt"
 
@@ -81,17 +106,9 @@ Pick the harmful direction from what the score means, *before* you look at resul
     print(f"Harm p={harm.pvalue:.4f}")  # → 0.0001
     ```
 
-- A small `test_shift` p-value means the distributions differ.
-- A small `test_harmful_shift` p-value means target moved toward the tail you named.
-
-??? note "Honest and reproducible scores"
-    `samesame` only sees the scores you pass in. --8<-- "snippets/honest-scores.txt"
-
-    Pass `rng=np.random.default_rng(12345)` for reproducible p-values (`n_resamples=9999`; use `999` while exploring and `19999` below `0.001`). Details: [Core concepts](../../explanation/core-concepts.md).
-
 ## Recap
 
-One score, two verdicts. `test_shift` screens for any difference between the groups; `test_harmful_shift` asks whether target moved toward the tail you fixed in advance.
+You now have one score and two verdicts. `test_shift` tells you whether source and target differ at all. `test_harmful_shift` tells you whether target moved toward the harmful tail you specified before testing. Keeping those questions separate prevents a detectable shift from being mistaken for harmful shift.
 
 Where you'd like to go next:
 

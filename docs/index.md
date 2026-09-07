@@ -13,7 +13,7 @@
 
 Bring your own score — the risk you care about, the errors your model makes, how much you trust it, or when something looks off. `samesame` tells you two things: did the source and target scores shift, and did it get worse?
 
-Data and model monitoring rarely gives you labels, and univariate checks miss hidden multivariate (high-dimensional) shifts. A score boils each observation down to one number worth testing.
+Data and model monitoring rarely gives you labels, and univariate checks miss hidden multivariate (high-dimensional) shifts. A score reduces each observation to a single interpretable and insightful number.
 
 ## Installation
 
@@ -53,14 +53,14 @@ print(f"Harm  p-value: {harm.pvalue:.4f}")
 # → Harm  p-value: 0.0001
 ```
 
-**What a small p-value does not mean.** A small p-value is evidence against label exchangeability (the assumption that source and target labels can be swapped). It is not evidence of business impact, causality, effect size, or the probability that the null is true. A shift is not the same as harm. Details: [Core concepts](https://vathymut.github.io/samesame/explanation/core-concepts/).
+The small p-values provide strong evidence that the target distribution shifted and moved in an adverse direction. We therefore reject both the null of no shift and the null of no harmful shift at any reasonable significance level.
 
 ## Workflow
 
 1. **Choose a score** that represents the outcome you care about. Generate it out of sample if it comes from a fitted model.
 2. **Ask whether anything changed** with `ss.test_shift`.
-3. **Ask whether the change is harmful** with `ss.test_harmful_shift(..., worse=...)`, fixing `worse` before you look.
-4. **Address poor feature overlap** with `ss.domain_weights` only when it is a real concern: weighting changes the population the comparison describes, so it is not a default correction. Details: [Weight for common support](https://vathymut.github.io/samesame/how-to/weight-for-common-support/).
+3. **Ask whether the change is harmful** with `ss.test_harmful_shift(..., worse=...)`. Specify in advance whether higher or lower scores indicate harm.
+4. **Address poor feature overlap** with `ss.domain_weights` only when it is a real concern. Weighting focuses the comparison on a different population: the region of common support. Details: [Weight for common support](https://vathymut.github.io/samesame/how-to/weight-for-common-support/).
 
 ## Where next
 
@@ -69,5 +69,3 @@ print(f"Harm  p-value: {harm.pvalue:.4f}")
 - **[Monitor a credit model](https://vathymut.github.io/samesame/examples/credit/monitor-credit/)**: one HELOC model, three signals.
 - **[Weight for common support](https://vathymut.github.io/samesame/how-to/weight-for-common-support/)**: when and how to reweight.
 - **[API reference](https://vathymut.github.io/samesame/api/testing/)**: full docs for the tests and `domain_weights`.
-
-Score-based monitoring only. Not for randomized experiments, subgroup discovery, or sequential monitoring.
