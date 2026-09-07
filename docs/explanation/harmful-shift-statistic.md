@@ -2,21 +2,21 @@
 
 ## Context: why a harmful-shift test exists
 
-Some shifts move the middle while the harmful tail stays put, and a generic test still rejects. Means miss tail harm (for example, Netflix PlayDelay). The harm test asks the question your decision needs.
+A distribution can change without getting worse. A credit portfolio might hold fewer very safe applicants and more medium-risk ones while the high-risk tail stays put, and a generic shift test will still reject. Means miss tail harm in the same way (Netflix PlayDelay is one example). The harm test asks the narrower question your decision actually needs.
 
 !!! note "The question"
     After orienting the interpretable severity score `ϕ(x)` so larger means worse, does the target place more mass beyond thresholds the source rarely exceeds?
 
-Declare it with `worse`. Your choice of `ϕ` defines *worse* ([Core concepts](core-concepts.md); [Shift testing](../api/testing.md)). Same split, different `ϕ`: density can look safe while residual and confidence diverge (Kamulete 2022 §2, §6.2; [dsos: motivation](https://cran.r-project.org/web/packages/dsos/vignettes/motivation.html) (external)).
+Declare it with `worse`, chosen from what `ϕ` means rather than from p-values. Your choice of `ϕ` defines *worse* ([Core concepts](core-concepts.md); [Shift testing](../api/testing.md)). The same split can read differently through different scores: density can look safe while residual and confidence diverge (Kamulete 2022 §2, §6.2; [dsos: motivation](https://cran.r-project.org/web/packages/dsos/vignettes/motivation.html) (external)).
 
 ## What it is
 
-Both tests permute labels with scores fixed and differ only in threshold weighting:
+Both tests permute labels with scores fixed and differ only in how they weight thresholds:
 
-- `test_shift`: uniform, `∫ TPR dFPR` (AUC).
-- `test_harmful_shift`: source-rare emphasis, `∫ TPR·(1−FPR)² dFPR = ∫ TPR·F̂_source² dFPR` with `F̂_source=1−FPR` (Kamulete 2022 §3; one-sided `greater`).
+- `test_shift`: uniform weight, `∫ TPR dFPR` (AUC).
+- `test_harmful_shift`: weight toward source-rare thresholds, `∫ TPR·(1−FPR)² dFPR = ∫ TPR·F̂_source² dFPR` with `F̂_source=1−FPR` (Kamulete 2022 §3; one-sided `greater`).
 
-Near `0.5` means little separation. Read harm against its null. Use `test_shift` for any change and `test_harmful_shift` when you can state `worse` beforehand; no margin needed.
+Near `0.5` means little separation, so read harm against its null. Reach for `test_shift` when any change matters and `test_harmful_shift` when you can name `worse` beforehand; neither needs a margin.
 
 --8<-- "snippets/worse-declaration.txt"
 
@@ -34,7 +34,9 @@ xychart-beta
     line "diagonal" [0, 0.2, 0.4, 0.6, 0.8, 1]
 ```
 
-Early rise signals large harm. Late rise shows that large AUC can coexist with small harm. Same pattern on 70 trial scores in [Is the new drug good enough?](../examples/trials/check-drug-efficacy.md).
+Early rise means many target observations cross a threshold almost no source observations cross, so harm is large. Late rise means the groups differ mainly where source already has plenty of mass: AUC can still be large while harm stays small. You'll see the same pattern in the 70 trial scores in [Is the new drug good enough?](../examples/trials/check-drug-efficacy.md).
+
+The ROC picture is a ranking intuition, not a claim that your score is a production classifier. It asks how well the score ranks target above source across thresholds. AUC weights those thresholds uniformly; the harm statistic gives extra weight where source rarely ventures.
 
 ??? details "The formula"
 
@@ -51,8 +53,8 @@ Early rise signals large harm. Late rise shows that large AUC can coexist with s
 
 ## Related concepts
 
-- **Common support:** Poor overlap lets a few points dominate. See [Weight for common support](../how-to/weight-for-common-support.md) and [Core concepts](core-concepts.md) (research case: unweighted/source/target `p=0.002`, doubly weighted `p=0.376`).
-- **Honest scores:** Valid p-values need out-of-sample scores ([Core concepts](core-concepts.md); [Shift testing](../api/testing.md#honest-scores)).
+- **Common support:** poor overlap lets a few points dominate. See [Weight for common support](../how-to/weight-for-common-support.md) and [Core concepts](core-concepts.md) (one research case moves from `p=0.002` unweighted to `p=0.376` doubly weighted).
+- **Honest scores:** valid p-values need out-of-sample scores ([Core concepts](core-concepts.md); [Shift testing](../api/testing.md#honest-scores)).
 
 ## References
 
@@ -61,4 +63,4 @@ Early rise signals large harm. Late rise shows that large AUC can coexist with s
 
 For weighting theory (Kish 1965; Bickel et al. 2007; Yamada et al. 2013; Elvira et al. 2022) see [Importance weights](../api/weighting.md).
 
-One score and one declaration is enough. The test measures tail harm, not just any shift.
+One score and one declaration is enough to get started. The test measures tail harm, not just any shift.

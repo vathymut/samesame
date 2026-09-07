@@ -1,6 +1,6 @@
 # Shift testing
 
-One interpretable score `ϕ(x)` per observation, typically an outlier score such as severity or harm. Compare it between **source** (reference) and **target** (current deployment). Larger means worse. Choose `ϕ` to encode the notion of *worse* you care about.
+One interpretable score `ϕ(x)` per observation, often an outlier score such as severity or harm. Compare it between **source** (your reference) and **target** (current deployment). Larger means worse, so choose `ϕ` to encode the kind of *worse* you care about.
 
 ## Scope
 
@@ -10,12 +10,12 @@ Reference for the two permutation tests. For choosing `ϕ` and `worse`, see [Cor
 
 | Function | Question | When to use |
 |----------|----------|-------------|
-| `ss.test_shift` | Do source and target differ? | Any change matters. Screen first, then ask about harm |
-| `ss.test_harmful_shift` | Did the target move toward the harmful tail you specified? | You can declare `worse` in advance and care about one tail |
+| `ss.test_shift` | Do source and target differ? | Any change matters; screen first, then ask about harm |
+| `ss.test_harmful_shift` | Did target move toward the harmful tail you named? | You can declare `worse` in advance and care about one tail |
 
-`ss.test_shift(source, target, *, weights=None, n_resamples=9999, rng=None)`: permutation test for any shift. Pass one score `ϕ(x)` per observation (see [Core concepts](../explanation/core-concepts.md)). Returns AUC in `.statistic` (`0.5` is no separation) and a two-sided p-value (doubles smaller tail, `+1` smoothing). Example: `ss.test_shift(source=scores_ref, target=scores_cur, rng=rng)`. Details in [Reading results](#reading-results).
+`ss.test_shift(source, target, *, weights=None, n_resamples=9999, rng=None)`: permutation test for any shift. Pass one score `ϕ(x)` per observation (see [Core concepts](../explanation/core-concepts.md)). Returns AUC in `.statistic` (`0.5` means no separation) and a two-sided p-value (doubles the smaller tail, `+1` smoothing). Example: `ss.test_shift(source=scores_ref, target=scores_cur, rng=rng)`. Details in [Reading results](#reading-results).
 
-`ss.test_harmful_shift(source, target, *, worse, weights=None, n_resamples=9999, rng=None)`: permutation test for tail harm. Same `ϕ(x)` plus `worse="higher"|"lower"` (or `ss.Worse`) declared before looking. Returns weighted AUC and one-sided `greater` p-value. Example: `ss.test_harmful_shift(source=risk_ref, target=risk_cur, worse="higher", rng=rng)`. It reads tail mass where source is rare; see [How the harm test works](../explanation/harmful-shift-statistic.md).
+`ss.test_harmful_shift(source, target, *, worse, weights=None, n_resamples=9999, rng=None)`: permutation test for tail harm. Same `ϕ(x)` plus `worse="higher"|"lower"` (or `ss.Worse`) fixed before looking. Returns weighted AUC and a one-sided `greater` p-value. Example: `ss.test_harmful_shift(source=risk_ref, target=risk_cur, worse="higher", rng=rng)`. It reads tail mass where source is rare; see [How the harm test works](../explanation/harmful-shift-statistic.md).
 
 --8<-- "snippets/worse-declaration.txt"
 
@@ -36,7 +36,7 @@ Tails: `test_shift` is two-sided (doubles smaller tail, capped at 1); `test_harm
 
 ### Honest scores {#honest-scores}
 
-Valid p-values need out-of-sample scores. `samesame` only sees what you pass in.
+Valid p-values need out-of-sample scores. `samesame` only sees what you hand it.
 
 --8<-- "snippets/honest-scores.txt"
 

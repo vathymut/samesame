@@ -1,6 +1,6 @@
 # How to weight for common support
 
-Start unweighted. Weight only when poor overlap is a real concern. Weighting reframes the comparison around **common support**, the overlap of source and target, and adds no information where groups do not overlap. It changes the population you describe; it is not a default correction.
+Start unweighted, and reach for weights only when poor overlap is a genuine concern. Weighting reframes your comparison around **common support**, the ground source and target share. It adds no information elsewhere and changes the population you describe, so treat it as a focused follow-up rather than a default.
 
 ## Prerequisites
 
@@ -11,7 +11,7 @@ Start unweighted. Weight only when poor overlap is a real concern. Weighting ref
 
 ### 1. Estimate the domain probability
 
-Estimate out of sample. This is membership, not outcome quality.
+Estimate it out of sample. This is a membership score, not a judgment on outcome quality.
 
 ```python
 --8<-- "snippets/heloc-split.py:heloc-domain"
@@ -30,11 +30,11 @@ import samesame as ss
 weights = ss.domain_weights(source=source_prob, target=target_prob, reweight="both", shrinkage=0.5)
 ```
 
-Weights preserve nominal size (`Σw = n` per group; `1` if unweighted). They change influence, not classifier quality. See [Core concepts](../explanation/core-concepts.md).
+Weights preserve nominal size (`Σw = n` per group; `1` when unweighted). They change influence, not classifier quality. See [Core concepts](../explanation/core-concepts.md).
 
 ### 3. Test with and without weights
 
-Keep `worse` the same so both tests ask the same question.
+Keep `worse` fixed so both tests ask the same question.
 
 ```python
 --8<-- "snippets/heloc-split.py:heloc-split"
@@ -45,8 +45,8 @@ weighted = ss.test_harmful_shift(source=train_risk, target=deployment_risk, wors
 print(f"Unweighted p={unweighted.pvalue:.4f} Weighted p={weighted.pvalue:.4f}")
 ```
 
-- Weaker after weighting → evidence in low-overlap regions.
-- Persists → harm present where groups overlap.
+- Weaker after weighting means the evidence lived mostly in low-overlap regions.
+- If it persists, the harm is present where the groups overlap.
 
 ### 4. Check effective sample size
 
@@ -55,16 +55,16 @@ ess = weights.effective_sample_size()  # Kish (1965): (sum w)² / sum w²
 print(f"source ESS {ess.source:.1f}/{len(source_prob)}  target ESS {ess.target:.1f}/{len(target_prob)}")
 ```
 
-`ESS/n` well below `0.5` warns that few points drive the result. There is no universal cutoff (Elvira et al., 2022). If low even at `shrinkage=0.5`, keep the comparison unweighted. See [Effective sample size](../api/weighting.md#effective-sample-size).
+`ESS/n` well below `0.5` warns that a handful of points is driving the result. There is no universal cutoff (Elvira et al., 2022). If ESS stays low even at `shrinkage=0.5`, keep the comparison unweighted. See [Effective sample size](../api/weighting.md#effective-sample-size).
 
 ## Expected outcome
 
-On HELOC the risk alarm survives at `shrinkage=0.5` (`p=0.0001` all modes). ESS 2,491/7,683 (about 0.32) and 1,532/2,188 (about 0.70) shows harm where groups overlap.
+On HELOC the risk alarm survives at `shrinkage=0.5` (`p=0.0001` in all modes). ESS of 2,491/7,683 (about 0.32) and 1,532/2,188 (about 0.70) says the harm shows up where the groups overlap.
 
 ## Troubleshooting
 
-- **`ESS/n` <<0.5 at `shrinkage=0.5`** → keep the comparison unweighted; groups lack enough common support.
-- **Weighted and unweighted agree** → report unweighted; weighting confirms the signal is not driven by low-overlap regions.
+- **`ESS/n` well below 0.5 at `shrinkage=0.5`** means you should keep the comparison unweighted; the groups share too little ground.
+- **Weighted and unweighted agree** means you can report the unweighted result with more confidence; weighting confirms the signal isn't driven by low-overlap regions.
 
 ??? details "Diagnose weight concentration"
 
@@ -77,6 +77,6 @@ On HELOC the risk alarm survives at `shrinkage=0.5` (`p=0.0001` all modes). ESS 
         print(f"shrinkage={lam:<4}  ESS s={e.source:6.1f}  t={e.target:6.1f}")
     ```
 
-See [Core concepts](../explanation/core-concepts.md), [Importance weights](../api/weighting.md), and [How the harm test works](../explanation/harmful-shift-statistic.md). Scripts: `examples/weighting/_code/`.
+See [Core concepts](../explanation/core-concepts.md), [Importance weights](../api/weighting.md), and [How the harm test works](../explanation/harmful-shift-statistic.md). Scripts live in `examples/weighting/_code/`.
 
-Report the unweighted result first. Add the weighted result when overlap is poor and the question is whether the shift survives on common support.
+Report the unweighted result first. Add the weighted result when overlap is poor and you'd like to know whether the shift survives on common support.

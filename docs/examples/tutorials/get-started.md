@@ -1,6 +1,6 @@
 # Get started
 
-One score, two tests. You will ask *did it change?* and *did it get worse?* of a score of your own, and leave with a habit you can reuse.
+One score, two tests. You'll ask *did it change?* and *did it get worse?* about a score of your own, and you'll leave with a habit you can reuse.
 
 ## Prerequisites
 
@@ -11,11 +11,11 @@ One score, two tests. You will ask *did it change?* and *did it get worse?* of a
 
 ## Steps
 
-You will use two tests. `ss.test_shift` is broad and two-sided (AUC `0.5` is no separation). `ss.test_harmful_shift(..., worse="higher"|"lower")` is focused and one-sided on the tail you declare.
+You'll use two tests for two different questions. `ss.test_shift` is broad and two-sided (AUC `0.5` means no separation). `ss.test_harmful_shift(..., worse="higher"|"lower")` is focused and one-sided on the tail you name in advance.
 
 ### 1. Create source and target
 
-Create the two populations your question compares (for example, training versus current deployment). Every conclusion describes target relative to source.
+Create the two populations your question compares, for example training versus current deployment. Every conclusion you'll draw describes target relative to source.
 
 ```python
 import numpy as np
@@ -28,7 +28,7 @@ labels = np.r_[np.zeros(len(source), dtype=int), np.ones(len(target), dtype=int)
 
 ### 2. Score out of sample
 
-Score each row with a model that did not see it. Here a domain classifier estimates the domain probability `P(target|x)`, a useful generic score for detecting *any* shift. It measures membership, not outcome quality. Keep it separate from your harm score.
+Score each row with a model that didn't see it. Here a domain classifier estimates the domain probability `P(target|x)`, a handy generic score for catching *any* shift. It measures membership, not outcome quality, so keep it separate from the score you'll judge for harm.
 
 ```python
 from sklearn.ensemble import HistGradientBoostingClassifier
@@ -42,21 +42,21 @@ domain_prob = cross_val_predict(
 
 ### 3. Did anything change?
 
-Test whether the score separates source from target (expect AUC ~0.61 here):
+Test whether the score separates source from target (expect clear separation here):
 
 ```python
 import samesame as ss
 source_scores = domain_prob[labels == 0]
 target_scores = domain_prob[labels == 1]
 shift = ss.test_shift(source=source_scores, target=target_scores, rng=rng)
-print(f"AUC {shift.statistic:.3f} p={shift.pvalue:.4f}")  # → 0.611, 0.0002
+print(f"Shift p-value: {shift.pvalue:.4f}")  # → 0.0002
 ```
 
-Near `0.5` means little separation; values near `0` or `1` mean stronger separation. The test is two-sided, so either direction can reject.
+Near `0.5` means little separation; values near `0` or `1` mean stronger separation. The test is two-sided, so a shift in either direction can reject.
 
 ### 4. Did it get worse?
 
-Pick the harmful direction from what the score means, *before* you look. Never choose `worse` by p-value. See [Core concepts](../../explanation/core-concepts.md) for the full table.
+Pick the harmful direction from what the score means, *before* you look at results. Never choose `worse` by p-value. See [Core concepts](../../explanation/core-concepts.md) for the full table.
 
 --8<-- "snippets/worse-declaration.txt"
 
@@ -81,20 +81,20 @@ Pick the harmful direction from what the score means, *before* you look. Never c
     print(f"Harm p={harm.pvalue:.4f}")  # → 0.0001
     ```
 
-- A small `test_shift` p-value → the distributions differ.
-- A small `test_harmful_shift` p-value → the target moved toward the tail you declared.
+- A small `test_shift` p-value means the distributions differ.
+- A small `test_harmful_shift` p-value means target moved toward the tail you named.
 
 ??? note "Honest and reproducible scores"
     `samesame` only sees the scores you pass in. --8<-- "snippets/honest-scores.txt"
 
-    Pass `rng=np.random.default_rng(12345)` for reproducible p-values (`n_resamples=9999`; `999` while exploring, `19999` below `0.001`). Details: [Core concepts](../../explanation/core-concepts.md).
+    Pass `rng=np.random.default_rng(12345)` for reproducible p-values (`n_resamples=9999`; use `999` while exploring and `19999` below `0.001`). Details: [Core concepts](../../explanation/core-concepts.md).
 
 ## Recap
 
-One score, two verdicts. `test_shift` screens for any difference between the groups; `test_harmful_shift` asks whether the target moved toward the tail you declared, with `worse` fixed in advance.
+One score, two verdicts. `test_shift` screens for any difference between the groups; `test_harmful_shift` asks whether target moved toward the tail you fixed in advance.
 
-**Next steps:**
+Where you'd like to go next:
 
-- [Is the new drug good enough?](../trials/check-drug-efficacy.md): same test on 70 trial scores, no model.
+- [Is the new drug good enough?](../trials/check-drug-efficacy.md): the same test on 70 trial scores, with no model to fit.
 - [Weight for common support](../../how-to/weight-for-common-support.md): when overlap is poor, reweight around common support.
-- [How the harm test works](../../explanation/harmful-shift-statistic.md): why the weighted AUC focuses on the harmful tail.
+- [How the harm test works](../../explanation/harmful-shift-statistic.md): why the weighted AUC leans into the harmful tail.

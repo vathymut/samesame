@@ -15,8 +15,8 @@ harm = ss.test_harmful_shift(
     rng=rng,
 )
 
-print(f"Shift statistic: {shift.statistic:.3f}, p-value: {shift.pvalue:.4f}")
-# → Shift statistic: 0.697, p-value: 0.0002
-print(f"Harm  statistic: {harm.statistic:.3f}, p-value: {harm.pvalue:.4f}")
-# → Harm  statistic: 0.155, p-value: 0.0001
+print(f"Shift p-value: {shift.pvalue:.4f}")
+# → Shift p-value: 0.0002
+print(f"Harm  p-value: {harm.pvalue:.4f}")
+# → Harm  p-value: 0.0001
 # --8<-- [end:quick-example]

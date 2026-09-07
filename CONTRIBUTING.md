@@ -82,7 +82,7 @@ files, because they have drifted apart before:
 > A small p-value is evidence against label exchangeability (the assumption
 > that source and target labels can be swapped). It is not evidence of
 > business impact, causality, effect size, or the probability that the null
-> is true. Evidence of a shift is not evidence of harm.
+> is true. A shift is not the same as harm.
 
 **Out-of-sample warning** (byte-identical in `README.md`,
 `docs/examples/tutorials/get-started.md`, `docs/api/testing.md`; `docs/index.md`

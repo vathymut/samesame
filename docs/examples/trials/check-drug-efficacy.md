@@ -1,8 +1,8 @@
 # Is the new drug good enough?
 
-Medicine calls this **noninferiority**: a cheaper, faster, or more tolerable treatment need not beat the standard. It must be *not meaningfully worse*. The harmful-shift test is a nonparametric noninferiority test with no margin and no normality assumption (Kamulete, 2022).
+Medicine calls this **noninferiority**: a cheaper, faster, or easier-to-tolerate treatment need not beat the standard. It has to be *not meaningfully worse*. The harmful-shift test was introduced as D-SOS, a nonparametric noninferiority test with no margin and no normality assumption (Kamulete, 2022).
 
-The example is a classic [SAS case study](https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf): **Bowl** (cheaper) versus **Armanaleg** (standard). Relief is 4 to 16 (higher is better); mean 9.4 versus 10.1 across 42 and 28 patients. Not better, but is it *meaningfully worse*? You have one score per patient and no model. Pre-register `worse`, as you would choose one side before unblinding.
+The example is a classic [SAS case study](https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf): **Bowl** (cheaper) versus **Armanaleg** (standard). Relief runs 4 to 16 (higher is better), with means of 9.4 versus 10.1 across 42 and 28 patients. Bowl doesn't look better, but *not better* isn't the question. The question is whether it's *meaningfully worse*. You have one score per patient and no model, so pre-register `worse` as you'd pick a side before unblinding.
 
 If you are new to `samesame`, start with [Get started](../tutorials/get-started.md).
 
@@ -33,36 +33,33 @@ import samesame as ss
 
 rng = np.random.default_rng(12345)
 harm = ss.test_harmful_shift(source=armanaleg, target=bowl, worse="lower", rng=rng)  # or ss.Worse.LOWER
-print(f"Harm statistic: {harm.statistic:.4f}")  # → 0.1813
 print(f"p-value:        {harm.pvalue:.4f}")     # → 0.1319
 
 rng = np.random.default_rng(12345)
 shift = ss.test_shift(source=armanaleg, target=bowl, rng=rng)
-print(f"AUC {shift.statistic:.4f} p={shift.pvalue:.4f}")  # → 0.4171, 0.2548
+print(f"Shift p-value:  {shift.pvalue:.4f}")    # → 0.2548
 ```
 
-Together:
+Together they tell one story:
 
-- `test_shift` (AUC 0.42, p=0.25): little evidence the arms differ. AUC below 0.5 reflects lower relief in Bowl (0.5829 if you flip to discomfort, `1 − 0.4171`).
+- `test_shift` (p=0.25): little evidence the arms differ at all.
 - `test_harmful_shift` (p=0.13): little evidence Bowl is meaningfully worse.
 
-Same conclusion as the original parametric analysis, with no margin, no normality assumption, and only 70 observations.
+That matches the original parametric analysis ("not appreciably worse") with no margin, no normality assumption, and only 70 observations.
 
 ## What the statistic is asking
 
-The harm statistic `∫ TPR·(1−FPR)² dFPR` weights the harmful tail: **does Bowl push patients into low relief that Armanaleg rarely produces?** Larger `(1−FPR)²` where Armanaleg is rarest. See [How the harm test works](../../explanation/harmful-shift-statistic.md).
+The harm statistic `∫ TPR·(1−FPR)² dFPR` leans into the harmful tail: **does Bowl leave more patients in low-relief territory that Armanaleg rarely visits?** Each threshold is a relief level, and `(1−FPR)²` weighs most where Armanaleg is rarest. If Bowl's worst cases bunch up there, the statistic grows; where the arms differ on ground the standard already covers, it stays modest, as here. See [How the harm test works](../../explanation/harmful-shift-statistic.md).
 
 ## How to read a non-rejection
 
-A p-value of 0.13 is not a certificate of equivalence. It says the observed difference is not unusual if there were no meaningful harm.
+A p-value of 0.13 is not a certificate of equivalence. It says the observed gap wouldn't be surprising if there were no meaningful harm.
 
-- **Absence of evidence ≠ evidence of absence.** With 28 vs 42 patients the test may lack power; a larger study or wider deployment window could sharpen the verdict.
-- **Direction is part of the protocol.** Here `worse="lower"` because lower relief is worse. Choosing direction after seeing p-values turns a pre-specified test into a search.
+- **Absence of evidence isn't evidence of absence.** With 28 versus 42 patients, the test may lack power; a larger study or wider deployment window could sharpen the verdict.
+- **Direction is part of the protocol.** Here `worse="lower"` because lower relief is worse. Picking a direction after seeing p-values turns a pre-specified test into a search.
 
 ## Why a drug trial belongs in a monitoring guide
 
-Every deployed model is a challenger drug. The standard arm is `source`; the deployed challenger is `target`. One interpretable score per observation, and "not meaningfully worse" is `test_harmful_shift`. The challenger passes when it stays close to the standard. When it does not, `samesame` shows you where and how.
+Every deployed model is a challenger drug: the standard arm is `source`, the deployed challenger is `target`, and "not meaningfully worse" is still `test_harmful_shift`. For the same test on a model score, see [Monitor a credit model](../credit/monitor-credit.md); for overlap, see [Weight for common support](../../how-to/weight-for-common-support.md).
 
-For the same test on a model score, see [Monitor a credit model](../credit/monitor-credit.md). To reweight for common support, see [Weight for common support](../../how-to/weight-for-common-support.md) and [Core concepts](../../explanation/core-concepts.md).
-
-For your own question about "not meaningfully worse," swap in your score and declare `worse` before you look.
+For your own question, swap in your score and declare `worse` before you look.

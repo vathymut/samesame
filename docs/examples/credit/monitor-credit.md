@@ -1,6 +1,6 @@
 # Monitor a credit model
 
-One HELOC split on ExternalRiskEstimate at 63 (Gardner et al., 2023) traces model degradation versus population change through three scores. You have one model and one split, with three ways to read harm.
+One HELOC split on ExternalRiskEstimate at 63 (Gardner et al., 2023) lets you trace model degradation versus population change through three scores. You have one model and one split, with three ways to read harm.
 
 | Signal | Labels? | Harmful direction | `worse` |
 |--------|---------|-------------------|---------|
@@ -10,7 +10,7 @@ One HELOC split on ExternalRiskEstimate at 63 (Gardner et al., 2023) traces mode
 
 --8<-- "snippets/source-target.txt"
 
-Which signal to use depends on timing; [Which signal when?](#which-signal-when) compares them. New to `samesame`? Start with [Get started](../tutorials/get-started.md) or [Is the new drug good enough?](../trials/check-drug-efficacy.md).
+Which signal you reach for depends on timing; [Which signal when?](#which-signal-when) compares them. New to `samesame`? Start with [Get started](../tutorials/get-started.md) or [Is the new drug good enough?](../trials/check-drug-efficacy.md) first.
 
 ## The dataset
 
@@ -18,9 +18,9 @@ HELOC (**home equity line of credit**): anonymized bureau features from the FICO
 
 ## The split
 
-The FICO-winning and [TableShift](https://tableshift.org) split is `ExternalRiskEstimate` (higher is safer) at **63**. Deployment story: 7,683 above 63 (**source**, calmer book, 43.5% bad) versus 2,188 at or below 63 (**target**, riskier deployment, 81.9% bad). Mean predicted risk about 44% versus 73%.
+The FICO-winning and [TableShift](https://tableshift.org) split is `ExternalRiskEstimate` (higher is safer) at **63**. The deployment story reads like this: 7,683 applications above 63 (**source**, calmer book, 43.5% bad) versus 2,188 at or below 63 (**target**, riskier deployment, 81.9% bad). Mean predicted risk is about 44% versus 73%.
 
-Same shift has two readings: model degraded or population changed. The signals below tell them apart; weighting ([Weight for common support](../../how-to/weight-for-common-support.md)) asks whether the alarm holds on common support. Setup:
+The same shift supports two readings: the model degraded, or the population changed. The signals below help you tell them apart, and weighting ([Weight for common support](../../how-to/weight-for-common-support.md)) asks whether the alarm holds on common support. Setup:
 
 ```python
 --8<-- "snippets/heloc-split.py:heloc-split"
@@ -48,20 +48,20 @@ Same shift has two readings: model degraded or population changed. The signals b
         source=train_risk, target=deployment_risk,
         worse="higher", rng=np.random.default_rng(12345),
     )
-    print(f"AUC {shift.statistic:.4f} p={shift.pvalue:.4f}")   # → 1.0000, 0.0002
-    print(f"Harm {harm.statistic:.4f} p={harm.pvalue:.4f}")    # → 0.2483, 0.0001
+    print(f"Shift p-value: {shift.pvalue:.4f}")  # → 0.0002
+    print(f"Harm  p-value: {harm.pvalue:.4f}")   # → 0.0001
     ```
 
-    AUC 1.00 is expected because the split variable is itself a feature. The harm test shows the shift points toward higher risk.
+    Perfect separation is expected because the split variable is itself a feature. The harm test adds the part you care about: the shift points toward higher risk.
 
     | `test_shift` | `test_harmful_shift` | Interpretation |
     |--------------|----------------------|---------|
     | Significant | Significant | Changed and toward the harmful tail |
     | Significant | Not significant | Changed, not clearly harmful |
     | Not significant | Not significant | No clear shift |
-    | Not significant | Significant | Tail signal missed by broad screen |
+    | Not significant | Significant | Tail signal the broad screen missed |
 
-    Both tests point to higher risk. Investigate, don't auto-retrain. `0.5` is chance; read harm against its null and the 0–1 scale.
+    Both tests point toward higher risk, so investigate rather than auto-retrain. `0.5` is chance; read harm against its null and the 0–1 scale.
 
 === "Outlier score: confidence, no labels needed"
 
@@ -83,14 +83,14 @@ Same shift has two readings: model degraded or population changed. The signals b
         worse="lower",  # lower confidence = harm
         rng=np.random.default_rng(12345),
     )
-    print(f"Harm {harm.statistic:.4f} p={harm.pvalue:.4f}")  # → 0.0409, 1.0000
+    print(f"Harm  p-value: {harm.pvalue:.4f}")  # → 1.0000
     ```
 
-    No harmful confidence drop. The statistic points the other way. At 82% bad rate predictions polarize and confidence rises. A model can grow more confident while predicting higher risk; confidence complements risk.
+    No harmful confidence drop here. The statistic points the other way: at an 82% bad rate, predictions polarize and confidence rises. A model can grow more confident while predicting higher risk, which is why confidence complements risk rather than repeating it.
 
 ??? details "Errors, needs labels (under the null here)"
 
-    Once labels arrive, test prediction error (Brier) with `worse="higher"`. In this guide the error section uses a separate **random** split under the null, so `p=0.2737` is expected. In deployment a small p-value would signal worse accuracy.
+    Once labels arrive, test prediction error (Brier) with `worse="higher"`. In this guide the error section uses a separate **random** split under the null, so `p=0.2737` is exactly what you'd expect. In deployment, a small p-value would signal worse accuracy.
 
     ```python
     import samesame as ss
@@ -111,4 +111,4 @@ Full scripts: `examples/credit/_code/`.
 | Outlier score: confidence | No | Early warning before they arrive |
 | Prediction error (Brier) | Yes | Clearest accuracy check |
 
-One 63-split, three signals, two questions. Weighting handles the comparability question ([Weight for common support](../../how-to/weight-for-common-support.md); [Core concepts](../../explanation/core-concepts.md)). Pick by timing: run risk when labels are absent, confidence for an early warning, and error once they arrive.
+One 63-split, three signals, two questions. Weighting handles the comparability question ([Weight for common support](../../how-to/weight-for-common-support.md); [Core concepts](../../explanation/core-concepts.md)). Pick by timing: run risk while labels are absent, watch confidence for an early warning, and turn to error once labels arrive.

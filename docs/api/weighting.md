@@ -1,12 +1,12 @@
 # Importance weights
 
-Reframe the comparison around **common support**, the regions both groups share. If source and target barely overlap, reweight. Otherwise, don't.
+Reframe your comparison around **common support**, the ground both groups share. When source and target barely overlap, reweight. Otherwise, leave weights out.
 
 ## Scope
 
 Reference for weighting utilities. For when and how to weight, see [Weight for common support](../how-to/weight-for-common-support.md); for the statistic they modify, see [How the harm test works](../explanation/harmful-shift-statistic.md). Concepts: [Core concepts](../explanation/core-concepts.md).
 
-Start unweighted. An unweighted comparison keeps all regions both groups occupy. When overlap is poor, a few points can dominate. Weighting reframes around common support and adds no information; it changes the population you describe, so it is not a default correction.
+Start unweighted. An unweighted comparison keeps every region both groups occupy. When overlap is poor, a few points can dominate, so weighting reframes the question around common support. It adds no information and changes the population you describe, which is why it isn't a default correction.
 
 ??? details "Source files"
     `src/samesame/weights.py` · `src/samesame/_permutation.py`
@@ -34,7 +34,7 @@ ss.test_harmful_shift(source=source_scores, target=target_scores, worse="higher"
                       rng=np.random.default_rng(12345))
 ```
 
-Weights preserve nominal size (`Σw = n` per group; `1` if unweighted). They change influence, not classifier quality. Use them when poor overlap would let a few points dominate; otherwise omit `weights`.
+Weights preserve nominal size (`Σw = n` per group; `1` when unweighted). They change influence, not classifier quality. Reach for them when poor overlap would let a few points dominate; otherwise leave `weights` out.
 
 ## Domain weights
 
@@ -53,9 +53,9 @@ ess = weights.effective_sample_size()  # Kish (1965): (sum w)² / sum w²
 print(ess.source, ess.target)  # compare each to its n
 ```
 
-ESS translates unequal weights into equally weighted counts (Kish 1965: `(Σw)²/Σw²`). Uniform weights give `ESS=n`; concentrated weights give about `≈1`. Compare `ess.source` to `len(source)` and `ess.target` to `len(target)`.
+ESS translates uneven weights into an equally weighted count (Kish 1965: `(Σw)²/Σw²`). Uniform weights give `ESS=n`; concentrated weights pull it toward `≈1`. Compare `ess.source` to `len(source)` and `ess.target` to `len(target)`.
 
-`ESS/n` well below `0.5` warns the result rests on few points. There is no universal cutoff (the `n/4` heuristic has no published threshold; Elvira et al., 2022). If low even at `shrinkage=0.5`, groups lack common support. Keep the comparison unweighted and report the unweighted p-value.
+`ESS/n` well below `0.5` warns your result rests on a few points. There is no universal cutoff (the `n/4` heuristic has no published threshold; Elvira et al., 2022). If ESS stays low even at `shrinkage=0.5`, the groups share too little ground. Keep the comparison unweighted and report the unweighted p-value.
 
 ## API
 
