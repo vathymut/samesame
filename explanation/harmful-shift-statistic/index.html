@@ -956,19 +956,19 @@
 
 <h1 id="how-the-harm-test-works">How the harm test works<a class="headerlink" href="#how-the-harm-test-works" title="Permanent link">&para;</a></h1>
 <h2 id="context-why-a-harmful-shift-test-exists">Context: why a harmful-shift test exists<a class="headerlink" href="#context-why-a-harmful-shift-test-exists" title="Permanent link">&para;</a></h2>
-<p>Some shifts move the middle while the harmful tail stays put, and a generic test still rejects. Means miss tail harm (for example, Netflix PlayDelay). The harm test asks the question your decision needs.</p>
+<p>A distribution can change without getting worse. A credit portfolio might hold fewer very safe applicants and more medium-risk ones while the high-risk tail stays put, and a generic shift test will still reject. Means miss tail harm in the same way (Netflix PlayDelay is one example). The harm test asks the narrower question your decision actually needs.</p>
 <div class="admonition note">
 <p class="admonition-title">The question</p>
 <p>After orienting the interpretable severity score <code>ϕ(x)</code> so larger means worse, does the target place more mass beyond thresholds the source rarely exceeds?</p>
 </div>
-<p>Declare it with <code>worse</code>. Your choice of <code>ϕ</code> defines <em>worse</em> (<a href="../core-concepts/">Core concepts</a>; <a href="../../api/testing/">Shift testing</a>). Same split, different <code>ϕ</code>: density can look safe while residual and confidence diverge (Kamulete 2022 §2, §6.2; <a href="https://cran.r-project.org/web/packages/dsos/vignettes/motivation.html">dsos: motivation</a> (external)).</p>
+<p>Declare it with <code>worse</code>, chosen from what <code>ϕ</code> means rather than from p-values. Your choice of <code>ϕ</code> defines <em>worse</em> (<a href="../core-concepts/">Core concepts</a>; <a href="../../api/testing/">Shift testing</a>). The same split can read differently through different scores: density can look safe while residual and confidence diverge (Kamulete 2022 §2, §6.2; <a href="https://cran.r-project.org/web/packages/dsos/vignettes/motivation.html">dsos: motivation</a> (external)).</p>
 <h2 id="what-it-is">What it is<a class="headerlink" href="#what-it-is" title="Permanent link">&para;</a></h2>
-<p>Both tests permute labels with scores fixed and differ only in threshold weighting:</p>
+<p>Both tests permute labels with scores fixed and differ only in how they weight thresholds:</p>
 <ul>
-<li><code>test_shift</code>: uniform, <code>∫ TPR dFPR</code> (AUC).</li>
-<li><code>test_harmful_shift</code>: source-rare emphasis, <code>∫ TPR·(1−FPR)² dFPR = ∫ TPR·F̂_source² dFPR</code> with <code>F̂_source=1−FPR</code> (Kamulete 2022 §3; one-sided <code>greater</code>).</li>
+<li><code>test_shift</code>: uniform weight, <code>∫ TPR dFPR</code> (AUC).</li>
+<li><code>test_harmful_shift</code>: weight toward source-rare thresholds, <code>∫ TPR·(1−FPR)² dFPR = ∫ TPR·F̂_source² dFPR</code> with <code>F̂_source=1−FPR</code> (Kamulete 2022 §3; one-sided <code>greater</code>).</li>
 </ul>
-<p>Near <code>0.5</code> means little separation. Read harm against its null. Use <code>test_shift</code> for any change and <code>test_harmful_shift</code> when you can state <code>worse</code> beforehand; no margin needed.</p>
+<p>Near <code>0.5</code> means little separation, so read harm against its null. Reach for <code>test_shift</code> when any change matters and <code>test_harmful_shift</code> when you can name <code>worse</code> beforehand; neither needs a margin.</p>
 <p>Declare the harmful direction from the meaning of the score before testing. Pass it as a string or as <code>ss.Worse</code>; the two forms are interchangeable:</p>
 <table>
 <thead>
@@ -1009,7 +1009,8 @@
     line "harmful (early rise)" [0, 0.75, 0.88, 0.94, 0.98, 1]
     line "beneficial (late rise)" [0, 0.08, 0.15, 0.30, 0.65, 1]
     line "diagonal" [0, 0.2, 0.4, 0.6, 0.8, 1]</code></pre>
-<p>Early rise signals large harm. Late rise shows that large AUC can coexist with small harm. Same pattern on 70 trial scores in <a href="../../examples/trials/check-drug-efficacy/">Is the new drug good enough?</a>.</p>
+<p>Early rise means many target observations cross a threshold almost no source observations cross, so harm is large. Late rise means the groups differ mainly where source already has plenty of mass: AUC can still be large while harm stays small. You'll see the same pattern in the 70 trial scores in <a href="../../examples/trials/check-drug-efficacy/">Is the new drug good enough?</a>.</p>
+<p>The ROC picture is a ranking intuition, not a claim that your score is a production classifier. It asks how well the score ranks target above source across thresholds. AUC weights those thresholds uniformly; the harm statistic gives extra weight where source rarely ventures.</p>
 <details class="details">
 <summary>The formula</summary>
 <p>Orient so larger means worse: <code>S = scores</code> if <code>worse="higher"</code>, <code>S = -scores</code> otherwise. For threshold <code>t</code>:</p>
@@ -1024,8 +1025,8 @@ T = \int TPR\cdot(1-FPR)^2\,dFPR = \int TPR\cdot\hat{F}_{\text{source}}(t)^2\,dF
 </details>
 <h2 id="related-concepts">Related concepts<a class="headerlink" href="#related-concepts" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Common support:</strong> Poor overlap lets a few points dominate. See <a href="../../how-to/weight-for-common-support/">Weight for common support</a> and <a href="../core-concepts/">Core concepts</a> (research case: unweighted/source/target <code>p=0.002</code>, doubly weighted <code>p=0.376</code>).</li>
-<li><strong>Honest scores:</strong> Valid p-values need out-of-sample scores (<a href="../core-concepts/">Core concepts</a>; <a href="../../api/testing/#honest-scores">Shift testing</a>).</li>
+<li><strong>Common support:</strong> poor overlap lets a few points dominate. See <a href="../../how-to/weight-for-common-support/">Weight for common support</a> and <a href="../core-concepts/">Core concepts</a> (one research case moves from <code>p=0.002</code> unweighted to <code>p=0.376</code> doubly weighted).</li>
+<li><strong>Honest scores:</strong> valid p-values need out-of-sample scores (<a href="../core-concepts/">Core concepts</a>; <a href="../../api/testing/#honest-scores">Shift testing</a>).</li>
 </ul>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <ul>
@@ -1033,7 +1034,7 @@ T = \int TPR\cdot(1-FPR)^2\,dFPR = \int TPR\cdot\hat{F}_{\text{source}}(t)^2\,dF
 <li>Phipson &amp; Smyth (2010). <em>Stat. Appl. Genet. Mol. Biol.</em> 9(1):Article 39. <a href="https://doi.org/10.2202/1544-6115.1585">doi:10.2202/1544-6115.1585</a>.</li>
 </ul>
 <p>For weighting theory (Kish 1965; Bickel et al. 2007; Yamada et al. 2013; Elvira et al. 2022) see <a href="../../api/weighting/">Importance weights</a>.</p>
-<p>One score and one declaration is enough. The test measures tail harm, not just any shift.</p>
+<p>One score and one declaration is enough to get started. The test measures tail harm, not just any shift.</p>
 
 
 

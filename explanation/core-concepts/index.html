@@ -948,11 +948,11 @@
 <h1 id="core-concepts">Core concepts<a class="headerlink" href="#core-concepts" title="Permanent link">&para;</a></h1>
 <p>A score, a split, and a declaration: the three choices that shape every <code>samesame</code> comparison.</p>
 <h2 id="context-why-these-concepts-matter">Context: why these concepts matter<a class="headerlink" href="#context-why-these-concepts-matter" title="Permanent link">&para;</a></h2>
-<p>Production monitoring is constrained. Features are wide, labels arrive late, and deployment populations shift. A single <strong>outlier score</strong> <code>ϕ(x)</code> per observation reduces each row to one number you can test (predicted risk, error, or confidence gap). Every conclusion is relative: <strong>source</strong> (reference) versus <strong>target</strong> (current deployment). Whether a shift is harmful depends on which tail you declare.</p>
+<p>Production monitoring rarely gives you clean labels on time. Features are wide, deployment populations drift, and you still have to decide whether to act. A single <strong>outlier score</strong> <code>ϕ(x)</code> per observation reduces each row to one number you can test, whether that's predicted risk, error, or a confidence gap. Every conclusion is relative: <strong>source</strong> (your reference) versus <strong>target</strong> (current deployment). And whether a shift counts as harmful depends on which tail you name in advance.</p>
 <h2 id="what">What<a class="headerlink" href="#what" title="Permanent link">&para;</a></h2>
 <p><strong>Source</strong> is the reference distribution (training data or a past deployment); <strong>target</strong> is the current deployment under evaluation.</p>
-<p><strong>Score <code>ϕ(x)</code> and outlier score</strong>: one interpretable scalar per observation. Choose <code>ϕ</code> to encode the outcome you care about. Outlier scores (confidence, typicality) follow the same rule: larger <code>ϕ</code> means more distant from source.</p>
-<p><strong>Worse</strong>: the polarity that defines harm. Declare it from the meaning of the score <em>before</em> you look. Pass as <code>worse="higher"</code> / <code>"lower"</code> or <code>ss.Worse.HIGHER</code> / <code>LOWER</code>; the two forms are interchangeable:</p>
+<p><strong>Score <code>ϕ(x)</code> and outlier score</strong>: one interpretable number per observation. Choose <code>ϕ</code> to encode the outcome you care about. Outlier scores for confidence or typicality follow the same rule: larger <code>ϕ</code> means further from source.</p>
+<p><strong>Worse</strong>: the polarity that defines harm. Declare it from what the score means <em>before</em> you look. Pass <code>worse="higher"</code> / <code>"lower"</code> or <code>ss.Worse.HIGHER</code> / <code>LOWER</code>; the two forms agree:</p>
 <table>
 <thead>
 <tr>
@@ -984,8 +984,8 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Domain probability <code>P(target|x)</code></strong>: probability from a domain classifier that an observation belongs to target. It is a membership score, not outcome quality. Keep it separate from the <code>ϕ</code> you test.</p>
-<p><strong>Reweight and common support</strong>: when groups barely overlap, a few points dominate. Weighting reframes the comparison around shared regions and adds no information. It changes the population you describe, so start unweighted.</p>
+<p><strong>Domain probability <code>P(target|x)</code></strong>: the output of a domain classifier, estimating how likely an observation is to belong to target. It measures membership, not outcome quality, so keep it separate from the <code>ϕ</code> you test.</p>
+<p><strong>Reweight and common support</strong>: when the groups barely overlap, a few points can dominate. Weighting reframes the comparison around the ground they share and adds no information elsewhere. It changes the population you describe, so start unweighted.</p>
 <table>
 <thead>
 <tr>
@@ -1012,7 +1012,7 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Shrinkage <code>λ</code></strong>: bias–variance trade in density-ratio estimation. <code>λ=0</code> strongest correction, <code>λ=1</code> uniform.</p>
+<p><strong>Shrinkage <code>λ</code></strong>: the bias-variance trade in density-ratio estimation. <code>λ=0</code> corrects hardest, <code>λ=1</code> stays uniform.</p>
 <table>
 <thead>
 <tr>
@@ -1036,14 +1036,14 @@
 </tbody>
 </table>
 <p>Lower values are more aggressive; higher values are more conservative.</p>
-<p><strong>Effective sample size (ESS)</strong>: <code>(Σw)²/Σw²</code> (Kish 1965). Uniform weights give <code>ESS=n</code>; concentration drives it toward 1. <code>ESS/n</code> well below <code>0.5</code> warns the result rests on few points. If low even at <code>λ=0.5</code>, keep the comparison unweighted.</p>
+<p><strong>Effective sample size (ESS)</strong>: <code>(Σw)²/Σw²</code> (Kish 1965). Uniform weights give <code>ESS=n</code>; concentrated weights pull it toward 1. <code>ESS/n</code> well below <code>0.5</code> warns your result rests on a few points. If it stays low even at <code>λ=0.5</code>, keep the comparison unweighted.</p>
 <p><strong>Honest scores</strong>: valid p-values need out-of-sample scores. --8&lt;-- "snippets/honest-scores.txt"</p>
 <p><strong>Reading p-values</strong>: --8&lt;-- "snippets/pvalue-caveat.txt"</p>
 <h2 id="how-it-fits">How it fits<a class="headerlink" href="#how-it-fits" title="Permanent link">&para;</a></h2>
 <ul>
-<li><em>Did it change?</em> <code>ss.test_shift</code> asks any shift (ROC AUC <code>0.5</code> = no separation, two-sided).</li>
-<li><em>Did it get worse?</em> <code>ss.test_harmful_shift(..., worse=...)</code> asks tail harm (weighted AUC, one-sided <code>greater</code>).</li>
-<li><em>Is the comparison fair?</em> <code>ss.domain_weights</code> + <code>ESS</code> asks whether the shift survives on common support.</li>
+<li><em>Did it change?</em> <code>ss.test_shift</code> looks for any shift (ROC AUC, where <code>0.5</code> means no separation, two-sided).</li>
+<li><em>Did it get worse?</em> <code>ss.test_harmful_shift(..., worse=...)</code> looks for tail harm (weighted AUC, one-sided <code>greater</code>).</li>
+<li><em>Is the comparison fair?</em> <code>ss.domain_weights</code> plus <code>ESS</code> asks whether the shift survives on common support.</li>
 </ul>
 <h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">&para;</a></h2>
 <ul>

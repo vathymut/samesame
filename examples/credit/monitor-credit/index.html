@@ -598,18 +598,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#signals" class="md-nav__link">
+  <a href="#scores" class="md-nav__link">
     <span class="md-ellipsis">
-      Signals
+      Scores
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#which-signal-when" class="md-nav__link">
+  <a href="#wrap-up" class="md-nav__link">
     <span class="md-ellipsis">
-      Which signal when?
+      Wrap up
     </span>
   </a>
   
@@ -946,44 +946,17 @@
 
 
 <h1 id="monitor-a-credit-model">Monitor a credit model<a class="headerlink" href="#monitor-a-credit-model" title="Permanent link">&para;</a></h1>
-<p>One HELOC split on ExternalRiskEstimate at 63 (Gardner et al., 2023) traces model degradation versus population change through three scores. You have one model and one split, with three ways to read harm.</p>
-<table>
-<thead>
-<tr>
-<th>Signal</th>
-<th>Labels?</th>
-<th>Harmful direction</th>
-<th><code>worse</code></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Predicted risk</td>
-<td>No</td>
-<td>Higher risk</td>
-<td><code>higher</code></td>
-</tr>
-<tr>
-<td>Outlier score: confidence (<code>LogitGap</code>)</td>
-<td>No</td>
-<td>Lower certainty</td>
-<td><code>lower</code></td>
-</tr>
-<tr>
-<td>Prediction error (Brier)</td>
-<td>Yes</td>
-<td>Larger error</td>
-<td><code>higher</code></td>
-</tr>
-</tbody>
-</table>
-<p><strong>Source</strong> is the reference distribution (training data or a past deployment); <strong>target</strong> is the current deployment under evaluation.</p>
-<p>Which signal to use depends on timing; <a href="#which-signal-when">Which signal when?</a> compares them. New to <code>samesame</code>? Start with <a href="../../tutorials/get-started/">Get started</a> or <a href="../../trials/check-drug-efficacy/">Is the new drug good enough?</a>.</p>
+<p>An alarm should tell you whether a score moved toward worse outcomes, not just that it moved. Imagine a lender whose model was trained on a book of low-risk applicants. A new partner channel or a changing market brings in riskier applicants. The model is still scoring applications, and the shift could reflect model degradation, a change in the population, or both.</p>
+<p>We start by describing the dataset and source-target comparison, then turn to the scores and the monitoring questions they can answer.</p>
 <h2 id="the-dataset">The dataset<a class="headerlink" href="#the-dataset" title="Permanent link">&para;</a></h2>
-<p>HELOC (<strong>home equity line of credit</strong>): anonymized bureau features from the FICO Explainable AI Challenge (target: 90 days past due). Fetch 9,871 applications from <a href="https://openml.org/search?type=data&amp;sort=runs&amp;id=45554&amp;status=active">OpenML</a> (<code>data_id=45554</code>) via <code>fetch_openml</code>.</p>
+<p>HELOC means <strong>home equity line of credit</strong>: a revolving credit line secured by the borrower's home. This dataset contains anonymized credit-bureau features from the FICO Explainable AI Challenge and a target indicating whether an account went 90 days past due or worse during its first 24 months. The modeling goal is to predict each applicant's probability of a bad outcome, often called the <strong>default probability</strong>; averaged across a group, those predictions give an expected <strong>bad rate</strong>. The example fetches 9,871 applications from <a href="https://openml.org/search?type=data&amp;sort=runs&amp;id=45554&amp;status=active">OpenML</a> (<code>data_id=45554</code>) with <code>fetch_openml</code>.</p>
 <h2 id="the-split">The split<a class="headerlink" href="#the-split" title="Permanent link">&para;</a></h2>
-<p>The FICO-winning and <a href="https://tableshift.org">TableShift</a> split is <code>ExternalRiskEstimate</code> (higher is safer) at <strong>63</strong>. Deployment story: 7,683 above 63 (<strong>source</strong>, calmer book, 43.5% bad) versus 2,188 at or below 63 (<strong>target</strong>, riskier deployment, 81.9% bad). Mean predicted risk about 44% versus 73%.</p>
-<p>Same shift has two readings: model degraded or population changed. The signals below tell them apart; weighting (<a href="../../../how-to/weight-for-common-support/">Weight for common support</a>) asks whether the alarm holds on common support. Setup:</p>
+<p>To make the comparison concrete, we split applications at <strong>63</strong> on <code>ExternalRiskEstimate</code>, following Gardner et al. (2023). Higher values indicate safer applicants, so applications above 63 form the lower-risk source group, while applications at or below 63 form the higher-risk target group:</p>
+<ul>
+<li><strong>Source:</strong> 7,683 applications above 63, the low-risk book, with a 43.5% observed bad rate.</li>
+<li><strong>Target:</strong> 2,188 applications at or below 63, the riskier book, with an 81.9% observed bad rate.</li>
+</ul>
+<p>The code below creates these source and target samples:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
@@ -992,38 +965,59 @@
 <span class="n">fico</span> <span class="o">=</span> <span class="n">fetch_openml</span><span class="p">(</span><span class="n">data_id</span><span class="o">=</span><span class="mi">45554</span><span class="p">,</span> <span class="n">as_frame</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">fico</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">fico</span><span class="o">.</span><span class="n">target</span>
 
-<span class="n">re_obj</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"external.*risk.*estimate"</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">)</span>
+<span class="n">re_obj</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;external.*risk.*estimate&quot;</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">)</span>
 <span class="n">col_split</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">X</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">re_obj</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">c</span><span class="p">)),</span> <span class="kc">None</span><span class="p">)</span>
 <span class="n">mask_high</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">col_split</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">63</span>
 
 <span class="n">X_train</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">mask_high</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">y_train</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">mask_high</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">X_deployment</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="o">~</span><span class="n">mask_high</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">y_deployment</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="o">~</span><span class="n">mask_high</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
-<h2 id="signals">Signals<a class="headerlink" href="#signals" title="Permanent link">&para;</a></h2>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Risk, no labels needed</label><label for="__tabbed_1_2">Outlier score: confidence, no labels needed</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
-<p>Predicted risk <code>P(default)</code>; larger means more harm, so <code>worse="higher"</code>. Risk and confidence share the 63-split (domain probabilities out-of-bag; see <a href="../../../explanation/core-concepts/">Core concepts</a>).</p>
+<h2 id="scores">Scores<a class="headerlink" href="#scores" title="Permanent link">&para;</a></h2>
+<p>With source and target defined, we can compare three scores. They are not interchangeable: each answers a different question and becomes available at a different time.</p>
+<table>
+<thead>
+<tr>
+<th>Score</th>
+<th>Requires labels?</th>
+<th>Harmful direction</th>
+<th><code>worse</code></th>
+<th>When it helps</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Predicted risk</td>
+<td>No</td>
+<td>Higher risk</td>
+<td><code>higher</code></td>
+<td>The output itself represents harm</td>
+</tr>
+<tr>
+<td>Outlier score: confidence (<code>LogitGap</code>)</td>
+<td>No</td>
+<td>Lower certainty</td>
+<td><code>lower</code></td>
+<td>Early warning before labels arrive</td>
+</tr>
+<tr>
+<td>Prediction error (Brier)</td>
+<td>Yes</td>
+<td>Larger error</td>
+<td><code>higher</code></td>
+<td>Post-outcome accuracy check</td>
+</tr>
+</tbody>
+</table>
+<p>Use predicted risk when the model output already represents harm, confidence for an early warning while labels are delayed, and prediction error for the clearest post-outcome check.</p>
+<p>The score examples build on the same model and out-of-sample predictions:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ss</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestClassifier</span>
 
-<span class="n">split</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_deployment</span><span class="p">))</span>
-<span class="n">X_concat</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">X_train</span><span class="p">,</span> <span class="n">X_deployment</span><span class="p">],</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="n">rf_domain</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span>
-    <span class="n">n_estimators</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
-    <span class="n">oob_score</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">random_state</span><span class="o">=</span><span class="mi">12345</span><span class="p">,</span>
-    <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="n">rf_domain</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_concat</span><span class="p">,</span> <span class="n">split</span><span class="p">)</span>
-<span class="n">domain_prob</span> <span class="o">=</span> <span class="n">rf_domain</span><span class="o">.</span><span class="n">oob_decision_function_</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestClassifier</span>
-
-<span class="n">y_train_binary</span> <span class="o">=</span> <span class="n">y_train</span><span class="o">.</span><span class="n">map</span><span class="p">({</span><span class="s2">"Good"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"Bad"</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span><span class="o">.</span><span class="n">values</span>
+<span class="n">y_train_binary</span> <span class="o">=</span> <span class="n">y_train</span><span class="o">.</span><span class="n">map</span><span class="p">({</span><span class="s2">&quot;Good&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Bad&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
 
 <span class="n">rf_bad</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span>
     <span class="n">n_estimators</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
@@ -1035,83 +1029,22 @@
 
 <span class="n">train_risk</span> <span class="o">=</span> <span class="n">rf_bad</span><span class="o">.</span><span class="n">oob_decision_function_</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
 <span class="n">deployment_risk</span> <span class="o">=</span> <span class="n">rf_bad</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_deployment</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-
-<span class="n">shift</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_shift</span><span class="p">(</span>
-    <span class="n">source</span><span class="o">=</span><span class="n">domain_prob</span><span class="p">[</span><span class="n">split</span><span class="o">.</span><span class="n">values</span> <span class="o">==</span> <span class="mi">0</span><span class="p">],</span>
-    <span class="n">target</span><span class="o">=</span><span class="n">domain_prob</span><span class="p">[</span><span class="n">split</span><span class="o">.</span><span class="n">values</span> <span class="o">==</span> <span class="mi">1</span><span class="p">],</span>
-    <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">),</span>
-<span class="p">)</span>
-<span class="n">harm</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span>
-    <span class="n">source</span><span class="o">=</span><span class="n">train_risk</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">deployment_risk</span><span class="p">,</span>
-    <span class="n">worse</span><span class="o">=</span><span class="s2">"higher"</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">),</span>
-<span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"AUC </span><span class="si">{</span><span class="n">shift</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> p=</span><span class="si">{</span><span class="n">shift</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>   <span class="c1"># → 1.0000, 0.0002</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Harm </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> p=</span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>    <span class="c1"># → 0.2483, 0.0001</span>
 </code></pre></div>
-<p>AUC 1.00 is expected because the split variable is itself a feature. The harm test shows the shift points toward higher risk.</p>
-<table>
-<thead>
-<tr>
-<th><code>test_shift</code></th>
-<th><code>test_harmful_shift</code></th>
-<th>Interpretation</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Significant</td>
-<td>Significant</td>
-<td>Changed and toward the harmful tail</td>
-</tr>
-<tr>
-<td>Significant</td>
-<td>Not significant</td>
-<td>Changed, not clearly harmful</td>
-</tr>
-<tr>
-<td>Not significant</td>
-<td>Not significant</td>
-<td>No clear shift</td>
-</tr>
-<tr>
-<td>Not significant</td>
-<td>Significant</td>
-<td>Tail signal missed by broad screen</td>
-</tr>
-</tbody>
-</table>
-<p>Both tests point to higher risk. Investigate, don't auto-retrain. <code>0.5</code> is chance; read harm against its null and the 0–1 scale.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Risk, no labels needed</label><label for="__tabbed_1_2">Outlier score: confidence, no labels needed</label><label for="__tabbed_1_3">Prediction error, labels needed</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>Start with predicted risk when the model output already represents harm. <code>P(default)</code> is directly tied to the outcome: larger means more harm, so use <code>worse="higher"</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="n">harm</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span>
+    <span class="n">source</span><span class="o">=</span><span class="n">train_risk</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">deployment_risk</span><span class="p">,</span>
+    <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Harm  p-value: </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>   <span class="c1"># → 0.0001</span>
+</code></pre></div>
+<p>The harmful-shift test points toward higher risk. Indeed, the mean predicted risk, or expected bad rate, rises from about 44% in source to 73% in target.</p>
 </div>
 <div class="tabbed-block">
-<p><code>LogitGap</code> (gap between top logit and mean of the rest) is an <strong>outlier score</strong> for confidence. Larger means more certain, so a drop (<code>worse="lower"</code>) signals harm (<a href="../../../explanation/core-concepts/">Core concepts</a>).</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestClassifier</span>
-
-<span class="n">split</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_deployment</span><span class="p">))</span>
-<span class="n">X_concat</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">X_train</span><span class="p">,</span> <span class="n">X_deployment</span><span class="p">],</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="n">rf_domain</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span>
-    <span class="n">n_estimators</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
-    <span class="n">oob_score</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">random_state</span><span class="o">=</span><span class="mi">12345</span><span class="p">,</span>
-    <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="n">rf_domain</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_concat</span><span class="p">,</span> <span class="n">split</span><span class="p">)</span>
-<span class="n">domain_prob</span> <span class="o">=</span> <span class="n">rf_domain</span><span class="o">.</span><span class="n">oob_decision_function_</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestClassifier</span>
-
-<span class="n">y_train_binary</span> <span class="o">=</span> <span class="n">y_train</span><span class="o">.</span><span class="n">map</span><span class="p">({</span><span class="s2">"Good"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"Bad"</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span><span class="o">.</span><span class="n">values</span>
-
-<span class="n">rf_bad</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span>
-    <span class="n">n_estimators</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
-    <span class="n">oob_score</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">random_state</span><span class="o">=</span><span class="mi">12345</span><span class="p">,</span>
-    <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="n">rf_bad</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train_binary</span><span class="p">)</span>
-
-<span class="n">train_risk</span> <span class="o">=</span> <span class="n">rf_bad</span><span class="o">.</span><span class="n">oob_decision_function_</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-<span class="n">deployment_risk</span> <span class="o">=</span> <span class="n">rf_bad</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_deployment</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<p><a href="https://openreview.net/forum?id=FLdLPUqnsP"><code>LogitGap</code></a> (Liang et al., 2025) measures how clearly the model favors one class over the other. A large gap means high confidence; a small gap means the model is undecided. Because lower confidence is harmful, we use <code>worse="lower"</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">logit</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">logit_gap</span><span class="p">(</span><span class="n">logits</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
     <span class="n">logits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
@@ -1129,61 +1062,37 @@
     <span class="k">return</span> <span class="n">logit_gap</span><span class="p">(</span><span class="n">logit</span><span class="p">(</span><span class="n">clipped</span><span class="p">))</span>
 
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ss</span>
-
 <span class="n">train_conf</span> <span class="o">=</span> <span class="n">outlier_scores_from_probabilities</span><span class="p">(</span><span class="n">rf_bad</span><span class="o">.</span><span class="n">oob_decision_function_</span><span class="p">)</span>
 <span class="n">deploy_conf</span> <span class="o">=</span> <span class="n">outlier_scores_from_probabilities</span><span class="p">(</span><span class="n">rf_bad</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_deployment</span><span class="p">))</span>
 
 <span class="n">harm</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span>
     <span class="n">source</span><span class="o">=</span><span class="n">train_conf</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">deploy_conf</span><span class="p">,</span>
-    <span class="n">worse</span><span class="o">=</span><span class="s2">"lower"</span><span class="p">,</span>  <span class="c1"># lower confidence = harm</span>
+    <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;lower&quot;</span><span class="p">,</span>  <span class="c1"># lower confidence = harm</span>
     <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">),</span>
 <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Harm </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> p=</span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># → 0.0409, 1.0000</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Harm  p-value: </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># → 1.0000</span>
 </code></pre></div>
-<p>No harmful confidence drop. The statistic points the other way. At 82% bad rate predictions polarize and confidence rises. A model can grow more confident while predicting higher risk; confidence complements risk.</p>
+<p>Default probability and confidence answer different questions. Default probability asks, "How risky does the model think this applicant is?" <code>LogitGap</code> asks, "How sure is it?" Here, target predictions are both riskier and more confident, so there is no harmful confidence drop. The model is more decisive, not safer: confidence adds a second dimension to the risk score.</p>
 </div>
-</div>
-</div>
-<details class="details">
-<summary>Errors, needs labels (under the null here)</summary>
-<p>Once labels arrive, test prediction error (Brier) with <code>worse="higher"</code>. In this guide the error section uses a separate <strong>random</strong> split under the null, so <code>p=0.2737</code> is expected. In deployment a small p-value would signal worse accuracy.</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ss</span>
+<div class="tabbed-block">
+<p>Once labels arrive, prediction error (Brier) gives the clearest post-outcome check. It uses the same source and target split and the same source-trained model as the other scores; the difference is that labels are now available to measure each prediction's error.</p>
+<div class="highlight"><pre><span></span><code><span class="n">y_deployment_binary</span> <span class="o">=</span> <span class="n">y_deployment</span><span class="o">.</span><span class="n">map</span><span class="p">({</span><span class="s2">&quot;Good&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Bad&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+<span class="n">brier_source</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_train_binary</span> <span class="o">-</span> <span class="n">train_risk</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+<span class="n">brier_target</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_deployment_binary</span> <span class="o">-</span> <span class="n">deployment_risk</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
 
-<span class="n">harm</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">brier_train</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">brier_test</span><span class="p">,</span> <span class="n">worse</span><span class="o">=</span><span class="s2">"higher"</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Brier p=</span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>  <span class="c1"># → 0.2737 (no shift, as expected)</span>
+<span class="n">harm</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span>
+    <span class="n">source</span><span class="o">=</span><span class="n">brier_source</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">brier_target</span><span class="p">,</span>
+    <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Brier p-value: </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># -&gt; 1.0000</span>
 </code></pre></div>
-<p>Full script <code>examples/credit/_code/monitor_prediction_errors_example.py</code> loads HELOC, fits the RF out-of-sample, and computes Brier scores.</p>
-</details>
-<p>Full scripts: <code>examples/credit/_code/</code>.</p>
-<h2 id="which-signal-when">Which signal when?<a class="headerlink" href="#which-signal-when" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Signal</th>
-<th>Labels?</th>
-<th>When it helps</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Predicted risk</td>
-<td>No</td>
-<td>The output itself is harm</td>
-</tr>
-<tr>
-<td>Outlier score: confidence</td>
-<td>No</td>
-<td>Early warning before they arrive</td>
-</tr>
-<tr>
-<td>Prediction error (Brier)</td>
-<td>Yes</td>
-<td>Clearest accuracy check</td>
-</tr>
-</tbody>
-</table>
-<p>One 63-split, three signals, two questions. Weighting handles the comparability question (<a href="../../../how-to/weight-for-common-support/">Weight for common support</a>; <a href="../../../explanation/core-concepts/">Core concepts</a>). Pick by timing: run risk when labels are absent, confidence for an early warning, and error once they arrive.</p>
+<p>Default probability tells us what the model predicts; confidence tells us how sure it is. Brier score asks a different question: were those probabilities accurate once the outcomes arrived? With <code>p=1.0000</code>, we do not reject the null hypothesis of no harmful increase in prediction error. On this split, there is no evidence that the model's errors are larger in target. The higher risk appears to reflect a change in the population rather than material model deterioration.</p>
+</div>
+</div>
+</div>
+<h2 id="wrap-up">Wrap up<a class="headerlink" href="#wrap-up" title="Permanent link">&para;</a></h2>
+<p>These three scores give three views of the same deployment change. Predicted risk tells us how harmful the target looks, confidence tells us how decisive the model is, and Brier score tells us whether its probabilities remain accurate once outcomes arrive. Here, the target looks riskier and the model is more confident, but prediction error does not increase. Together, the results suggest a riskier population rather than material model deterioration.</p>
+<p>The next question is whether the comparison is being driven by regions where source and target have little overlap. Continue with <a href="../../../how-to/weight-for-common-support/">Weight for common support</a> to make that question explicit.</p>
 
 
 

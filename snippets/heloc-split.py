@@ -14,6 +14,7 @@ mask_high = X[col_split].astype(float) > 63
 X_train = X[mask_high].reset_index(drop=True)
 y_train = y[mask_high].reset_index(drop=True)
 X_deployment = X[~mask_high].reset_index(drop=True)
+y_deployment = y[~mask_high].reset_index(drop=True)
 # --8<-- [end:heloc-split]
 
 # --8<-- [start:heloc-domain]
@@ -35,7 +36,7 @@ domain_prob = rf_domain.oob_decision_function_[:, 1]
 # --8<-- [start:heloc-risk-model]
 from sklearn.ensemble import RandomForestClassifier
 
-y_train_binary = y_train.map({"Good": 0, "Bad": 1}).values
+y_train_binary = y_train.map({"Good": 0, "Bad": 1}).astype(int).values
 
 rf_bad = RandomForestClassifier(
     n_estimators=500,

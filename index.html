@@ -457,6 +457,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#workflow" class="md-nav__link">
     <span class="md-ellipsis">
       Workflow
@@ -469,15 +478,6 @@
   <a href="#where-next" class="md-nav__link">
     <span class="md-ellipsis">
       Where next
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Installation
     </span>
   </a>
   
@@ -938,20 +938,23 @@
 <!-- badges: start -->
 <p><a href="https://pypi.org/project/samesame/"><img alt="Python" src="https://img.shields.io/badge/python-3.12+-blue.svg" /></a>
 <a href="https://pepy.tech/project/samesame"><img alt="Downloads" src="https://static.pepy.tech/badge/samesame" /></a>
-<a href="https://vathymut.github.io/samesame/"><img alt="Static Badge" src="https://img.shields.io/badge/docs-link-blue" /></a>
 <a href="https://arxiv.org/abs/2107.02990"><img alt="UAI 2022" src="https://img.shields.io/badge/paper-UAI%202022-yellow" /></a></p>
 <!-- badges: end -->
 
 <blockquote>
 <p><em>Same, same but different ...</em></p>
 </blockquote>
-<p>Bring one score per observation (predicted risk, prediction error, or an outlier score such as a confidence gap). <code>samesame</code> compares it between source and target and answers two questions: did it change, and did it get worse?</p>
-<p>Production monitoring is often constrained. The feature space is too wide to scan directly, and labels arrive too late. A score reduces each row to one number you can test.</p>
+<p>Bring your own score — the risk you care about, the errors your model makes, how much you trust it, or when something looks off. <code>samesame</code> tells you two things: did the source and target scores shift, and did it get worse?</p>
+<p>Data and model monitoring rarely gives you labels, and univariate checks miss hidden multivariate (high-dimensional) shifts. A score reduces each observation to a single interpretable and insightful number.</p>
+<h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>samesame
+</code></pre></div>
+<p>Requires Python 3.12+, <code>numpy</code>, <code>scipy</code>, and <code>scikit-learn</code>.</p>
 <p><strong>Source</strong> is the reference distribution (training data or a past deployment); <strong>target</strong> is the current deployment under evaluation.</p>
 <p>It separates two questions that are easy to conflate:</p>
 <ul>
-<li><code>ss.test_shift</code>: a broad, two-sided screen for any shift. Its statistic is the ROC AUC (<code>∫ TPR dFPR</code>), and <code>0.5</code> means the score does not separate source from target.</li>
-<li><code>ss.test_harmful_shift(..., worse="higher"|"lower")</code>: a focused, one-sided test for movement toward the tail you declare harmful. Its statistic is a weighted AUC (<code>∫ TPR·(1−FPR)² dFPR</code>) that emphasizes the harmful tail.</li>
+<li><code>ss.test_shift</code>: a broad, two-sided screen for any shift.</li>
+<li><code>ss.test_harmful_shift(..., worse="higher")</code>: a focused, one-sided test for movement toward the tail you declare harmful (<code>worse="lower"</code> if that tail is the small one).</li>
 </ul>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
@@ -965,38 +968,31 @@
 <span class="n">harm</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harmful_shift</span><span class="p">(</span>
     <span class="n">source</span><span class="o">=</span><span class="n">source_scores</span><span class="p">,</span>
     <span class="n">target</span><span class="o">=</span><span class="n">target_scores</span><span class="p">,</span>
-    <span class="n">worse</span><span class="o">=</span><span class="s2">"higher"</span><span class="p">,</span>  <span class="c1"># larger = more harm (e.g., risk)</span>
+    <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span>  <span class="c1"># larger = more harm (e.g., risk)</span>
     <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Shift statistic: </span><span class="si">{</span><span class="n">shift</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, p-value: </span><span class="si">{</span><span class="n">shift</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<span class="c1"># → Shift statistic: 0.697, p-value: 0.0002</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Harm  statistic: </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">statistic</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, p-value: </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<span class="c1"># → Harm  statistic: 0.155, p-value: 0.0001</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Shift p-value: </span><span class="si">{</span><span class="n">shift</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="c1"># → Shift p-value: 0.0002</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Harm  p-value: </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="c1"># → Harm  p-value: 0.0001</span>
 </code></pre></div>
-<p>A small p-value rejects label exchangeability, not impact, causality, effect size, or the chance the null is true. Evidence of a shift is not evidence of harm. Details: <a href="explanation/core-concepts/">Core concepts</a>.</p>
+<p>The small p-values provide strong evidence that the target distribution shifted and moved in an adverse direction. We therefore reject both the null of no shift and the null of no harmful shift at any reasonable significance level.</p>
 <h2 id="workflow">Workflow<a class="headerlink" href="#workflow" title="Permanent link">&para;</a></h2>
 <ol>
-<li><strong>Choose a score</strong> that captures the outcome you care about. If a fitted model produces the scores, generate them out of sample (<a href="explanation/core-concepts/">Core concepts</a>).</li>
+<li><strong>Choose a score</strong> that represents the outcome you care about. Generate it out of sample if it comes from a fitted model.</li>
 <li><strong>Ask whether anything changed</strong> with <code>ss.test_shift</code>.</li>
-<li><strong>Ask whether the change is harmful</strong> with <code>ss.test_harmful_shift(..., worse=...)</code>.</li>
-<li><strong>Address poor overlap</strong> with <code>ss.domain_weights</code> only when overlap is poor. Weighting reframes around common support, not a default correction.</li>
+<li><strong>Ask whether the change is harmful</strong> with <code>ss.test_harmful_shift(..., worse=...)</code>. Specify in advance whether higher or lower scores indicate harm.</li>
+<li><strong>Address poor feature overlap</strong> with <code>ss.domain_weights</code> only when it is a real concern. Weighting focuses the comparison on a different population: the region of common support. Details: <a href="https://vathymut.github.io/samesame/how-to/weight-for-common-support/">Weight for common support</a>.</li>
 </ol>
 <h2 id="where-next">Where next<a class="headerlink" href="#where-next" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong><a href="examples/tutorials/get-started/">Get started</a></strong>: run both tests in 5 minutes.</li>
-<li><strong><a href="examples/trials/check-drug-efficacy/">Is the new drug good enough?</a></strong>: the harm test on 70 trial scores, no model.</li>
-<li><strong><a href="examples/credit/monitor-credit/">Monitor a credit model</a></strong>: one HELOC model, three signals.</li>
-<li><strong><a href="how-to/weight-for-common-support/">Weight for common support</a></strong>: when and how to reweight.</li>
+<li><strong><a href="https://vathymut.github.io/samesame/examples/tutorials/get-started/">Get started</a></strong>: run both tests in 5 minutes.</li>
+<li><strong><a href="https://vathymut.github.io/samesame/examples/trials/check-drug-efficacy/">Is the new drug good enough?</a></strong>: the harm test on 70 trial scores, no model.</li>
+<li><strong><a href="https://vathymut.github.io/samesame/examples/credit/monitor-credit/">Monitor a credit model</a></strong>: one HELOC model, three signals.</li>
+<li><strong><a href="https://vathymut.github.io/samesame/how-to/weight-for-common-support/">Weight for common support</a></strong>: when and how to reweight.</li>
+<li><strong><a href="https://vathymut.github.io/samesame/api/testing/">API reference</a></strong>: full docs for the tests and <code>domain_weights</code>.</li>
 </ul>
-<h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>samesame
-</code></pre></div>
-<p>Requires Python 3.12+, <code>numpy</code>, <code>scipy</code>, and <code>scikit-learn</code>.</p>
-<div class="admonition note">
-<p class="admonition-title">Scope</p>
-<p>Score-based monitoring only. Not for randomized experiments, subgroup discovery, or sequential monitoring.</p>
-</div>
 
 
 
