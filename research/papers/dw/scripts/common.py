@@ -37,11 +37,11 @@ def s_value(p: np.ndarray | float) -> np.ndarray | float:
 # draw_overlap_dataset from the earlier manuscript suite). Shared N(0,1) in
 # both groups, plus a source-only low-overlap region at -LOW_OVERLAP_LOC and
 # a target-only low-overlap region at +LOW_OVERLAP_LOC; severity score =
-# feature + noise. effect adds a common-support shift to shared target
-# scores (0.0 = support-shift condition: no harmful change, so the
-# unweighted test gives support-driven rejections as the off-support
-# fraction grows while the doubly weighted test remains calibrated under
-# the support-shift null).
+# feature + noise. effect adds harm on common support to shared target
+# scores (0.0 = harmless shift: who is observed changes, how outcomes
+# arise does not — so the unweighted test gives support-driven rejections
+# as the off-support fraction grows while the doubly weighted test remains
+# calibrated under the harmless-shift null).
 # ---------------------------------------------------------------------------
 
 LOW_OVERLAP_LOC = 3.0
@@ -60,8 +60,8 @@ def gen_overlap(
 
     off_support_fraction: fraction of each group in its off-support
     low-overlap region (0.0 = identical N(0,1) populations).
-    effect: magnitude of the common-support shift added to shared target
-    scores (0.0 = support-shift condition).
+    effect: magnitude of the harm added on common support to shared target
+    scores (0.0 = harmless shift).
     """
     source_low_overlap = rng.random(n_source) < off_support_fraction
     target_low_overlap = rng.random(n_target) < off_support_fraction

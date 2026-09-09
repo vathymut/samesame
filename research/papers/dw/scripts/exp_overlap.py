@@ -1,14 +1,15 @@
-"""Support-shift calibration: testing for harmful shift under support shifts.
+"""Harmless-shift calibration: testing for harmful shift when nothing got worse.
 
 Port of draw_overlap_dataset + `synthetic calibration` from the earlier
 manuscript suite, re-run on the current test_harm/domain_weights API.
 
-Support-shift condition (effect=0.0, the null holds): the target-only
-off-support region at +3 should drive support-driven rejections from the
-unweighted test as the off-support fraction grows, while the doubly
-weighted (common-support) test remains calibrated. off_support_fraction=0.0
-is the calibration anchor (identical populations -> all modes silent).
-effect>0 adds a common-support shift (power variant).
+Harmless shift (effect=0.0, the null holds): who is observed changes — the
+target-only off-support region at +3 — while how outcomes arise does not.
+The unweighted test should give support-driven rejections as the
+off-support fraction grows, while the doubly weighted (common-support)
+test remains calibrated. off_support_fraction=0.0 is the calibration
+anchor (identical populations -> all modes silent). effect>0 adds genuine
+harm on common support (power variant).
 
 Outputs CSV (one row per paired run) + summary JSON with reject rates.
 """

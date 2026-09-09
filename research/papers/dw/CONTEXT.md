@@ -114,9 +114,11 @@ surface, use the repository root `CONTEXT.md` instead.
   probabilities, tapered weights); structural zeros in a design are
   off-support, not low-overlap.
 - Name experimental conditions by what changed, not by statistical status:
-  a `support-shift condition` (populations differ only in support; the null
-  holds) versus a `common-support shift` (the shared mechanism itself moves).
-  Keep `null` for statistical status only (type-I error, calibration).
+  a `harmless shift` (who is observed changes; how outcomes arise does not)
+  versus a `harmful shift`. Keep `null` for statistical status only
+  (type-I error, calibration). The who-vs-how contrast carries the estimand
+  point and should appear wherever the harmless-shift condition is
+  introduced.
 - Call the naive failure `support-driven rejection` and the desired property
   `support-robust`: testing for harmful shift should be robust to support
   shifts. Do not call off-support mass `contamination` — it is legitimate
