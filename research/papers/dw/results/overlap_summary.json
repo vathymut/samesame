@@ -1,0 +1,62 @@
+{
+  "primary": "hgb_cal/both/0.5",
+  "effect": 0.0,
+  "settings": {
+    "0.0": {
+      "reject_unweighted": 0.04,
+      "reject_primary": 0.04,
+      "median_p_unweighted": 0.55,
+      "median_p_primary": 0.544,
+      "median_ds_primary": -0.01621981609221336,
+      "median_ess_src": 179.44823267868824,
+      "median_ess_tgt": 179.42865870089037
+    },
+    "0.1": {
+      "reject_unweighted": 0.92,
+      "reject_primary": 0.58,
+      "median_p_unweighted": 0.004,
+      "median_p_primary": 0.029,
+      "median_ds_primary": -2.0294468445267846,
+      "median_ess_src": 176.7397153826928,
+      "median_ess_tgt": 176.6281031445618
+    },
+    "0.2": {
+      "reject_unweighted": 1.0,
+      "reject_primary": 0.66,
+      "median_p_unweighted": 0.001,
+      "median_p_primary": 0.0205,
+      "median_ds_primary": -4.357122758833062,
+      "median_ess_src": 160.4469593189175,
+      "median_ess_tgt": 162.16775674720373
+    },
+    "0.3": {
+      "reject_unweighted": 1.0,
+      "reject_primary": 0.76,
+      "median_p_unweighted": 0.001,
+      "median_p_primary": 0.007,
+      "median_ds_primary": -2.8073549220576037,
+      "median_ess_src": 145.47554992719304,
+      "median_ess_tgt": 147.89425620485315
+    },
+    "0.4": {
+      "reject_unweighted": 1.0,
+      "reject_primary": 0.94,
+      "median_p_unweighted": 0.001,
+      "median_p_primary": 0.002,
+      "median_ds_primary": -1.0,
+      "median_ess_src": 133.46164149513754,
+      "median_ess_tgt": 134.3811947676458
+    }
+  },
+  "metadata": {
+    "provenance": "port of draw_overlap_dataset (old synthetic calibration) to current test_harm/domain_weights API",
+    "pilot": "5 off-support fractions x 50 runs, n_source=n_target=180, n_resamples=999, seed=12345",
+    "column_map": {
+      "severity": "off_support_fraction"
+    },
+    "script": "scripts/exp_overlap.py",
+    "script_sha256": "9c3cd36e67abfc41",
+    "package_rev": "6ab4ee1ebff343b879b6e0ad997f2c08e895830f",
+    "package": "samesame (editable, src/samesame)"
+  }
+}
