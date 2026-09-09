@@ -1,7 +1,7 @@
-"""Shared utilities for Cobb et al. (2022) 4.1/4.2 replications with samesame.
+"""Shared utilities for domain-weighting simulation experiments with samesame.
 
 Mapping to samesame terms (see CONTEXT.md):
-- source = reference (original context), target = deployment (changed context)
+- source = reference population, target = population under evaluation
 - S = univariate outlier score tested with test_harm(worse="higher")
 - C = domain context; a C-only domain classifier gives P(target|C),
   which feeds domain_weights -> test_harm(..., weights=...).
@@ -11,15 +11,10 @@ Mapping to samesame terms (see CONTEXT.md):
 
 from __future__ import annotations
 
-import fcntl
-from pathlib import Path
-
 import numpy as np
-import pandas as pd
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.mixture import GaussianMixture
 from sklearn.model_selection import cross_val_predict
 
 import samesame as ss
@@ -36,126 +31,46 @@ def s_value(p: np.ndarray | float) -> np.ndarray | float:
     return -np.log2(np.asarray(p, dtype=float))
 
 
-def parse_shard(spec: str) -> tuple[int, int]:
-    """Parse 'I/M' shard spec into (worker_index, n_workers)."""
-    try:
-        i, m = spec.split("/")
-        out = (int(i), int(m))
-    except ValueError:
-        raise ValueError(f"shard must look like '2/6', got {spec!r}") from None
-    if not (0 <= out[0] < out[1]):
-        raise ValueError(f"shard needs 0 <= I < M, got {spec!r}")
-    return out
-
-
-def append_row_locked(outpath: Path, row: dict) -> None:
-    """Append one checkpoint row, safe for parallel shard workers.
-
-    A sibling .lock file serializes the exists-check + append so workers
-    sharing one CSV never interleave lines or duplicate headers.
-    """
-    lockpath = outpath.with_name(outpath.name + ".lock")
-    with open(lockpath, "w") as lock:
-        fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
-        try:
-            header = not outpath.exists()
-            pd.DataFrame([row]).to_csv(
-                outpath, mode="a", header=header, index=False
-            )
-        finally:
-            fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
-
-
 # ---------------------------------------------------------------------------
-# 4.1 data generation: S|C ~ N(C,1), C0 ~ N(0,1)
+# B1 data generation: 1-D overlap DGP (port of draw_overlap_dataset from the
+# earlier manuscript suite). Shared N(0,1) both groups; source-private lump
+# at -PRIVATE_LOC, target-private lump at +PRIVATE_LOC; S = C + noise.
+# effect shifts shared target scores only (0.0 = null/false-alarm battery).
 # ---------------------------------------------------------------------------
 
-K2_MUS = (-0.8, 0.8)
-K2_SD = 0.2
+PRIVATE_LOC = 3.0
+PRIVATE_SD = 0.45
+OVERLAP_SCORE_SD = 0.8
 
 
-def gen_41(
+def gen_overlap(
     rng: np.random.Generator,
     n_source: int,
     n_target: int,
-    c1: str = "sigma_0.5",
-    alt_eps: float = 0.0,
+    severity: float = 0.25,
+    effect: float = 0.0,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """Return (source_S, target_S, source_C, target_C) for experiment 4.1.
+    """Return (source_S, target_S, source_C, target_C) for experiment B1.
 
-    c1: 'sigma_0.25' | 'sigma_0.5' | 'sigma_1.0' | 'k2'.
-    alt_eps: mean shift added to target S (0.0 = null, 0.5 = alt per plan).
-    For 'k2' the shift applies to one mixture mode only (the upper one).
+    severity: private-mass fraction in each group (0.0 = identical N(0,1)).
+    effect: mean shift added to *shared* target scores (0.0 = null).
     """
+    source_private = rng.random(n_source) < severity
+    target_private = rng.random(n_target) < severity
+
     source_c = rng.normal(0.0, 1.0, size=n_source)
-    source_s = rng.normal(source_c, 1.0)
+    target_c = rng.normal(0.0, 1.0, size=n_target)
+    source_c[source_private] = rng.normal(
+        -PRIVATE_LOC, PRIVATE_SD, size=source_private.sum()
+    )
+    target_c[target_private] = rng.normal(
+        PRIVATE_LOC, PRIVATE_SD, size=target_private.sum()
+    )
 
-    if c1.startswith("sigma_"):
-        sigma = float(c1.split("_")[1])
-        target_c = rng.normal(0.0, sigma, size=n_target)
-        target_s = rng.normal(target_c + alt_eps, 1.0)
-    elif c1 == "k2":
-        mus = np.array(K2_MUS)
-        comp = rng.integers(0, 2, size=n_target)
-        target_c = rng.normal(mus[comp], K2_SD)
-        shift = np.where(comp == 1, alt_eps, 0.0)
-        target_s = rng.normal(target_c + shift, 1.0)
-    else:
-        raise ValueError(f"unknown c1={c1!r}")
+    source_s = source_c + rng.normal(0.0, OVERLAP_SCORE_SD, size=n_source)
+    target_s = target_c + rng.normal(0.0, OVERLAP_SCORE_SD, size=n_target)
+    target_s[~target_private] += effect
     return source_s, target_s, source_c, target_c
-
-
-# ---------------------------------------------------------------------------
-# 4.2 data generation: 2-D mixture, prevalence shift + mean shift
-# ---------------------------------------------------------------------------
-
-MU1 = np.array([-1.0, 0.0])
-MU2 = np.array([1.0, 0.0])
-SIGMA_42 = 0.5
-SHIFT_42 = np.array([0.6, 0.0])
-
-
-def gen_42(
-    rng: np.random.Generator,
-    n_source: int,
-    n_target: int,
-    pi1: float = 0.2,
-    alt: bool = False,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """Return (source_S, target_S, source_C, target_C, source_X, target_X).
-
-    S (harm score) = X[:, 0] so the +[0.6,0] mean shift is worse="higher".
-    C = P(comp1 | X) from a 2-comp GMM fit on source X (paper fits on
-    held-out ref; here per-run source fit for self-containment).
-    """
-    src_comp = rng.random(n_source) < 0.5
-    source_x = np.where(
-        src_comp[:, None],
-        rng.normal(MU1, SIGMA_42, size=(n_source, 2)),
-        rng.normal(MU2, SIGMA_42, size=(n_source, 2)),
-    )
-    tgt_comp = rng.random(n_target) < pi1
-    mu2 = MU2 + (SHIFT_42 if alt else 0.0)
-    target_x = np.where(
-        tgt_comp[:, None],
-        rng.normal(MU1, SIGMA_42, size=(n_target, 2)),
-        rng.normal(mu2, SIGMA_42, size=(n_target, 2)),
-    )
-    gm = GaussianMixture(n_components=2, n_init=3, random_state=int(rng.integers(1e9)))
-    gm.fit(source_x)
-    # Align component 0 with MU1 (closest mean in x) for stable C definition.
-    order = np.argsort(gm.means_[:, 0])
-    probs_src = gm.predict_proba(source_x)[:, order[0]]
-    probs_tgt = gm.predict_proba(target_x)[:, order[0]]
-    return (
-        source_x[:, 0],
-        target_x[:, 0],
-        probs_src,
-        probs_tgt,
-        source_x,
-        target_x,
-    )
-
 
 # ---------------------------------------------------------------------------
 # Domain probabilities: C-only classifier, out-of-sample via CV
@@ -175,14 +90,10 @@ def _base_estimator(name: str, seed: int):
     raise ValueError(f"unknown classifier={name!r}")
 
 
-def domain_probs_cv(
+def domain_probs(
     source_c: np.ndarray, target_c: np.ndarray, method: str, seed: int
 ) -> tuple[np.ndarray, np.ndarray, float]:
     """Out-of-sample P(target|C) via cross_val_predict(cv=10).
-
-    Reference implementation kept for validation. Wrapping
-    CalibratedClassifierCV(cv=10) in a second outer CV trains ~110 base
-    models per run; see domain_probs for the fast equivalent.
 
     Returns (source_prob, target_prob, domain_auc).
     """
@@ -199,104 +110,6 @@ def domain_probs_cv(
     proba = cross_val_predict(est, c, y, cv=10, method="predict_proba")[:, 1]
     auc = float(roc_auc_score(y, proba))
     return proba[: len(source_c)], proba[len(source_c):], auc
-
-
-def _oof_calibrated_proba(base, c: np.ndarray, y: np.ndarray, seed: int) -> np.ndarray:
-    """Honest out-of-fold P(target|C) from ONE CalibratedClassifierCV fit.
-
-    Fits CalibratedClassifierCV(cv=<explicit 10-fold splitter>) once, then
-    predicts each fold's held-out rows with the sub-model trained without
-    them. Same OOF estimand as domain_probs_cv's outer loop at ~1/10 the
-    fits (11 vs ~110). The splitter instance is shared between fit and
-    assignment so the fold mapping matches by construction.
-    """
-    from sklearn.model_selection import StratifiedKFold
-
-    cv = StratifiedKFold(n_splits=10, shuffle=True, random_state=seed)
-    est = CalibratedClassifierCV(base, cv=cv, method="sigmoid")
-    est.fit(c, y)
-    splits = list(cv.split(c, y))
-    cals = est.calibrated_classifiers_[: len(splits)]
-    assert len(cals) == len(splits), (len(cals), len(splits))
-    proba = np.empty(len(y))
-    for (_, te), cal in zip(splits, cals):
-        proba[te] = cal.predict_proba(c[te])[:, 1]
-    return proba
-
-
-def domain_probs(
-    source_c: np.ndarray, target_c: np.ndarray, method: str, seed: int
-) -> tuple[np.ndarray, np.ndarray, float]:
-    """P(target|C): honest OOF for calibrated methods, cheap CV for logreg.
-
-    rf_cal/hgb_cal use _oof_calibrated_proba (one fit, ~11 base fits vs
-    ~110 under double CV). logreg keeps cross_val_predict(cv=10) (cheap).
-    Returns (source_prob, target_prob, domain_auc).
-    """
-    from sklearn.metrics import roc_auc_score
-
-    c = np.concatenate([source_c, target_c]).reshape(-1, 1)
-    y = np.concatenate([np.zeros(len(source_c)), np.ones(len(target_c))]).astype(int)
-    if method == "logreg":
-        proba = cross_val_predict(
-            _base_estimator(method, seed), c, y, cv=10, method="predict_proba"
-        )[:, 1]
-    elif method == "rf_cal":
-        base = RandomForestClassifier(n_estimators=200, random_state=seed)
-        proba = _oof_calibrated_proba(base, c, y, seed)
-    elif method == "hgb_cal":
-        base = HistGradientBoostingClassifier(random_state=seed)
-        proba = _oof_calibrated_proba(base, c, y, seed)
-    else:
-        raise ValueError(f"unknown classifier={method!r}")
-    auc = float(roc_auc_score(y, proba))
-    return proba[: len(source_c)], proba[len(source_c):], auc
-
-
-# ---------------------------------------------------------------------------
-# One paired run: unweighted vs weighted test_harm
-# ---------------------------------------------------------------------------
-
-def paired_run(
-    source_s: np.ndarray,
-    target_s: np.ndarray,
-    source_c: np.ndarray,
-    target_c: np.ndarray,
-    *,
-    n_resamples: int,
-    seed: int,
-    classifiers: tuple[str, ...] = CLASSIFIERS,
-    reweights: tuple[str, ...] = REWEIGHTS,
-    shrinkages: tuple[float, ...] = SHRINKAGES,
-) -> dict:
-    """Run unweighted + full sweep of weighted test_harm on one dataset."""
-    out: dict = {}
-    r = ss.test_harm(
-        source_s, target_s, worse="higher",
-        n_resamples=n_resamples, rng=np.random.default_rng(seed),
-    )
-    out["unweighted"] = {"p": float(r.pvalue), "stat": float(r.statistic)}
-    for clf in classifiers:
-        sp, tp, auc = domain_probs(source_c, target_c, clf, seed)
-        out[f"domain_auc/{clf}"] = auc
-        for rw in reweights:
-            for lam in shrinkages:
-                w = ss.domain_weights(
-                    source=sp, target=tp, reweight=rw, shrinkage=lam
-                )
-                ess = w.effective_sample_size()
-                rr = ss.test_harm(
-                    source_s, target_s, worse="higher", weights=w,
-                    n_resamples=n_resamples,
-                    rng=np.random.default_rng(seed),
-                )
-                out[f"{clf}/{rw}/{lam}"] = {
-                    "p": float(rr.pvalue),
-                    "stat": float(rr.statistic),
-                    "ess_source": float(ess.source),
-                    "ess_target": float(ess.target),
-                }
-    return out
 
 
 def delta_s(p_weighted: float, p_unweighted: float) -> float:
