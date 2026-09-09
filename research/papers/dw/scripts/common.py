@@ -33,13 +33,14 @@ def s_value(p: np.ndarray | float) -> np.ndarray | float:
 
 
 # ---------------------------------------------------------------------------
-# Overlap DGP: 1-D feature with low-overlap mass (port of draw_overlap_dataset
-# from the earlier manuscript suite). Shared N(0,1) in both groups, plus a
-# source-only lump at -LOW_OVERLAP_LOC and a target-only lump at
-# +LOW_OVERLAP_LOC; severity score = feature + noise. effect shifts shared
-# target scores only (0.0 = specificity battery: no harmful change, so the
-# unweighted test false-alarms as contamination grows while the doubly
-# weighted test stays specific).
+# Overlap DGP: 1-D feature with low-overlap regions (port of
+# draw_overlap_dataset from the earlier manuscript suite). Shared N(0,1) in
+# both groups, plus a source-only low-overlap region at -LOW_OVERLAP_LOC and
+# a target-only low-overlap region at +LOW_OVERLAP_LOC; severity score =
+# feature + noise. effect shifts shared target scores only (0.0 =
+# calibration experiment: no harmful change, so the unweighted test
+# false-alarms as contamination grows while the doubly weighted test
+# remains calibrated).
 # ---------------------------------------------------------------------------
 
 LOW_OVERLAP_LOC = 3.0
@@ -56,7 +57,7 @@ def gen_overlap(
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """Return (source_score, target_score, source_feature, target_feature).
 
-    contamination: fraction of each group in its low-overlap lump
+    contamination: fraction of each group in its low-overlap region
     (0.0 = identical N(0,1) populations).
     effect: mean shift added to *shared* target scores (0.0 = null).
     """

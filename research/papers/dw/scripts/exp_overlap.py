@@ -1,14 +1,14 @@
-"""Low-overlap specificity: testing for harmful shift under contamination.
+"""Low-overlap calibration: testing for harmful shift under contamination.
 
 Port of draw_overlap_dataset + `synthetic calibration` from the earlier
 manuscript suite, re-run on the current test_harm/domain_weights API.
 
-Specificity battery (effect=0.0, no harmful change): the target-only lump
-at +3 should make the unweighted test false-alarm as contamination grows,
-while the doubly weighted (common-support) test stays specific.
-contamination=0.0 is the calibration anchor (identical populations ->
-all modes silent). effect>0 adds a genuine shift on common support
-(power variant).
+Calibration experiment (effect=0.0, no harmful change): the target-only
+low-overlap region at +3 should make the unweighted test false-alarm as
+contamination grows, while the doubly weighted (common-support) test
+remains calibrated. contamination=0.0 is the calibration anchor (identical
+populations -> all modes silent). effect>0 adds a genuine shift on common
+support (power variant).
 
 Outputs CSV (one row per paired run) + summary JSON with reject rates.
 """
