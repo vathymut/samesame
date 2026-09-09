@@ -1,6 +1,6 @@
 <!-- Inspired by: https://github.com/github/awesome-copilot/blob/main/instructions/update-docs-on-code-change.instructions.md -->
 ---
-applyTo: "README.md,docs/**/*.md,CONTEXT.md,CONTRIBUTING.md"
+applyTo: "README.md,docs/**/*.md,CONTRIBUTING.md"
 description: "Documentation standards for samesame"
 ---
 # Documentation standards
