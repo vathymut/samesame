@@ -21,9 +21,11 @@ from common import (
     SHRINKAGES,
     CLASSIFIERS,
     PRIMARY,
+    append_row_locked,
     delta_s,
     domain_probs,
     gen_41,
+    parse_shard,
     rope_posterior,
     s_value,
 )
@@ -68,14 +70,40 @@ def single_run(c1, alt, i, n_source, n_target, n_resamples, seed):
     return row
 
 
+def summarize(full: pd.DataFrame, key: str) -> dict:
+    """Per-setting ROPE summary over the primary cell from merged rows."""
+    summary: dict = {"primary": key, "settings": {}}
+    for (c1, alt), df in full.groupby(["c1", "alt"]):
+        tag = f"{c1}/{'alt' if int(alt) else 'null'}"
+        post = rope_posterior(df[f"ds_{key}"].to_numpy())
+        summary["settings"][tag] = {
+            "median_p_unweighted": float(df["p_unweighted"].median()),
+            "median_p_primary": float(df[f"p_{key}"].median()),
+            "median_ds_primary": post["median_delta_s"],
+            "equiv_rate_primary": post["equiv_rate"],
+            "rope_posterior": post,
+            "median_ess_src": float(df[f"ess_src_{key}"].median()),
+            "median_ess_tgt": float(df[f"ess_tgt_{key}"].median()),
+        }
+        print(f"{tag}: med p_u={df['p_unweighted'].median():.4g} "
+              f"med p_w={df[f'p_{key}'].median():.4g} "
+              f"med ds={post['median_delta_s']:.2f} "
+              f"equiv={post['equiv_rate']:.2f}")
+    return summary
+
+
 def run_setting(c1, alt, n_runs, n_source, n_target, n_resamples, seed,
-                outpath: Path | None = None, overwrite: bool = False):
+                 outpath: Path | None = None, overwrite: bool = False,
+                 shard: tuple[int, int] = (0, 1)):
     """Run paired runs, checkpointing one row at a time.
 
     If outpath exists and overwrite=False, completed run ids are loaded
     and skipped, so an aborted run resumes where it left off. Each
-    completed run is appended + flushed immediately.
+    completed run is appended + flushed immediately (lock-guarded, so
+    --shard workers can share one CSV). A worker with shard=(I, M)
+    owns run ids i with i % M == I.
     """
+    worker, n_workers = shard
     done: set[int] = set()
     if outpath is not None and outpath.exists() and not overwrite:
         try:
@@ -88,13 +116,14 @@ def run_setting(c1, alt, n_runs, n_source, n_target, n_resamples, seed,
     if outpath is not None and outpath.exists() and not overwrite:
         rows = pd.read_csv(outpath).to_dict("records")
     for i in range(n_runs):
+        if i % n_workers != worker:
+            continue
         if i in done:
             continue
         row = single_run(c1, alt, i, n_source, n_target, n_resamples, seed)
         rows.append(row)
         if outpath is not None:
-            pd.DataFrame([row]).to_csv(
-                outpath, mode="a", header=not outpath.exists(), index=False)
+            append_row_locked(outpath, row)
         print(f"[{c1}/{'alt' if alt else 'null'}] run {i + 1}/{n_runs} done",
               flush=True)
     return pd.DataFrame(rows)
@@ -112,39 +141,57 @@ def main():
     ap.add_argument("--c1", type=str, nargs="*", default=list(C1_SETTINGS))
     ap.add_argument("--overwrite", action="store_true",
                     help="Ignore existing per-setting CSVs and start from run 0.")
+    ap.add_argument("--shard", type=str, default="0/1",
+                    help="Shard spec 'I/M': this worker owns run ids i "
+                         "with i %% M == I. Workers share one CSV safely.")
+    ap.add_argument("--merge-only", action="store_true",
+                    help="Skip running; rebuild exp41_all.csv + summary "
+                         "from existing per-setting CSVs.")
     args = ap.parse_args()
 
     outdir = Path(args.outdir)
     outdir.mkdir(parents=True, exist_ok=True)
     key = f"{PRIMARY['classifier']}/{PRIMARY['reweight']}/{PRIMARY['shrinkage']}"
-    summary = {"primary": key, "settings": {}}
-    all_frames = []
+    shard = parse_shard(args.shard)
+    if args.merge_only:
+        all_frames = []
+        for c1 in args.c1:
+            for alt in ("null", "alt"):
+                p = outdir / f"exp41_{c1}_{alt}.csv"
+                if p.exists():
+                    all_frames.append(pd.read_csv(p))
+        if not all_frames:
+            raise SystemExit(f"nothing to merge in {outdir}")
+        full = pd.concat(all_frames)
+        full.to_csv(outdir / "exp41_all.csv", index=False)
+        (outdir / "exp41_summary.json").write_text(
+            json.dumps(summarize(full, key), indent=2))
+        print(f"wrote {outdir}/exp41_summary.json from {len(full)} rows")
+        return
     for c1 in args.c1:
         for alt, n_runs in (("null", args.n_null), ("alt", args.n_alt)):
             if n_runs == 0:
                 continue
             outpath = outdir / f"exp41_{c1}_{alt}.csv"
-            df = run_setting(c1, alt == "alt", n_runs, args.n_source,
-                             args.n_target, args.n_resamples, args.seed,
-                             outpath=outpath, overwrite=args.overwrite)
-            all_frames.append(df)
-            post = rope_posterior(df[f"ds_{key}"].to_numpy())
-            summary["settings"][f"{c1}/{alt}"] = {
-                "median_p_unweighted": float(df["p_unweighted"].median()),
-                "median_p_primary": float(df[f"p_{key}"].median()),
-                "median_ds_primary": post["median_delta_s"],
-                "equiv_rate_primary": post["equiv_rate"],
-                "rope_posterior": post,
-                "median_ess_src": float(df[f"ess_src_{key}"].median()),
-                "median_ess_tgt": float(df[f"ess_tgt_{key}"].median()),
-            }
-            print(f"{c1}/{alt}: med p_u={df['p_unweighted'].median():.4g} "
-                  f"med p_w={df[f'p_{key}'].median():.4g} "
-                  f"med ds={post['median_delta_s']:.2f} "
-                  f"equiv={post['equiv_rate']:.2f}")
-    pd.concat(all_frames).to_csv(outdir / "exp41_all.csv", index=False)
-    (outdir / "exp41_summary.json").write_text(json.dumps(summary, indent=2))
-    print(f"wrote {outdir}/exp41_summary.json")
+            run_setting(c1, alt == "alt", n_runs, args.n_source,
+                        args.n_target, args.n_resamples, args.seed,
+                        outpath=outpath, overwrite=args.overwrite,
+                        shard=shard)
+    if shard[1] == 1:
+        all_frames = []
+        for c1 in args.c1:
+            for alt in ("null", "alt"):
+                p = outdir / f"exp41_{c1}_{alt}.csv"
+                if p.exists():
+                    all_frames.append(pd.read_csv(p))
+        full = pd.concat(all_frames)
+        full.to_csv(outdir / "exp41_all.csv", index=False)
+        (outdir / "exp41_summary.json").write_text(
+            json.dumps(summarize(full, key), indent=2))
+        print(f"wrote {outdir}/exp41_summary.json")
+    else:
+        print(f"shard {args.shard} done; rerun with --merge-only "
+              f"after all workers finish")
 
 
 if __name__ == "__main__":

@@ -11,7 +11,11 @@ Mapping to samesame terms (see CONTEXT.md):
 
 from __future__ import annotations
 
+import fcntl
+from pathlib import Path
+
 import numpy as np
+import pandas as pd
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
@@ -30,6 +34,36 @@ PRIMARY = {"classifier": "hgb_cal", "reweight": "both", "shrinkage": 0.5}
 def s_value(p: np.ndarray | float) -> np.ndarray | float:
     """s = -log2(p). Permutation p-values are > 0 by construction."""
     return -np.log2(np.asarray(p, dtype=float))
+
+
+def parse_shard(spec: str) -> tuple[int, int]:
+    """Parse 'I/M' shard spec into (worker_index, n_workers)."""
+    try:
+        i, m = spec.split("/")
+        out = (int(i), int(m))
+    except ValueError:
+        raise ValueError(f"shard must look like '2/6', got {spec!r}") from None
+    if not (0 <= out[0] < out[1]):
+        raise ValueError(f"shard needs 0 <= I < M, got {spec!r}")
+    return out
+
+
+def append_row_locked(outpath: Path, row: dict) -> None:
+    """Append one checkpoint row, safe for parallel shard workers.
+
+    A sibling .lock file serializes the exists-check + append so workers
+    sharing one CSV never interleave lines or duplicate headers.
+    """
+    lockpath = outpath.with_name(outpath.name + ".lock")
+    with open(lockpath, "w") as lock:
+        fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+        try:
+            header = not outpath.exists()
+            pd.DataFrame([row]).to_csv(
+                outpath, mode="a", header=header, index=False
+            )
+        finally:
+            fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
 
 
 # ---------------------------------------------------------------------------
@@ -141,10 +175,14 @@ def _base_estimator(name: str, seed: int):
     raise ValueError(f"unknown classifier={name!r}")
 
 
-def domain_probs(
+def domain_probs_cv(
     source_c: np.ndarray, target_c: np.ndarray, method: str, seed: int
 ) -> tuple[np.ndarray, np.ndarray, float]:
     """Out-of-sample P(target|C) via cross_val_predict(cv=10).
+
+    Reference implementation kept for validation. Wrapping
+    CalibratedClassifierCV(cv=10) in a second outer CV trains ~110 base
+    models per run; see domain_probs for the fast equivalent.
 
     Returns (source_prob, target_prob, domain_auc).
     """
@@ -159,6 +197,58 @@ def domain_probs(
     else:
         est = _base_estimator(method, seed)
     proba = cross_val_predict(est, c, y, cv=10, method="predict_proba")[:, 1]
+    auc = float(roc_auc_score(y, proba))
+    return proba[: len(source_c)], proba[len(source_c):], auc
+
+
+def _oof_calibrated_proba(base, c: np.ndarray, y: np.ndarray, seed: int) -> np.ndarray:
+    """Honest out-of-fold P(target|C) from ONE CalibratedClassifierCV fit.
+
+    Fits CalibratedClassifierCV(cv=<explicit 10-fold splitter>) once, then
+    predicts each fold's held-out rows with the sub-model trained without
+    them. Same OOF estimand as domain_probs_cv's outer loop at ~1/10 the
+    fits (11 vs ~110). The splitter instance is shared between fit and
+    assignment so the fold mapping matches by construction.
+    """
+    from sklearn.model_selection import StratifiedKFold
+
+    cv = StratifiedKFold(n_splits=10, shuffle=True, random_state=seed)
+    est = CalibratedClassifierCV(base, cv=cv, method="sigmoid")
+    est.fit(c, y)
+    splits = list(cv.split(c, y))
+    cals = est.calibrated_classifiers_[: len(splits)]
+    assert len(cals) == len(splits), (len(cals), len(splits))
+    proba = np.empty(len(y))
+    for (_, te), cal in zip(splits, cals):
+        proba[te] = cal.predict_proba(c[te])[:, 1]
+    return proba
+
+
+def domain_probs(
+    source_c: np.ndarray, target_c: np.ndarray, method: str, seed: int
+) -> tuple[np.ndarray, np.ndarray, float]:
+    """P(target|C): honest OOF for calibrated methods, cheap CV for logreg.
+
+    rf_cal/hgb_cal use _oof_calibrated_proba (one fit, ~11 base fits vs
+    ~110 under double CV). logreg keeps cross_val_predict(cv=10) (cheap).
+    Returns (source_prob, target_prob, domain_auc).
+    """
+    from sklearn.metrics import roc_auc_score
+
+    c = np.concatenate([source_c, target_c]).reshape(-1, 1)
+    y = np.concatenate([np.zeros(len(source_c)), np.ones(len(target_c))]).astype(int)
+    if method == "logreg":
+        proba = cross_val_predict(
+            _base_estimator(method, seed), c, y, cv=10, method="predict_proba"
+        )[:, 1]
+    elif method == "rf_cal":
+        base = RandomForestClassifier(n_estimators=200, random_state=seed)
+        proba = _oof_calibrated_proba(base, c, y, seed)
+    elif method == "hgb_cal":
+        base = HistGradientBoostingClassifier(random_state=seed)
+        proba = _oof_calibrated_proba(base, c, y, seed)
+    else:
+        raise ValueError(f"unknown classifier={method!r}")
     auc = float(roc_auc_score(y, proba))
     return proba[: len(source_c)], proba[len(source_c):], auc
 
