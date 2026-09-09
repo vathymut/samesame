@@ -84,8 +84,8 @@ surface, use the repository root `CONTEXT.md` instead.
   HELOC deep-dive immediately follows the problem statement; NSW provides
   corroboration that the pattern is general. No separate "Motivating Example"
   section heading.
-- The core failure mode is contamination from low-overlap regions when source
-  and target are compared as observed, not support change by itself.
+- The core failure mode is support-driven rejection: support shifts mistaken
+  for harmful change when source and target are compared as observed.
 - Related Work should treat harmful-shift testing as a broader family. D-SOS is
   the closest non-sequential score-threshold engine, not the only statistical
   test for harmful shift.
@@ -95,10 +95,10 @@ surface, use the repository root `CONTEXT.md` instead.
   general any-change tests are positional (they answer a different question)
   and should appear as brief catalog entries, not as co-eval alternatives.
 - The main experiments claim is that the doubly weighted test moves
-  harmful-shift testing to common support and removes false alarms from
-  low-overlap contamination.
+  harmful-shift testing to common support, remaining calibrated under
+  support shifts and removing support-driven false alarms.
 - The supporting experimental claims are that source-weighted and
-  target-weighted modes diagnose asymmetric contamination patterns and that
+  target-weighted modes diagnose asymmetric off-support patterns and that
   overlap correction does not hide genuinely harmful change on common support.
 - **All experiments benchmark against Crump and overlap baselines.** The
   unweighted test is the naive baseline; Crump and overlap are the
@@ -109,6 +109,19 @@ surface, use the repository root `CONTEXT.md` instead.
 ## Terminology
 
 - Use `common support` consistently; do not switch to `shared support`.
+  Its complement is `off-support`: mass with no counterpart in the other
+  group. Reserve `low-overlap` for estimated quantities (fitted domain
+  probabilities, tapered weights); structural zeros in a design are
+  off-support, not low-overlap.
+- Name experimental conditions by what changed, not by statistical status:
+  a `support-shift condition` (populations differ only in support; the null
+  holds) versus a `common-support shift` (the shared mechanism itself moves).
+  Keep `null` for statistical status only (type-I error, calibration).
+- Call the naive failure `support-driven rejection` and the desired property
+  `support-robust`: testing for harmful shift should be robust to support
+  shifts. Do not call off-support mass `contamination` — it is legitimate
+  population structure, and the naive test answers a different question
+  (any-change), it does not malfunction.
 - Use `harmful shift` as the paper's own formal term. Keep `adverse shift`
   only in explicit D-SOS lineage sentences, then translate back immediately.
 - Prefer `testing for harmful shift` over nominal forms such as
@@ -172,7 +185,7 @@ surface, use the repository root `CONTEXT.md` instead.
 - The power experiment should note that Crump and overlap track the
   unweighted test (they also target the full observed population once
   overlap is addressed), while only the doubly weighted test separates
-  common-support harm from contamination-driven signal.
+  common-support harm from support-driven signal.
 - The calibration table (Table~1) must include all six modes. The current
   version shows only four — add Crump and Overlap rows.
 
