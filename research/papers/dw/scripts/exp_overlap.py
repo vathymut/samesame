@@ -1,12 +1,14 @@
-"""Experiment B1: benign private mass in target-only territory (1-D overlap DGP).
+"""Low-overlap specificity: testing for harmful shift under contamination.
 
 Port of draw_overlap_dataset + `synthetic calibration` from the earlier
 manuscript suite, re-run on the current test_harm/domain_weights API.
 
-Null (effect=0.0): target-private lump at +3 with no shared shift -> the
-unweighted test should false-alarm as severity grows, while common-support
-weighting (both) stays silent. severity=0.0 is the calibration anchor
-(identical distributions -> all modes silent).
+Specificity battery (effect=0.0, no harmful change): the target-only lump
+at +3 should make the unweighted test false-alarm as contamination grows,
+while the doubly weighted (common-support) test stays specific.
+contamination=0.0 is the calibration anchor (identical populations ->
+all modes silent). effect>0 adds a genuine shift on common support
+(power variant).
 
 Outputs CSV (one row per paired run) + summary JSON with reject rates.
 """
@@ -34,25 +36,26 @@ from common import (
 import samesame as ss
 
 ALPHA = 0.05
-SEVERITY_GRID = (0.0, 0.1, 0.2, 0.3, 0.4)
+CONTAMINATION_GRID = (0.0, 0.1, 0.2, 0.3, 0.4)
 
 
-def single_run(severity, effect, i, n_source, n_target, n_resamples, seed):
+def single_run(contamination, effect, i, n_source, n_target, n_resamples,
+               seed):
     s = seed + i
     rng = np.random.default_rng(s)
-    ss_s, tg_s, ss_c, tg_c = gen_overlap(
-        rng, n_source, n_target, severity=severity, effect=effect)
+    source_score, target_score, source_feature, target_feature = gen_overlap(
+        rng, n_source, n_target, contamination=contamination, effect=effect)
     ru = ss.test_harm(
-        ss_s, tg_s, worse="higher", n_resamples=n_resamples,
+        source_score, target_score, worse="higher", n_resamples=n_resamples,
         rng=np.random.default_rng(s),
     )
     row = {
-        "run": i, "severity": severity, "effect": effect,
+        "run": i, "contamination": contamination, "effect": effect,
         "p_unweighted": float(ru.pvalue),
         "s_unweighted": float(s_value(ru.pvalue)),
     }
     for clf in CLASSIFIERS:
-        sp, tp, auc = domain_probs(ss_c, tg_c, clf, s)
+        sp, tp, auc = domain_probs(source_feature, target_feature, clf, s)
         row[f"auc_{clf}"] = auc
         for rw in REWEIGHTS:
             for lam in SHRINKAGES:
@@ -60,7 +63,7 @@ def single_run(severity, effect, i, n_source, n_target, n_resamples, seed):
                     source=sp, target=tp, reweight=rw, shrinkage=lam)
                 ess = w.effective_sample_size()
                 rr = ss.test_harm(
-                    ss_s, tg_s, worse="higher", weights=w,
+                    source_score, target_score, worse="higher", weights=w,
                     n_resamples=n_resamples,
                     rng=np.random.default_rng(s))
                 key = f"{clf}/{rw}/{lam}"
@@ -72,8 +75,9 @@ def single_run(severity, effect, i, n_source, n_target, n_resamples, seed):
     return row
 
 
-def run_setting(severity, effect, n_runs, n_source, n_target, n_resamples,
-                seed, outpath: Path | None = None, overwrite: bool = False):
+def run_setting(contamination, effect, n_runs, n_source, n_target,
+                n_resamples, seed, outpath: Path | None = None,
+                overwrite: bool = False):
     """Run paired runs, checkpointing one row at a time (resumable)."""
     done: set[int] = set()
     if outpath is not None and outpath.exists() and not overwrite:
@@ -89,13 +93,13 @@ def run_setting(severity, effect, n_runs, n_source, n_target, n_resamples,
     for i in range(n_runs):
         if i in done:
             continue
-        row = single_run(severity, effect, i, n_source, n_target,
+        row = single_run(contamination, effect, i, n_source, n_target,
                          n_resamples, seed)
         rows.append(row)
         if outpath is not None:
             pd.DataFrame([row]).to_csv(
                 outpath, mode="a", header=not outpath.exists(), index=False)
-        print(f"[sev={severity}/eff={effect}] run {i + 1}/{n_runs} done",
+        print(f"[cont={contamination}/eff={effect}] run {i + 1}/{n_runs} done",
               flush=True)
     return pd.DataFrame(rows)
 
@@ -108,9 +112,9 @@ def main():
     ap.add_argument("--n-source", type=int, default=180)
     ap.add_argument("--n-target", type=int, default=180)
     ap.add_argument("--effect", type=float, default=0.0)
-    ap.add_argument("--outdir", type=str, default="outputs_b1")
-    ap.add_argument("--severity", type=float, nargs="*",
-                    default=list(SEVERITY_GRID))
+    ap.add_argument("--outdir", type=str, default="outputs_overlap")
+    ap.add_argument("--contamination", type=float, nargs="*",
+                    default=list(CONTAMINATION_GRID))
     ap.add_argument("--overwrite", action="store_true",
                     help="Ignore existing per-setting CSVs and start from run 0.")
     args = ap.parse_args()
@@ -120,16 +124,16 @@ def main():
     key = f"{PRIMARY['classifier']}/{PRIMARY['reweight']}/{PRIMARY['shrinkage']}"
     summary = {"primary": key, "effect": args.effect, "settings": {}}
     all_frames = []
-    for sev in args.severity:
+    for cont in args.contamination:
         if args.n_runs == 0:
             continue
-        tag = f"{sev}".replace(".", "p")
-        outpath = outdir / f"expb1_sev{tag}.csv"
-        df = run_setting(sev, args.effect, args.n_runs, args.n_source,
+        tag = f"{cont}".replace(".", "p")
+        outpath = outdir / f"expov_cont{tag}.csv"
+        df = run_setting(cont, args.effect, args.n_runs, args.n_source,
                          args.n_target, args.n_resamples, args.seed,
                          outpath=outpath, overwrite=args.overwrite)
         all_frames.append(df)
-        summary["settings"][f"{sev}"] = {
+        summary["settings"][f"{cont}"] = {
             "reject_unweighted": float((df["p_unweighted"] < ALPHA).mean()),
             "reject_primary": float((df[f"p_{key}"] < ALPHA).mean()),
             "median_p_unweighted": float(df["p_unweighted"].median()),
@@ -138,14 +142,14 @@ def main():
             "median_ess_src": float(df[f"ess_src_{key}"].median()),
             "median_ess_tgt": float(df[f"ess_tgt_{key}"].median()),
         }
-        st = summary["settings"][f"{sev}"]
-        print(f"sev={sev}: rej_u={st['reject_unweighted']:.2f} "
+        st = summary["settings"][f"{cont}"]
+        print(f"cont={cont}: rej_u={st['reject_unweighted']:.2f} "
               f"rej_w={st['reject_primary']:.2f} "
               f"med p_u={st['median_p_unweighted']:.4g} "
               f"med p_w={st['median_p_primary']:.4g}")
-    pd.concat(all_frames).to_csv(outdir / "expb1_all.csv", index=False)
-    (outdir / "expb1_summary.json").write_text(json.dumps(summary, indent=2))
-    print(f"wrote {outdir}/expb1_summary.json")
+    pd.concat(all_frames).to_csv(outdir / "expov_all.csv", index=False)
+    (outdir / "expov_summary.json").write_text(json.dumps(summary, indent=2))
+    print(f"wrote {outdir}/expov_summary.json")
 
 
 if __name__ == "__main__":

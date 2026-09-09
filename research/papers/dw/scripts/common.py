@@ -2,9 +2,10 @@
 
 Mapping to samesame terms (see CONTEXT.md):
 - source = reference population, target = population under evaluation
-- S = univariate outlier score tested with test_harm(worse="higher")
-- C = domain context; a C-only domain classifier gives P(target|C),
-  which feeds domain_weights -> test_harm(..., weights=...).
+- S = severity score tested with test_harm(worse="higher")
+- feature = domain feature; a feature-only domain classifier gives
+  P(target|feature), which feeds domain_weights
+  -> test_harm(..., weights=...).
 - Decision rule: s-value scale with ROPE |deltas| <= 1 (D-SOS Kamulete 2022,
   S6; Benavoli et al. 2014 prior = one pseudo-experiment at delta = 0).
 """
@@ -32,14 +33,17 @@ def s_value(p: np.ndarray | float) -> np.ndarray | float:
 
 
 # ---------------------------------------------------------------------------
-# B1 data generation: 1-D overlap DGP (port of draw_overlap_dataset from the
-# earlier manuscript suite). Shared N(0,1) both groups; source-private lump
-# at -PRIVATE_LOC, target-private lump at +PRIVATE_LOC; S = C + noise.
-# effect shifts shared target scores only (0.0 = null/false-alarm battery).
+# Overlap DGP: 1-D feature with low-overlap mass (port of draw_overlap_dataset
+# from the earlier manuscript suite). Shared N(0,1) in both groups, plus a
+# source-only lump at -LOW_OVERLAP_LOC and a target-only lump at
+# +LOW_OVERLAP_LOC; severity score = feature + noise. effect shifts shared
+# target scores only (0.0 = specificity battery: no harmful change, so the
+# unweighted test false-alarms as contamination grows while the doubly
+# weighted test stays specific).
 # ---------------------------------------------------------------------------
 
-PRIVATE_LOC = 3.0
-PRIVATE_SD = 0.45
+LOW_OVERLAP_LOC = 3.0
+LOW_OVERLAP_SD = 0.45
 OVERLAP_SCORE_SD = 0.8
 
 
@@ -47,30 +51,33 @@ def gen_overlap(
     rng: np.random.Generator,
     n_source: int,
     n_target: int,
-    severity: float = 0.25,
+    contamination: float = 0.25,
     effect: float = 0.0,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """Return (source_S, target_S, source_C, target_C) for experiment B1.
+    """Return (source_score, target_score, source_feature, target_feature).
 
-    severity: private-mass fraction in each group (0.0 = identical N(0,1)).
+    contamination: fraction of each group in its low-overlap lump
+    (0.0 = identical N(0,1) populations).
     effect: mean shift added to *shared* target scores (0.0 = null).
     """
-    source_private = rng.random(n_source) < severity
-    target_private = rng.random(n_target) < severity
+    source_low_overlap = rng.random(n_source) < contamination
+    target_low_overlap = rng.random(n_target) < contamination
 
-    source_c = rng.normal(0.0, 1.0, size=n_source)
-    target_c = rng.normal(0.0, 1.0, size=n_target)
-    source_c[source_private] = rng.normal(
-        -PRIVATE_LOC, PRIVATE_SD, size=source_private.sum()
+    source_feature = rng.normal(0.0, 1.0, size=n_source)
+    target_feature = rng.normal(0.0, 1.0, size=n_target)
+    source_feature[source_low_overlap] = rng.normal(
+        -LOW_OVERLAP_LOC, LOW_OVERLAP_SD, size=source_low_overlap.sum()
     )
-    target_c[target_private] = rng.normal(
-        PRIVATE_LOC, PRIVATE_SD, size=target_private.sum()
+    target_feature[target_low_overlap] = rng.normal(
+        LOW_OVERLAP_LOC, LOW_OVERLAP_SD, size=target_low_overlap.sum()
     )
 
-    source_s = source_c + rng.normal(0.0, OVERLAP_SCORE_SD, size=n_source)
-    target_s = target_c + rng.normal(0.0, OVERLAP_SCORE_SD, size=n_target)
-    target_s[~target_private] += effect
-    return source_s, target_s, source_c, target_c
+    source_score = source_feature + rng.normal(
+        0.0, OVERLAP_SCORE_SD, size=n_source)
+    target_score = target_feature + rng.normal(
+        0.0, OVERLAP_SCORE_SD, size=n_target)
+    target_score[~target_low_overlap] += effect
+    return source_score, target_score, source_feature, target_feature
 
 # ---------------------------------------------------------------------------
 # Domain probabilities: C-only classifier, out-of-sample via CV
@@ -91,16 +98,18 @@ def _base_estimator(name: str, seed: int):
 
 
 def domain_probs(
-    source_c: np.ndarray, target_c: np.ndarray, method: str, seed: int
+    source_feature: np.ndarray, target_feature: np.ndarray, method: str, seed: int
 ) -> tuple[np.ndarray, np.ndarray, float]:
-    """Out-of-sample P(target|C) via cross_val_predict(cv=10).
+    """Out-of-sample P(target|feature) via cross_val_predict(cv=10).
 
     Returns (source_prob, target_prob, domain_auc).
     """
     from sklearn.metrics import roc_auc_score
 
-    c = np.concatenate([source_c, target_c]).reshape(-1, 1)
-    y = np.concatenate([np.zeros(len(source_c)), np.ones(len(target_c))]).astype(int)
+    c = np.concatenate([source_feature, target_feature]).reshape(-1, 1)
+    y = np.concatenate(
+        [np.zeros(len(source_feature)), np.ones(len(target_feature))]
+    ).astype(int)
     if method == "hgb_cal":
         est = CalibratedClassifierCV(
             _base_estimator("hgb_cal", seed), cv=10, method="sigmoid"
@@ -109,7 +118,7 @@ def domain_probs(
         est = _base_estimator(method, seed)
     proba = cross_val_predict(est, c, y, cv=10, method="predict_proba")[:, 1]
     auc = float(roc_auc_score(y, proba))
-    return proba[: len(source_c)], proba[len(source_c):], auc
+    return proba[: len(source_feature)], proba[len(source_feature):], auc
 
 
 def delta_s(p_weighted: float, p_unweighted: float) -> float:
