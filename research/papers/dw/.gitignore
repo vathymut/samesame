@@ -35,3 +35,5 @@ results/test_real_data_*
 results/*.csv
 results/*.json
 !results/README.md
+# checkpointed paired-run outputs (resumable; regenerate via scripts/exp_4*.py)
+scripts/outputs*/
