@@ -11,9 +11,9 @@
 
 > *Same, same but different ...*
 
-Bring your own score — the risk you care about, the errors your model makes, how much you trust it, or when something looks off. `samesame` tells you two things: did the source and target scores shift, and did it get worse?
+For ML / risk teams monitoring systems/models when labels are missing or delayed. Bring your own score — the risk you care about, model errors, trust, or when something looks off. **Source** is the reference (training data or past deployment); **target** is the current deployment.
 
-Data and model monitoring rarely gives you labels, and univariate checks miss hidden multivariate (high-dimensional) shifts. A score reduces each observation to a single interpretable and insightful number.
+Works with or without labels. One score per observation catches multivariate shifts univariate checks miss. Two questions: did scores shift, and did it get worse?
 
 ## Installation
 
@@ -23,12 +23,10 @@ python -m pip install samesame
 
 Requires Python 3.12+, `numpy`, `scipy`, and `scikit-learn`.
 
-**Source** is the reference distribution (training data or a past deployment); **target** is the current deployment under evaluation.
+## Quickstart in 30s
 
-It separates two questions that are easy to conflate:
-
-- `ss.test_shift`: a broad, two-sided screen for any shift.
-- `ss.test_harm(..., worse="higher")`: a focused, one-sided test for movement toward the tail you declare harmful (`worse="lower"` if that tail is the small one).
+Changed at all? `ss.test_shift`: broad, two-sided screen for any shift.
+Got worse? `ss.test_harm(..., worse="higher")`: focused, one-sided test toward the tail you declare harmful. Declare `worse` in advance.
 
 ```python
 import numpy as np
@@ -53,19 +51,15 @@ print(f"Harm  p-value: {harm.pvalue:.4f}")
 # → Harm  p-value: 0.0001
 ```
 
-The small p-values provide strong evidence that the target distribution shifted and moved in an adverse direction. We therefore reject both the null of no shift and the null of no harmful shift at any reasonable significance level.
+Small p-values = strong evidence the target shifted and got worse.
 
-## Workflow
-
-1. **Choose a score** that represents the outcome you care about. Generate it out of sample if it comes from a fitted model.
-2. **Ask whether anything changed** with `ss.test_shift`.
-3. **Ask whether the change is harmful** with `ss.test_harm(..., worse=...)`. Specify in advance whether higher or lower scores indicate harm.
-4. **Address poor feature overlap** with `ss.domain_weights` only when it is a real concern. Weighting focuses the comparison on a different population: the region of common support. Details: [Weight for common support](examples/credit/weight-for-common-support.md).
+> Choose a score that captures the outcome you care about. If it comes from a fitted model, generate it out of sample.
 
 ## Where next
 
 - **[Get started](https://vathymut.github.io/samesame/examples/tutorials/get-started/)**: run both tests in 5 minutes.
-- **[Is the new drug good enough?](https://vathymut.github.io/samesame/examples/trials/check-drug-efficacy/)**: the harm test on 70 trial scores, no model.
-- **[Monitor a credit model](https://vathymut.github.io/samesame/examples/credit/monitor-credit/)**: one HELOC model, three signals.
-- **[Weight for common support](examples/credit/weight-for-common-support.md)**: extend the HELOC monitoring example with common-support weighting.
+- **[Is the new drug good enough?](https://vathymut.github.io/samesame/examples/trials/check-drug-efficacy/)**: harm test on 70 trial scores, no model.
+- **[Monitor a credit model](https://vathymut.github.io/samesame/examples/credit/monitor-credit/)**: one HELOC model, three signals — see also [common-support weighting](https://vathymut.github.io/samesame/examples/credit/weight-for-common-support/).
 - **[API reference](https://vathymut.github.io/samesame/api/testing/)**: full docs for the tests and `domain_weights`.
+
+> Scores are univariate: declare `worse="higher" | "lower"` from meaning, not p-values. See [How the harm test works](https://vathymut.github.io/samesame/explanation/harmful-shift-statistic/).
