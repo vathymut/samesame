@@ -2,10 +2,9 @@
 
 ## Why a separate test
 
-A distribution can change without becoming worse. A generic shift test should
-detect both changes, but monitoring often asks a narrower question: did the
-target move toward outcomes that matter? The answer depends on the score being
-monitored and on which direction is harmful.
+A distribution can change without becoming worse. For the full framing —
+false alarms, noninferiority, and which question each test answers — see
+[Benign vs harmful shift](benign-vs-harmful-shift.md).
 
 Without loss of generality, assume that a higher score means more harmful or
 riskier outcomes. The `worse` parameter handles scores whose harmful direction
@@ -45,9 +44,8 @@ movement among values commonly observed in benign source samples.
 
 ## How to choose the test
 
-- Use `test_shift` when any distributional difference matters.
-- Use `test_harm` when you can declare the harmful direction before
-  looking at the result.
+See [Benign vs harmful shift](benign-vs-harmful-shift.md) for when to use
+each test.
 
 Both tests compare the same source and target scores by permutation. The
 harmful-shift test changes the threshold weighting and uses a one-sided

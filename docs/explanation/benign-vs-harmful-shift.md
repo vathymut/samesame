@@ -27,11 +27,9 @@ meaning, never from the p-values.
 
 ## Why it works, and what it gives up
 
-`test_shift` uses ROC AUC: it weights all thresholds uniformly and screens
-for any separation. `test_harm` uses the weighted AUC
-`∫ TPR·(1−FPR)² dFPR`: thresholds the source rarely exceeds get more
-weight, so target mass entering the source's unusual tail counts more than
-movement among values the source already produces often. That focus is the
+`test_shift` screens for any separation; `test_harm` reweights thresholds
+toward the source's rare tail — the ROC form is in
+[How the harm test works](harmful-shift-statistic.md). That focus is the
 point — and the trade-off. A harmful-tail test can miss a benign-looking
 shift that still matters to you, which is why the two tests are run
 separately instead of conflated.
