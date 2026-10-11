@@ -2,7 +2,7 @@ site_name: samesame
 repo_url: https://github.com/vathymut/samesame
 repo_name: vathymut/samesame
 site_url: https://vathymut.github.io/samesame/
-site_description: Statistical tests for comparing source and target score distributions — and whether the target moved toward worse outcomes.
+site_description: Two-sample permutation tests for shift and adverse shift on scores.
 site_author: Vathy M. Kamulete
 copyright: Copyright &copy; Vathy M. Kamulete
 
@@ -13,7 +13,9 @@ nav:
     - Is the new drug good enough?: examples/trials/check-drug-efficacy.md
     - Monitor a credit model: examples/credit/monitor-credit.md
     - Weight for common support: examples/credit/weight-for-common-support.md
+    - One split, four scores: examples/iris-four-scores.md
   - Explanation:
+     - Benign vs harmful shift: explanation/benign-vs-harmful-shift.md
      - How the harm test works: explanation/harmful-shift-statistic.md
   - API:
     - Testing: api/testing.md
