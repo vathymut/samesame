@@ -13,7 +13,9 @@ nav:
     - Is the new drug good enough?: examples/trials/check-drug-efficacy.md
     - Monitor a credit model: examples/credit/monitor-credit.md
     - Weight for common support: examples/credit/weight-for-common-support.md
+    - One split, four scores: examples/iris-four-scores.md
   - Explanation:
+     - Benign vs harmful shift: explanation/benign-vs-harmful-shift.md
      - How the harm test works: explanation/harmful-shift-statistic.md
   - API:
     - Testing: api/testing.md
