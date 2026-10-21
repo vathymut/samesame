@@ -10,7 +10,8 @@ anonymized credit-bureau features. It also records whether an account went
 90 days past due, or worse, in its first 24 months.
 
 The model estimates each applicant's probability of that outcome (**default
-probability**). A group's average prediction is its expected **bad rate**.
+probability**). A group's mean predicted probability is its **model-implied
+bad rate**.
 The example loads 9,871 applications from [OpenML](https://openml.org/search?type=data&sort=runs&id=45554&status=active)
 (`data_id=45554`) with `fetch_openml`.
 
@@ -65,7 +66,9 @@ import samesame as ss
     print(f"Harm  p-value: {harm.pvalue:.4f}")   # → 0.0001
     ```
 
-    The test finds evidence of movement toward higher risk. Mean predicted risk—the expected bad rate—rises from about 44% in source to 73% in target.
+    The test finds evidence of movement toward higher risk. Mean predicted
+    risk—the model-implied bad rate—rises from about 44% in source to 73% in
+    target.
 
 === "Confidence score, no labels needed"
 
@@ -130,4 +133,5 @@ lower confidence or higher prediction error. The split deliberately selects
 a riskier target group; it cannot show why risk differs or prove that model
 quality is unchanged.
 
-If a few low-overlap applications are driving that comparison, [Weight for common support](weight-for-common-support.md) is the next check.
+If the comparison is driven by applications in regions where the groups barely
+overlap, see [Weight for common support](weight-for-common-support.md).

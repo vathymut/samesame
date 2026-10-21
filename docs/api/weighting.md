@@ -1,9 +1,9 @@
 # Weighting API
 
 Use `source` for the reference sample and `target` for the sample under review.
-Common support is the part of feature space where both groups have observations.
-Reweighting changes how much each observation counts. It cannot create
-overlap the data do not contain.
+Common support is the part of feature space—the combinations of feature
+values—where both samples have observations. Reweighting changes how much each
+observation counts; it cannot create overlap the data do not contain.
 
 Worked example: [Weight for common support](../examples/credit/weight-for-common-support.md).
 

@@ -51,8 +51,9 @@ separately; a detectable shift is not automatically harmful.
 - Use `test_harm` with a pre-declared `worse` when only movement toward
   the harmful tail warrants intervention.
 - Both hold scores fixed and permute group labels. A small p-value means the
-  observed statistic is unusual under label exchangeability, where group labels
-  are unrelated to the pooled scores. It is not a measure of business impact.
+  observed statistic would be unusual if source and target labels were
+  interchangeable—that is, unrelated to the pooled scores. It is not a measure
+  of business impact.
 
 See [How the harm test works](harmful-shift-statistic.md) for the ROC
 derivation, [Get started](../examples/tutorials/get-started.md) for the

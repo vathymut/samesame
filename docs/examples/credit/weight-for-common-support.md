@@ -5,7 +5,8 @@ unweighted harm test found evidence of movement toward higher predicted risk.
 It gives every application equal weight, including observations in regions
 with little overlap.
 
-**Common support** is the part of feature space represented by both groups.
+**Common support** is the part of feature space—the combinations of feature
+values—where both groups have observations.
 Here we ask whether the harmful shift remains when we give less weight to
 observations in regions poorly represented by the other group.
 
@@ -33,10 +34,10 @@ The complete standalone script is
 ## Estimate domain probabilities
 
 First, estimate each application's probability of belonging to the target
-group with a domain classifier. `CalibratedClassifierCV` adjusts the random
-forest's probabilities to better match observed frequencies. The outer
-`cross_val_predict` call gives each row a probability from a model that did
-not train on it.
+group with a domain classifier. `CalibratedClassifierCV` calibrates the random
+forest's probabilities so they better match observed frequencies. The call to
+`cross_val_predict` gives each row a probability from a model that did not
+train on that row.
 
 Because `ExternalRiskEstimate` defines the split, compare domain probabilities
 with that feature included and excluded. With it, the domain model can use the

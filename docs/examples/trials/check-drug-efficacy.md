@@ -58,9 +58,9 @@ The two tests answer different questions:
   and target scores.
 - `test_harm` (p=0.13) tests for movement toward the harmful, low-relief tail.
 
-Neither result gives strong evidence against its null: label exchangeability
-for `test_shift`, and no adverse shift in the declared direction for
-`test_harm`.
+Neither result gives strong evidence against its null. For `test_shift`, the
+null is that source and target labels are unrelated to the scores; for
+`test_harm`, it is no adverse shift in the declared direction.
 
 The result is consistent with the case study’s parametric conclusion (“not
 appreciably worse”). This nonparametric test uses only 70 patients; non-rejection
@@ -73,9 +73,10 @@ and ROC intuition.
 
 ## What the non-rejection means
 
-A p-value of 0.13 does not establish equivalence or prove that Bowl is safe. It says the data do not provide strong evidence against the null of no harmful shift.
+The harm-test result (p=0.13) does not establish safety, equivalence, or
+noninferiority. With 28 versus 42 patients, the test may have limited power to
+detect small harms.
 
-- **No detected harm is not proof of no harm.** With 28 versus 42 patients, the test may have limited power; a larger study could give a clearer assessment of small harms.
-- **Direction is part of the protocol.** Here `worse="lower"` because lower relief is worse. Picking a direction after seeing p-values turns a pre-specified test into a search.
+- **Declare direction in advance.** Here `worse="lower"` because lower relief is worse. Choosing a direction after seeing p-values turns the pre-specified test into a search.
 
 Same two tests on a model score: [Get started](../tutorials/get-started.md).

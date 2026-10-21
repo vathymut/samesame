@@ -7,15 +7,12 @@ harmful?*
 ## Prerequisites
 
 - Python 3.12+ with `numpy`, `scipy`, `scikit-learn`, and `samesame` installed.
-- Basic familiarity with p-values and classifiers. You will use `cross_val_predict` once.
+- Basic familiarity with p-values. You do not need to know classifiers; the
+  tutorial explains why each row must be scored out of sample.
 
 --8<-- "snippets/source-target.txt"
 
 ## Steps
-
-Each test uses one score per row: `test_shift` tests for rank-based separation
-in either direction; `test_harm` tests movement toward the harmful tail you
-declare with `worse` before testing.
 
 ### 1. Create source and target
 
@@ -41,9 +38,9 @@ Score each row out of sample: the model must not have been fit on that row.
 In-sample predictions can exaggerate source-target separation.
 
 Here, a domain classifier estimates `P(target|x)`, the probability that a row
-belongs to target. If it can distinguish source from target, its probabilities
-show how target-like each row appears. For more on classifier-based two-sample
-tests, see [In gentle praise of classifier tests](https://vathymut.org/posts/2022-01-22-in-gentle-praise-of-modern-tests/).
+belongs to target. Its probabilities show how target-like each row appears.
+For background on classifier-based two-sample tests, see
+[In gentle praise of classifier tests](https://vathymut.org/posts/2022-01-22-in-gentle-praise-of-modern-tests/).
 
 ```python
 from sklearn.ensemble import HistGradientBoostingClassifier
@@ -60,7 +57,10 @@ domain_prob = cross_val_predict(
 
     --8<-- "snippets/honest-scores.txt"
 
-    Pass `rng=np.random.default_rng(12345)` for reproducible p-values. The default is `n_resamples=9999`; use `999` while exploring and `19999` for finer resolution below `0.001`. Details: [Shift testing](../../api/testing.md).
+    Pass `rng=np.random.default_rng(12345)` for reproducible p-values. The
+    default is `n_resamples=9999`; use `999` while exploring and `19999` for
+    finer p-value resolution, especially below `0.001`. See
+    [Shift testing](../../api/testing.md) for details.
 
 ### 3. Do the scores separate?
 
@@ -75,9 +75,9 @@ shift = ss.test_shift(source=source_scores, target=target_scores, rng=rng)
 print(f"Shift p-value: {shift.pvalue:.4f}")  # → 0.0002
 ```
 
-A small p-value is evidence against label exchangeability: under the null,
-source and target labels are unrelated to the pooled scores. Here, it reflects
-the first-feature difference we built in.
+A small p-value means the observed separation would be unusual if source and
+target labels were unrelated to the pooled scores. Here, it reflects the
+first-feature difference we built in.
 
 ### 4. Did it get worse?
 
