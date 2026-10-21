@@ -1,6 +1,8 @@
 # Get started
 
-This tutorial shows how to turn scores into two answers: *did it change?* and *did it get worse?*
+This tutorial uses one score per observation to ask two questions: *do the
+groups separate by score?* and *does target move toward a direction you define
+as harmful?*
 
 ## Prerequisites
 
@@ -11,13 +13,15 @@ This tutorial shows how to turn scores into two answers: *did it change?* and *d
 
 ## Steps
 
-Use one score per row. `test_shift` asks whether source and target score
-distributions differ at all. `test_harm` tests whether target scores move
-toward a harmful tail you declare with `worse` before testing.
+Each test uses one score per row: `test_shift` tests for rank-based separation
+in either direction; `test_harm` tests movement toward the harmful tail you
+declare with `worse` before testing.
 
 ### 1. Create source and target
 
-Draw a reference sample (`source`) and a sample from the population you are checking (`target`). The reference is usually training data or a past deployment.
+Draw a reference sample (`source`) and a sample from the population you are
+checking (`target`). The reference is usually training data or a past
+deployment.
 
 ```python
 import numpy as np
@@ -57,9 +61,10 @@ domain_prob = cross_val_predict(
 
     Pass `rng=np.random.default_rng(12345)` for reproducible p-values. The default is `n_resamples=9999`; use `999` while exploring and `19999` for finer resolution below `0.001`. Details: [Shift testing](../../api/testing.md).
 
-### 3. Did anything change?
+### 3. Do the scores separate?
 
-Now test whether the domain score separates source from target. Because we introduced a difference in the first feature, you should expect clear separation here:
+Test whether the domain score separates source from target. Because we
+introduced a difference in the first feature, expect clear separation:
 
 ```python
 import samesame as ss
@@ -69,14 +74,16 @@ shift = ss.test_shift(source=source_scores, target=target_scores, rng=rng)
 print(f"Shift p-value: {shift.pvalue:.4f}")  # → 0.0002
 ```
 
-A small p-value is evidence against the null of no shift. Here, that is the difference we built into the first feature.
+A small p-value is evidence against label exchangeability: under the null,
+source and target labels are unrelated to the pooled scores. Here, it reflects
+the first-feature difference we built in.
 
 ### 4. Did it get worse?
 
-The domain probability tells how likely a row is to belong to target. Use it
-in `test_harm` only if target-like observations are harmful in your setting.
-Because higher values mean more target-like, use `worse="higher"` for that
-case.
+Here, the domain probability measures group membership, not outcome quality:
+higher values mean a row looks more like target. Use `worse="higher"` only if
+target-like observations are harmful in your setting. This example shows how
+the test works; domain probability is not a general harm score.
 
 ```python
 harm = ss.test_harm(
@@ -88,19 +95,14 @@ harm = ss.test_harm(
 print(f"Harm p-value: {harm.pvalue:.4f}")  # → 0.0002
 ```
 
-A small p-value is evidence against the null of no harmful shift. Here,
-target scores appear more often in the high tail. That describes group
-membership, not outcome harm; the interpretation depends on the direction
-you declared.
+The small p-value is evidence that target scores appear more often in the high
+tail. It signals a membership shift, not worse outcomes on its own.
 
 ### 5. Use a score tied to your outcome
 
-The domain probability in this demo measures group membership, not outcome
-quality. Use it as a harm score only if target-like observations are harmful
-in your setting. For the outcome you care about, choose a score tied to it
-and declare `worse` from its meaning before calling `test_harm`. Higher risk
-or error is worse; lower confidence or quality is worse. See [Shift testing](../../api/testing.md)
-for function signatures and direction values.
+For a real harm analysis, choose a score tied to your outcome—such as risk,
+error, confidence, or quality. Use the table to match that score to its
+harmful direction.
 
 --8<-- "snippets/worse-declaration.txt"
 
@@ -128,7 +130,9 @@ for function signatures and direction values.
 
 ## Recap
 
-Use `test_shift` to ask whether the score distributions differ. Use `test_harm` to ask whether target moved toward the harmful tail you named before testing. A detectable shift is not, by itself, a harmful shift.
+Use `test_shift` to test for rank-based separation in either direction. Use
+`test_harm` to test movement toward the harmful tail declared before testing.
+Rank-based separation is not, by itself, evidence of harm.
 
 Next:
 

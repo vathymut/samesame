@@ -1,4 +1,4 @@
-"""Full runnable script for the weight-for-common-support tutorial."""
+"""Runnable standalone script for the common-support tutorial."""
 
 # --8<-- [start:full]
 import re

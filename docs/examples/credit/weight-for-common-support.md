@@ -185,11 +185,10 @@ target-weighted: ESS source 7683/7683, target 856/2188
 common-support: ESS source 2988/7683, target 856/2188
 ```
 
-Source-weighted leaves the target ESS at `n`, while target-weighted leaves the
-source ESS at `n`. Common-support weighting reduces ESS on both sides. Including
-the split feature drops target ESS to only `23/2188`; excluding it raises
-target ESS to `856/2188`. This shows how strongly the split feature concentrates the
-target weights. Report ESS alongside each result.
+Source-weighting leaves target ESS at `n`; target-weighting leaves source ESS
+at `n`; common-support weighting reduces ESS in both groups. The target ESS is
+`23/2188` with the split feature and `856/2188` without it, showing how strongly
+the feature concentrates target weights. Report ESS alongside each result.
 
 ## Choose the method for this comparison
 

@@ -46,8 +46,9 @@ labels—not with `0.5`, because the weights change the scale.
 ## Same samples, different question
 
 Both tests hold scores fixed and permute the source and target labels.
-`test_harm` uses the tail-focused threshold weights above and a one-sided
-alternative.
+`test_shift` uses a two-sided ROC AUC statistic to test for rank-based
+separation. `test_harm` uses the tail-focused threshold weights above and a
+one-sided alternative.
 
 Signatures are in [Shift testing](../api/testing.md). A complete workflow
 is in [Get started](../examples/tutorials/get-started.md).

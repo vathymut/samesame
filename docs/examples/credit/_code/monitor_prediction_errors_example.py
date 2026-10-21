@@ -1,4 +1,4 @@
-"""Full runnable example for Monitor prediction errors once labels arrive."""
+"""Runnable HELOC example for checking prediction errors after labels arrive."""
 
 # --8<-- [start:full]
 import re

@@ -16,7 +16,10 @@ The example loads 9,871 applications from [OpenML](https://openml.org/search?typ
 
 ## The split
 
-We split applications at **63** on `ExternalRiskEstimate`, following Gardner et al. (2023). Higher values indicate safer applicants: those above 63 form the lower-risk source group, while those at or below 63 form the higher-risk target group:
+We split applications at **63** on `ExternalRiskEstimate`, following Gardner
+et al. (2023). Higher values indicate safer applicants. Here, `source` is the
+lower-risk reference group used to train the model; `target` is a simulated
+deployment of higher-risk applicants:
 
 - **Source:** 7,683 applications above 63, the low-risk book, with a 43.5% observed bad rate.
 - **Target:** 2,188 applications at or below 63, the riskier book, with an 81.9% observed bad rate.
@@ -121,8 +124,8 @@ import samesame as ss
 ## Wrap up
 
 Predicted risk is higher in target, while these tests find no evidence of
-lower confidence or higher prediction error. This pattern is consistent with
-a riskier population. This split cannot establish why risk increased or prove
-that model quality is unchanged.
+lower confidence or higher prediction error. The split deliberately selects
+a riskier target group; it cannot show why risk differs or prove that model
+quality is unchanged.
 
 If a few low-overlap applications are driving that comparison, [Weight for common support](weight-for-common-support.md) is the next check.

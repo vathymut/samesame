@@ -1,4 +1,4 @@
-"""Full runnable example for Monitor model confidence."""
+"""Runnable HELOC example for monitoring model confidence."""
 
 # --8<-- [start:full]
 import re

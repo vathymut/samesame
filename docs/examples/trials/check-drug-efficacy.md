@@ -54,10 +54,13 @@ print(f"Harm p-value:   {harm.pvalue:.4f}")     # → 0.1319
 
 The two tests answer different questions:
 
-- `test_shift` (p=0.25) tests for any difference between the source and target score distributions.
+- `test_shift` (p=0.25) tests for rank-based separation between the source
+  and target scores.
 - `test_harm` (p=0.13) tests for movement toward the harmful, low-relief tail.
 
-Neither p-value is small, so we do not reject the null of no shift or the null of no harmful shift.
+Neither result gives strong evidence against its null: label exchangeability
+for `test_shift`, and no adverse shift in the declared direction for
+`test_harm`.
 
 The result is consistent with the case study’s parametric conclusion (“not
 appreciably worse”). This nonparametric test uses only 70 patients; non-rejection

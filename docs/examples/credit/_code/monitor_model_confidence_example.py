@@ -1,4 +1,4 @@
-"""Guide-owned helpers for the monitor-model-confidence example."""
+"""Helpers for the model-confidence monitoring example."""
 
 # ruff: noqa: I001
 

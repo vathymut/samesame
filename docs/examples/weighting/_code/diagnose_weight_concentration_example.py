@@ -1,4 +1,4 @@
-"""Full runnable example for Diagnose weight concentration (synthetic)."""
+"""Runnable synthetic example for diagnosing weight concentration."""
 
 # --8<-- [start:full]
 import numpy as np

@@ -1,1 +1,1 @@
-Declare the harmful direction from the meaning of the score before testing. Pass it as a string or as `ss.Worse`; the two forms are interchangeable:
+Choose the harmful direction from the score's meaning before testing—not from the p-value. Pass it as a string or as `ss.Worse`; the two forms are interchangeable:

@@ -3,4 +3,4 @@
 | Predicted risk | The predicted outcome itself (e.g., risk) | `worse="higher"` |
 | Prediction error (Brier, log loss) | Accuracy once labels arrive | `worse="higher"` |
 | Confidence (`LogitGap`) | How sure the model is | `worse="lower"` |
-| Outlier score: atypicality | Distance from source | `worse="higher"` |
+| Outlier score (atypicality) | How unusual an observation is relative to source | `worse="higher"` |

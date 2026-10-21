@@ -11,8 +11,8 @@ row one number to monitor.
 Two questions, two tests. :mod:`samesame.shift` separates them so they are
 not conflated:
 
-* ``test_shift`` — broad, two-sided screen for any distributional change
-  (ROC AUC ``∫ TPR dFPR``, ``0.5`` is chance).
+* ``test_shift`` — two-sided ROC AUC test for rank-based separation between
+  groups (``0.5`` is chance); it does not detect every distribution change.
 * ``test_harm(..., worse=...)`` — focused, one-sided test for
   movement toward the tail you declare harmful (weighted AUC
   ``∫ TPR·(1−FPR)² dFPR``).
@@ -24,12 +24,11 @@ both groups — via :func:`samesame.weights.domain_weights` or an explicit
 observations count more; it does not create information where groups do not
 overlap.
 
-Workflow: (1) choose one score per observation — generate it out of sample
-with ``cross_val_predict``, ``oob_decision_function_``, or a held-out set if
-it comes from a fitted model; (2) ask whether anything changed
-(``test_shift``); (3) ask whether it got worse
-(``test_harm`` with ``worse``); (4) reweight only if poor overlap
-is a real concern. A small p-value is evidence against label
+Workflow: (1) choose one score per observation, using out-of-sample scores
+if it comes from a fitted model; (2) test for rank-based separation with
+``test_shift``; (3) test movement toward the declared harmful tail with
+``test_harm`` and ``worse``; (4) reweight only if poor overlap is a real
+concern. A small p-value is evidence against label
 exchangeability — not business impact, causality, or the probability the null
 is true.
 

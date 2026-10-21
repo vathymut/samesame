@@ -15,9 +15,9 @@ group labels. A small p-value is evidence against label exchangeability
 Two questions, two tests — use them separately so they are not
 conflated:
 
-* :func:`test_shift` — broad, two-sided screen. Can the score
-  distinguish source from target at all? Reports ROC AUC ``∫ TPR dFPR``
-  (``0.5`` is chance).
+* :func:`test_shift` — two-sided ROC AUC test for rank-based separation.
+  Do scores tend to rank one group above the other? ``0.5`` is chance; this
+  is not a test for every possible difference in distribution shape.
 * :func:`test_harm` — focused, one-sided tail test. After
   orienting the score so larger means worse, does target put more mass
   beyond thresholds that source rarely exceeds? Reports the weighted AUC
@@ -196,7 +196,7 @@ class HarmfulShiftResult(ShiftResult):
 
     See Also
     --------
-    test_shift : Broad screen when any change matters.
+    test_shift : Two-sided screen for rank-based score separation.
     Worse : ``"higher"`` vs ``"lower"`` in plain language.
 
     References
@@ -256,10 +256,12 @@ def test_shift(
     weights: ImportanceWeights | None = None,
 ) -> ShiftResult:
     """
-    Test whether the source and target score distributions differ.
+    Test for rank-based separation between source and target scores.
 
-    The test uses ROC AUC to measure how well the score separates target from
-    source, then permutes the group labels to form a two-sided null.
+    The two-sided test uses ROC AUC and permutes group labels. ROC AUC measures
+    how often a randomly chosen target score exceeds a randomly chosen source
+    score, with ties counting half. Values away from ``0.5`` indicate
+    separation in either direction.
 
     Parameters
     ----------
@@ -303,6 +305,8 @@ def test_shift(
     * Interpret ``statistic`` relative to ``0.5`` (chance; ``0.8`` or
       ``0.2`` both signal strong separation) and ``pvalue`` as evidence
       against exchangeability — not as harm or business impact.
+    * This rank-based test is not an omnibus test: distributions can differ
+      in shape while ROC AUC remains ``0.5``.
     * For honest p-values, scores from a fitted model must be out of
       sample. In-sample predictions can inflate separation because the
       scoring model has memorized its inputs.
@@ -351,14 +355,14 @@ def test_harm(
     """
     Test whether target moved toward the declared harmful tail.
 
-    A small ``test_shift`` p-value says *something* changed. This test asks
-    the narrower question: after orienting the score so larger means worse
-    (``worse="lower"`` flips the sign internally), does target put more
-    mass beyond thresholds the source rarely exceeds? Formally it is the
-    weighted AUC ``∫ TPR·(1−FPR)² dFPR`` of Kamulete (2022); thresholds
-    the source rarely exceeds get more weight, so the test leans into the
-    harmful tail. A small p-value is evidence for that directional movement
-    — not for arbitrary shift.
+    A small ``test_shift`` p-value is evidence of rank-based separation.
+    This test asks a narrower question: after orienting the score so larger
+    means worse (``worse="lower"`` flips the sign internally), does target
+    put more mass beyond high thresholds the source rarely exceeds?
+    Formally, it is Kamulete's weighted AUC
+    ``∫ TPR·(1−FPR)² dFPR``, which gives more weight to those thresholds.
+    A small p-value is evidence for that directional movement—not for
+    arbitrary shift.
 
     Decide ``worse`` from what the score means before looking at results;
     do not pick the direction that gives the smaller p-value.
@@ -400,7 +404,7 @@ def test_harm(
 
     See Also
     --------
-    test_shift : Broad, two-sided screen when any change matters.
+    test_shift : Two-sided screen for rank-based score separation.
     samesame.weights.domain_weights : Build weights from ``P(target|x)``.
     Worse : The ``"higher"`` / ``"lower"`` choice in plain language.
 

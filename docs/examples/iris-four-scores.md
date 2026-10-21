@@ -37,12 +37,12 @@ safe; monitoring only for outliers can miss them.
 
 ## Takeaway for `samesame`
 
-`test_shift` detects score differences, not whether they are harmful. The
-random-split flag and the quiet density test on hard inliers show the same
-blind spot from opposite sides. No single score sees the whole shift.
+`test_shift` detects rank-based score separation, not whether it is harmful.
+The random-split flag and the quiet density test on hard inliers show the
+same blind spot from opposite sides. No single score sees the whole shift.
 Trust scores, residuals, density, prediction uncertainty: if you can
 define the score, you can test it.
 
 In `samesame`, pick a score from the harm you care about, declare `worse`
-before testing, and run `test_shift` (any score change) separately from
+before testing, and run `test_shift` (rank-based separation) separately from
 `test_harm` (movement in the harmful direction).

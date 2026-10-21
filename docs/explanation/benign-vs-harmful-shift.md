@@ -35,7 +35,10 @@ prove that target is fine.
 
 ## What that focus costs
 
-`test_shift` screens for any separation between the score distributions.
+`test_shift` uses ROC AUC to test whether a randomly chosen target score tends
+to be higher than a randomly chosen source score more or less often than
+chance. It is not an omnibus test: distributions can differ in shape while
+their AUC remains at chance (`0.5`).
 `test_harm` gives more weight to thresholds the source rarely exceeds. The
 ROC form is in [How the harm test works](harmful-shift-statistic.md). That
 focus is the point—and the trade-off. A tail test can miss a shift outside
@@ -44,7 +47,7 @@ separately; a detectable shift is not automatically harmful.
 
 ## How the two tests fit
 
-- Use `test_shift` when any difference in score distributions matters.
+- Use `test_shift` as a two-sided screen for rank-based separation.
 - Use `test_harm` with a pre-declared `worse` when only movement toward
   the harmful tail warrants intervention.
 - Both hold scores fixed and permute group labels. A small p-value is evidence

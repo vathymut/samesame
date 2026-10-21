@@ -11,7 +11,8 @@ Reduce each observation to **one score you care about** — risk, error, confide
 
 Two questions, two tests:
 
-- **Changed at all?** `ss.test_shift` — broad two-sided screen for any shift.
+- **Do scores separate the groups?** `ss.test_shift` — a two-sided ROC AUC test
+  for rank separation; it can miss other changes in distribution shape.
 - **Got worse?** `ss.test_harm(..., worse="higher")` — focused one-sided test toward the tail you declare harmful *in advance*.
 
 ## Installation
