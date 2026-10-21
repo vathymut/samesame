@@ -11,11 +11,11 @@ This tutorial shows how to turn scores into two answers: *did it change?* and *d
 
 ## Steps
 
-The two tests answer different questions. `ss.test_shift` is a broad, two-sided test for any difference between source and target. `ss.test_harm(..., worse="higher"|"lower")` is a focused, one-sided test for detecting a harmful shift. You can apply both tests to the score that represents the outcome you care about.
+Run both tests on the score for the outcome you care about. `test_shift` asks whether source and target differ at all. `test_harm` asks whether target moved toward the harmful tail you name with `worse`.
 
 ### 1. Create source and target
 
-Start with two datasets. Here, source represents a sample from the reference population and target represents a sample from the current population. In practice, source might be training data or a past deployment.
+Draw a reference sample and a sample from the population you are checking. The reference is usually training data or a past deployment.
 
 ```python
 import numpy as np
@@ -61,7 +61,7 @@ shift = ss.test_shift(source=source_scores, target=target_scores, rng=rng)
 print(f"Shift p-value: {shift.pvalue:.4f}")  # → 0.0002
 ```
 
-With this p-value, we reject the null of no shift, as expected.
+The p-value is small, so we reject no shift. That is the difference built into the first feature.
 
 ### 4. Did it get worse?
 
@@ -77,11 +77,11 @@ harm = ss.test_harm(
 print(f"Harm p-value: {harm.pvalue:.4f}")  # → 0.0002
 ```
 
-Here again, we reject the null of no harmful shift, meaning the target sample often does not resemble the source sample.
+We reject the null of no harmful shift. Target scores sit further in the high tail you marked harmful: rows that look like the target, not the reference. That is a membership result. It counts as harm only because you declared target-like scores harmful.
 
-### 5. Examples of harmful scores
+### 5. Declare the harmful direction
 
-The domain probability is one way to define an outlier score. You can also test harmful shift using a score tied directly to the outcome you care about. The examples below show two possibilities: risk or error, where higher scores are harmful, and confidence or quality, where lower scores are harmful. Replace them with your own score if need be. See [Shift testing](../../api/testing.md) for the test signatures and polarity options.
+Domain probability is only one score. Test any score tied to the outcome you care about. Higher is harmful for risk and error. Lower is harmful for confidence and quality. Replace the draws below with your own score. Signatures and polarity: [Shift testing](../../api/testing.md).
 
 --8<-- "snippets/worse-declaration.txt"
 
@@ -108,10 +108,10 @@ The domain probability is one way to define an outlier score. You can also test 
 
 ## Recap
 
-You now have one score and two tests. `test_shift` tells you whether source and target differ at all. `test_harm` tells you whether target moved toward the harmful tail you specified before testing. Keeping those questions separate prevents a detectable shift from being mistaken for harmful shift.
+You have one score and two tests. `test_shift` says whether source and target differ. `test_harm` says whether target moved toward the harmful tail you named before testing. A detectable shift is not, by itself, a harmful shift.
 
-Where you'd like to go next:
+Next:
 
-- [Is the new drug good enough?](../trials/check-drug-efficacy.md): the same test on 70 trial scores, with no model to fit.
-   - [Monitor a credit model](../credit/monitor-credit.md): apply the tests to a HELOC risk-monitoring example.
-- [How the harm test works](../../explanation/harmful-shift-statistic.md): why the weighted AUC leans into the harmful tail.
+- [Is the new drug good enough?](../trials/check-drug-efficacy.md): the same test on 70 trial scores, with no model.
+- [Monitor a credit model](../credit/monitor-credit.md): risk, confidence, and error on a HELOC book.
+- [How the harm test works](../../explanation/harmful-shift-statistic.md): why the weighted AUC leans on the harmful tail.

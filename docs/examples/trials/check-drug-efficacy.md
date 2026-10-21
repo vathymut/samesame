@@ -1,6 +1,6 @@
 # Is the new drug good enough?
 
-In clinical trials, this question is called **noninferiority**. A cheaper, faster, or easier-to-tolerate treatment does not have to beat the standard. It can win on cost or convenience, but it cannot leave patients meaningfully worse off. The harmful-shift test was introduced as D-SOS, a nonparametric noninferiority test with no margin and no normality assumption (Kamulete, 2022). See [Are you OK? Test for harmful (adverse) shift](https://vathymut.org/posts/2023-01-03-are-you-ok/) for the motivation behind the question.
+In clinical trials, this question is called **noninferiority**. A cheaper, faster, or easier-to-tolerate treatment does not have to beat the standard. It can win on cost or convenience, but it cannot leave patients meaningfully worse off. D-SOS, the test behind this page, is a nonparametric test of no adverse shift, reminiscent of noninferiority, with no margin and no normality assumption (Kamulete, 2022). See [Are you OK? Test for harmful (adverse) shift](https://vathymut.org/posts/2023-01-03-are-you-ok/) for the motivation behind the question.
 
 Consider **Bowl**, a cheaper treatment, against **Armanaleg**, the established standard, in this [SAS case study](https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf). Patients report relief on a 4-to-16 scale, with higher scores better. Bowl's mean relief is lower than Armanaleg's (9.4 versus 10.1), but a lower mean does not answer the practical question: did Bowl push more patients into relief levels the standard rarely produces? With one score per patient and no model, the harmful-shift test makes that question explicit. Set `worse` from the meaning of the score before looking at the results.
 
@@ -55,3 +55,5 @@ A p-value of 0.13 is not a certificate of equivalence or proof that Bowl is safe
 
 - **Absence of evidence isn't evidence of absence.** With 28 versus 42 patients, the test may lack power; a larger study or wider deployment window could sharpen the verdict.
 - **Direction is part of the protocol.** Here `worse="lower"` because lower relief is worse. Picking a direction after seeing p-values turns a pre-specified test into a search.
+
+Same two tests on a model score: [Get started](../tutorials/get-started.md).

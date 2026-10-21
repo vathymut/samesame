@@ -5,9 +5,9 @@
 [![Downloads](https://static.pepy.tech/badge/samesame)](https://pepy.tech/project/samesame)
 [![UAI 2022](https://img.shields.io/badge/paper-UAI%202022-yellow)](https://arxiv.org/abs/2107.02990)
 
-> *Same, same but different...* — did deployment change, and did it get worse?
+> *Same, same but different...* — did it change, and did it get worse?
 
-When labels are missing or delayed, reduce each observation to **one score you care about** — risk, error, confidence, outlier score — and compare **source** (reference: training / past deployment) vs **target** (current deployment).
+Reduce each observation to **one score you care about** — risk, error, confidence, an outlier score, or the outcome itself. Compare **source** (the reference: training or a past deployment) with **target** (the sample you are checking). Use a model score when labels are late. Use the measurement itself when you already have it.
 
 Two questions, two tests:
 
@@ -39,7 +39,7 @@ print(f"Shift p-value: {shift.pvalue:.4f}")  # → 0.0002
 print(f"Harm  p-value: {harm.pvalue:.4f}")   # → 0.0001
 ```
 
-Small p-values = evidence against exchangeability — target shifted and got worse.
+Both p-values are small. In this draw the target moved up, which is the direction marked harmful.
 
 > Pick the score from meaning, not p-values. If it comes from a fitted model, generate it out of sample.
 
@@ -48,4 +48,4 @@ Small p-values = evidence against exchangeability — target shifted and got wor
 - [Get started in 5 min](https://vathymut.github.io/samesame/examples/tutorials/get-started/)
 - [Is the new drug good enough?](https://vathymut.github.io/samesame/examples/trials/check-drug-efficacy/) — harm test, no model, n=70
 - [Monitor a credit model](https://vathymut.github.io/samesame/examples/credit/monitor-credit/) + [common-support weighting](https://vathymut.github.io/samesame/examples/credit/weight-for-common-support/)
-- [API reference](https://vathymut.github.io/samesame/api/testing/) • [How the harm test works](https://vathymut.github.io/samesame/explanation/harmful-shift-statistic/)
+- [Benign vs harmful shift](https://vathymut.github.io/samesame/explanation/benign-vs-harmful-shift/) · [How the harm test works](https://vathymut.github.io/samesame/explanation/harmful-shift-statistic/) · [API reference](https://vathymut.github.io/samesame/api/testing/)

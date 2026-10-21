@@ -1,7 +1,8 @@
 # Weighting API
 
-Functions and data classes for reweighting source and target comparisons toward
-common support.
+Reweight a source-target comparison toward common support: the region where both groups appear. Weights change which observations count. They do not create overlap that is not in the data.
+
+Worked example: [Weight for common support](../examples/credit/weight-for-common-support.md).
 
 ## Public functions
 

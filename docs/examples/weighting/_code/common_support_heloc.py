@@ -1,4 +1,4 @@
-"""Full runnable example for Restrict testing to common support on both sides."""
+"""Full runnable script for the weight-for-common-support tutorial."""
 
 # --8<-- [start:full]
 import re

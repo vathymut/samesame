@@ -1,11 +1,14 @@
 # Weight for common support
 
-This tutorial extends [Monitor a credit model](monitor-credit.md). The earlier
-example found a harmful shift toward higher predicted risk between the HELOC
-source and target groups. Here we ask whether that result remains after
-reducing the influence of observations outside their common support.
+This tutorial continues [Monitor a credit model](monitor-credit.md). That
+example found a harmful shift toward higher predicted risk. It counted
+every application, including ones the other group barely resembles.
 
-The three weighting methods answer different comparison questions:
+**Common support** is the region where both groups actually appear. Here
+we ask whether the harmful shift remains after down-weighting observations
+outside that region.
+
+The three methods change who gets down-weighted:
 
 | Method | What it changes | When to use it |
 |--------|-----------------|----------------|
@@ -18,10 +21,10 @@ The three weighting methods answer different comparison questions:
 Complete [Monitor a credit model](monitor-credit.md) first. This tutorial uses
 the same HELOC split, source-trained risk model, and variables:
 
-- `X_train`, `X_deployment`: source and target features;
-- `train_risk`, `deployment_risk`: source and target predicted-risk scores; and
-- `ss`: the `samesame` package imported as `import samesame as ss`.
-- `np`: NumPy imported as `import numpy as np`.
+- `X_train`, `X_deployment`: source and target features
+- `train_risk`, `deployment_risk`: source and target predicted-risk scores
+- `ss`: `samesame`, imported as `import samesame as ss`
+- `np`: NumPy, imported as `import numpy as np`
 
 The complete standalone script is
 [`common_support_heloc.py`](https://github.com/vathymut/samesame/blob/main/docs/examples/weighting/_code/common_support_heloc.py).
@@ -66,14 +69,16 @@ more effective target information after weighting, while the classifier still
 distinguishes the groups well.
 
 Keep these domain probabilities separate from `train_risk` and
-`deployment_risk`. Use them to calibrate the weights; predicted risk remains
+`deployment_risk`. Use them to build the weights. Predicted risk remains
 the score tested for harmful movement.
 
 ## Compare the three weighting methods
 
 Start with the unweighted result from the credit example, then compare all three
 weighting methods for both probability models. Keep `worse` and the random seed
-fixed. The code uses `shrinkage=0.5` for each method.
+fixed. The code uses `shrinkage=0.5`, the default blend of the density ratio
+toward uniform weights. `0` is the raw ratio. `1` is uniform, so no correction.
+Check effective sample size before lowering it.
 
 ```python
 unweighted = ss.test_harm(

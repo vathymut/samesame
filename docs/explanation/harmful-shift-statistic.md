@@ -2,14 +2,13 @@
 
 ## Why a separate test
 
-A distribution can change without becoming worse. For the full framing —
-false alarms, noninferiority, and which question each test answers — see
-[Benign vs harmful shift](benign-vs-harmful-shift.md).
+A distribution can change without becoming worse. See
+[Benign vs harmful shift](benign-vs-harmful-shift.md) for false alarms, the
+null of no adverse shift, and which test to use.
 
-Without loss of generality, assume that a higher score means more harmful or
-riskier outcomes. The `worse` parameter handles scores whose harmful direction
-is lower instead. Choose that direction from the meaning of the score, not from
-the p-value.
+Take a higher score as more harmful. If lower scores are worse, pass
+`worse="lower"`. The test flips the sign, then uses the same statistic.
+Choose that direction from the meaning of the score, not from the p-value.
 
 ## Tail-focused separation
 
@@ -21,8 +20,9 @@ For an oriented score `S` and threshold `t`, define
 \operatorname{TPR}(t) = P(S > t \mid \text{target}).
 \]
 
-The ordinary shift statistic is ROC AUC: it weights thresholds uniformly. The
-harm statistic gives more weight to thresholds that the source rarely exceeds:
+The ordinary shift statistic is ROC AUC. It weights thresholds uniformly.
+The harm statistic gives more weight to thresholds the source rarely
+exceeds:
 
 \[
 \operatorname{AUC} = \int \operatorname{TPR}(t)\,d\operatorname{FPR}(t),
@@ -31,29 +31,22 @@ T = \int \operatorname{TPR}(t)\,[1-\operatorname{FPR}(t)]^2\,
     d\operatorname{FPR}(t).
 \]
 
-Here, `T` is the weighted AUC: the test statistic used by
-`test_harm`.
-The statistic measures directional separation.
+`T` is the weighted AUC that `test_harm` reports. Because `1 - FPR(t)` is
+the source probability below the threshold, thresholds the source rarely
+exceeds count more. Target observations that enter that rare tail move
+`T` more than a shift among values the source already produces often.
 
-Since `1 - FPR(t)` is the source probability below the threshold, this
-emphasizes target observations entering the source's unusual upper tail. AUC
-treats all thresholds equally. The harm statistic puts more emphasis on target
-observations beyond the source's usual range. This makes it more sensitive to
-target observations entering regions rarely observed in source than to
-movement among values commonly observed in benign source samples.
+Compare `T` with its permutation null, not with `0.5`, because the weights
+change the scale.
 
-## How to choose the test
+## Same samples, different question
 
-See [Benign vs harmful shift](benign-vs-harmful-shift.md) for when to use
-each test.
-
-Both tests compare the same source and target scores by permutation. The
-harmful-shift test changes the threshold weighting and uses a one-sided
+Both tests permute group labels on the same source and target scores.
+`test_harm` changes the threshold weights and uses a one-sided
 alternative.
 
-See [Shift testing](../api/testing.md) for the function signatures and
-[Get started](../examples/tutorials/get-started.md) for a complete score and
-test workflow.
+Signatures are in [Shift testing](../api/testing.md). A complete workflow
+is in [Get started](../examples/tutorials/get-started.md).
 
 ## Reference
 

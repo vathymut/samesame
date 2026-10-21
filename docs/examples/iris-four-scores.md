@@ -1,15 +1,12 @@
 # One split, four scores: the iris lesson
 
-> This is a summary of the motivating example from Kamulete (2022), *Test
-> for non-negligible adverse shifts* (UAI). Full plots, splits, and score
-> definitions are in the R vignette
-> [A 10-minute Crash Course](https://vathymut.github.io/dsos/articles/motivation.html);
-> what follows is only the lesson.
+> The iris example from Kamulete (2022), *Test for non-negligible adverse
+> shifts* (UAI). Plots, splits, and score definitions are in the R vignette
+> [A 10-minute Crash Course](https://vathymut.github.io/dsos/articles/motivation.html).
 
-The example runs one idea end to end on the iris data: the
-same source-target split looks different through different scores. Higher
-is worse throughout — a larger score means further from the desired outcome
-or less conforming to source.
+One source-target split, read through four scores. Higher is worse
+throughout: a larger score means further from the desired outcome, or less
+like source.
 
 ## The setup
 
@@ -39,14 +36,12 @@ can come from predictable-looking points, not just outliers.
 
 ## Takeaway for `samesame`
 
-The vignette's conclusion is twofold. First, tests of equal distributions
-are blind by definition to whether a shift is benign or harmful — the
-random-split false alarm and the quiet density test on hard inliers both
-show it. Second, a family of tests over complementary notions of
-outlyingness gives a holistic view: no single score sees the whole shift,
-and the framework extends to any score you can define, from trust scores to
-prediction uncertainty.
+Equal-distribution tests cannot tell a benign shift from a harmful one.
+The random-split false alarm and the quiet density test on hard inliers
+show the same blind spot from opposite sides. No single score sees the whole
+shift. Trust scores, residuals, density, prediction uncertainty: if you
+can define the score, you can test it.
 
-In `samesame` terms: pick the score from the harm you care about, declare
-`worse` in advance, and run `test_shift` (any change) separately from
+In `samesame`: pick the score from the harm you care about, declare
+`worse` before testing, and run `test_shift` (any change) separately from
 `test_harm` (adverse movement). Test for adverse shifts, not equality.

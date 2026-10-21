@@ -1,12 +1,10 @@
 # Monitor a credit model
 
-An alarm should tell you whether a score moved toward worse outcomes, not just that it moved. Imagine a lender whose model was trained on a book of low-risk applicants. A new partner channel or a changing market brings in riskier applicants. The model is still scoring applications, and the shift could reflect model degradation, a change in the population, or both.
-
-We start by describing the dataset and source-target comparison, then turn to the scores and the monitoring questions they can answer.
+An alarm should tell you whether a score moved toward worse outcomes, not just that it moved. Imagine a lender whose model was trained on a book of low-risk applicants. A new partner channel, or a changing market, brings in riskier applicants. The model is still scoring applications. The shift could be model degradation, a change in the population, or both.
 
 ## The dataset
 
-HELOC means **home equity line of credit**: a revolving credit line secured by the borrower's home. This dataset contains anonymized credit-bureau features from the FICO Explainable AI Challenge and a target indicating whether an account went 90 days past due or worse during its first 24 months. The modeling goal is to predict each applicant's probability of a bad outcome, often called the **default probability**; averaged across a group, those predictions give an expected **bad rate**. The example fetches 9,871 applications from [OpenML](https://openml.org/search?type=data&sort=runs&id=45554&status=active) (`data_id=45554`) with `fetch_openml`.
+HELOC means **home equity line of credit**: a revolving credit line secured by the borrower's home. This dataset, from the FICO Explainable AI Challenge, has anonymized credit-bureau features and a label for whether the account went 90 days past due, or worse, in its first 24 months. The model predicts each applicant's probability of that bad outcome, the **default probability**. Averaged over a group, those predictions are an expected **bad rate**. The example loads 9,871 applications from [OpenML](https://openml.org/search?type=data&sort=runs&id=45554&status=active) (`data_id=45554`) with `fetch_openml`.
 
 ## The split
 
@@ -54,7 +52,7 @@ import samesame as ss
     print(f"Harm  p-value: {harm.pvalue:.4f}")   # → 0.0001
     ```
 
-    The harmful-shift test points toward higher risk. Indeed, the mean predicted risk, or expected bad rate, rises from about 44% in source to 73% in target.
+    The harmful-shift test points toward higher risk. The mean predicted risk, the expected bad rate, rises from about 44% in source to 73% in target.
 
 === "Outlier score: confidence, no labels needed"
 
@@ -90,13 +88,13 @@ import samesame as ss
         source=brier_source, target=brier_target,
         worse="higher", rng=np.random.default_rng(12345),
     )
-    print(f"Brier p-value: {harm.pvalue:.4f}")  # -> 1.0000
+    print(f"Brier p-value: {harm.pvalue:.4f}")  # → 1.0000
     ```
 
-    Default probability tells us what the model predicts; confidence tells us how sure it is. Brier score asks a different question: were those probabilities accurate once the outcomes arrived? With `p=1.0000`, we do not reject the null hypothesis of no harmful increase in prediction error. On this split, there is no evidence that the model's errors are larger in target. The higher risk appears to reflect a change in the population rather than material model deterioration.
+    Brier score asks whether those probabilities were accurate once the outcomes arrived. With `p=1.0000`, we do not reject the null of no harmful increase in prediction error. On this split, the higher risk looks like a change in the population, not larger model errors.
 
 ## Wrap up
 
-These three scores give three views of the same deployment change. Predicted risk tells us how harmful the target looks, confidence tells us how decisive the model is, and Brier score tells us whether its probabilities remain accurate once outcomes arrive. Here, the target looks riskier and the model is more confident, but prediction error does not increase. Together, the results suggest a riskier population rather than material model deterioration.
+Predicted risk rose, confidence did not fall, and prediction error did not rise. On this split the target looks like a riskier book, not a model that got worse at its probabilities.
 
-The next question is whether the comparison is being driven by regions where source and target have little overlap. Continue with [Weight for common support](weight-for-common-support.md) to make that question explicit.
+If a few low-overlap applications are driving that comparison, [Weight for common support](weight-for-common-support.md) is the next check.
