@@ -1,6 +1,6 @@
 # Monitor a credit model
 
-An alarm should tell you whether a score moved toward worse outcomes, not just that it changed. Imagine a lender whose model was trained on low-risk applicants. A new partner channel or a changing market brings in riskier applicants. The model keeps scoring applications, but the shift could reflect a worse model, a different population, or both.
+A score shift does not, by itself, tell you whether outcomes worsened. Imagine a lender whose model was trained on low-risk applicants. A new partner channel or a changing market brings in riskier applicants. The model keeps scoring applications. A rise in predicted risk could mean the pool is riskier, the model performs worse on it, or both.
 
 ## The dataset
 
@@ -32,7 +32,9 @@ The code below creates these source and target samples:
 
 ## Scores
 
-With source and target defined, we can compare three scores. They are not interchangeable: each answers a different question and becomes available at a different time.
+With source and target defined, compare three scores. They are not
+interchangeable: each answers a different question and becomes available at a
+different time.
 
 | Score | Requires labels? | Harmful direction | `worse` | When it helps |
 |--------|-------------------|-------------------|---------|---------------|

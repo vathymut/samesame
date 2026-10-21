@@ -1,9 +1,9 @@
 # Weight for common support
 
 This tutorial continues [Monitor a credit model](monitor-credit.md). Its
-unweighted test found evidence of a shift toward higher predicted risk. It
-gives every application equal weight, including observations in regions with
-little overlap.
+unweighted harm test found evidence of movement toward higher predicted risk.
+It gives every application equal weight, including observations in regions
+with little overlap.
 
 **Common support** is the part of feature space represented by both groups.
 Here we ask whether the harmful shift remains when we give less weight to
@@ -32,17 +32,15 @@ The complete standalone script is
 
 ## Estimate domain probabilities
 
-The domain probability estimates how likely each application is to belong to
-the target group. Fit the classifier on the same source-target split used by
-the credit example. Calibration aligns predicted probabilities with observed
-frequencies; `CalibratedClassifierCV` applies it to the random forest. The
-outer `cross_val_predict` call produces each row's probability using a model
-that did not train on that row.
+First, estimate each application's probability of belonging to the target
+group with a domain classifier. `CalibratedClassifierCV` adjusts the random
+forest's probabilities to better match observed frequencies. The outer
+`cross_val_predict` call gives each row a probability from a model that did
+not train on it.
 
-Because `ExternalRiskEstimate` defines the split, estimate probabilities both
-with all features and with that split feature excluded. The first version shows
-the result when the domain model can use the splitting rule directly; the
-second asks how much separation the remaining features support.
+Because `ExternalRiskEstimate` defines the split, compare domain probabilities
+with that feature included and excluded. With it, the domain model can use the
+split rule directly; without it, the model must rely on the other features.
 
 ```python
 --8<-- "snippets/heloc-split.py:heloc-domain"
@@ -202,13 +200,14 @@ independent of the split rule, prefer the excluded-feature model.
 
 ## Interpret the comparison
 
-- If evidence weakens after weighting, some of the unweighted signal may come
-  from low-overlap regions. Interpret the result alongside ESS.
-- If the shift remains detectable in both specifications, there is evidence
-  that it persists after restricting the comparison toward common support.
-- A low ESS warns that a few observations carry much of the weight; it does not
-  automatically invalidate the permutation p-value. Report ESS alongside the
-  test result.
+- After weighting, a different p-value does not tell you whether some
+  low-overlap observations drove the unweighted result. Weight concentration
+  also changes precision; compare score distributions and ESS.
+- If harmful movement remains detectable under both domain-model
+  specifications, there is evidence it persists across these two weighted
+  comparisons.
+- A low ESS means a few observations carry much of the weight. It does not
+  automatically invalidate the permutation p-value, but it calls for caution.
 
 For the weighting API, see [Importance weights](../../api/weighting.md). For
 the statistic being tested, see [How the harm test works](../../explanation/harmful-shift-statistic.md).

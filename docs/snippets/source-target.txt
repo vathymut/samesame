@@ -1,1 +1,1 @@
-**Source** is the reference group (often training data or a past deployment); **target** is the population under evaluation (often a current deployment).
+Use **source** for the reference sample (often training data or a past deployment) and **target** for the sample under review (often a current deployment).

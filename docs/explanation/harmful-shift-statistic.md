@@ -25,7 +25,7 @@ the share of target scores above `t`):
 \]
 
 The ordinary shift statistic is ROC AUC, the area under the receiver operating
-characteristic curve. It gives equal weight to increases in `FPR`. The harm
+characteristic curve. Each part of the `FPR` range contributes equally. The harm
 statistic gives more weight to thresholds the source rarely exceeds:
 
 \[

@@ -8,21 +8,21 @@ move in a direction marked harmful? One score can miss a change another reveals.
 ## Why equality tests can raise unhelpful alarms
 
 Tests of equal score distributions ask whether source and target match; they
-do not ask whether a difference matters. At production scale,
+do not ask whether a difference matters. With enough observations,
 even a small, harmless difference can produce a small p-value. If every
 such alarm prompts retraining, teams can spend effort without improving
 outcomes. Polyzotis et al. (2019) put it directly: distribution tests at
-ML scale are "too sensitive and also uninformative." D-SOS takes a narrower
-view: it tests movement toward a tail you have marked harmful.
+ML scale are "too sensitive and also uninformative." The harm test takes a
+narrower view: it tests movement toward a tail you declared harmful in advance.
 
 ## A test for no adverse shift
 
-D-SOS, which powers `test_harm`, tests the null of no adverse shift in the
-direction you declared: target has not moved farther into the harmful tail.
+`test_harm` tests the null of no adverse shift in the direction you declared:
+target has not moved farther into the harmful tail.
 It does not test whether source and target score distributions are identical
 (Kamulete, 2022). The question is related to clinical noninferiority, but
-D-SOS is not a clinical noninferiority test. It is nonparametric (it assumes
-no particular score distribution) and uses no prespecified harm margin.
+the test is not a clinical noninferiority test. It assumes no particular score
+distribution and uses no prespecified harm margin.
 
 You define worse with one score — risk, error, confidence, outlier score —
 and a `worse` direction declared before testing. Higher risk is
@@ -50,9 +50,9 @@ separately; a detectable shift is not automatically harmful.
 - Use `test_shift` as a two-sided screen for rank-based separation.
 - Use `test_harm` with a pre-declared `worse` when only movement toward
   the harmful tail warrants intervention.
-- Both hold scores fixed and permute group labels. A small p-value is evidence
-  against label exchangeability: under the null, group labels are unrelated
-  to the pooled scores. It is not a measure of business impact.
+- Both hold scores fixed and permute group labels. A small p-value means the
+  observed statistic is unusual under label exchangeability, where group labels
+  are unrelated to the pooled scores. It is not a measure of business impact.
 
 See [How the harm test works](harmful-shift-statistic.md) for the ROC
 derivation, [Get started](../examples/tutorials/get-started.md) for the

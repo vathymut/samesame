@@ -7,13 +7,19 @@
 
 > *Same, same but different...* — did it change, and did it get worse?
 
-Reduce each observation to **one score you care about** — risk, error, confidence, an outlier score, or the outcome itself. Compare **source** (the reference: training or a past deployment) with **target** (the sample you are checking). Use a model score when labels are late. Use the measurement itself when you already have it.
+Choose **one score you care about** for each observation: risk, error,
+confidence, an outlier score, or the outcome itself. Compare **source**, the
+reference sample (often training data or a past deployment), with **target**,
+the sample under review (often a current deployment). Use a model score while
+labels are delayed. When the outcome is available, use it as the score.
 
 Two questions, two tests:
 
 - **Do scores separate the groups?** `ss.test_shift` — a two-sided ROC AUC test
-  for rank separation; it can miss other changes in distribution shape.
-- **Got worse?** `ss.test_harm(..., worse="higher")` — focused one-sided test toward the tail you declare harmful *in advance*.
+  of whether target scores tend to be higher or lower than source scores. It can
+  miss changes in distribution shape that do not affect this ranking.
+- **Got worse?** `ss.test_harm(..., worse="higher")` — focused one-sided test
+  toward the tail you declare harmful *in advance*.
 
 ## Installation
 

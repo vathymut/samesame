@@ -1,7 +1,7 @@
 # Weighting API
 
-Here, `source` is the reference group; `target` is the group under review.
-Common support is the part of feature space represented by both groups.
+Use `source` for the reference sample and `target` for the sample under review.
+Common support is the part of feature space where both groups have observations.
 Reweighting changes how much each observation counts. It cannot create
 overlap the data do not contain.
 

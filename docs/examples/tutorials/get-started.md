@@ -1,8 +1,8 @@
 # Get started
 
 This tutorial uses one score per observation to ask two questions: *do the
-groups separate by score?* and *does target move toward a direction you define
-as harmful?*
+groups separate by score?* and *does target move toward the tail you marked
+harmful?*
 
 ## Prerequisites
 
@@ -32,7 +32,8 @@ X = np.vstack([source, target])
 labels = np.r_[np.zeros(len(source), dtype=int), np.ones(len(target), dtype=int)]
 ```
 
-The first feature differs between the groups; the other three come from the same distribution. The classifier has a clear shift to find without extra differences in those features.
+The first feature shifts between the groups; the other three do not. This
+gives the classifier one clear signal to detect.
 
 ### 2. Score out of sample
 
@@ -41,7 +42,7 @@ In-sample predictions can exaggerate source-target separation.
 
 Here, a domain classifier estimates `P(target|x)`, the probability that a row
 belongs to target. If it can distinguish source from target, its probabilities
-give a general signal of shift. For background on classifier-based two-sample
+show how target-like each row appears. For more on classifier-based two-sample
 tests, see [In gentle praise of classifier tests](https://vathymut.org/posts/2022-01-22-in-gentle-praise-of-modern-tests/).
 
 ```python

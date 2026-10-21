@@ -4,8 +4,8 @@ In a clinical trial, “good enough” often means noninferior. A cheaper, faste
 or better-tolerated treatment need not beat the standard, but it should not
 leave patients meaningfully worse off.
 
-D-SOS asks a related question: is there evidence of adverse shift? It is not
-a clinical noninferiority test. It sets no prespecified harm margin and
+`test_harm` asks a related question: is there evidence of adverse shift? It is
+not a clinical noninferiority test. It sets no prespecified harm margin and
 assumes no particular score distribution (Kamulete, 2022). See [Are you OK?
 Test for harmful (adverse) shift](https://vathymut.org/posts/2023-01-03-are-you-ok/)
 for the motivation behind the question.
@@ -66,7 +66,10 @@ The result is consistent with the case study’s parametric conclusion (“not
 appreciably worse”). This nonparametric test uses only 70 patients; non-rejection
 does not establish noninferiority.
 
-The harmful-shift test focuses on the harmful tail: it asks whether Bowl leaves more patients in low-relief territory that Armanaleg rarely visits. Differences where the standard already has many patients matter less. See [How the harm test works](../../explanation/harmful-shift-statistic.md) for the mathematical details and ROC intuition.
+The statistic gives more weight to thresholds that Armanaleg rarely crosses,
+so differences in territory common to both groups count less. See [How the
+harm test works](../../explanation/harmful-shift-statistic.md) for the formula
+and ROC intuition.
 
 ## What the non-rejection means
 
