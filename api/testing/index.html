@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Statistical tests for comparing source and target score distributions — and whether the target moved toward worse outcomes.">
+        <meta name="description" content="Two-sample permutation tests for shift and adverse shift on scores.">
       
       
         <meta name="author" content="Vathy M. Kamulete">
@@ -289,7 +289,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../explanation/harmful-shift-statistic/" class="md-tabs__link">
+        <a href="../../explanation/benign-vs-harmful-shift/" class="md-tabs__link">
           
   
   
@@ -439,6 +439,8 @@
       
         
       
+        
+      
     
     
     
@@ -546,6 +548,29 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/iris-four-scores/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Four scores, two splits
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -561,6 +586,8 @@
   
     
     
+      
+        
       
         
       
@@ -601,6 +628,29 @@
             Explanation
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../explanation/benign-vs-harmful-shift/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Benign vs harmful shift
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -899,7 +949,16 @@
 
 
 <h1 id="testing-api">Testing API<a class="headerlink" href="#testing-api" title="Permanent link">&para;</a></h1>
-<p>Tests and result types for comparing source and target score distributions.</p>
+<p>Each test compares one score per observation across two samples: a reference
+(<code>source</code>) and a sample under review (<code>target</code>). <code>test_shift</code> uses ROC AUC to
+test rank-based separation: do target scores tend to be higher or lower
+than source scores? It can miss changes in distribution shape that do not
+change this ranking pattern. <code>test_harm</code> tests whether target moves toward the
+score tail declared harmful with <code>worse</code> before testing.</p>
+<p>For guidance on when to use each test, see
+<a href="../../explanation/benign-vs-harmful-shift/">Benign vs harmful shift</a>. For the
+weighted-AUC statistic, see
+<a href="../../explanation/harmful-shift-statistic/">How the harm test works</a>.</p>
 <h2 id="public-functions">Public functions<a class="headerlink" href="#public-functions" title="Permanent link">&para;</a></h2>
 
 
@@ -914,9 +973,11 @@
 
     <div class="doc doc-contents first">
 
-        <p>Test whether the source and target score distributions differ.</p>
-<p>The test uses ROC AUC to measure how well the score separates target from
-source, then permutes the group labels to form a two-sided null.</p>
+        <p>Test for rank-based separation between source and target scores.</p>
+<p>The two-sided test uses ROC AUC and permutes group labels. ROC AUC measures
+how often a randomly chosen target score exceeds a randomly chosen source
+score, with ties counting half. Values away from <code>0.5</code> indicate
+separation in either direction.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -1073,6 +1134,8 @@ samesame.weights.ImportanceWeights : Container for per-group weights.</p>
 <li>Interpret <code>statistic</code> relative to <code>0.5</code> (chance; <code>0.8</code> or
   <code>0.2</code> both signal strong separation) and <code>pvalue</code> as evidence
   against exchangeability — not as harm or business impact.</li>
+<li>This rank-based test is not an omnibus test: distributions can differ
+  in shape while ROC AUC remains <code>0.5</code>.</li>
 <li>For honest p-values, scores from a fitted model must be out of
   sample. In-sample predictions can inflate separation because the
   scoring model has memorized its inputs.</li>
@@ -1101,8 +1164,7 @@ samesame.weights.ImportanceWeights : Container for per-group weights.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/samesame/shift.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">249</span>
-<span class="normal">250</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">250</span>
 <span class="normal">251</span>
 <span class="normal">252</span>
 <span class="normal">253</span>
@@ -1190,7 +1252,12 @@ samesame.weights.ImportanceWeights : Container for per-group weights.</p>
 <span class="normal">335</span>
 <span class="normal">336</span>
 <span class="normal">337</span>
-<span class="normal">338</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_shift</span><span class="p">(</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_shift</span><span class="p">(</span>
     <span class="n">source</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
     <span class="n">target</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -1199,10 +1266,12 @@ samesame.weights.ImportanceWeights : Container for per-group weights.</p>
     <span class="n">weights</span><span class="p">:</span> <span class="n">ImportanceWeights</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ShiftResult</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Test whether the source and target score distributions differ.</span>
+<span class="sd">    Test for rank-based separation between source and target scores.</span>
 
-<span class="sd">    The test uses ROC AUC to measure how well the score separates target from</span>
-<span class="sd">    source, then permutes the group labels to form a two-sided null.</span>
+<span class="sd">    The two-sided test uses ROC AUC and permutes group labels. ROC AUC measures</span>
+<span class="sd">    how often a randomly chosen target score exceeds a randomly chosen source</span>
+<span class="sd">    score, with ties counting half. Values away from ``0.5`` indicate</span>
+<span class="sd">    separation in either direction.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1246,6 +1315,8 @@ samesame.weights.ImportanceWeights : Container for per-group weights.</p>
 <span class="sd">    * Interpret ``statistic`` relative to ``0.5`` (chance; ``0.8`` or</span>
 <span class="sd">      ``0.2`` both signal strong separation) and ``pvalue`` as evidence</span>
 <span class="sd">      against exchangeability — not as harm or business impact.</span>
+<span class="sd">    * This rank-based test is not an omnibus test: distributions can differ</span>
+<span class="sd">      in shape while ROC AUC remains ``0.5``.</span>
 <span class="sd">    * For honest p-values, scores from a fitted model must be out of</span>
 <span class="sd">      sample. In-sample predictions can inflate separation because the</span>
 <span class="sd">      scoring model has memorized its inputs.</span>
@@ -1298,14 +1369,14 @@ samesame.weights.ImportanceWeights : Container for per-group weights.</p>
     <div class="doc doc-contents first">
 
         <p>Test whether target moved toward the declared harmful tail.</p>
-<p>A small <code>test_shift</code> p-value says <em>something</em> changed. This test asks
-the narrower question: after orienting the score so larger means worse
-(<code>worse="lower"</code> flips the sign internally), does target put more
-mass beyond thresholds the source rarely exceeds? Formally it is the
-weighted AUC <code>∫ TPR·(1−FPR)² dFPR</code> of Kamulete (2022); thresholds
-the source rarely exceeds get more weight, so the test leans into the
-harmful tail. A small p-value is evidence for that directional movement
-— not for arbitrary shift.</p>
+<p>A small <code>test_shift</code> p-value is evidence of rank-based separation.
+This test asks a narrower question: after orienting the score so larger
+means worse (<code>worse="lower"</code> flips the sign internally), does target
+put more mass beyond high thresholds the source rarely exceeds?
+Formally, it is Kamulete's weighted AUC
+<code>∫ TPR·(1−FPR)² dFPR</code>, which gives more weight to those thresholds.
+A small p-value is evidence for that directional movement—not for
+arbitrary shift.</p>
 <p>Decide <code>worse</code> from what the score means before looking at results;
 do not pick the direction that gives the smaller p-value.</p>
 
@@ -1471,7 +1542,7 @@ while keeping scores and weights fixed.</p>
 
 <details class="see-also" open>
   <summary>See Also</summary>
-  <p>test_shift : Broad, two-sided screen when any change matters.
+  <p>test_shift : Two-sided screen for rank-based score separation.
 samesame.weights.domain_weights : Build weights from <code>P(target|x)</code>.
 Worse : The <code>"higher"</code> / <code>"lower"</code> choice in plain language.</p>
 </details>
@@ -1510,12 +1581,7 @@ Phipson, B., Smyth, G. K. (2010). Permutation P-values should never be
 
             <details class="quote">
               <summary>Source code in <code>src/samesame/shift.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">341</span>
-<span class="normal">342</span>
-<span class="normal">343</span>
-<span class="normal">344</span>
-<span class="normal">345</span>
-<span class="normal">346</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">346</span>
 <span class="normal">347</span>
 <span class="normal">348</span>
 <span class="normal">349</span>
@@ -1620,7 +1686,12 @@ Phipson, B., Smyth, G. K. (2010). Permutation P-values should never be
 <span class="normal">448</span>
 <span class="normal">449</span>
 <span class="normal">450</span>
-<span class="normal">451</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_harm</span><span class="p">(</span>
+<span class="normal">451</span>
+<span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_harm</span><span class="p">(</span>
     <span class="n">source</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
     <span class="n">target</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -1632,14 +1703,14 @@ Phipson, B., Smyth, G. K. (2010). Permutation P-values should never be
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Test whether target moved toward the declared harmful tail.</span>
 
-<span class="sd">    A small ``test_shift`` p-value says *something* changed. This test asks</span>
-<span class="sd">    the narrower question: after orienting the score so larger means worse</span>
-<span class="sd">    (``worse=&quot;lower&quot;`` flips the sign internally), does target put more</span>
-<span class="sd">    mass beyond thresholds the source rarely exceeds? Formally it is the</span>
-<span class="sd">    weighted AUC ``∫ TPR·(1−FPR)² dFPR`` of Kamulete (2022); thresholds</span>
-<span class="sd">    the source rarely exceeds get more weight, so the test leans into the</span>
-<span class="sd">    harmful tail. A small p-value is evidence for that directional movement</span>
-<span class="sd">    — not for arbitrary shift.</span>
+<span class="sd">    A small ``test_shift`` p-value is evidence of rank-based separation.</span>
+<span class="sd">    This test asks a narrower question: after orienting the score so larger</span>
+<span class="sd">    means worse (``worse=&quot;lower&quot;`` flips the sign internally), does target</span>
+<span class="sd">    put more mass beyond high thresholds the source rarely exceeds?</span>
+<span class="sd">    Formally, it is Kamulete&#39;s weighted AUC</span>
+<span class="sd">    ``∫ TPR·(1−FPR)² dFPR``, which gives more weight to those thresholds.</span>
+<span class="sd">    A small p-value is evidence for that directional movement—not for</span>
+<span class="sd">    arbitrary shift.</span>
 
 <span class="sd">    Decide ``worse`` from what the score means before looking at results;</span>
 <span class="sd">    do not pick the direction that gives the smaller p-value.</span>
@@ -1681,7 +1752,7 @@ Phipson, B., Smyth, G. K. (2010). Permutation P-values should never be
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
-<span class="sd">    test_shift : Broad, two-sided screen when any change matters.</span>
+<span class="sd">    test_shift : Two-sided screen for rank-based score separation.</span>
 <span class="sd">    samesame.weights.domain_weights : Build weights from ``P(target|x)``.</span>
 <span class="sd">    Worse : The ``&quot;higher&quot;`` / ``&quot;lower&quot;`` choice in plain language.</span>
 
@@ -1897,8 +1968,7 @@ samesame.weights.domain_weights : If poor overlap is a real concern.</p>
 
               <details class="quote">
                 <summary>Source code in <code>src/samesame/shift.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">104</span>
-<span class="normal">105</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">105</span>
 <span class="normal">106</span>
 <span class="normal">107</span>
 <span class="normal">108</span>
@@ -1948,7 +2018,8 @@ samesame.weights.domain_weights : If poor overlap is a real concern.</p>
 <span class="normal">152</span>
 <span class="normal">153</span>
 <span class="normal">154</span>
-<span class="normal">155</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="normal">155</span>
+<span class="normal">156</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ShiftResult</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Result of :func:`test_shift` — a two-sided permutation result.</span>
@@ -2049,12 +2120,12 @@ samesame.weights.domain_weights : If poor overlap is a real concern.</p>
   " href="#samesame.shift.ShiftResult">ShiftResult</a></code></p>
 
 
-        <p>Result of :func:<code>test_harm</code> — a one-sided tail result.</p>
-<p>One-sided tail result. The statistic is the weighted AUC
-<code>∫ TPR·(1−FPR)² dFPR</code> of Kamulete (2022) after orienting the score
-so larger means worse (<code>worse="lower"</code> flips the sign); it leans
-into thresholds the source rarely exceeds. Read it against
-<code>null_distribution</code> and the score's own scale. See
+        <p>Result of :func:<code>test_harm</code> — a one-sided permutation result.</p>
+<p>The statistic is Kamulete's weighted AUC
+<code>∫ TPR·(1−FPR)² dFPR</code> after orienting the score so larger means worse
+(<code>worse="lower"</code> flips the sign). It gives more weight to thresholds
+the source rarely exceeds. Read it against <code>null_distribution</code> and
+the score's own scale, not against <code>0.5</code>. See
 :doc:<code>How the harm test works &lt;../explanation/harmful-shift-statistic&gt;</code>
 for the ROC intuition.</p>
 
@@ -2201,7 +2272,7 @@ weights fixed.</p>
 
 <details class="see-also" open>
   <summary>See Also</summary>
-  <p>test_shift : Broad screen when any change matters.
+  <p>test_shift : Two-sided screen for rank-based score separation.
 Worse : <code>"higher"</code> vs <code>"lower"</code> in plain language.</p>
 </details>
 
@@ -2221,8 +2292,7 @@ Phipson, B., Smyth, G. K. (2010). Permutation P-values should never be
 
               <details class="quote">
                 <summary>Source code in <code>src/samesame/shift.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">158</span>
-<span class="normal">159</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">159</span>
 <span class="normal">160</span>
 <span class="normal">161</span>
 <span class="normal">162</span>
@@ -2279,16 +2349,17 @@ Phipson, B., Smyth, G. K. (2010). Permutation P-values should never be
 <span class="normal">213</span>
 <span class="normal">214</span>
 <span class="normal">215</span>
-<span class="normal">216</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="normal">216</span>
+<span class="normal">217</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">HarmfulShiftResult</span><span class="p">(</span><span class="n">ShiftResult</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Result of :func:`test_harm` — a one-sided tail result.</span>
+<span class="sd">    Result of :func:`test_harm` — a one-sided permutation result.</span>
 
-<span class="sd">    One-sided tail result. The statistic is the weighted AUC</span>
-<span class="sd">    ``∫ TPR·(1−FPR)² dFPR`` of Kamulete (2022) after orienting the score</span>
-<span class="sd">    so larger means worse (``worse=&quot;lower&quot;`` flips the sign); it leans</span>
-<span class="sd">    into thresholds the source rarely exceeds. Read it against</span>
-<span class="sd">    ``null_distribution`` and the score&#39;s own scale. See</span>
+<span class="sd">    The statistic is Kamulete&#39;s weighted AUC</span>
+<span class="sd">    ``∫ TPR·(1−FPR)² dFPR`` after orienting the score so larger means worse</span>
+<span class="sd">    (``worse=&quot;lower&quot;`` flips the sign). It gives more weight to thresholds</span>
+<span class="sd">    the source rarely exceeds. Read it against ``null_distribution`` and</span>
+<span class="sd">    the score&#39;s own scale, not against ``0.5``. See</span>
 <span class="sd">    :doc:`How the harm test works &lt;../explanation/harmful-shift-statistic&gt;`</span>
 <span class="sd">    for the ROC intuition.</span>
 
@@ -2319,7 +2390,7 @@ Phipson, B., Smyth, G. K. (2010). Permutation P-values should never be
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
-<span class="sd">    test_shift : Broad screen when any change matters.</span>
+<span class="sd">    test_shift : Two-sided screen for rank-based score separation.</span>
 <span class="sd">    Worse : ``&quot;higher&quot;`` vs ``&quot;lower&quot;`` in plain language.</span>
 
 <span class="sd">    References</span>
@@ -2379,10 +2450,11 @@ Phipson, B., Smyth, G. K. (2010). Permutation P-values should never be
               Bases: <code><span title="enum.StrEnum">StrEnum</span></code></p>
 
 
-        <p>Polarity that defines which tail is harmful for :func:<code>test_harm</code>.</p>
+        <p>Direction that defines which tail is harmful for :func:<code>test_harm</code>.</p>
 <p>Choose <code>worse</code> from the score's definition (e.g., risk is higher-is-worse,
-confidence via <code>LogitGap</code> is lower-is-worse) and pre-register it; do not
-pick the direction that gives the smaller p-value after seeing the data.
+confidence via <code>LogitGap</code> is lower-is-worse) and declare it before
+testing; do not pick the direction that gives the smaller p-value after
+seeing the data.
 A plain string <code>"higher"</code> / <code>"lower"</code> is accepted wherever this
 enum is; the two forms are interchangeable.</p>
 
@@ -2480,13 +2552,15 @@ lower is worse).</p>
 <span class="normal">87</span>
 <span class="normal">88</span>
 <span class="normal">89</span>
-<span class="normal">90</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Worse</span><span class="p">(</span><span class="n">StrEnum</span><span class="p">):</span>
+<span class="normal">90</span>
+<span class="normal">91</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Worse</span><span class="p">(</span><span class="n">StrEnum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Polarity that defines which tail is harmful for :func:`test_harm`.</span>
+<span class="sd">    Direction that defines which tail is harmful for :func:`test_harm`.</span>
 
 <span class="sd">    Choose ``worse`` from the score&#39;s definition (e.g., risk is higher-is-worse,</span>
-<span class="sd">    confidence via ``LogitGap`` is lower-is-worse) and pre-register it; do not</span>
-<span class="sd">    pick the direction that gives the smaller p-value after seeing the data.</span>
+<span class="sd">    confidence via ``LogitGap`` is lower-is-worse) and declare it before</span>
+<span class="sd">    testing; do not pick the direction that gives the smaller p-value after</span>
+<span class="sd">    seeing the data.</span>
 <span class="sd">    A plain string ``&quot;higher&quot;`` / ``&quot;lower&quot;`` is accepted wherever this</span>
 <span class="sd">    enum is; the two forms are interchangeable.</span>
 

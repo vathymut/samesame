@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Statistical tests for comparing source and target score distributions — and whether the target moved toward worse outcomes.">
+        <meta name="description" content="Two-sample permutation tests for shift and adverse shift on scores.">
       
       
         <meta name="author" content="Vathy M. Kamulete">
@@ -287,7 +287,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../explanation/harmful-shift-statistic/" class="md-tabs__link">
+        <a href="../../explanation/benign-vs-harmful-shift/" class="md-tabs__link">
           
   
   
@@ -437,6 +437,8 @@
       
         
       
+        
+      
     
     
     
@@ -544,6 +546,29 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/iris-four-scores/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Four scores, two splits
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -559,6 +584,8 @@
   
     
     
+      
+        
       
         
       
@@ -599,6 +626,29 @@
             Explanation
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../explanation/benign-vs-harmful-shift/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Benign vs harmful shift
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -903,8 +953,11 @@
 
 
 <h1 id="weighting-api">Weighting API<a class="headerlink" href="#weighting-api" title="Permanent link">&para;</a></h1>
-<p>Functions and data classes for reweighting source and target comparisons toward
-common support.</p>
+<p>Use <code>source</code> for the reference sample and <code>target</code> for the sample under review.
+Common support is the part of feature space—the combinations of feature
+values—where both samples have observations. Reweighting changes how much each
+observation counts; it cannot create overlap the data do not contain.</p>
+<p>Worked example: <a href="../../examples/credit/weight-for-common-support/">Weight for common support</a>.</p>
 <h2 id="public-functions">Public functions<a class="headerlink" href="#public-functions" title="Permanent link">&para;</a></h2>
 
 
@@ -1006,9 +1059,9 @@ Accepts a plain string or :class:<code>ReweightMode</code>.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Shrinkage <code>λ</code> in <code>[0, 1]</code> (default <code>0.5</code>) blending RIW
-toward uniform weights. <code>0</code> is the plain density ratio — strongest
-correction, highest variance. <code>1</code> is uniform — no correction.
+                <p>Shrinkage <code>λ</code> in <code>[0, 1]</code> (default <code>0.5</code>) blending raw importance
+weights toward uniform weights. <code>0</code> is the plain density ratio —
+strongest correction, highest variance. <code>1</code> is uniform — no correction.
 <code>0.5</code> is the recommended default; start there and inspect
 <code>ESS/n</code> before lowering (lower = more aggressive correction).</p>
               </div>
@@ -1080,7 +1133,7 @@ Inactive groups keep weight <code>1</code> for every observation.</p>
   <p>ImportanceWeights : Container that normalizes and validates weights.
 EffectiveSampleSize : Per-group ESS and ESS/n interpretation.
 ReweightMode : <code>"source"</code>, <code>"target"</code>, <code>"both"</code> in plain language.
-samesame.shift.test_shift : Any-shift test that can consume weights.
+samesame.shift.test_shift : Rank-based shift test that can consume weights.
 samesame.shift.test_harm : Directional test that can consume weights.</p>
 </details>
 
@@ -1296,9 +1349,9 @@ Elvira, V. et al. (2022). Rethinking the effective sample size.
 <span class="sd">        reweights source toward target; ``&#39;target&#39;`` does the reverse.</span>
 <span class="sd">        Accepts a plain string or :class:`ReweightMode`.</span>
 <span class="sd">    shrinkage : float, optional</span>
-<span class="sd">        Shrinkage ``λ`` in ``[0, 1]`` (default ``0.5``) blending RIW</span>
-<span class="sd">        toward uniform weights. ``0`` is the plain density ratio — strongest</span>
-<span class="sd">        correction, highest variance. ``1`` is uniform — no correction.</span>
+<span class="sd">        Shrinkage ``λ`` in ``[0, 1]`` (default ``0.5``) blending raw importance</span>
+<span class="sd">        weights toward uniform weights. ``0`` is the plain density ratio —</span>
+<span class="sd">        strongest correction, highest variance. ``1`` is uniform — no correction.</span>
 <span class="sd">        ``0.5`` is the recommended default; start there and inspect</span>
 <span class="sd">        ``ESS/n`` before lowering (lower = more aggressive correction).</span>
 
@@ -1320,7 +1373,7 @@ Elvira, V. et al. (2022). Rethinking the effective sample size.
 <span class="sd">    ImportanceWeights : Container that normalizes and validates weights.</span>
 <span class="sd">    EffectiveSampleSize : Per-group ESS and ESS/n interpretation.</span>
 <span class="sd">    ReweightMode : ``&quot;source&quot;``, ``&quot;target&quot;``, ``&quot;both&quot;`` in plain language.</span>
-<span class="sd">    samesame.shift.test_shift : Any-shift test that can consume weights.</span>
+<span class="sd">    samesame.shift.test_shift : Rank-based shift test that can consume weights.</span>
 <span class="sd">    samesame.shift.test_harm : Directional test that can consume weights.</span>
 
 <span class="sd">    Notes</span>
@@ -1542,7 +1595,8 @@ inactive group keeps weight <code>1</code> for every observation.</p>
 
               <details class="quote">
                 <summary>Source code in <code>src/samesame/weights.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">189</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">188</span>
+<span class="normal">189</span>
 <span class="normal">190</span>
 <span class="normal">191</span>
 <span class="normal">192</span>
@@ -1713,11 +1767,12 @@ inactive group keeps weight <code>1</code> for every observation.</p>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">effective_sample_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EffectiveSampleSize</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        How much independent information remains after weighting.</span>
+<span class="sd">        Compute Kish&#39;s effective sample size (ESS), a summary of weight</span>
+<span class="sd">        concentration.</span>
 
 <span class="sd">        Returns Kish&#39;s ``(sum w)² / sum w²`` (Kish, 1965) per group. Uniform</span>
-<span class="sd">        weights give ``ESS == n``; concentrated weights where a handful</span>
-<span class="sd">        dominate push ESS toward ``1``. Interpret ``ESS/n`` continuously; a</span>
+<span class="sd">        weights give ``ESS == n``; as weights concentrate, ESS approaches</span>
+<span class="sd">        ``1``. Interpret ``ESS/n`` continuously; a</span>
 <span class="sd">        low ratio warns that the weighted result leans on a few observations.</span>
 
 <span class="sd">        If ESS stays low even at ``shrinkage=0.5``, the groups may lack</span>
@@ -1774,10 +1829,11 @@ inactive group keeps weight <code>1</code> for every observation.</p>
 
     <div class="doc doc-contents ">
 
-        <p>How much independent information remains after weighting.</p>
+        <p>Compute Kish's effective sample size (ESS), a summary of weight
+concentration.</p>
 <p>Returns Kish's <code>(sum w)² / sum w²</code> (Kish, 1965) per group. Uniform
-weights give <code>ESS == n</code>; concentrated weights where a handful
-dominate push ESS toward <code>1</code>. Interpret <code>ESS/n</code> continuously; a
+weights give <code>ESS == n</code>; as weights concentrate, ESS approaches
+<code>1</code>. Interpret <code>ESS/n</code> continuously; a
 low ratio warns that the weighted result leans on a few observations.</p>
 <p>If ESS stays low even at <code>shrinkage=0.5</code>, the groups may lack
 enough common support for a reliable weighted comparison — consider
@@ -1831,7 +1887,8 @@ Elvira, V. et al. (2022). Rethinking the effective sample size.
 
             <details class="quote">
               <summary>Source code in <code>src/samesame/weights.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">256</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">255</span>
+<span class="normal">256</span>
 <span class="normal">257</span>
 <span class="normal">258</span>
 <span class="normal">259</span>
@@ -1868,11 +1925,12 @@ Elvira, V. et al. (2022). Rethinking the effective sample size.
 <span class="normal">290</span>
 <span class="normal">291</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">effective_sample_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EffectiveSampleSize</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    How much independent information remains after weighting.</span>
+<span class="sd">    Compute Kish&#39;s effective sample size (ESS), a summary of weight</span>
+<span class="sd">    concentration.</span>
 
 <span class="sd">    Returns Kish&#39;s ``(sum w)² / sum w²`` (Kish, 1965) per group. Uniform</span>
-<span class="sd">    weights give ``ESS == n``; concentrated weights where a handful</span>
-<span class="sd">    dominate push ESS toward ``1``. Interpret ``ESS/n`` continuously; a</span>
+<span class="sd">    weights give ``ESS == n``; as weights concentrate, ESS approaches</span>
+<span class="sd">    ``1``. Interpret ``ESS/n`` continuously; a</span>
 <span class="sd">    low ratio warns that the weighted result leans on a few observations.</span>
 
 <span class="sd">    If ESS stays low even at ``shrinkage=0.5``, the groups may lack</span>
@@ -1934,11 +1992,10 @@ Elvira, V. et al. (2022). Rethinking the effective sample size.
     <div class="doc doc-contents first">
 
 
-        <p>Kish effective sample size — how much information is left after weighting.</p>
-<p>Kish's ESS <code>(sum w)² / sum w²</code> (Kish, 1965): uniform weights keep
-every voice — <code>ESS == n</code>; when a few observations shout while the
-rest whisper, ESS slides toward <code>1</code>. It interpolates between <code>n</code>
-(uniform) and <code>1</code> (one observation dominates).</p>
+        <p>Kish effective sample size (ESS) summarizes how concentrated the weights
+are.</p>
+<p>Kish's ESS is <code>(sum w)² / sum w²</code> (Kish, 1965). Uniform weights give
+<code>ESS == n</code>; as weights concentrate, ESS approaches <code>1</code>.</p>
 <p>Compare each ESS to its <code>n</code> via the ratio <code>ESS/n</code>. There is no
 universal cutoff from Kish; interpret <code>ESS/n</code> as a continuous
 diagnostic. A low ratio — for example substantially below <code>0.5</code> or,
@@ -2100,16 +2157,14 @@ Elvira, V., Martino, L., Robert, C. P. (2022). Rethinking the effective
 <span class="normal">182</span>
 <span class="normal">183</span>
 <span class="normal">184</span>
-<span class="normal">185</span>
-<span class="normal">186</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="normal">185</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">EffectiveSampleSize</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Kish effective sample size — how much information is left after weighting.</span>
+<span class="sd">    Kish effective sample size (ESS) summarizes how concentrated the weights</span>
+<span class="sd">    are.</span>
 
-<span class="sd">    Kish&#39;s ESS ``(sum w)² / sum w²`` (Kish, 1965): uniform weights keep</span>
-<span class="sd">    every voice — ``ESS == n``; when a few observations shout while the</span>
-<span class="sd">    rest whisper, ESS slides toward ``1``. It interpolates between ``n``</span>
-<span class="sd">    (uniform) and ``1`` (one observation dominates).</span>
+<span class="sd">    Kish&#39;s ESS is ``(sum w)² / sum w²`` (Kish, 1965). Uniform weights give</span>
+<span class="sd">    ``ESS == n``; as weights concentrate, ESS approaches ``1``.</span>
 
 <span class="sd">    Compare each ESS to its ``n`` via the ratio ``ESS/n``. There is no</span>
 <span class="sd">    universal cutoff from Kish; interpret ``ESS/n`` as a continuous</span>

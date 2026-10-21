@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Statistical tests for comparing source and target score distributions — and whether the target moved toward worse outcomes.">
+        <meta name="description" content="Two-sample permutation tests for shift and adverse shift on scores.">
       
       
         <meta name="author" content="Vathy M. Kamulete">
@@ -291,7 +291,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../explanation/harmful-shift-statistic/" class="md-tabs__link">
+        <a href="../../../explanation/benign-vs-harmful-shift/" class="md-tabs__link">
           
   
   
@@ -434,6 +434,8 @@
   
     
     
+      
+        
       
         
       
@@ -618,6 +620,29 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../iris-four-scores/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Four scores, two splits
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -633,6 +658,8 @@
   
     
     
+      
+        
       
         
       
@@ -673,6 +700,29 @@
             Explanation
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../explanation/benign-vs-harmful-shift/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Benign vs harmful shift
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -836,10 +886,23 @@
 
 
 <h1 id="is-the-new-drug-good-enough">Is the new drug good enough?<a class="headerlink" href="#is-the-new-drug-good-enough" title="Permanent link">&para;</a></h1>
-<p>In clinical trials, this question is called <strong>noninferiority</strong>. A cheaper, faster, or easier-to-tolerate treatment does not have to beat the standard. It can win on cost or convenience, but it cannot leave patients meaningfully worse off. The harmful-shift test was introduced as D-SOS, a nonparametric noninferiority test with no margin and no normality assumption (Kamulete, 2022). See <a href="https://vathymut.org/posts/2023-01-03-are-you-ok/">Are you OK? Test for harmful (adverse) shift</a> for the motivation behind the question.</p>
-<p>Consider <strong>Bowl</strong>, a cheaper treatment, against <strong>Armanaleg</strong>, the established standard, in this <a href="https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf">SAS case study</a>. Patients report relief on a 4-to-16 scale, with higher scores better. Bowl's mean relief is lower than Armanaleg's (9.4 versus 10.1), but a lower mean does not answer the practical question: did Bowl push more patients into relief levels the standard rarely produces? With one score per patient and no model, the harmful-shift test makes that question explicit. Set <code>worse</code> from the meaning of the score before looking at the results.</p>
+<p>In a clinical trial, “good enough” often means noninferior. A cheaper, faster,
+or better-tolerated treatment need not beat the standard, but it should not
+leave patients meaningfully worse off.</p>
+<p><code>test_harm</code> asks a related question: is there evidence of adverse shift? It is
+not a clinical noninferiority test. It sets no prespecified harm margin and
+assumes no particular score distribution (Kamulete, 2022). See <a href="https://vathymut.org/posts/2023-01-03-are-you-ok/">Are you OK?
+Test for harmful (adverse) shift</a>
+for the motivation behind the question.</p>
+<p>Consider <strong>Bowl</strong>, a cheaper treatment, against <strong>Armanaleg</strong>, the established
+standard, in this <a href="https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf">SAS case study</a>.
+Patients report relief on a 4-to-16 scale; higher scores are better. Bowl's
+mean is lower than Armanaleg's (9.4 versus 10.1), but that alone does not show
+whether more patients had relief levels the standard rarely produces. With
+one score per patient and no model, the harm test asks that tail-focused
+question. Set <code>worse</code> from the score's meaning before looking at results.</p>
 <h2 id="the-data">The data<a class="headerlink" href="#the-data" title="Permanent link">&para;</a></h2>
-<p>Load the 70 patient-level relief scores and split them into the reference (<code>source</code>) and current (<code>target</code>) samples. The first 28 observations are Armanaleg; the remaining 42 are Bowl.</p>
+<p>Load the 70 patient-level relief scores and split them into the reference (<code>source</code>) and challenger (<code>target</code>) samples. The first 28 observations are Armanaleg; the remaining 42 are Bowl.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="n">datalines</span> <span class="o">=</span> <span class="p">(</span>
@@ -866,18 +929,28 @@
 </code></pre></div>
 <p>The two tests answer different questions:</p>
 <ul>
-<li><code>test_shift</code> (p=0.25) tests for any difference between the source and target score distributions.</li>
+<li><code>test_shift</code> (p=0.25) tests for rank-based separation between the source
+  and target scores.</li>
 <li><code>test_harm</code> (p=0.13) tests for movement toward the harmful, low-relief tail.</li>
 </ul>
-<p>Neither p-value is small, so we do not reject the null of no shift or the null of no harmful shift.</p>
-<p>That is consistent with the original parametric analysis ("not appreciably worse"), while making no normality assumption and using only 70 observations.</p>
-<p>The harmful-shift test focuses on the harmful tail: it asks whether Bowl leaves more patients in low-relief territory that Armanaleg rarely visits. Differences where the standard already has many patients matter less. See <a href="../../../explanation/harmful-shift-statistic/">How the harm test works</a> for the mathematical details and ROC intuition.</p>
+<p>Neither result gives strong evidence against its null. For <code>test_shift</code>, the
+null is that source and target labels are unrelated to the scores; for
+<code>test_harm</code>, it is no adverse shift in the declared direction.</p>
+<p>The result is consistent with the case study’s parametric conclusion (“not
+appreciably worse”). This nonparametric test uses only 70 patients; non-rejection
+does not establish noninferiority.</p>
+<p>The statistic gives more weight to thresholds that Armanaleg rarely crosses,
+so differences in territory common to both groups count less. See <a href="../../../explanation/harmful-shift-statistic/">How the
+harm test works</a> for the formula
+and ROC intuition.</p>
 <h2 id="what-the-non-rejection-means">What the non-rejection means<a class="headerlink" href="#what-the-non-rejection-means" title="Permanent link">&para;</a></h2>
-<p>A p-value of 0.13 is not a certificate of equivalence or proof that Bowl is safe. It says the observed pattern would not be surprising under the null of no harmful shift.</p>
+<p>The harm-test result (p=0.13) does not establish safety, equivalence, or
+noninferiority. With 28 versus 42 patients, the test may have limited power to
+detect small harms.</p>
 <ul>
-<li><strong>Absence of evidence isn't evidence of absence.</strong> With 28 versus 42 patients, the test may lack power; a larger study or wider deployment window could sharpen the verdict.</li>
-<li><strong>Direction is part of the protocol.</strong> Here <code>worse="lower"</code> because lower relief is worse. Picking a direction after seeing p-values turns a pre-specified test into a search.</li>
+<li><strong>Declare direction in advance.</strong> Here <code>worse="lower"</code> because lower relief is worse. Choosing a direction after seeing p-values turns the pre-specified test into a search.</li>
 </ul>
+<p>Same two tests on a model score: <a href="../../tutorials/get-started/">Get started</a>.</p>
 
 
 

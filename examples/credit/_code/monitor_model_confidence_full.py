@@ -1,4 +1,4 @@
-"""Full runnable example for Monitor model confidence."""
+"""Runnable HELOC example for monitoring model confidence."""
 
 # --8<-- [start:full]
 import re
@@ -16,7 +16,7 @@ def logit_gap(logits: np.ndarray) -> np.ndarray:
     mean_rest = (np.sum(logits, axis=1) - max_logits) / (logits.shape[1] - 1)
     return max_logits - mean_rest
 
-def outlier_scores_from_probabilities(probabilities, *, clip=1e-6):
+def confidence_scores_from_probabilities(probabilities, *, clip=1e-6):
     clipped = np.clip(np.asarray(probabilities, dtype=float), clip, 1.0 - clip)
     return logit_gap(logit(clipped))
 
@@ -37,9 +37,11 @@ rf_bad = RandomForestClassifier(
 )
 rf_bad.fit(X_train, y_train_binary)
 
-# --- Build confidence (outlier) scores — larger = more certain
-train_confidence = outlier_scores_from_probabilities(rf_bad.oob_decision_function_)
-deployment_confidence = outlier_scores_from_probabilities(
+# --- Build confidence scores — larger = more certain
+train_confidence = confidence_scores_from_probabilities(
+    rf_bad.oob_decision_function_
+)
+deployment_confidence = confidence_scores_from_probabilities(
     rf_bad.predict_proba(X_deployment)
 )
 print(f"Training mean confidence:   {train_confidence.mean():.3f}")

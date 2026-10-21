@@ -1,4 +1,4 @@
-"""Full runnable example for Monitor predicted credit risk."""
+"""Runnable HELOC example for monitoring predicted credit risk."""
 
 # --8<-- [start:full]
 import re
@@ -24,7 +24,7 @@ X_train = X[mask_high].reset_index(drop=True)
 y_train = y[mask_high].reset_index(drop=True)
 X_deployment = X[~mask_high].reset_index(drop=True)
 
-# --- Step 1: domain classifier — is deployment different?
+# --- Step 1: domain classifier — do scores separate the groups?
 split = pd.Series([0] * len(X_train) + [1] * len(X_deployment))
 X_concat = pd.concat([X_train, X_deployment], ignore_index=True)
 

@@ -1,1 +1,1 @@
-**Source** is the reference distribution (training data or a past deployment); **target** is the current deployment under evaluation.
+Use **source** for the reference sample (often training data or a past deployment) and **target** for the sample under review (often a current deployment).

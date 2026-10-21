@@ -1,4 +1,4 @@
-"""Full runnable example for Focus harmful-shift testing on common support."""
+"""Runnable example of source-weighted harmful-shift testing."""
 
 # --8<-- [start:full]
 import re

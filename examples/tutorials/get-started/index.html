@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Statistical tests for comparing source and target score distributions — and whether the target moved toward worse outcomes.">
+        <meta name="description" content="Two-sample permutation tests for shift and adverse shift on scores.">
       
       
         <meta name="author" content="Vathy M. Kamulete">
@@ -291,7 +291,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../explanation/harmful-shift-statistic/" class="md-tabs__link">
+        <a href="../../../explanation/benign-vs-harmful-shift/" class="md-tabs__link">
           
   
   
@@ -496,9 +496,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-did-anything-change" class="md-nav__link">
+  <a href="#3-do-the-scores-separate" class="md-nav__link">
     <span class="md-ellipsis">
-      3. Did anything change?
+      3. Do the scores separate?
     </span>
   </a>
   
@@ -514,9 +514,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#5-examples-of-harmful-scores" class="md-nav__link">
+  <a href="#5-use-a-score-tied-to-your-outcome" class="md-nav__link">
     <span class="md-ellipsis">
-      5. Examples of harmful scores
+      5. Use a score tied to your outcome
     </span>
   </a>
   
@@ -552,6 +552,8 @@
   
     
     
+      
+        
       
         
       
@@ -666,6 +668,29 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../iris-four-scores/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Four scores, two splits
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -681,6 +706,8 @@
   
     
     
+      
+        
       
         
       
@@ -721,6 +748,29 @@
             Explanation
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../explanation/benign-vs-harmful-shift/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Benign vs harmful shift
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -884,17 +934,21 @@
 
 
 <h1 id="get-started">Get started<a class="headerlink" href="#get-started" title="Permanent link">&para;</a></h1>
-<p>This tutorial shows how to turn scores into two answers: <em>did it change?</em> and <em>did it get worse?</em></p>
+<p>This tutorial uses one score per observation to ask two questions: <em>do the
+groups separate by score?</em> and <em>does target move toward the tail you marked
+harmful?</em></p>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Python 3.12+ with <code>numpy</code>, <code>scipy</code>, <code>scikit-learn</code>, and <code>samesame</code> installed.</li>
-<li>Comfort with p-values and training a classifier (you will use <code>cross_val_predict</code> once).</li>
+<li>Basic familiarity with p-values. You do not need to know classifiers; the
+  tutorial explains why each row must be scored out of sample.</li>
 </ul>
-<p><strong>Source</strong> is the reference distribution (training data or a past deployment); <strong>target</strong> is the current deployment under evaluation.</p>
+<p>Use <strong>source</strong> for the reference sample (often training data or a past deployment) and <strong>target</strong> for the sample under review (often a current deployment).</p>
 <h2 id="steps">Steps<a class="headerlink" href="#steps" title="Permanent link">&para;</a></h2>
-<p>The two tests answer different questions. <code>ss.test_shift</code> is a broad, two-sided test for any difference between source and target. <code>ss.test_harm(..., worse="higher"|"lower")</code> is a focused, one-sided test for detecting a harmful shift. You can apply both tests to the score that represents the outcome you care about.</p>
 <h3 id="1-create-source-and-target">1. Create source and target<a class="headerlink" href="#1-create-source-and-target" title="Permanent link">&para;</a></h3>
-<p>Start with two datasets. Here, source represents a sample from the reference population and target represents a sample from the current population. In practice, source might be training data or a past deployment.</p>
+<p>Draw a reference sample (<code>source</code>) and a sample from the population you are
+checking (<code>target</code>). The reference is usually training data or a past
+deployment.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">)</span>
 <span class="n">source</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
@@ -902,9 +956,15 @@
 <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">])</span>
 <span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">source</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">target</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)]</span>
 </code></pre></div>
-<p>The target differs from the source in its first feature. That gives the classifier a deliberate shift to find, while the remaining features stay aligned.</p>
+<p>The first feature shifts between the groups; the other three do not. This
+gives the classifier one clear signal to detect.</p>
 <h3 id="2-score-out-of-sample">2. Score out of sample<a class="headerlink" href="#2-score-out-of-sample" title="Permanent link">&para;</a></h3>
-<p>Each row must be scored by a model that did not see that row. Here, a domain classifier estimates <code>P(target|x)</code>, the probability that an observation looks like it came from the target population. This is a useful generic score for detecting <em>any</em> shift because it measures sample membership. For background on classifier-based two-sample tests, see <a href="https://vathymut.org/posts/2022-01-22-in-gentle-praise-of-modern-tests/">In gentle praise of classifier tests</a>.</p>
+<p>Score each row out of sample: the model must not have been fit on that row.
+In-sample predictions can exaggerate source-target separation.</p>
+<p>Here, a domain classifier estimates <code>P(target|x)</code>, the probability that a row
+belongs to target. Its probabilities show how target-like each row appears.
+For background on classifier-based two-sample tests, see
+<a href="https://vathymut.org/posts/2022-01-22-in-gentle-praise-of-modern-tests/">In gentle praise of classifier tests</a>.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">HistGradientBoostingClassifier</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">cross_val_predict</span>
 
@@ -916,20 +976,29 @@
 <details class="note">
 <summary>Honest and reproducible scores</summary>
 <p><code>samesame</code> only sees the scores you pass in.</p>
-<p>When a fitted model produces the scores, generate them out of sample with <code>cross_val_predict</code>, <code>oob_decision_function_</code>, or a held-out set. In-sample predictions use information the model has already seen; they can make source and target look more separable than they are and invalidate the test.</p>
-<p>Pass <code>rng=np.random.default_rng(12345)</code> for reproducible p-values (<code>n_resamples=9999</code>; use <code>999</code> while exploring and <code>19999</code> below <code>0.001</code>). Details: <a href="../../../api/testing/">Shift testing</a>.</p>
+<p>When a fitted model produces the scores, evaluate each row out of sample with <code>cross_val_predict</code>, <code>oob_decision_function_</code>, or a held-out set. In-sample predictions use information the model has already seen; they can exaggerate source-target separation and undermine the test.</p>
+<p>Pass <code>rng=np.random.default_rng(12345)</code> for reproducible p-values. The
+default is <code>n_resamples=9999</code>; use <code>999</code> while exploring and <code>19999</code> for
+finer p-value resolution, especially below <code>0.001</code>. See
+<a href="../../../api/testing/">Shift testing</a> for details.</p>
 </details>
-<h3 id="3-did-anything-change">3. Did anything change?<a class="headerlink" href="#3-did-anything-change" title="Permanent link">&para;</a></h3>
-<p>Now test whether the domain score separates source from target. Because we introduced a difference in the first feature, you should expect clear separation here:</p>
+<h3 id="3-do-the-scores-separate">3. Do the scores separate?<a class="headerlink" href="#3-do-the-scores-separate" title="Permanent link">&para;</a></h3>
+<p>Test whether the domain score separates source from target. Because we
+introduced a difference in the first feature, expect clear separation:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">samesame</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ss</span>
 <span class="n">source_scores</span> <span class="o">=</span> <span class="n">domain_prob</span><span class="p">[</span><span class="n">labels</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
 <span class="n">target_scores</span> <span class="o">=</span> <span class="n">domain_prob</span><span class="p">[</span><span class="n">labels</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
 <span class="n">shift</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_shift</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_scores</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_scores</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Shift p-value: </span><span class="si">{</span><span class="n">shift</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># → 0.0002</span>
 </code></pre></div>
-<p>With this p-value, we reject the null of no shift, as expected.</p>
+<p>A small p-value means the observed separation would be unusual if source and
+target labels were unrelated to the pooled scores. Here, it reflects the
+first-feature difference we built in.</p>
 <h3 id="4-did-it-get-worse">4. Did it get worse?<a class="headerlink" href="#4-did-it-get-worse" title="Permanent link">&para;</a></h3>
-<p>The domain probability can also serve as an outlier score when target-like observations represent the harmful direction: a higher domain probability means the observation looks less like the reference sample, so use <code>worse="higher"</code> when these deviations are harmful.</p>
+<p>Here, the domain probability measures group membership, not outcome quality:
+higher values mean a row looks more like target. Use <code>worse="higher"</code> only if
+target-like observations are harmful in your setting. This example shows how
+the test works; domain probability is not a general harm score.</p>
 <div class="highlight"><pre><span></span><code><span class="n">harm</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harm</span><span class="p">(</span>
     <span class="n">source</span><span class="o">=</span><span class="n">source_scores</span><span class="p">,</span>
     <span class="n">target</span><span class="o">=</span><span class="n">target_scores</span><span class="p">,</span>
@@ -938,10 +1007,13 @@
 <span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Harm p-value: </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># → 0.0002</span>
 </code></pre></div>
-<p>Here again, we reject the null of no harmful shift, meaning the target sample often does not resemble the source sample.</p>
-<h3 id="5-examples-of-harmful-scores">5. Examples of harmful scores<a class="headerlink" href="#5-examples-of-harmful-scores" title="Permanent link">&para;</a></h3>
-<p>The domain probability is one way to define an outlier score. You can also test harmful shift using a score tied directly to the outcome you care about. The examples below show two possibilities: risk or error, where higher scores are harmful, and confidence or quality, where lower scores are harmful. Replace them with your own score if need be. See <a href="../../../api/testing/">Shift testing</a> for the test signatures and polarity options.</p>
-<p>Declare the harmful direction from the meaning of the score before testing. Pass it as a string or as <code>ss.Worse</code>; the two forms are interchangeable:</p>
+<p>The small p-value is evidence that target scores appear more often in the high
+tail. It signals a membership shift, not worse outcomes on its own.</p>
+<h3 id="5-use-a-score-tied-to-your-outcome">5. Use a score tied to your outcome<a class="headerlink" href="#5-use-a-score-tied-to-your-outcome" title="Permanent link">&para;</a></h3>
+<p>For a real harm analysis, choose a score tied to your outcome—such as risk,
+error, confidence, or quality. Use the table to match that score to its
+harmful direction.</p>
+<p>Choose the harmful direction from the score's meaning before testing—not from the p-value. Pass it as a string or as <code>ss.Worse</code>; the two forms are interchangeable:</p>
 <table>
 <thead>
 <tr>
@@ -962,13 +1034,13 @@
 <td><code>worse="higher"</code></td>
 </tr>
 <tr>
-<td>Outlier score: confidence (<code>LogitGap</code>)</td>
-<td>Certainty / typicality</td>
+<td>Confidence (<code>LogitGap</code>)</td>
+<td>How sure the model is</td>
 <td><code>worse="lower"</code></td>
 </tr>
 <tr>
-<td>Outlier score: atypicality</td>
-<td>Distance from source</td>
+<td>Outlier score (atypicality)</td>
+<td>How unusual an observation is relative to source</td>
 <td><code>worse="higher"</code></td>
 </tr>
 </tbody>
@@ -984,7 +1056,8 @@
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><span class="n">source_quality</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mf">0.80</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.07</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">)</span>
+<span class="n">source_quality</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mf">0.80</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.07</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
 <span class="n">target_quality</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mf">0.72</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.07</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>  <span class="c1"># shift down: harmful</span>
 <span class="n">harm</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harm</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">source_quality</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target_quality</span><span class="p">,</span> <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;lower&quot;</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">rng</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Harm p=</span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># → 0.0001</span>
@@ -993,12 +1066,14 @@
 </div>
 </div>
 <h2 id="recap">Recap<a class="headerlink" href="#recap" title="Permanent link">&para;</a></h2>
-<p>You now have one score and two tests. <code>test_shift</code> tells you whether source and target differ at all. <code>test_harm</code> tells you whether target moved toward the harmful tail you specified before testing. Keeping those questions separate prevents a detectable shift from being mistaken for harmful shift.</p>
-<p>Where you'd like to go next:</p>
+<p>Use <code>test_shift</code> to test for rank-based separation in either direction. Use
+<code>test_harm</code> to test movement toward the harmful tail declared before testing.
+Rank-based separation is not, by itself, evidence of harm.</p>
+<p>Next:</p>
 <ul>
-<li><a href="../../trials/check-drug-efficacy/">Is the new drug good enough?</a>: the same test on 70 trial scores, with no model to fit.</li>
-<li><a href="../../credit/monitor-credit/">Monitor a credit model</a>: apply the tests to a HELOC risk-monitoring example.</li>
-<li><a href="../../../explanation/harmful-shift-statistic/">How the harm test works</a>: why the weighted AUC leans into the harmful tail.</li>
+<li><a href="../../trials/check-drug-efficacy/">Is the new drug good enough?</a>: the same test on 70 trial scores, with no model.</li>
+<li><a href="../../credit/monitor-credit/">Monitor a credit model</a>: risk, confidence, and error on a HELOC book.</li>
+<li><a href="../../../explanation/harmful-shift-statistic/">How the harm test works</a>: why the weighted AUC leans on the harmful tail.</li>
 </ul>
 
 

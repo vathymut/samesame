@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Statistical tests for comparing source and target score distributions — and whether the target moved toward worse outcomes.">
+        <meta name="description" content="Two-sample permutation tests for shift and adverse shift on scores.">
       
       
         <meta name="author" content="Vathy M. Kamulete">
@@ -291,7 +291,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../explanation/harmful-shift-statistic/" class="md-tabs__link">
+        <a href="../../../explanation/benign-vs-harmful-shift/" class="md-tabs__link">
           
   
   
@@ -434,6 +434,8 @@
   
     
     
+      
+        
       
         
       
@@ -627,6 +629,29 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../iris-four-scores/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Four scores, two splits
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -642,6 +667,8 @@
   
     
     
+      
+        
       
         
       
@@ -682,6 +709,29 @@
             Explanation
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../explanation/benign-vs-harmful-shift/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Benign vs harmful shift
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -845,12 +895,22 @@
 
 
 <h1 id="monitor-a-credit-model">Monitor a credit model<a class="headerlink" href="#monitor-a-credit-model" title="Permanent link">&para;</a></h1>
-<p>An alarm should tell you whether a score moved toward worse outcomes, not just that it moved. Imagine a lender whose model was trained on a book of low-risk applicants. A new partner channel or a changing market brings in riskier applicants. The model is still scoring applications, and the shift could reflect model degradation, a change in the population, or both.</p>
-<p>We start by describing the dataset and source-target comparison, then turn to the scores and the monitoring questions they can answer.</p>
+<p>A score shift does not, by itself, tell you whether outcomes worsened. Imagine a lender whose model was trained on low-risk applicants. A new partner channel or a changing market brings in riskier applicants. The model keeps scoring applications. A rise in predicted risk could mean the pool is riskier, the model performs worse on it, or both.</p>
 <h2 id="the-dataset">The dataset<a class="headerlink" href="#the-dataset" title="Permanent link">&para;</a></h2>
-<p>HELOC means <strong>home equity line of credit</strong>: a revolving credit line secured by the borrower's home. This dataset contains anonymized credit-bureau features from the FICO Explainable AI Challenge and a target indicating whether an account went 90 days past due or worse during its first 24 months. The modeling goal is to predict each applicant's probability of a bad outcome, often called the <strong>default probability</strong>; averaged across a group, those predictions give an expected <strong>bad rate</strong>. The example fetches 9,871 applications from <a href="https://openml.org/search?type=data&amp;sort=runs&amp;id=45554&amp;status=active">OpenML</a> (<code>data_id=45554</code>) with <code>fetch_openml</code>.</p>
+<p>HELOC means <strong>home equity line of credit</strong>: a revolving credit line secured by
+the borrower's home. This FICO Explainable AI Challenge dataset contains
+anonymized credit-bureau features. It also records whether an account went
+90 days past due, or worse, in its first 24 months.</p>
+<p>The model estimates each applicant's probability of that outcome (<strong>default
+probability</strong>). A group's mean predicted probability is its <strong>model-implied
+bad rate</strong>.
+The example loads 9,871 applications from <a href="https://openml.org/search?type=data&amp;sort=runs&amp;id=45554&amp;status=active">OpenML</a>
+(<code>data_id=45554</code>) with <code>fetch_openml</code>.</p>
 <h2 id="the-split">The split<a class="headerlink" href="#the-split" title="Permanent link">&para;</a></h2>
-<p>To make the comparison concrete, we split applications at <strong>63</strong> on <code>ExternalRiskEstimate</code>, following Gardner et al. (2023). Higher values indicate safer applicants, so applications above 63 form the lower-risk source group, while applications at or below 63 form the higher-risk target group:</p>
+<p>We split applications at <strong>63</strong> on <code>ExternalRiskEstimate</code>, following Gardner
+et al. (2023). Higher values indicate safer applicants. Here, <code>source</code> is the
+lower-risk reference group used to train the model; <code>target</code> is a simulated
+deployment of higher-risk applicants:</p>
 <ul>
 <li><strong>Source:</strong> 7,683 applications above 63, the low-risk book, with a 43.5% observed bad rate.</li>
 <li><strong>Target:</strong> 2,188 applications at or below 63, the riskier book, with an 81.9% observed bad rate.</li>
@@ -874,7 +934,9 @@
 <span class="n">y_deployment</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="o">~</span><span class="n">mask_high</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="scores">Scores<a class="headerlink" href="#scores" title="Permanent link">&para;</a></h2>
-<p>With source and target defined, we can compare three scores. They are not interchangeable: each answers a different question and becomes available at a different time.</p>
+<p>With source and target defined, compare three scores. They are not
+interchangeable: each answers a different question and becomes available at a
+different time.</p>
 <table>
 <thead>
 <tr>
@@ -894,7 +956,7 @@
 <td>The output itself represents harm</td>
 </tr>
 <tr>
-<td>Outlier score: confidence (<code>LogitGap</code>)</td>
+<td>Confidence (<code>LogitGap</code>)</td>
 <td>No</td>
 <td>Lower certainty</td>
 <td><code>lower</code></td>
@@ -929,7 +991,7 @@
 <span class="n">train_risk</span> <span class="o">=</span> <span class="n">rf_bad</span><span class="o">.</span><span class="n">oob_decision_function_</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
 <span class="n">deployment_risk</span> <span class="o">=</span> <span class="n">rf_bad</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_deployment</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
 </code></pre></div>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Risk, no labels needed</label><label for="__tabbed_1_2">Outlier score: confidence, no labels needed</label><label for="__tabbed_1_3">Prediction error, labels needed</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Risk, no labels needed</label><label for="__tabbed_1_2">Confidence score, no labels needed</label><label for="__tabbed_1_3">Prediction error, labels needed</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p>Start with predicted risk when the model output already represents harm. <code>P(default)</code> is directly tied to the outcome: larger means more harm, so use <code>worse="higher"</code>.</p>
@@ -939,10 +1001,15 @@
 <span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Harm  p-value: </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>   <span class="c1"># → 0.0001</span>
 </code></pre></div>
-<p>The harmful-shift test points toward higher risk. Indeed, the mean predicted risk, or expected bad rate, rises from about 44% in source to 73% in target.</p>
+<p>The test finds evidence of movement toward higher risk. Mean predicted
+risk—the model-implied bad rate—rises from about 44% in source to 73% in
+target.</p>
 </div>
 <div class="tabbed-block">
-<p><a href="https://openreview.net/forum?id=FLdLPUqnsP"><code>LogitGap</code></a> (Liang et al., 2025) measures how clearly the model favors one class over the other. A large gap means high confidence; a small gap means the model is undecided. Because lower confidence is harmful, we use <code>worse="lower"</code>.</p>
+<p><a href="https://openreview.net/forum?id=FLdLPUqnsP"><code>LogitGap</code></a> (Liang et al., 2025)
+measures how clearly the model favors one class over the other. A large gap
+means high confidence; a small gap means the model is undecided. Lower
+confidence is harmful here, so we use <code>worse="lower"</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">logit</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">logit_gap</span><span class="p">(</span><span class="n">logits</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
@@ -952,7 +1019,7 @@
     <span class="k">return</span> <span class="n">max_logits</span> <span class="o">-</span> <span class="n">mean_rest</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">outlier_scores_from_probabilities</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">confidence_scores_from_probabilities</span><span class="p">(</span>
     <span class="n">probabilities</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">clip</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span>
@@ -961,8 +1028,12 @@
     <span class="k">return</span> <span class="n">logit_gap</span><span class="p">(</span><span class="n">logit</span><span class="p">(</span><span class="n">clipped</span><span class="p">))</span>
 
 
-<span class="n">train_conf</span> <span class="o">=</span> <span class="n">outlier_scores_from_probabilities</span><span class="p">(</span><span class="n">rf_bad</span><span class="o">.</span><span class="n">oob_decision_function_</span><span class="p">)</span>
-<span class="n">deploy_conf</span> <span class="o">=</span> <span class="n">outlier_scores_from_probabilities</span><span class="p">(</span><span class="n">rf_bad</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_deployment</span><span class="p">))</span>
+<span class="n">train_conf</span> <span class="o">=</span> <span class="n">confidence_scores_from_probabilities</span><span class="p">(</span>
+    <span class="n">rf_bad</span><span class="o">.</span><span class="n">oob_decision_function_</span>
+<span class="p">)</span>
+<span class="n">deploy_conf</span> <span class="o">=</span> <span class="n">confidence_scores_from_probabilities</span><span class="p">(</span>
+    <span class="n">rf_bad</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_deployment</span><span class="p">)</span>
+<span class="p">)</span>
 
 <span class="n">harm</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harm</span><span class="p">(</span>
     <span class="n">source</span><span class="o">=</span><span class="n">train_conf</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">deploy_conf</span><span class="p">,</span>
@@ -971,10 +1042,17 @@
 <span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Harm  p-value: </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># → 1.0000</span>
 </code></pre></div>
-<p>Default probability and confidence answer different questions. Default probability asks, "How risky does the model think this applicant is?" <code>LogitGap</code> asks, "How sure is it?" Here, target predictions are both riskier and more confident, so there is no harmful confidence drop. The model is more decisive, not safer: confidence adds a second dimension to the risk score.</p>
+<p>Default probability and confidence answer different questions. The first asks,
+"How risky does the model think this applicant is?" <code>LogitGap</code> asks, "How
+sure is the model?" Target predictions are both riskier and more confident.
+The test finds no evidence of a harmful confidence drop. Higher confidence
+alone does not mean the model is safer; confidence adds a separate dimension
+to risk.</p>
 </div>
 <div class="tabbed-block">
-<p>Once labels arrive, prediction error (Brier) gives the clearest post-outcome check. It uses the same source and target split and the same source-trained model as the other scores; the difference is that labels are now available to measure each prediction's error.</p>
+<p>Once labels arrive, prediction error (Brier) gives a post-outcome check. It
+uses the same split and source-trained model as the other scores. Now that
+labels are available, we can measure each prediction's error.</p>
 <div class="highlight"><pre><span></span><code><span class="n">y_deployment_binary</span> <span class="o">=</span> <span class="n">y_deployment</span><span class="o">.</span><span class="n">map</span><span class="p">({</span><span class="s2">&quot;Good&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Bad&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
 <span class="n">brier_source</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_train_binary</span> <span class="o">-</span> <span class="n">train_risk</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
 <span class="n">brier_target</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_deployment_binary</span> <span class="o">-</span> <span class="n">deployment_risk</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
@@ -983,15 +1061,22 @@
     <span class="n">source</span><span class="o">=</span><span class="n">brier_source</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">brier_target</span><span class="p">,</span>
     <span class="n">worse</span><span class="o">=</span><span class="s2">&quot;higher&quot;</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">12345</span><span class="p">),</span>
 <span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Brier p-value: </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># -&gt; 1.0000</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Brier p-value: </span><span class="si">{</span><span class="n">harm</span><span class="o">.</span><span class="n">pvalue</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># → 1.0000</span>
 </code></pre></div>
-<p>Default probability tells us what the model predicts; confidence tells us how sure it is. Brier score asks a different question: were those probabilities accurate once the outcomes arrived? With <code>p=1.0000</code>, we do not reject the null hypothesis of no harmful increase in prediction error. On this split, there is no evidence that the model's errors are larger in target. The higher risk appears to reflect a change in the population rather than material model deterioration.</p>
+<p>Brier score asks whether those probabilities were accurate once outcomes
+arrived. With <code>p=1.0000</code>, we do not reject the null of no harmful increase
+in prediction error. Risk rises on this split, but the test finds no
+evidence of a harmful error increase.</p>
 </div>
 </div>
 </div>
 <h2 id="wrap-up">Wrap up<a class="headerlink" href="#wrap-up" title="Permanent link">&para;</a></h2>
-<p>These three scores give three views of the same deployment change. Predicted risk tells us how harmful the target looks, confidence tells us how decisive the model is, and Brier score tells us whether its probabilities remain accurate once outcomes arrive. Here, the target looks riskier and the model is more confident, but prediction error does not increase. Together, the results suggest a riskier population rather than material model deterioration.</p>
-<p>The next question is whether the comparison is being driven by regions where source and target have little overlap. Continue with <a href="../weight-for-common-support/">Weight for common support</a> to make that question explicit.</p>
+<p>Predicted risk is higher in target, while these tests find no evidence of
+lower confidence or higher prediction error. The split deliberately selects
+a riskier target group; it cannot show why risk differs or prove that model
+quality is unchanged.</p>
+<p>If the comparison is driven by applications in regions where the groups barely
+overlap, see <a href="../weight-for-common-support/">Weight for common support</a>.</p>
 
 
 

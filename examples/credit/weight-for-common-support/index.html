@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Statistical tests for comparing source and target score distributions — and whether the target moved toward worse outcomes.">
+        <meta name="description" content="Two-sample permutation tests for shift and adverse shift on scores.">
       
       
         <meta name="author" content="Vathy M. Kamulete">
@@ -18,7 +18,7 @@
         <link rel="prev" href="../monitor-credit/">
       
       
-        <link rel="next" href="../../../explanation/harmful-shift-statistic/">
+        <link rel="next" href="../../iris-four-scores/">
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
@@ -291,7 +291,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../explanation/harmful-shift-statistic/" class="md-tabs__link">
+        <a href="../../../explanation/benign-vs-harmful-shift/" class="md-tabs__link">
           
   
   
@@ -434,6 +434,8 @@
   
     
     
+      
+        
       
         
       
@@ -645,6 +647,29 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../iris-four-scores/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Four scores, two splits
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -660,6 +685,8 @@
   
     
     
+      
+        
       
         
       
@@ -700,6 +727,29 @@
             Explanation
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../explanation/benign-vs-harmful-shift/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Benign vs harmful shift
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -863,11 +913,15 @@
 
 
 <h1 id="weight-for-common-support">Weight for common support<a class="headerlink" href="#weight-for-common-support" title="Permanent link">&para;</a></h1>
-<p>This tutorial extends <a href="../monitor-credit/">Monitor a credit model</a>. The earlier
-example found a harmful shift toward higher predicted risk between the HELOC
-source and target groups. Here we ask whether that result remains after
-reducing the influence of observations outside their common support.</p>
-<p>The three weighting methods answer different comparison questions:</p>
+<p>This tutorial continues <a href="../monitor-credit/">Monitor a credit model</a>. Its
+unweighted harm test found evidence of movement toward higher predicted risk.
+It gives every application equal weight, including observations in regions
+with little overlap.</p>
+<p><strong>Common support</strong> is the part of feature space—the combinations of feature
+values—where both groups have observations.
+Here we ask whether the harmful shift remains when we give less weight to
+observations in regions poorly represented by the other group.</p>
+<p>The three methods change who gets down-weighted:</p>
 <table>
 <thead>
 <tr>
@@ -880,17 +934,17 @@ reducing the influence of observations outside their common support.</p>
 <tr>
 <td><strong>Source-weighted</strong></td>
 <td>Reweights source toward target; target stays unchanged.</td>
-<td>Only source has important low-overlap observations.</td>
+<td>Source has observations in regions with little target overlap.</td>
 </tr>
 <tr>
 <td><strong>Target-weighted</strong></td>
 <td>Reweights target toward source; source stays unchanged.</td>
-<td>Only target has important low-overlap observations.</td>
+<td>Target has observations in regions with little source overlap.</td>
 </tr>
 <tr>
 <td><strong>Common-support</strong></td>
 <td>Reweights both groups toward their mutual support.</td>
-<td>Both groups may contain outliers or low-overlap observations.</td>
+<td>Both groups have observations in regions with little overlap.</td>
 </tr>
 </tbody>
 </table>
@@ -898,22 +952,22 @@ reducing the influence of observations outside their common support.</p>
 <p>Complete <a href="../monitor-credit/">Monitor a credit model</a> first. This tutorial uses
 the same HELOC split, source-trained risk model, and variables:</p>
 <ul>
-<li><code>X_train</code>, <code>X_deployment</code>: source and target features;</li>
-<li><code>train_risk</code>, <code>deployment_risk</code>: source and target predicted-risk scores; and</li>
-<li><code>ss</code>: the <code>samesame</code> package imported as <code>import samesame as ss</code>.</li>
-<li><code>np</code>: NumPy imported as <code>import numpy as np</code>.</li>
+<li><code>X_train</code>, <code>X_deployment</code>: source and target features</li>
+<li><code>train_risk</code>, <code>deployment_risk</code>: source and target predicted-risk scores</li>
+<li><code>ss</code>: <code>samesame</code>, imported as <code>import samesame as ss</code></li>
+<li><code>np</code>: NumPy, imported as <code>import numpy as np</code></li>
 </ul>
 <p>The complete standalone script is
 <a href="https://github.com/vathymut/samesame/blob/main/docs/examples/weighting/_code/common_support_heloc.py"><code>common_support_heloc.py</code></a>.</p>
 <h2 id="estimate-domain-probabilities">Estimate domain probabilities<a class="headerlink" href="#estimate-domain-probabilities" title="Permanent link">&para;</a></h2>
-<p>The domain probability estimates how target-like each application is. Fit the
-domain classifier on the same source-target split used by the credit example.
-<code>CalibratedClassifierCV</code> calibrates the random-forest probabilities, while the
-outer <code>cross_val_predict</code> call keeps each row's probability out of sample.</p>
-<p>Because <code>ExternalRiskEstimate</code> defines the split, estimate probabilities both
-with all features and with that split feature excluded. The first version shows
-the result when the domain model can use the splitting rule directly; the
-second asks how much separation the remaining features support.</p>
+<p>First, estimate each application's probability of belonging to the target
+group with a domain classifier. <code>CalibratedClassifierCV</code> calibrates the random
+forest's probabilities so they better match observed frequencies. The call to
+<code>cross_val_predict</code> gives each row a probability from a model that did not
+train on that row.</p>
+<p>Because <code>ExternalRiskEstimate</code> defines the split, compare domain probabilities
+with that feature included and excluded. With it, the domain model can use the
+split rule directly; without it, the model must rely on the other features.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.calibration</span><span class="w"> </span><span class="kn">import</span> <span class="n">CalibratedClassifierCV</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestClassifier</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">cross_val_predict</span>
@@ -950,7 +1004,12 @@ second asks how much separation the remaining features support.</p>
     <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">probabilities</span> <span class="ow">in</span> <span class="n">domain_probabilities</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>The two probability models differ substantially:</p>
+<p>The table compares the two domain models. ROC AUC (area under the receiver
+operating characteristic curve) shows how well each separates source from
+target: <code>0.5</code> is chance; values farther from <code>0.5</code> mean stronger separation.
+Effective sample size (ESS) summarizes weight concentration. Compare it with
+the group's sample size: a lower <code>ESS/n</code> means a few observations carry more
+weight.</p>
 <table>
 <thead>
 <tr>
@@ -993,16 +1052,19 @@ second asks how much separation the remaining features support.</p>
 </tbody>
 </table>
 <p>Including the split feature produces almost perfect domain separation and very
-extreme probabilities. Excluding it produces more overlap and substantially
-more effective target information after weighting, while the classifier still
-distinguishes the groups well.</p>
+extreme probabilities. Excluding it produces more overlap and raises the
+target's effective sample size. The classifier still separates the groups
+well.</p>
 <p>Keep these domain probabilities separate from <code>train_risk</code> and
-<code>deployment_risk</code>. Use them to calibrate the weights; predicted risk remains
+<code>deployment_risk</code>. Use them to build the weights. Predicted risk remains
 the score tested for harmful movement.</p>
 <h2 id="compare-the-three-weighting-methods">Compare the three weighting methods<a class="headerlink" href="#compare-the-three-weighting-methods" title="Permanent link">&para;</a></h2>
-<p>Start with the unweighted result from the credit example, then compare all three
-weighting methods for both probability models. Keep <code>worse</code> and the random seed
-fixed. The code uses <code>shrinkage=0.5</code> for each method.</p>
+<p>Start with the unweighted result from the credit example. Compare all three
+weighting methods for both probability models, with <code>worse</code> and the random seed
+fixed. The code uses <code>shrinkage=0.5</code>, which blends raw importance weights
+(density ratios) toward uniform weights. <code>0</code> uses the raw density ratio; <code>1</code>
+gives uniform weights, so there is no correction. Check effective sample size
+before lowering shrinkage.</p>
 <div class="highlight"><pre><span></span><code><span class="n">unweighted</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">test_harm</span><span class="p">(</span>
     <span class="n">source</span><span class="o">=</span><span class="n">train_risk</span><span class="p">,</span>
     <span class="n">target</span><span class="o">=</span><span class="n">deployment_risk</span><span class="p">,</span>
@@ -1048,14 +1110,14 @@ Source-weighted: p-value 0.0001
 Target-weighted: p-value 0.0001
 Common-support: p-value 0.0001
 </code></pre></div>
-<p>The harmful shift remains detectable under all three weighting methods and both
+<p>The harmful shift remains detectable under all three methods and both
 domain-model specifications. With all features, common-support weighting gives
-the less extreme p-value because the target weights are highly concentrated.
-After excluding the split feature, the common-support comparison has more
-effective target information and a smaller p-value.</p>
+a less extreme p-value and highly concentrated target weights. Excluding the
+split feature raises target ESS and lowers the p-value. The smaller p-value
+does not, by itself, mean the shift is larger.</p>
 <h2 id="check-effective-sample-size">Check effective sample size<a class="headerlink" href="#check-effective-sample-size" title="Permanent link">&para;</a></h2>
 <p>P-values do not show whether a few observations dominate the weighted result.
-Check the effective sample size (ESS) for each weighting policy:</p>
+Compare each group's ESS with its sample size for every weighting policy:</p>
 <div class="highlight"><pre><span></span><code><span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="p">(</span><span class="n">source_prob</span><span class="p">,</span> <span class="n">target_prob</span><span class="p">)</span> <span class="ow">in</span> <span class="n">probability_sets</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">method</span><span class="p">,</span> <span class="n">reweight</span> <span class="ow">in</span> <span class="p">[</span>
@@ -1086,28 +1148,28 @@ source-weighted: ESS source 2988/7683, target 2188/2188
 target-weighted: ESS source 7683/7683, target 856/2188
 common-support: ESS source 2988/7683, target 856/2188
 </code></pre></div>
-<p>Source-weighted leaves the target ESS at <code>n</code>, while target-weighted leaves the
-source ESS at <code>n</code>. Common-support weighting reduces ESS on both sides. Including
-the split feature leaves only <code>23/2188</code> effective target observations, whereas
-excluding it raises target ESS to <code>856/2188</code>. That is the key diagnostic for
-choosing which domain model to report.</p>
+<p>Source-weighting leaves target ESS at <code>n</code>; target-weighting leaves source ESS
+at <code>n</code>; common-support weighting reduces ESS in both groups. The target ESS is
+<code>23/2188</code> with the split feature and <code>856/2188</code> without it, showing how strongly
+the feature concentrates target weights. Report ESS alongside each result.</p>
 <h2 id="choose-the-method-for-this-comparison">Choose the method for this comparison<a class="headerlink" href="#choose-the-method-for-this-comparison" title="Permanent link">&para;</a></h2>
-<p>The HELOC split creates a low-risk source and a higher-risk target, so neither
-group should automatically be treated as the clean reference population. The
-all-feature domain model uses the splitting variable directly and therefore
-creates an extremely narrow estimated common-support region. Excluding that
-feature still gives strong domain discrimination but produces a less
-concentrated comparison. Report both specifications when assessing sensitivity
-to the split variable, and prefer the excluded-feature result when the goal is
-to avoid encoding the split rule directly in the weights.</p>
+<p>The HELOC split creates a low-risk source and a higher-risk target. Neither
+group is automatically the right reference for an overlap-adjusted comparison.
+The all-feature domain model uses the split variable directly, so it estimates
+an extremely narrow common-support region. Excluding that feature still
+separates the groups but produces less concentrated weights. Report both
+specifications to show sensitivity to the split variable. If you want weights
+independent of the split rule, prefer the excluded-feature model.</p>
 <h2 id="interpret-the-comparison">Interpret the comparison<a class="headerlink" href="#interpret-the-comparison" title="Permanent link">&para;</a></h2>
 <ul>
-<li>A weaker weighted result would mean that the unweighted evidence was driven
-  by low-overlap regions.</li>
-<li>A persistent result in both specifications means harmful shift remains after
-  restricting the comparison toward common support.</li>
-<li>A low ESS means the weighted estimate is concentrated, not that the p-value
-  is automatically invalid. Report ESS alongside the test result.</li>
+<li>After weighting, a different p-value does not tell you whether some
+  low-overlap observations drove the unweighted result. Weight concentration
+  also changes precision; compare score distributions and ESS.</li>
+<li>If harmful movement remains detectable under both domain-model
+  specifications, there is evidence it persists across these two weighted
+  comparisons.</li>
+<li>A low ESS means a few observations carry much of the weight. It does not
+  automatically invalidate the permutation p-value, but it calls for caution.</li>
 </ul>
 <p>For the weighting API, see <a href="../../../api/weighting/">Importance weights</a>. For
 the statistic being tested, see <a href="../../../explanation/harmful-shift-statistic/">How the harm test works</a>.</p>
@@ -1165,13 +1227,13 @@ the statistic being tested, see <a href="../../../explanation/harmful-shift-stat
         
         
           
-          <a href="../../../explanation/harmful-shift-statistic/" class="md-footer__link md-footer__link--next" aria-label="Next: How the harm test works">
+          <a href="../../iris-four-scores/" class="md-footer__link md-footer__link--next" aria-label="Next: Four scores, two splits">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                How the harm test works
+                Four scores, two splits
               </div>
             </div>
             <div class="md-footer__button md-icon">
