@@ -1,12 +1,14 @@
 # Is the new drug good enough?
 
-In clinical trials, this question is called **noninferiority**. A cheaper, faster, or easier-to-tolerate treatment does not have to beat the standard. It can win on cost or convenience, but it cannot leave patients meaningfully worse off. D-SOS, the test behind this page, is a nonparametric test of no adverse shift, reminiscent of noninferiority, with no margin and no normality assumption (Kamulete, 2022). See [Are you OK? Test for harmful (adverse) shift](https://vathymut.org/posts/2023-01-03-are-you-ok/) for the motivation behind the question.
+In a clinical trial, “good enough” is a noninferiority question. A cheaper, faster, or better-tolerated treatment need not beat the standard, but it should not leave patients meaningfully worse off.
+
+D-SOS asks a related question: is there evidence of adverse shift? It is not a standard margin-based clinical noninferiority test. It uses no pre-set margin and does not assume scores follow a normal distribution (Kamulete, 2022). See [Are you OK? Test for harmful (adverse) shift](https://vathymut.org/posts/2023-01-03-are-you-ok/) for the motivation behind the question.
 
 Consider **Bowl**, a cheaper treatment, against **Armanaleg**, the established standard, in this [SAS case study](https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf). Patients report relief on a 4-to-16 scale, with higher scores better. Bowl's mean relief is lower than Armanaleg's (9.4 versus 10.1), but a lower mean does not answer the practical question: did Bowl push more patients into relief levels the standard rarely produces? With one score per patient and no model, the harmful-shift test makes that question explicit. Set `worse` from the meaning of the score before looking at the results.
 
 ## The data
 
-Load the 70 patient-level relief scores and split them into the reference (`source`) and current (`target`) samples. The first 28 observations are Armanaleg; the remaining 42 are Bowl.
+Load the 70 patient-level relief scores and split them into the reference (`source`) and challenger (`target`) samples. The first 28 observations are Armanaleg; the remaining 42 are Bowl.
 
 ```python
 import numpy as np
@@ -45,15 +47,15 @@ The two tests answer different questions:
 
 Neither p-value is small, so we do not reject the null of no shift or the null of no harmful shift.
 
-That is consistent with the original parametric analysis ("not appreciably worse"), while making no normality assumption and using only 70 observations.
+This aligns with the case study’s parametric conclusion (“not appreciably worse”), while using a nonparametric test on only 70 observations.
 
 The harmful-shift test focuses on the harmful tail: it asks whether Bowl leaves more patients in low-relief territory that Armanaleg rarely visits. Differences where the standard already has many patients matter less. See [How the harm test works](../../explanation/harmful-shift-statistic.md) for the mathematical details and ROC intuition.
 
 ## What the non-rejection means
 
-A p-value of 0.13 is not a certificate of equivalence or proof that Bowl is safe. It says the observed pattern would not be surprising under the null of no harmful shift.
+A p-value of 0.13 does not establish equivalence or prove that Bowl is safe. It says the data do not provide strong evidence against the null of no harmful shift.
 
-- **Absence of evidence isn't evidence of absence.** With 28 versus 42 patients, the test may lack power; a larger study or wider deployment window could sharpen the verdict.
+- **No detected harm is not proof of no harm.** With 28 versus 42 patients, the test may have limited power; a larger study could give a clearer assessment of small harms.
 - **Direction is part of the protocol.** Here `worse="lower"` because lower relief is worse. Picking a direction after seeing p-values turns a pre-specified test into a search.
 
 Same two tests on a model score: [Get started](../tutorials/get-started.md).

@@ -1,52 +1,55 @@
 # Benign vs harmful shift
 
-Tests of equal distributions ask whether source and target are identical.
-Monitoring usually needs a narrower question: is target substantively
-worse than source? A shift can be detectable without being harmful, and a
-harmful change can hide where a generic test is not looking.
+A change in score distribution can be detectable without being harmful.
+Monitoring often needs a narrower question: did target move in a harmful
+direction on a score tied to the outcome you care about? One score can
+miss a change that another reveals.
 
-## Why equality tests raise false alarms
+## Why equality tests can raise unhelpful alarms
 
-Equal-distribution tests demand that the two samples match everywhere in
-the input domain. At production scale that strictness backfires: tiny,
-benign differences reject the null, teams learn to ignore the alarm, and
-retraining on a benign shift is costly without improving outcomes.
-Polyzotis et al. (2019) put it directly: distribution tests at ML scale
-are "too sensitive and also uninformative." The harm statistic discounts
-safe regions instead of weighting every threshold equally.
+Tests of equality ask whether the source and target score distributions
+match; they do not ask whether a difference matters. At production scale,
+even a small, harmless difference can produce a small p-value. If every
+such alarm prompts retraining, teams can spend effort without improving
+outcomes. Polyzotis et al. (2019) put it directly: distribution tests at
+ML scale are "too sensitive and also uninformative." The harm statistic
+gives less weight to thresholds the source often exceeds.
 
 ## A test for no adverse shift
 
-D-SOS, the test behind `test_harm`, holds that target is not substantively
-worse than source, not that the two samples are equal (Kamulete, 2022).
-The question is reminiscent of clinical noninferiority: good enough, not
-necessarily better, with no margin and no normality assumption.
+D-SOS, the test behind `test_harm`, tests the null of no adverse shift:
+target has not moved toward the harmful tail you declared. It does not test
+whether source and target score distributions are identical (Kamulete,
+2022). The question resembles clinical noninferiority—is target meaningfully
+worse?—but D-SOS is not a margin-based clinical test. It is nonparametric
+and assumes no particular score distribution.
 
 You define worse with one score — risk, error, confidence, outlier score —
 and a `worse` direction declared before testing. Higher risk is
 `worse="higher"`. Lower confidence is `worse="lower"`. Pick that
 direction from the score's meaning, never from the p-values.
 
-The null is no adverse shift. A small p-value is evidence that target
-moved into the harmful tail. A large p-value is not a certificate that
-target is fine.
+The null is no adverse shift. A small p-value is evidence against that
+null, in the direction you declared. A large p-value does not establish
+equivalence or prove that target is fine.
 
 ## What that focus costs
 
-`test_shift` screens for any separation. `test_harm` reweights thresholds
-toward the source's rare tail. The ROC form is in
-[How the harm test works](harmful-shift-statistic.md). That focus is the
-point, and the trade-off. A tail test can miss a shift that is not in
+`test_shift` screens for any separation between the score distributions.
+`test_harm` gives more weight to thresholds the source rarely exceeds. The
+ROC form is in [How the harm test works](harmful-shift-statistic.md). That
+focus is the point—and the trade-off. A tail test can miss a shift outside
 the harmful tail, including one you still care about. Run the two tests
-separately. Do not read a detectable shift as harm.
+separately; a detectable shift is not automatically harmful.
 
 ## How the two tests fit
 
-- Use `test_shift` when any distributional difference matters.
+- Use `test_shift` when any difference in score distributions matters.
 - Use `test_harm` with a pre-declared `worse` when only movement toward
   the harmful tail warrants intervention.
-- Both permute group labels with scores fixed. A small p-value is
-  evidence against exchangeability, not a measure of business impact.
+- Both permute group labels with scores fixed. A small p-value is evidence
+  against label exchangeability (under the null, source and target labels
+  are interchangeable); it is not a measure of business impact.
 
 See [How the harm test works](harmful-shift-statistic.md) for the ROC
 derivation, [Get started](../examples/tutorials/get-started.md) for the

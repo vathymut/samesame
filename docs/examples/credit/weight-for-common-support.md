@@ -2,19 +2,19 @@
 
 This tutorial continues [Monitor a credit model](monitor-credit.md). That
 example found a harmful shift toward higher predicted risk. It counted
-every application, including ones the other group barely resembles.
+every application, including observations in regions with little overlap.
 
-**Common support** is the region where both groups actually appear. Here
-we ask whether the harmful shift remains after down-weighting observations
-outside that region.
+**Common support** is the part of feature space where observations from
+both groups can occur. Here we ask whether the harmful shift remains after
+down-weighting observations outside that region.
 
 The three methods change who gets down-weighted:
 
 | Method | What it changes | When to use it |
 |--------|-----------------|----------------|
-| **Source-weighted** | Reweights source toward target; target stays unchanged. | Only source has important low-overlap observations. |
-| **Target-weighted** | Reweights target toward source; source stays unchanged. | Only target has important low-overlap observations. |
-| **Common-support** | Reweights both groups toward their mutual support. | Both groups may contain outliers or low-overlap observations. |
+| **Source-weighted** | Reweights source toward target; target stays unchanged. | Source has observations in regions with little target overlap. |
+| **Target-weighted** | Reweights target toward source; source stays unchanged. | Target has observations in regions with little source overlap. |
+| **Common-support** | Reweights both groups toward their mutual support. | Both groups have observations in regions with little overlap. |
 
 ## Prerequisites
 
@@ -76,9 +76,10 @@ the score tested for harmful movement.
 
 Start with the unweighted result from the credit example, then compare all three
 weighting methods for both probability models. Keep `worse` and the random seed
-fixed. The code uses `shrinkage=0.5`, the default blend of the density ratio
-toward uniform weights. `0` is the raw ratio. `1` is uniform, so no correction.
-Check effective sample size before lowering it.
+fixed. The code uses `shrinkage=0.5`, which blends density-ratio weights
+toward uniform weights. `0` is the raw density ratio; `1` is uniform, so
+there is no correction. Check effective sample size before lowering the
+shrinkage.
 
 ```python
 unweighted = ss.test_harm(
@@ -132,14 +133,15 @@ Common-support: p-value 0.0001
 
 The harmful shift remains detectable under all three weighting methods and both
 domain-model specifications. With all features, common-support weighting gives
-the less extreme p-value because the target weights are highly concentrated.
-After excluding the split feature, the common-support comparison has more
-effective target information and a smaller p-value.
+a less extreme p-value alongside highly concentrated target weights. Excluding
+the split feature gives a larger target effective sample size and a smaller
+p-value; the smaller p-value does not, by itself, mean the shift is larger.
 
 ## Check effective sample size
 
 P-values do not show whether a few observations dominate the weighted result.
-Check the effective sample size (ESS) for each weighting policy:
+Check the effective sample size (ESS), which summarizes how concentrated the
+weights are, for each weighting policy:
 
 ```python
 for label, (source_prob, target_prob) in probability_sets.items():
@@ -178,29 +180,30 @@ common-support: ESS source 2988/7683, target 856/2188
 
 Source-weighted leaves the target ESS at `n`, while target-weighted leaves the
 source ESS at `n`. Common-support weighting reduces ESS on both sides. Including
-the split feature leaves only `23/2188` effective target observations, whereas
-excluding it raises target ESS to `856/2188`. That is the key diagnostic for
-choosing which domain model to report.
+the split feature drops target ESS to only `23/2188`; excluding it raises
+target ESS to `856/2188`. This shows how strongly the split feature concentrates the
+target weights. Report ESS alongside each result.
 
 ## Choose the method for this comparison
 
-The HELOC split creates a low-risk source and a higher-risk target, so neither
-group should automatically be treated as the clean reference population. The
-all-feature domain model uses the splitting variable directly and therefore
-creates an extremely narrow estimated common-support region. Excluding that
-feature still gives strong domain discrimination but produces a less
-concentrated comparison. Report both specifications when assessing sensitivity
-to the split variable, and prefer the excluded-feature result when the goal is
-to avoid encoding the split rule directly in the weights.
+The HELOC split creates low-risk source and higher-risk target groups. Neither
+is automatically the clean reference for an overlap-adjusted comparison. The
+all-feature domain model uses the split variable directly, which makes the
+estimated common-support region extremely narrow. Excluding that feature still
+separates the groups but produces less concentrated weights. Report both
+specifications to show sensitivity to the split variable. Prefer the
+excluded-feature result if you want to avoid using the split rule directly to
+build the weights.
 
 ## Interpret the comparison
 
-- A weaker weighted result would mean that the unweighted evidence was driven
-  by low-overlap regions.
-- A persistent result in both specifications means harmful shift remains after
-  restricting the comparison toward common support.
-- A low ESS means the weighted estimate is concentrated, not that the p-value
-  is automatically invalid. Report ESS alongside the test result.
+- If evidence weakens after weighting, some of the unweighted signal may come
+  from low-overlap regions. Interpret the result alongside ESS.
+- If the shift remains detectable in both specifications, there is evidence
+  that it persists after restricting the comparison toward common support.
+- A low ESS warns that a few observations carry much of the weight; it does not
+  automatically invalidate the permutation p-value. Report ESS alongside the
+  test result.
 
 For the weighting API, see [Importance weights](../../api/weighting.md). For
 the statistic being tested, see [How the harm test works](../../explanation/harmful-shift-statistic.md).

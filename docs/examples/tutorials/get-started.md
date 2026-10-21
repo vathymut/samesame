@@ -5,7 +5,7 @@ This tutorial shows how to turn scores into two answers: *did it change?* and *d
 ## Prerequisites
 
 - Python 3.12+ with `numpy`, `scipy`, `scikit-learn`, and `samesame` installed.
-- Comfort with p-values and training a classifier (you will use `cross_val_predict` once).
+- Basic familiarity with p-values and classifiers. You will use `cross_val_predict` once.
 
 --8<-- "snippets/source-target.txt"
 
@@ -26,11 +26,11 @@ X = np.vstack([source, target])
 labels = np.r_[np.zeros(len(source), dtype=int), np.ones(len(target), dtype=int)]
 ```
 
-The target differs from the source in its first feature. That gives the classifier a deliberate shift to find, while the remaining features stay aligned.
+The first feature differs between the groups; the other three come from the same distribution. The classifier has a clear shift to find without extra differences in those features.
 
 ### 2. Score out of sample
 
-Each row must be scored by a model that did not see that row. Here, a domain classifier estimates `P(target|x)`, the probability that an observation looks like it came from the target population. This is a useful generic score for detecting *any* shift because it measures sample membership. For background on classifier-based two-sample tests, see [In gentle praise of classifier tests](https://vathymut.org/posts/2022-01-22-in-gentle-praise-of-modern-tests/).
+Score each row out of sample: its scoring model must not have been fit on that row. In-sample predictions can exaggerate source-target separation. Here, a domain classifier estimates `P(target|x)`, the probability that a row belongs to target. If the classifier can distinguish source from target, its probabilities provide a general signal of shift. For background on classifier-based two-sample tests, see [In gentle praise of classifier tests](https://vathymut.org/posts/2022-01-22-in-gentle-praise-of-modern-tests/).
 
 ```python
 from sklearn.ensemble import HistGradientBoostingClassifier
@@ -47,7 +47,7 @@ domain_prob = cross_val_predict(
 
     --8<-- "snippets/honest-scores.txt"
 
-    Pass `rng=np.random.default_rng(12345)` for reproducible p-values (`n_resamples=9999`; use `999` while exploring and `19999` below `0.001`). Details: [Shift testing](../../api/testing.md).
+    Pass `rng=np.random.default_rng(12345)` for reproducible p-values. The default is `n_resamples=9999`; use `999` while exploring and `19999` for finer resolution below `0.001`. Details: [Shift testing](../../api/testing.md).
 
 ### 3. Did anything change?
 
@@ -61,11 +61,11 @@ shift = ss.test_shift(source=source_scores, target=target_scores, rng=rng)
 print(f"Shift p-value: {shift.pvalue:.4f}")  # → 0.0002
 ```
 
-The p-value is small, so we reject no shift. That is the difference built into the first feature.
+A small p-value is evidence against the null of no shift. Here, that is the difference we built into the first feature.
 
 ### 4. Did it get worse?
 
-The domain probability can also serve as an outlier score when target-like observations represent the harmful direction: a higher domain probability means the observation looks less like the reference sample, so use `worse="higher"` when these deviations are harmful.
+Domain probability can act as an outlier score if target-like observations are harmful. A higher value means the observation looks less like the reference, so use `worse="higher"` when that difference is harmful.
 
 ```python
 harm = ss.test_harm(
@@ -77,11 +77,11 @@ harm = ss.test_harm(
 print(f"Harm p-value: {harm.pvalue:.4f}")  # → 0.0002
 ```
 
-We reject the null of no harmful shift. Target scores sit further in the high tail you marked harmful: rows that look like the target, not the reference. That is a membership result. It counts as harm only because you declared target-like scores harmful.
+A small p-value is evidence against the null of no harmful shift. The target group has more scores in the high tail you marked harmful. Those rows look more like target than source. This is a membership result, not harm by itself: it counts as harm only because you declared target-like scores harmful.
 
 ### 5. Declare the harmful direction
 
-Domain probability is only one score. Test any score tied to the outcome you care about. Higher is harmful for risk and error. Lower is harmful for confidence and quality. Replace the draws below with your own score. Signatures and polarity: [Shift testing](../../api/testing.md).
+Domain probability is one option. You can test any score tied to the outcome you care about. Higher risk or error is worse; lower confidence or quality is worse. Replace the simulated scores below with your own. For function signatures and direction values, see [Shift testing](../../api/testing.md).
 
 --8<-- "snippets/worse-declaration.txt"
 
@@ -100,6 +100,7 @@ Domain probability is only one score. Test any score tied to the outcome you car
 === "Lower is worse (confidence)"
 
     ```python
+    rng = np.random.default_rng(12345)
     source_quality = rng.normal(loc=0.80, scale=0.07, size=400)
     target_quality = rng.normal(loc=0.72, scale=0.07, size=400)  # shift down: harmful
     harm = ss.test_harm(source=source_quality, target=target_quality, worse="lower", rng=rng)
@@ -108,7 +109,7 @@ Domain probability is only one score. Test any score tied to the outcome you car
 
 ## Recap
 
-You have one score and two tests. `test_shift` says whether source and target differ. `test_harm` says whether target moved toward the harmful tail you named before testing. A detectable shift is not, by itself, a harmful shift.
+Use `test_shift` to ask whether the score distributions differ. Use `test_harm` to ask whether target moved toward the harmful tail you named before testing. A detectable shift is not, by itself, a harmful shift.
 
 Next:
 

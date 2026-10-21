@@ -1,6 +1,6 @@
 # Weighting API
 
-Reweight a source-target comparison toward common support: the region where both groups appear. Weights change which observations count. They do not create overlap that is not in the data.
+Reweight a source-target comparison toward common support: the part of feature space where observations from both groups can occur. Weights change which observations count more; they cannot create overlap that is absent from the data.
 
 Worked example: [Weight for common support](../examples/credit/weight-for-common-support.md).
 

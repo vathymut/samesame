@@ -1,14 +1,16 @@
 # Monitor a credit model
 
-An alarm should tell you whether a score moved toward worse outcomes, not just that it moved. Imagine a lender whose model was trained on a book of low-risk applicants. A new partner channel, or a changing market, brings in riskier applicants. The model is still scoring applications. The shift could be model degradation, a change in the population, or both.
+An alarm should tell you whether a score moved toward worse outcomes, not just that it changed. Imagine a lender whose model was trained on low-risk applicants. A new partner channel or a changing market brings in riskier applicants. The model keeps scoring applications, but the shift could reflect a worse model, a different population, or both.
 
 ## The dataset
 
-HELOC means **home equity line of credit**: a revolving credit line secured by the borrower's home. This dataset, from the FICO Explainable AI Challenge, has anonymized credit-bureau features and a label for whether the account went 90 days past due, or worse, in its first 24 months. The model predicts each applicant's probability of that bad outcome, the **default probability**. Averaged over a group, those predictions are an expected **bad rate**. The example loads 9,871 applications from [OpenML](https://openml.org/search?type=data&sort=runs&id=45554&status=active) (`data_id=45554`) with `fetch_openml`.
+HELOC means **home equity line of credit**: a revolving credit line secured by the borrower's home. This FICO Explainable AI Challenge dataset contains anonymized credit-bureau features and a label for whether an account went 90 days past due, or worse, in its first 24 months.
+
+The model estimates each applicant's probability of that outcome (**default probability**); the average prediction for a group is its expected **bad rate**. The example loads 9,871 applications from [OpenML](https://openml.org/search?type=data&sort=runs&id=45554&status=active) (`data_id=45554`) with `fetch_openml`.
 
 ## The split
 
-To make the comparison concrete, we split applications at **63** on `ExternalRiskEstimate`, following Gardner et al. (2023). Higher values indicate safer applicants, so applications above 63 form the lower-risk source group, while applications at or below 63 form the higher-risk target group:
+We split applications at **63** on `ExternalRiskEstimate`, following Gardner et al. (2023). Higher values indicate safer applicants: those above 63 form the lower-risk source group, while those at or below 63 form the higher-risk target group:
 
 - **Source:** 7,683 applications above 63, the low-risk book, with a 43.5% observed bad rate.
 - **Target:** 2,188 applications at or below 63, the riskier book, with an 81.9% observed bad rate.
@@ -52,11 +54,11 @@ import samesame as ss
     print(f"Harm  p-value: {harm.pvalue:.4f}")   # → 0.0001
     ```
 
-    The harmful-shift test points toward higher risk. The mean predicted risk, the expected bad rate, rises from about 44% in source to 73% in target.
+    The test finds evidence of movement toward higher risk. Mean predicted risk—the expected bad rate—rises from about 44% in source to 73% in target.
 
 === "Outlier score: confidence, no labels needed"
 
-    [`LogitGap`](https://openreview.net/forum?id=FLdLPUqnsP) (Liang et al., 2025) measures how clearly the model favors one class over the other. A large gap means high confidence; a small gap means the model is undecided. Because lower confidence is harmful, we use `worse="lower"`.
+    [`LogitGap`](https://openreview.net/forum?id=FLdLPUqnsP) (Liang et al., 2025) measures how clearly the model favors one class over the other. A large gap means high confidence; a small gap means the model is undecided. Lower confidence is harmful here, so we use `worse="lower"`.
 
     ```python
     --8<-- "examples/credit/_code/monitor_model_confidence_example.py:imports"
@@ -73,7 +75,7 @@ import samesame as ss
     print(f"Harm  p-value: {harm.pvalue:.4f}")  # → 1.0000
     ```
 
-    Default probability and confidence answer different questions. Default probability asks, "How risky does the model think this applicant is?" `LogitGap` asks, "How sure is it?" Here, target predictions are both riskier and more confident, so there is no harmful confidence drop. The model is more decisive, not safer: confidence adds a second dimension to the risk score.
+    Default probability and confidence answer different questions. The first asks, "How risky does the model think this applicant is?" `LogitGap` asks, "How sure is the model?" Target predictions are both riskier and more confident. The test finds no evidence of a harmful confidence drop. The model is more decisive, not safer; confidence adds another dimension to risk.
 
 === "Prediction error, labels needed"
 
@@ -91,10 +93,10 @@ import samesame as ss
     print(f"Brier p-value: {harm.pvalue:.4f}")  # → 1.0000
     ```
 
-    Brier score asks whether those probabilities were accurate once the outcomes arrived. With `p=1.0000`, we do not reject the null of no harmful increase in prediction error. On this split, the higher risk looks like a change in the population, not larger model errors.
+    Brier score asks whether those probabilities were accurate once the outcomes arrived. With `p=1.0000`, we do not reject the null of no harmful increase in prediction error. On this split, predicted risk rises, but the test finds no evidence of a harmful increase in prediction error.
 
 ## Wrap up
 
-Predicted risk rose, confidence did not fall, and prediction error did not rise. On this split the target looks like a riskier book, not a model that got worse at its probabilities.
+Predicted risk is higher in target, while these tests find no evidence of lower confidence or higher prediction error. This pattern is consistent with a riskier population, but this split cannot establish why risk increased or prove that model quality is unchanged.
 
 If a few low-overlap applications are driving that comparison, [Weight for common support](weight-for-common-support.md) is the next check.
