@@ -56,11 +56,12 @@ from samesame.weights import ImportanceWeights
 
 class Worse(StrEnum):
     """
-    Polarity that defines which tail is harmful for :func:`test_harm`.
+    Direction that defines which tail is harmful for :func:`test_harm`.
 
     Choose ``worse`` from the score's definition (e.g., risk is higher-is-worse,
-    confidence via ``LogitGap`` is lower-is-worse) and pre-register it; do not
-    pick the direction that gives the smaller p-value after seeing the data.
+    confidence via ``LogitGap`` is lower-is-worse) and declare it before
+    testing; do not pick the direction that gives the smaller p-value after
+    seeing the data.
     A plain string ``"higher"`` / ``"lower"`` is accepted wherever this
     enum is; the two forms are interchangeable.
 
@@ -158,13 +159,13 @@ class ShiftResult:
 @dataclass(frozen=True, repr=False)
 class HarmfulShiftResult(ShiftResult):
     """
-    Result of :func:`test_harm` — a one-sided tail result.
+    Result of :func:`test_harm` — a one-sided permutation result.
 
-    One-sided tail result. The statistic is the weighted AUC
-    ``∫ TPR·(1−FPR)² dFPR`` of Kamulete (2022) after orienting the score
-    so larger means worse (``worse="lower"`` flips the sign); it leans
-    into thresholds the source rarely exceeds. Read it against
-    ``null_distribution`` and the score's own scale. See
+    The statistic is Kamulete's weighted AUC
+    ``∫ TPR·(1−FPR)² dFPR`` after orienting the score so larger means worse
+    (``worse="lower"`` flips the sign). It gives more weight to thresholds
+    the source rarely exceeds. Read it against ``null_distribution`` and
+    the score's own scale, not against ``0.5``. See
     :doc:`How the harm test works <../explanation/harmful-shift-statistic>`
     for the ROC intuition.
 

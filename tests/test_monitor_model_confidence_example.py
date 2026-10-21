@@ -50,8 +50,12 @@ def test_confidence_recipe_feeds_harm_detection_in_expected_direction() -> None:
         ]
     )
 
-    source_scores = example.outlier_scores_from_probabilities(source_probabilities)
-    target_scores = example.outlier_scores_from_probabilities(target_probabilities)
+    source_scores = example.confidence_scores_from_probabilities(
+        source_probabilities
+    )
+    target_scores = example.confidence_scores_from_probabilities(
+        target_probabilities
+    )
 
     harmful = shift.test_harm(
         source_scores,

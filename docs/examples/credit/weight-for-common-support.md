@@ -1,12 +1,13 @@
 # Weight for common support
 
-This tutorial continues [Monitor a credit model](monitor-credit.md). That
-example found a harmful shift toward higher predicted risk. It counted
-every application, including observations in regions with little overlap.
+This tutorial continues [Monitor a credit model](monitor-credit.md). Its
+unweighted test found evidence of a shift toward higher predicted risk. It
+gives every application equal weight, including observations in regions with
+little overlap.
 
-**Common support** is the part of feature space where observations from
-both groups can occur. Here we ask whether the harmful shift remains after
-down-weighting observations outside that region.
+**Common support** is the part of feature space represented by both groups.
+Here we ask whether the harmful shift remains when we give less weight to
+observations in regions poorly represented by the other group.
 
 The three methods change who gets down-weighted:
 
@@ -31,10 +32,12 @@ The complete standalone script is
 
 ## Estimate domain probabilities
 
-The domain probability estimates how target-like each application is. Fit the
-domain classifier on the same source-target split used by the credit example.
-`CalibratedClassifierCV` calibrates the random-forest probabilities, while the
-outer `cross_val_predict` call keeps each row's probability out of sample.
+The domain probability estimates how likely each application is to belong to
+the target group. Fit the classifier on the same source-target split used by
+the credit example. Calibration aligns predicted probabilities with observed
+frequencies; `CalibratedClassifierCV` applies it to the random forest. The
+outer `cross_val_predict` call produces each row's probability using a model
+that did not train on that row.
 
 Because `ExternalRiskEstimate` defines the split, estimate probabilities both
 with all features and with that split feature excluded. The first version shows
@@ -52,7 +55,12 @@ probability_sets = {
 }
 ```
 
-The two probability models differ substantially:
+The table compares the two domain models. ROC AUC (area under the receiver
+operating characteristic curve) shows how well each separates source from
+target: `0.5` is chance; values farther from `0.5` mean stronger separation.
+Effective sample size (ESS) summarizes weight concentration. Compare it with
+the group's sample size: a lower `ESS/n` means a few observations carry more
+weight.
 
 | Metric | All features | Excluding split feature |
 |---|---:|---:|
@@ -64,9 +72,9 @@ The two probability models differ substantially:
 | Common-support p-value | 0.0019 | 0.0001 |
 
 Including the split feature produces almost perfect domain separation and very
-extreme probabilities. Excluding it produces more overlap and substantially
-more effective target information after weighting, while the classifier still
-distinguishes the groups well.
+extreme probabilities. Excluding it produces more overlap and raises the
+target's effective sample size. The classifier still separates the groups
+well.
 
 Keep these domain probabilities separate from `train_risk` and
 `deployment_risk`. Use them to build the weights. Predicted risk remains
@@ -74,12 +82,12 @@ the score tested for harmful movement.
 
 ## Compare the three weighting methods
 
-Start with the unweighted result from the credit example, then compare all three
-weighting methods for both probability models. Keep `worse` and the random seed
-fixed. The code uses `shrinkage=0.5`, which blends density-ratio weights
-toward uniform weights. `0` is the raw density ratio; `1` is uniform, so
-there is no correction. Check effective sample size before lowering the
-shrinkage.
+Start with the unweighted result from the credit example. Compare all three
+weighting methods for both probability models, with `worse` and the random seed
+fixed. The code uses `shrinkage=0.5`, which blends raw importance weights
+(density ratios) toward uniform weights. `0` uses the raw density ratio; `1`
+gives uniform weights, so there is no correction. Check effective sample size
+before lowering shrinkage.
 
 ```python
 unweighted = ss.test_harm(
@@ -131,17 +139,16 @@ Target-weighted: p-value 0.0001
 Common-support: p-value 0.0001
 ```
 
-The harmful shift remains detectable under all three weighting methods and both
+The harmful shift remains detectable under all three methods and both
 domain-model specifications. With all features, common-support weighting gives
-a less extreme p-value alongside highly concentrated target weights. Excluding
-the split feature gives a larger target effective sample size and a smaller
-p-value; the smaller p-value does not, by itself, mean the shift is larger.
+a less extreme p-value and highly concentrated target weights. Excluding the
+split feature raises target ESS and lowers the p-value. The smaller p-value
+does not, by itself, mean the shift is larger.
 
 ## Check effective sample size
 
 P-values do not show whether a few observations dominate the weighted result.
-Check the effective sample size (ESS), which summarizes how concentrated the
-weights are, for each weighting policy:
+Compare each group's ESS with its sample size for every weighting policy:
 
 ```python
 for label, (source_prob, target_prob) in probability_sets.items():
@@ -186,14 +193,13 @@ target weights. Report ESS alongside each result.
 
 ## Choose the method for this comparison
 
-The HELOC split creates low-risk source and higher-risk target groups. Neither
-is automatically the clean reference for an overlap-adjusted comparison. The
-all-feature domain model uses the split variable directly, which makes the
-estimated common-support region extremely narrow. Excluding that feature still
+The HELOC split creates a low-risk source and a higher-risk target. Neither
+group is automatically the right reference for an overlap-adjusted comparison.
+The all-feature domain model uses the split variable directly, so it estimates
+an extremely narrow common-support region. Excluding that feature still
 separates the groups but produces less concentrated weights. Report both
-specifications to show sensitivity to the split variable. Prefer the
-excluded-feature result if you want to avoid using the split rule directly to
-build the weights.
+specifications to show sensitivity to the split variable. If you want weights
+independent of the split rule, prefer the excluded-feature model.
 
 ## Interpret the comparison
 

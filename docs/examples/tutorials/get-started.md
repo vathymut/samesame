@@ -11,11 +11,13 @@ This tutorial shows how to turn scores into two answers: *did it change?* and *d
 
 ## Steps
 
-Run both tests on the score for the outcome you care about. `test_shift` asks whether source and target differ at all. `test_harm` asks whether target moved toward the harmful tail you name with `worse`.
+Use one score per row. `test_shift` asks whether source and target score
+distributions differ at all. `test_harm` tests whether target scores move
+toward a harmful tail you declare with `worse` before testing.
 
 ### 1. Create source and target
 
-Draw a reference sample and a sample from the population you are checking. The reference is usually training data or a past deployment.
+Draw a reference sample (`source`) and a sample from the population you are checking (`target`). The reference is usually training data or a past deployment.
 
 ```python
 import numpy as np
@@ -30,7 +32,13 @@ The first feature differs between the groups; the other three come from the same
 
 ### 2. Score out of sample
 
-Score each row out of sample: its scoring model must not have been fit on that row. In-sample predictions can exaggerate source-target separation. Here, a domain classifier estimates `P(target|x)`, the probability that a row belongs to target. If the classifier can distinguish source from target, its probabilities provide a general signal of shift. For background on classifier-based two-sample tests, see [In gentle praise of classifier tests](https://vathymut.org/posts/2022-01-22-in-gentle-praise-of-modern-tests/).
+Score each row out of sample: the model must not have been fit on that row.
+In-sample predictions can exaggerate source-target separation.
+
+Here, a domain classifier estimates `P(target|x)`, the probability that a row
+belongs to target. If it can distinguish source from target, its probabilities
+give a general signal of shift. For background on classifier-based two-sample
+tests, see [In gentle praise of classifier tests](https://vathymut.org/posts/2022-01-22-in-gentle-praise-of-modern-tests/).
 
 ```python
 from sklearn.ensemble import HistGradientBoostingClassifier
@@ -65,7 +73,10 @@ A small p-value is evidence against the null of no shift. Here, that is the diff
 
 ### 4. Did it get worse?
 
-Domain probability can act as an outlier score if target-like observations are harmful. A higher value means the observation looks less like the reference, so use `worse="higher"` when that difference is harmful.
+The domain probability tells how likely a row is to belong to target. Use it
+in `test_harm` only if target-like observations are harmful in your setting.
+Because higher values mean more target-like, use `worse="higher"` for that
+case.
 
 ```python
 harm = ss.test_harm(
@@ -77,11 +88,19 @@ harm = ss.test_harm(
 print(f"Harm p-value: {harm.pvalue:.4f}")  # → 0.0002
 ```
 
-A small p-value is evidence against the null of no harmful shift. The target group has more scores in the high tail you marked harmful. Those rows look more like target than source. This is a membership result, not harm by itself: it counts as harm only because you declared target-like scores harmful.
+A small p-value is evidence against the null of no harmful shift. Here,
+target scores appear more often in the high tail. That describes group
+membership, not outcome harm; the interpretation depends on the direction
+you declared.
 
-### 5. Declare the harmful direction
+### 5. Use a score tied to your outcome
 
-Domain probability is one option. You can test any score tied to the outcome you care about. Higher risk or error is worse; lower confidence or quality is worse. Replace the simulated scores below with your own. For function signatures and direction values, see [Shift testing](../../api/testing.md).
+The domain probability in this demo measures group membership, not outcome
+quality. Use it as a harm score only if target-like observations are harmful
+in your setting. For the outcome you care about, choose a score tied to it
+and declare `worse` from its meaning before calling `test_harm`. Higher risk
+or error is worse; lower confidence or quality is worse. See [Shift testing](../../api/testing.md)
+for function signatures and direction values.
 
 --8<-- "snippets/worse-declaration.txt"
 

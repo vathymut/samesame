@@ -139,12 +139,11 @@ def _normalize(weights: NDArray[np.float64]) -> NDArray[np.float64]:
 @dataclass(frozen=True)
 class EffectiveSampleSize:
     """
-    Kish effective sample size — how much information is left after weighting.
+    Kish effective sample size (ESS) summarizes how concentrated the weights
+    are.
 
-    Kish's ESS ``(sum w)² / sum w²`` (Kish, 1965): uniform weights keep
-    every voice — ``ESS == n``; when a few observations shout while the
-    rest whisper, ESS slides toward ``1``. It interpolates between ``n``
-    (uniform) and ``1`` (one observation dominates).
+    Kish's ESS is ``(sum w)² / sum w²`` (Kish, 1965). Uniform weights give
+    ``ESS == n``; as weights concentrate, ESS approaches ``1``.
 
     Compare each ESS to its ``n`` via the ratio ``ESS/n``. There is no
     universal cutoff from Kish; interpret ``ESS/n`` as a continuous
@@ -255,11 +254,12 @@ class ImportanceWeights:
 
     def effective_sample_size(self) -> EffectiveSampleSize:
         """
-        How much independent information remains after weighting.
+        Compute Kish's effective sample size (ESS), a summary of weight
+        concentration.
 
         Returns Kish's ``(sum w)² / sum w²`` (Kish, 1965) per group. Uniform
-        weights give ``ESS == n``; concentrated weights where a handful
-        dominate push ESS toward ``1``. Interpret ``ESS/n`` continuously; a
+        weights give ``ESS == n``; as weights concentrate, ESS approaches
+        ``1``. Interpret ``ESS/n`` continuously; a
         low ratio warns that the weighted result leans on a few observations.
 
         If ESS stays low even at ``shrinkage=0.5``, the groups may lack
@@ -333,9 +333,9 @@ def domain_weights(
         reweights source toward target; ``'target'`` does the reverse.
         Accepts a plain string or :class:`ReweightMode`.
     shrinkage : float, optional
-        Shrinkage ``λ`` in ``[0, 1]`` (default ``0.5``) blending RIW
-        toward uniform weights. ``0`` is the plain density ratio — strongest
-        correction, highest variance. ``1`` is uniform — no correction.
+        Shrinkage ``λ`` in ``[0, 1]`` (default ``0.5``) blending raw importance
+        weights toward uniform weights. ``0`` is the plain density ratio —
+        strongest correction, highest variance. ``1`` is uniform — no correction.
         ``0.5`` is the recommended default; start there and inspect
         ``ESS/n`` before lowering (lower = more aggressive correction).
 

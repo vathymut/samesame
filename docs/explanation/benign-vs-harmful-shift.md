@@ -1,37 +1,37 @@
 # Benign vs harmful shift
 
-A change in score distribution can be detectable without being harmful.
-Monitoring often needs a narrower question: did target move in a harmful
-direction on a score tied to the outcome you care about? One score can
-miss a change that another reveals.
+A difference between the score distributions of the reference group (`source`)
+and the group under review (`target`) can be detectable without being harmful.
+Monitoring often needs a narrower question: did a score tied to the outcome
+move in a direction marked harmful? One score can miss a change another reveals.
 
 ## Why equality tests can raise unhelpful alarms
 
-Tests of equality ask whether the source and target score distributions
-match; they do not ask whether a difference matters. At production scale,
+Tests of equal score distributions ask whether source and target match; they
+do not ask whether a difference matters. At production scale,
 even a small, harmless difference can produce a small p-value. If every
 such alarm prompts retraining, teams can spend effort without improving
 outcomes. Polyzotis et al. (2019) put it directly: distribution tests at
-ML scale are "too sensitive and also uninformative." The harm statistic
-gives less weight to thresholds the source often exceeds.
+ML scale are "too sensitive and also uninformative." D-SOS takes a narrower
+view: it tests movement toward a tail you have marked harmful.
 
 ## A test for no adverse shift
 
-D-SOS, the test behind `test_harm`, tests the null of no adverse shift:
-target has not moved toward the harmful tail you declared. It does not test
-whether source and target score distributions are identical (Kamulete,
-2022). The question resembles clinical noninferiority—is target meaningfully
-worse?—but D-SOS is not a margin-based clinical test. It is nonparametric
-and assumes no particular score distribution.
+D-SOS, which powers `test_harm`, tests the null of no adverse shift in the
+direction you declared: target has not moved farther into the harmful tail.
+It does not test whether source and target score distributions are identical
+(Kamulete, 2022). The question is related to clinical noninferiority, but
+D-SOS is not a clinical noninferiority test. It is nonparametric (it assumes
+no particular score distribution) and uses no prespecified harm margin.
 
 You define worse with one score — risk, error, confidence, outlier score —
 and a `worse` direction declared before testing. Higher risk is
 `worse="higher"`. Lower confidence is `worse="lower"`. Pick that
 direction from the score's meaning, never from the p-values.
 
-The null is no adverse shift. A small p-value is evidence against that
-null, in the direction you declared. A large p-value does not establish
-equivalence or prove that target is fine.
+A small p-value is evidence against the no-adverse-shift null in the
+direction you declared. A large p-value does not establish equivalence or
+prove that target is fine.
 
 ## What that focus costs
 
@@ -47,9 +47,9 @@ separately; a detectable shift is not automatically harmful.
 - Use `test_shift` when any difference in score distributions matters.
 - Use `test_harm` with a pre-declared `worse` when only movement toward
   the harmful tail warrants intervention.
-- Both permute group labels with scores fixed. A small p-value is evidence
-  against label exchangeability (under the null, source and target labels
-  are interchangeable); it is not a measure of business impact.
+- Both hold scores fixed and permute group labels. A small p-value is evidence
+  against label exchangeability: under the null, group labels are unrelated
+  to the pooled scores. It is not a measure of business impact.
 
 See [How the harm test works](harmful-shift-statistic.md) for the ROC
 derivation, [Get started](../examples/tutorials/get-started.md) for the

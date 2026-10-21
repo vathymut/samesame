@@ -1,10 +1,22 @@
 # Is the new drug good enough?
 
-In a clinical trial, “good enough” is a noninferiority question. A cheaper, faster, or better-tolerated treatment need not beat the standard, but it should not leave patients meaningfully worse off.
+In a clinical trial, “good enough” often means noninferior. A cheaper, faster,
+or better-tolerated treatment need not beat the standard, but it should not
+leave patients meaningfully worse off.
 
-D-SOS asks a related question: is there evidence of adverse shift? It is not a standard margin-based clinical noninferiority test. It uses no pre-set margin and does not assume scores follow a normal distribution (Kamulete, 2022). See [Are you OK? Test for harmful (adverse) shift](https://vathymut.org/posts/2023-01-03-are-you-ok/) for the motivation behind the question.
+D-SOS asks a related question: is there evidence of adverse shift? It is not
+a clinical noninferiority test. It sets no prespecified harm margin and
+assumes no particular score distribution (Kamulete, 2022). See [Are you OK?
+Test for harmful (adverse) shift](https://vathymut.org/posts/2023-01-03-are-you-ok/)
+for the motivation behind the question.
 
-Consider **Bowl**, a cheaper treatment, against **Armanaleg**, the established standard, in this [SAS case study](https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf). Patients report relief on a 4-to-16 scale, with higher scores better. Bowl's mean relief is lower than Armanaleg's (9.4 versus 10.1), but a lower mean does not answer the practical question: did Bowl push more patients into relief levels the standard rarely produces? With one score per patient and no model, the harmful-shift test makes that question explicit. Set `worse` from the meaning of the score before looking at the results.
+Consider **Bowl**, a cheaper treatment, against **Armanaleg**, the established
+standard, in this [SAS case study](https://support.sas.com/resources/papers/proceedings15/SAS1911-2015.pdf).
+Patients report relief on a 4-to-16 scale; higher scores are better. Bowl's
+mean is lower than Armanaleg's (9.4 versus 10.1), but that alone does not show
+whether more patients had relief levels the standard rarely produces. With
+one score per patient and no model, the harm test asks that tail-focused
+question. Set `worse` from the score's meaning before looking at results.
 
 ## The data
 
@@ -47,7 +59,9 @@ The two tests answer different questions:
 
 Neither p-value is small, so we do not reject the null of no shift or the null of no harmful shift.
 
-This aligns with the case study’s parametric conclusion (“not appreciably worse”), while using a nonparametric test on only 70 observations.
+The result is consistent with the case study’s parametric conclusion (“not
+appreciably worse”). This nonparametric test uses only 70 patients; non-rejection
+does not establish noninferiority.
 
 The harmful-shift test focuses on the harmful tail: it asks whether Bowl leaves more patients in low-relief territory that Armanaleg rarely visits. Differences where the standard already has many patients matter less. See [How the harm test works](../../explanation/harmful-shift-statistic.md) for the mathematical details and ROC intuition.
 

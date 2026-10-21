@@ -1,6 +1,9 @@
 # Testing API
 
-Permutation tests compare one score per observation between a reference (**source**) and a population under review (**target**). `test_shift` asks whether their score distributions differ; `test_harm` asks whether the target moved toward a harmful tail declared before testing.
+These permutation tests compare one score per observation between two groups:
+a reference (`source`) and a group under review (`target`). `test_shift` asks
+whether their score distributions differ. `test_harm` tests for movement
+toward a harmful tail declared with `worse` before the test.
 
 For when to use each test, see [Benign vs harmful shift](../explanation/benign-vs-harmful-shift.md). For the weighted-AUC statistic, see [How the harm test works](../explanation/harmful-shift-statistic.md).
 

@@ -21,8 +21,8 @@ def logit_gap(logits: NDArray[np.float64]) -> NDArray[np.float64]:
 
 
 # --8<-- [end:logit-gap]
-# --8<-- [start:outlier-scores]
-def outlier_scores_from_probabilities(
+# --8<-- [start:confidence-scores]
+def confidence_scores_from_probabilities(
     probabilities: NDArray[np.float64],
     *,
     clip: float = 1e-6,
@@ -31,6 +31,6 @@ def outlier_scores_from_probabilities(
     return logit_gap(logit(clipped))
 
 
-# --8<-- [end:outlier-scores]
+# --8<-- [end:confidence-scores]
 
-__all__ = ["logit_gap", "outlier_scores_from_probabilities"]
+__all__ = ["logit_gap", "confidence_scores_from_probabilities"]
